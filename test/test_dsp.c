@@ -446,7 +446,7 @@ test_dsp_feed_connections_bus() {
   struct dsp_connection *connection;
 
   aux_bus = dsp_parse_bus_path("/main/aux");
-  right_bus = dsp_parse_bus_path("/main/delay/right");  
+  right_bus = dsp_parse_bus_path("/main/delay/right");
 
   rtqueue_enq(aux_bus->outs->in->values, 0.12345);
   dsp_feed_connections_bus("/main/aux/", aux_bus->outs);

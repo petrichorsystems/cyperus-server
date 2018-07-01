@@ -194,8 +194,7 @@ dsp_parse_bus_path(char *target_path) {
   char *last_bus_name;
   struct dsp_bus *temp_bus, *target_bus, *temp_bus_head, *deep_bus;
   temp_bus = dsp_global_bus_head;
-  char *p = target_path;
-  fprintf(stderr, "target_path: %s\n", target_path);  
+  char *p = target_path; 
   char *path_index[256];
   int bus_count = 0;
   int path_count = 0;
@@ -212,7 +211,6 @@ dsp_parse_bus_path(char *target_path) {
 	if( strcmp(output_token, "") != 0 ) {
 	  path_index[bus_count] = output_token;
 	  bus_count += 1;
-	  fprintf(stderr, "OUTPUT_TOKEN: %s\n", output_token);
 	}
       }
       while (*p && *p == '/') p++;   /* find next non-space */
@@ -235,12 +233,10 @@ dsp_parse_bus_path(char *target_path) {
 	      target_bus = temp_bus;
 	      if( (strcmp(temp_bus->name, last_bus_name) == 0) &&
 		  (bus_count == path_count) ) {
-		fprintf(stderr, "((((((( RETURNING: %s\n", temp_bus->name);
 		return temp_bus;
 	      } else 
 		if(temp_bus->down != NULL) {
 		  temp_bus = temp_bus->down;
-		  fprintf(stderr, "!GOING DOWN!: %s\n", temp_bus->name);
 		  break;
 		} else {
 		  fprintf(stderr, "ain't no bus existin': %s!\n", temp_bus->name);
@@ -290,14 +286,12 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 	    }
 	    temp_bus_port = temp_bus_port->next;
 	  }
-	  fprintf(stderr, "checking match: %s\n", output_token);
 	  if( !match_found ) {
 	    temp_bus_port = dsp_bus_port_init(output_token, out);
 	    port_in = dsp_port_in_init("in", 512);
 	    port_out = dsp_port_out_init("out", 1);
 	    temp_bus_port->in = port_in;
 	    temp_bus_port->out = port_out;
-	    fprintf(stderr, "temp_bus_port: %s\n", temp_bus_port->name);
 	    
 	    if(head_bus_port != NULL) {
 	      dsp_bus_port_insert_tail(head_bus_port, temp_bus_port);
@@ -305,7 +299,6 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 	    else {
 	      head_bus_port = temp_bus_port;
 	    }
-	    fprintf(stderr, "head_bus_port->name: %s\n", head_bus_port->name);
 	  }
 	}
       }
@@ -341,7 +334,6 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
   }
   /* if it's not a head bus, parse down path and add */
   target_bus = dsp_parse_bus_path(target_bus_path);
-  fprintf(stderr, "!!!!! TARGET_BUS: %s\n", target_bus->name);
   if(target_bus != NULL) {
     temp_bus = target_bus->down;
     if (temp_bus != NULL)
@@ -400,10 +392,8 @@ dsp_add_connection(char *id_out, char *id_in) {
   struct dsp_module *target_module;
   struct dsp_bus_port *target_bus_port;
   
-  fprintf(stderr, " \n\n\n\n\n\nDEBUG - parsing id_out start\n");
   /* parsing id_out (connection output) */
   dsp_parse_path(temp_result, id_out);
-  fprintf(stderr, "parsed path\n");
   if( strcmp(temp_result[0], ">") == 0 ) {
     module_path = temp_result[1];
     port_out_name = temp_result[2];
@@ -430,12 +420,8 @@ dsp_add_connection(char *id_out, char *id_in) {
 
     target_bus_port = dsp_find_bus_port(target_bus->outs,
 					bus_port_name);
-    
-    fprintf(stderr, "target bus port: %s\n", target_bus_port->name);
     port_out = target_bus_port->out;
   }
-
-  fprintf(stderr, " \n\n\n\n\n\nDEBUG - parsing id_in start\n");
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "<") == 0 ) {
@@ -539,8 +525,6 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
     while(temp_connection != NULL) {
       /* compare each connection 'out' with this one, enqueue each fifo with data
 	 that matches the 'out' port path */
-      fprintf(stderr, "current_bus_path: %s, %d chars\n", current_bus_path, strlen(current_bus_path));
-      fprintf(stderr, "temp_port->out->name: %s, %d chars\n", temp_port->out->name, strlen(temp_port->out->name));
       fprintf(stderr, "0.\n");
       current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->out->name) + 1);
       fprintf(stderr, "0a.\n");
@@ -551,7 +535,7 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
 	strcpy(current_path, current_bus_path);
 	
 	fprintf(stderr, "3.\n");
-	current_path[strlen(current_bus_path) - 1] = '\0';
+	current_path[strlen(current_bus_path) - 1] = '\0'; /* expecting a '/' on the end, remove it */
 	
 	fprintf(stderr, "4.\n");
 	strcat(current_path, "?");
@@ -560,8 +544,6 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
 	strcat(current_path, temp_port->out->name);
       }
       fprintf(stderr, "1b.\n");
-      fprintf(stderr, "current_path: %s, %d chars\n", current_path, strlen(current_path));
-      fprintf(stderr, "temp_connection->id_out: %s, %d chars\n", temp_connection->id_out, strlen(temp_connection->id_out));
 
       if(strcmp(current_path, temp_connection->id_out) == 0) {
 	fprintf(stderr, "1c.\n");
