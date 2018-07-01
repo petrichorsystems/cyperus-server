@@ -521,10 +521,12 @@ dsp_list_modules() {
 } /* dsp_list_modules */
 
 void
-dsp_feed_connections_bus(struct dsp_bus_port *ports) {
+dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
   struct dsp_bus_port *temp_port = ports;
   struct dsp_connection *temp_connection;
   float temp_sample_in;
+  char *current_path = NULL;
+  
   while(temp_port != NULL) {
     /* handle bus input */
     temp_sample_in = 0.0;
@@ -537,8 +539,34 @@ dsp_feed_connections_bus(struct dsp_bus_port *ports) {
     while(temp_connection != NULL) {
       /* compare each connection 'out' with this one, enqueue each fifo with data
 	 that matches the 'out' port path */
-      if(strcmp(temp_port->out->name, temp_connection->id_out) == 0)
+      fprintf(stderr, "current_bus_path: %s, %d chars\n", current_bus_path, strlen(current_bus_path));
+      fprintf(stderr, "temp_port->out->name: %s, %d chars\n", temp_port->out->name, strlen(temp_port->out->name));
+      fprintf(stderr, "0.\n");
+      current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->out->name) + 1);
+      fprintf(stderr, "0a.\n");
+      if(current_path != NULL) {
+	fprintf(stderr, "1.\n");
+	current_path[0] = '\0';
+	fprintf(stderr, "2.\n");
+	strcpy(current_path, current_bus_path);
+	
+	fprintf(stderr, "3.\n");
+	current_path[strlen(current_bus_path) - 1] = '\0';
+	
+	fprintf(stderr, "4.\n");
+	strcat(current_path, "?");
+	
+	fprintf(stderr, "5.\n");
+	strcat(current_path, temp_port->out->name);
+      }
+      fprintf(stderr, "1b.\n");
+      fprintf(stderr, "current_path: %s, %d chars\n", current_path, strlen(current_path));
+      fprintf(stderr, "temp_connection->id_out: %s, %d chars\n", temp_connection->id_out, strlen(temp_connection->id_out));
+
+      if(strcmp(current_path, temp_connection->id_out) == 0) {
+	fprintf(stderr, "1c.\n");
 	rtqueue_enq(temp_connection->in_values, temp_sample_in);
+      }
       temp_connection = temp_connection->next;
     }
     temp_port = temp_port->next;
@@ -561,7 +589,7 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
       printf("something went super wrong in recurse_dsp_graph()!!");
     }
     /* process bus inputs */
-    dsp_feed_connections_bus(temp_bus->ins);
+    dsp_feed_connections_bus(current_path, temp_bus->ins);
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
@@ -569,7 +597,7 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
       temp_module = temp_module->next;
     }
     /* process bus outputs */
-    dsp_feed_connections_bus(temp_bus->outs);
+    dsp_feed_connections_bus(current_path, temp_bus->outs);
     recurse_dsp_graph(temp_bus->down, current_path, jack_sr, pos);
     temp_bus = temp_bus->next;
   }

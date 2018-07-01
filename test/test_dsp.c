@@ -448,10 +448,11 @@ test_dsp_feed_connections_bus() {
   aux_bus = dsp_parse_bus_path("/main/aux");
   right_bus = dsp_parse_bus_path("/main/delay/right");  
 
-  rtqueue_enq(aux_bus->ins->in->values, 0.12345);
-  dsp_feed_connections_bus(aux_bus->ins);
-  dsp_feed_connections_bus(right_bus->ins);
-  if( right_bus->outs->out->value == 0.12345 ) {
+  rtqueue_enq(aux_bus->outs->in->values, 0.12345);
+  dsp_feed_connections_bus("/main/aux/", aux_bus->outs);
+  dsp_feed_connections_bus("/main/delay/right/", right_bus->ins);
+  fprintf(stderr, "right_bus->ins->out->value: %f\n", right_bus->ins->out->value);
+  if( right_bus->ins->out->value != (float)0.12345 ) {
     fprintf(stderr, " >> failed!\n");
     return;
   }

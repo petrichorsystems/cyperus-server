@@ -58,7 +58,7 @@ void
 dsp_parse_path(char *result[], char *path);
 
 void
-dsp_feed_connections_bus(struct dsp_bus_port *ports);
+dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports);
 
 void
 *dsp_thread(void *arg);
