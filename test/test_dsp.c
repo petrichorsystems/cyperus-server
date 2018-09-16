@@ -298,7 +298,7 @@ test_dsp_block_processor() {
 
   insample = 0.543210;
   rtqueue_enq(temp_module->ins->values, insample);
-  dsp_block_processor(temp_module, 1, 48000);
+  dsp_block_processor(result[1], temp_module, 1, 48000);
   if( temp_module->outs->value == insample )
     fprintf(stderr, " >> success!\n");
   else
@@ -460,6 +460,53 @@ test_dsp_feed_connections_bus() {
 }
 
 void
+test_dsp_sum_inputs() {
+  fprintf(stderr, " >> starting test_dsp_sum_inputs()\n");
+
+  char *module_name = "left";
+  char *result[3];
+  struct dsp_bus *temp_bus;
+  struct dsp_module *temp_module;
+
+  float insample = 0.12345;
+  float outsample;
+  
+  dsp_parse_path(result, "/main/delay/left?block_processor");
+  if(strcmp(result[0], "?") == 0 &&
+     strcmp(result[1], "/main/delay/left") ==0 &&
+     strcmp(result[2], "block_processor") == 0)
+    {}
+  else
+    fprintf(stderr, " >> failed..\n");
+  temp_bus = dsp_parse_bus_path(result[1]);
+  temp_module = dsp_find_module(temp_bus->dsp_module_head, result[2]);
+
+  rtqueue_enq(temp_module->ins->values, insample);
+  outsample = dsp_sum_input(temp_module->ins);
+
+  fprintf(stderr, "outsample: %f\n", outsample);
+
+  if( outsample == (float)0.12345 ) {
+    fprintf(stderr, " >> success!\n");
+  } else
+    fprintf(stderr, " >> failed!\n");
+  
+  free(result[1]);
+  free(result[2]);  
+
+  fprintf(stderr, " >> success!\n");
+}
+
+void
+test_dsp_feed_outputs() {
+  fprintf(stderr, " >> starting test_dsp_feed_outputs()\n");
+
+  
+
+  fprintf(stderr, " >> success!\n");
+}
+
+void
 test_recurse_dsp_graph() {
   fprintf(stderr, " >> starting test_recurse_dsp_graph()\n");
 
@@ -493,6 +540,8 @@ main(void) {
   test_dsp_bus_connection_types();
   test_dsp_add_connection();
   test_dsp_feed_connections_bus();
+  test_dsp_sum_inputs();
+  test_dsp_feed_outputs();
   test_recurse_dsp_graph();
   exit(0);
 }

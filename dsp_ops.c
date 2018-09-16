@@ -40,18 +40,45 @@ dsp_sum_input(struct dsp_port_in *in) {
 } /* dsp_sum_input */
 
 void
-dsp_feed_outputs(struct dsp_port_out *outs) {
+dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;
   temp_out = outs;
-  if( dsp_global_connection_graph != NULL)
+  char *current_path;
+
+  if( dsp_global_connection_graph != NULL )
     while(temp_out != NULL) {
       temp_outsample = temp_out->value;
-      temp_connection = dsp_global_connection_graph;
-      if(strcmp(temp_out->name, temp_connection->id_out) == 0)
-	rtqueue_enq(temp_connection->in_values, temp_outsample);
-      temp_connection = temp_connection->next;
+      while(temp_connection != NULL) {
+	/* compare each connection 'out' with this one, enqueue each fifo with data
+	   that matches the 'out' port path */
+	fprintf(stderr, "0.\n");
+	current_path = (char *)malloc(strlen(current_bus_path) + strlen(module_name) + 1 + strlen(temp_out->name) + 1);
+	fprintf(stderr, "0a.\n");
+	if(current_path != NULL) {
+	  fprintf(stderr, "1.\n");
+	  current_path[0] = '\0';
+	  fprintf(stderr, "2.\n");
+	  strcpy(current_path, current_bus_path);
+	  
+	  fprintf(stderr, "3.\n");
+	  current_path[strlen(current_bus_path) - 1] = '\0'; /* expecting a '/' on the end, remove it */
+	  
+	  fprintf(stderr, "4.\n");
+	  strcat(current_path, "?");
+	  
+	  fprintf(stderr, "5.\n");
+	  strcat(current_path, temp_out->name);
+	}
+	fprintf(stderr, "1b.\n");
+	
+	if(strcmp(current_path, temp_connection->id_out) == 0) {
+	  fprintf(stderr, "1c.\n");
+	  rtqueue_enq(temp_connection->in_values, temp_outsample);
+	}
+	temp_connection = temp_connection->next;
+      }
       temp_out = temp_out->next;
     }
 } /* dsp_feed_outputs */
@@ -83,7 +110,7 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
 } /* dsp_create_block_processor */
 
 void
-dsp_block_processor(struct dsp_module *block_processor, int jack_samplerate, int pos) {
+dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;
   dsp_parameter dsp_param = block_processor->dsp_param;
@@ -95,7 +122,7 @@ dsp_block_processor(struct dsp_module *block_processor, int jack_samplerate, int
 				      jack_samplerate, pos);
   /* drive outputs */
    block_processor->outs->value = outsample;
-  dsp_feed_outputs(block_processor->outs);
+   dsp_feed_output]s(bus_path, block_processor->dsp_param.block_processor.name, block_processor->outs);
    return;
 } /* dsp_block_processor */
   

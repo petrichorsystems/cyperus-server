@@ -124,7 +124,7 @@ struct dsp_module {
   const char *name;
   struct dsp_module *next;
   struct dsp_module *prev;
-  void (*dsp_function) (struct dsp_module*, int, int);
+  void (*dsp_function) (char*, struct dsp_module*, int, int);
   dsp_parameter dsp_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
@@ -182,7 +182,7 @@ void
 dsp_connection_list_reverse(struct dsp_connection *head_connection);
 
 struct dsp_module* dsp_module_init(const char *module_name,
-				   void (*dsp_function) (struct dsp_module*, int, int),
+				   void (*dsp_function) (char *, struct dsp_module*, int, int),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,
 				   struct dsp_port_out *outs);

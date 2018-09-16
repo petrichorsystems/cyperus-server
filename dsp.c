@@ -350,7 +350,7 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
 void
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
-	       void (*dsp_function) (struct dsp_module*, int, int),
+	       void (*dsp_function) (char*, struct dsp_module*, int, int),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
 	       struct dsp_port_out *outs) {
@@ -522,6 +522,7 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
     temp_port->out->value = temp_sample_in;
     /* enqueue out samples on in fifo's based on connection graph */
     temp_connection = dsp_global_connection_graph;
+
     while(temp_connection != NULL) {
       /* compare each connection 'out' with this one, enqueue each fifo with data
 	 that matches the 'out' port path */
@@ -575,7 +576,10 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
-      temp_module->dsp_function(temp_module, jack_sr, pos);
+
+      // construct module path?
+      
+      temp_module->dsp_function(current_path, temp_module, jack_sr, pos);
       temp_module = temp_module->next;
     }
     /* process bus outputs */

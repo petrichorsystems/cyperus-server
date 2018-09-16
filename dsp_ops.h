@@ -23,8 +23,11 @@ Copyright 2018 murray foster */
 #ifndef DSP_OPS_H
 #define DSP_OPS_H
 
+float dsp_sum_input(struct dsp_port_in *in);
+void dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out *outs);
+
 void dsp_create_block_processor(struct dsp_bus *target_bus);
-void dsp_block_processor(struct dsp_module *block_processor, int jack_samplerate, int pos);
+void dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos);
 
 int dsp_create_sine(float freq, float amp, float phase);
 int dsp_edit_sine(int module_no, float freq, float amp, float phase);
