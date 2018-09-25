@@ -214,11 +214,12 @@ void dsp_module_insert_head(struct dsp_module *head_module, struct dsp_module *n
 }
 
 void dsp_module_insert_tail(struct dsp_module *head_module, struct dsp_module *new_module) {
-  struct dsp_module *temp_module = new_module;
+  struct dsp_module *temp_module;
   if(head_module == NULL) {
     head_module = new_module;
     return;
   }
+  temp_module = head_module;
   while(temp_module->next != NULL)
     temp_module = temp_module->next;
   temp_module->next = new_module;

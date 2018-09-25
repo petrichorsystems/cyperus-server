@@ -122,7 +122,7 @@ dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack
 				      jack_samplerate, pos);
   /* drive outputs */
    block_processor->outs->value = outsample;
-   dsp_feed_output]s(bus_path, block_processor->dsp_param.block_processor.name, block_processor->outs);
+   dsp_feed_outputs(bus_path, block_processor->dsp_param.block_processor.name, block_processor->outs);
    return;
 } /* dsp_block_processor */
   

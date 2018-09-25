@@ -501,10 +501,34 @@ void
 test_dsp_feed_outputs() {
   fprintf(stderr, " >> starting test_dsp_feed_outputs()\n");
 
-  
+  char *bus_path;
+  struct dsp_bus *temp_bus;
+  struct dsp_module *temp_module_in, *temp_module_out;
+    
+  /* grab created busses */
+  bus_path = "/main/delay/right";
+  temp_bus = dsp_parse_bus_path(bus_path);
+  fprintf(stderr, "temp_bus->name '%s'\n", temp_bus->name);
+  dsp_create_block_processor(temp_bus);
+  fprintf(stderr, "%s\n", temp_bus->dsp_module_head->name);
+  temp_module_in = temp_bus->dsp_module_head;
+  if( strcmp(temp_module_in->name, "block_processor") == 0)
+    fprintf(stderr, " >> successfully added block_processor 0!\n");
+  else
+    fprintf(stderr, " >> failed..\n");    
 
+  dsp_create_block_processor(temp_bus);
+
+  temp_module_out = temp_module_in->next;
+  fprintf(stderr, "%s\n", temp_module_out->name);
+
+  if( strcmp(temp_module_out->name, "block_processor") == 0)
+    fprintf(stderr, " >> successfully added block_processor 1!\n");
+  else
+    fprintf(stderr, " >> failed..\n");  
+  
   fprintf(stderr, " >> success!\n");
-}
+}i
 
 void
 test_recurse_dsp_graph() {
@@ -512,6 +536,8 @@ test_recurse_dsp_graph() {
 
   // do we have to map out the entire graph?
   // -- probably, need enumerated expectations
+
+  
   
   fprintf(stderr, " >> success!\n");
 }

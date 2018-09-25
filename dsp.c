@@ -364,6 +364,8 @@ dsp_add_module(struct dsp_bus *target_bus,
   else
     dsp_module_insert_tail(target_bus->dsp_module_head, new_module);
   return;
+
+
 } /* dsp_add_module */
 
 void
@@ -422,6 +424,7 @@ dsp_add_connection(char *id_out, char *id_in) {
 					bus_port_name);
     port_out = target_bus_port->out;
   }
+  
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "<") == 0 ) {
@@ -578,7 +581,7 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
     while(temp_module != NULL) {
 
       // construct module path?
-      
+
       temp_module->dsp_function(current_path, temp_module, jack_sr, pos);
       temp_module = temp_module->next;
     }
