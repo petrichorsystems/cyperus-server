@@ -94,6 +94,7 @@ typedef enum dsp_parameter_identifiers{
 }dsp_param_identifiers;
 
 struct dsp_port_in {
+  const char *id;
   const char *name;
   struct dsp_port_in *next;
   struct dsp_port_in *prev;
@@ -102,6 +103,7 @@ struct dsp_port_in {
 };
 
 struct dsp_port_out {
+  const char *id;
   const char *name;
   struct dsp_port_out *next;
   struct dsp_port_out *prev;
@@ -111,6 +113,7 @@ struct dsp_port_out {
 };
 
 struct dsp_connection {
+  const char *id;
   struct dsp_connection *next;
   struct dsp_connection *prev;
   const char *id_out;
@@ -121,6 +124,7 @@ struct dsp_connection {
 };
 
 struct dsp_module {
+  const char *id;
   const char *name;
   struct dsp_module *next;
   struct dsp_module *prev;
@@ -133,6 +137,7 @@ struct dsp_module {
 };
 
 struct dsp_bus_port {
+  const char *id;
   char *name;
   struct dsp_bus_port    *next;
   struct dsp_bus_port    *prev;
@@ -143,6 +148,7 @@ struct dsp_bus_port {
 };
   
 struct dsp_bus {
+  const char *id;
   const char *name;
   struct dsp_bus *next;
   struct dsp_bus *prev;

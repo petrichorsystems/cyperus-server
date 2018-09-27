@@ -34,14 +34,14 @@ pthread_mutex_t fifo_out_is_waiting_mutex;
 pthread_cond_t fifo_out_is_waiting_cond;
 
 struct dsp_bus_port
-*dsp_find_bus_port(struct dsp_bus_port *target_bus_port, char *name) {
+*dsp_find_bus_port(struct dsp_bus_port *target_bus_port, char *id) {
   struct dsp_bus_port *temp_bus_port;
   int match_found = 0;
   temp_bus_port = target_bus_port;
-  if(name != NULL ) {
-    if( strcmp(name, "") != 0 ) {
+  if(id != NULL ) {
+    if( strcmp(id, "") != 0 ) {
       while( temp_bus_port != NULL ) {
-	if( strcmp(temp_bus_port->name, name) == 0) {
+	if( strcmp(temp_bus_port->id, id) == 0) {
 	  target_bus_port = temp_bus_port;
 	  match_found = 1;
 	  break;
@@ -56,15 +56,15 @@ struct dsp_bus_port
 } /* dsp_find_bus_port */
 
 struct dsp_module
-*dsp_find_module(struct dsp_module *head_module, char *name) {
+*dsp_find_module(struct dsp_module *head_module, char *id) {
   struct dsp_module *target_module;
   struct dsp_module *temp_module;
   int match_found = 0;
   temp_module = head_module;
-  if(name != NULL ) {
-    if( strcmp(name, "") != 0 ) {
+  if(id != NULL ) {
+    if( strcmp(id, "") != 0 ) {
       while( temp_module != NULL ) {
-	if( strcmp(temp_module->name, name) == 0) {
+	if( strcmp(temp_module->id, id) == 0) {
 	  target_module = temp_module;
 	  match_found = 1;
 	  break;
@@ -79,15 +79,15 @@ struct dsp_module
 } /* dsp_find_module */
 
 struct dsp_port_out
-*dsp_find_port_out(struct dsp_port_out *port_out_head, char *name) {
+*dsp_find_port_out(struct dsp_port_out *port_out_head, char *id) {
   struct dsp_port_out *target_port_out;
   struct dsp_port_out *temp_port_out;
   int match_found = 0;
   temp_port_out = port_out_head;
-  if(name != NULL ) {
-    if( strcmp(name, "") != 0 ) {
+  if(id != NULL ) {
+    if( strcmp(id, "") != 0 ) {
       while( temp_port_out != NULL ) {
-	if( strcmp(temp_port_out->name, name) == 0) {
+	if( strcmp(temp_port_out->id, id) == 0) {
 	  target_port_out = temp_port_out;
 	  match_found = 1;
 	  break;
@@ -103,15 +103,15 @@ struct dsp_port_out
 
 
 struct dsp_port_in
-*dsp_find_port_in(struct dsp_port_in *port_in_head, char *name) {
+*dsp_find_port_in(struct dsp_port_in *port_in_head, char *id) {
   struct dsp_port_in *target_port_in;
   struct dsp_port_in *temp_port_in;
   int match_found = 0;
   temp_port_in = port_in_head;
-  if(name != NULL ) {
-    if( strcmp(name, "") != 0 ) {
+  if(id != NULL ) {
+    if( strcmp(id, "") != 0 ) {
       while( temp_port_in != NULL ) {
-	if( strcmp(temp_port_in->name, name) == 0) {
+	if( strcmp(temp_port_in->id, id) == 0) {
 	  target_port_in = temp_port_in;
 	  match_found = 1;
 	  break;
@@ -191,7 +191,7 @@ dsp_parse_bus_path(char *target_path) {
   strcpy(target_bus_path, target_path);
   char *output_token;
   char *path_elem;
-  char *last_bus_name;
+  char *last_bus_id;
   struct dsp_bus *temp_bus, *target_bus, *temp_bus_head, *deep_bus;
   temp_bus = dsp_global_bus_head;
   char *p = target_path; 
@@ -216,7 +216,7 @@ dsp_parse_bus_path(char *target_path) {
       while (*p && *p == '/') p++;   /* find next non-space */
     }
 
-  last_bus_name = path_index[bus_count - 1];
+  last_bus_id = path_index[bus_count - 1];
   p = target_path;
   while (*p)                      /* while not end of string */
     {
@@ -228,10 +228,10 @@ dsp_parse_bus_path(char *target_path) {
       if( output_token != NULL ) {
 	if( strcmp(output_token, "") != 0 ) {
 	  while( temp_bus != NULL ) {
-	    if( strcmp(path_index[path_count], temp_bus->name) == 0) {
+	    if( strcmp(path_index[path_count], temp_bus->id) == 0) {
 	      path_count += 1;
 	      target_bus = temp_bus;
-	      if( (strcmp(temp_bus->name, last_bus_name) == 0) &&
+	      if( (strcmp(temp_bus->id, last_bus_id) == 0) &&
 		  (bus_count == path_count) ) {
 		return temp_bus;
 	      } else 
@@ -239,7 +239,7 @@ dsp_parse_bus_path(char *target_path) {
 		  temp_bus = temp_bus->down;
 		  break;
 		} else {
-		  fprintf(stderr, "ain't no bus existin': %s!\n", temp_bus->name);
+		  fprintf(stderr, "ain't no bus existin': %s!\n", temp_bus->id);
 		  return NULL;
 		}
 	    } 
@@ -260,7 +260,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
   char target_bus_ports[256];
   strcpy(target_bus_ports, bus_ports);
 
-  char *port_name;
+  char *port_id;
   struct dsp_bus_port *temp_bus_port = NULL;
   struct dsp_bus_port *target_bus_port = NULL;
   struct dsp_port_in *port_in = NULL;
@@ -279,8 +279,8 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
       if( output_token != NULL ) {
 	if( strcmp(output_token, "") != 0 ) {
 	  while( temp_bus_port != NULL ) {
-	    if( strcmp(temp_bus_port->name, output_token) == 0) {
-	      fprintf(stderr, "bus port called '%s' already exists! skipping\n", temp_bus_port->name);
+	    if( strcmp(temp_bus_port->id, output_token) == 0) {
+	      fprintf(stderr, "bus port called '%s' already exists! skipping\n", temp_bus_port->id);
 	      match_found = 1;
 	      break;
 	    }
@@ -386,10 +386,10 @@ dsp_add_connection(char *id_out, char *id_in) {
   struct dsp_port_out *port_out;
   struct dsp_port_in *port_in = NULL;
   struct dsp_bus_port *bus_port = NULL;
-  char *port_name;
+  char *port_id;
   char *temp_result[3];
-  char *module_path, *port_out_name, *port_in_name, *bus_path,
-    *module_name, *bus_port_path, *bus_port_name, *bus_name;
+  char *module_path, *port_out_id, *port_in_id, *bus_path,
+    *module_id, *bus_port_path, *bus_port_id, *bus_id;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
   struct dsp_bus_port *target_bus_port;
@@ -398,22 +398,22 @@ dsp_add_connection(char *id_out, char *id_in) {
   dsp_parse_path(temp_result, id_out);
   if( strcmp(temp_result[0], ">") == 0 ) {
     module_path = temp_result[1];
-    port_out_name = temp_result[2];
+    port_out_id = temp_result[2];
 
     dsp_parse_path(temp_result, module_path);
     bus_path = temp_result[1];
-    module_name = temp_result[2];
+    module_id = temp_result[2];
 
     target_bus = dsp_parse_bus_path(bus_path);
 
     target_module = dsp_find_module(target_bus->dsp_module_head,
-				    module_name);
-    port_out = dsp_find_port_out(target_module->outs, port_out_name);
+				    module_id);
+    port_out = dsp_find_port_out(target_module->outs, port_out_id);
   }
   
   if( strcmp(temp_result[0], "?") == 0) {
     bus_port_path = temp_result[1];
-    bus_port_name = temp_result[2];
+    bus_port_id = temp_result[2];
  
     dsp_parse_path(temp_result, bus_port_path);
     bus_path = temp_result[1];
@@ -421,7 +421,7 @@ dsp_add_connection(char *id_out, char *id_in) {
     target_bus = dsp_parse_bus_path(bus_path);
 
     target_bus_port = dsp_find_bus_port(target_bus->outs,
-					bus_port_name);
+					bus_port_id);
     port_out = target_bus_port->out;
   }
   
@@ -429,23 +429,23 @@ dsp_add_connection(char *id_out, char *id_in) {
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "<") == 0 ) {
     module_path = temp_result[1];
-    port_in_name = temp_result[2];
+    port_in_id = temp_result[2];
     
     dsp_parse_path(temp_result, module_path);
     bus_path = temp_result[1];
-    module_name = temp_result[2];
+    module_id = temp_result[2];
 
     target_bus = dsp_parse_bus_path(bus_path);
 
     target_module = dsp_find_module(target_bus->dsp_module_head,
-				    module_name);
-    port_in = dsp_find_port_in(target_module->ins, port_in_name);
+				    module_id);
+    port_in = dsp_find_port_in(target_module->ins, port_in_id);
   }
 
   if( strcmp(temp_result[0], "?") == 0) {
     
     bus_port_path = temp_result[1];
-    bus_port_name = temp_result[2];
+    bus_port_id = temp_result[2];
 
     dsp_parse_path(temp_result, bus_port_path);
     bus_path = temp_result[1];
@@ -453,7 +453,7 @@ dsp_add_connection(char *id_out, char *id_in) {
     target_bus = dsp_parse_bus_path(bus_path);
 
     target_bus_port = dsp_find_bus_port(target_bus->ins,
-					bus_port_name);
+					bus_port_id);
     port_in = target_bus_port->in;
   }
 
@@ -530,7 +530,7 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
       /* compare each connection 'out' with this one, enqueue each fifo with data
 	 that matches the 'out' port path */
       fprintf(stderr, "0.\n");
-      current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->out->name) + 1);
+      current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->out->id) + 1);
       fprintf(stderr, "0a.\n");
       if(current_path != NULL) {
 	fprintf(stderr, "1.\n");
@@ -545,7 +545,7 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
 	strcat(current_path, "?");
 	
 	fprintf(stderr, "5.\n");
-	strcat(current_path, temp_port->out->name);
+	strcat(current_path, temp_port->out->id);
       }
       fprintf(stderr, "1b.\n");
 
@@ -566,10 +566,10 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
   char *current_path;  
   while(temp_bus != NULL) {
     /* build current path */
-    if((*current_path = malloc(strlen(path) + strlen(temp_bus->name) + 1) != NULL)) {
+    if((*current_path = malloc(strlen(path) + strlen(temp_bus->id) + 1) != NULL)) {
       current_path[0] = '\0';
       strcat(current_path, path);
-      strcat(current_path, temp_bus->name);
+      strcat(current_path, temp_bus->id);
       strcat(current_path, "/");
     } else {
       printf("something went super wrong in recurse_dsp_graph()!!");

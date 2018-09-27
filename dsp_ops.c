@@ -54,7 +54,7 @@ dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out 
 	/* compare each connection 'out' with this one, enqueue each fifo with data
 	   that matches the 'out' port path */
 	fprintf(stderr, "0.\n");
-	current_path = (char *)malloc(strlen(current_bus_path) + strlen(module_name) + 1 + strlen(temp_out->name) + 1);
+	current_path = (char *)malloc(strlen(current_bus_path) + strlen(module_name) + 1 + strlen(temp_out->id) + 1);
 	fprintf(stderr, "0a.\n");
 	if(current_path != NULL) {
 	  fprintf(stderr, "1.\n");
@@ -69,7 +69,7 @@ dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out 
 	  strcat(current_path, "?");
 	  
 	  fprintf(stderr, "5.\n");
-	  strcat(current_path, temp_out->name);
+	  strcat(current_path, temp_out->id);
 	}
 	fprintf(stderr, "1b.\n");
 	

@@ -19,17 +19,35 @@ Copyright 2018 murray foster */
 #include <stdio.h> //printf
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
+#include <uuid/uuid.h>
 
 #include "cyperus.h"
 #include "rtqueue.h"
 #include "libcyperus.h"
 #include "dsp.h"
 
+char* dsp_generate_object_id(const char *name) {
+  char *id;
+  int id_len;
+  uuid_t uuid;
+  char uuid_str[37];
+
+  uuid_generate(uuid);
+  uuid_unparse_lower(uuid, uuid_str);
+
+  id_len = 36 + strlen(name) + 1;
+  id = (char *)malloc(sizeof(char) * id_len);
+  snprintf(id, id_len, "%s&%s", name, uuid_str);
+
+  return id;
+}
+
 struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size) {
   struct dsp_port_in *new_port = (struct dsp_port_in*)malloc(sizeof(struct dsp_port_in));
   new_port->prev = NULL;
   new_port->next = NULL;
   new_port->name = port_name;
+  new_port->id = dsp_generate_object_id(port_name);
   new_port->remove = 0;
   new_port->values = rtqueue_init(fifo_size);
   return new_port;
@@ -82,6 +100,7 @@ struct dsp_port_out* dsp_port_out_init(const char *port_name, int audio) {
   new_port->prev = NULL;
   new_port->next = NULL;
   new_port->name = port_name;
+  new_port->id = dsp_generate_object_id(port_name);
   new_port->remove = 0;
   new_port->audio = audio;
   new_port->value = 0.0; /* should we init this at 0? */
@@ -194,6 +213,7 @@ struct dsp_module* dsp_module_init(const char *module_name,
   new_module->prev = NULL;
   new_module->next = NULL;
   new_module->name = module_name;
+  new_module->id = dsp_generate_object_id(module_name);
   new_module->dsp_function = dsp_function;
   new_module->dsp_param = dsp_param;
   new_module->remove = 0;
@@ -251,6 +271,7 @@ struct dsp_bus_port* dsp_bus_port_init(char *port_name, int output) {
   new_port->prev = NULL;
   new_port->next = NULL;
   new_port->name = port_name;
+  new_port->id = dsp_generate_object_id(port_name);
   new_port->remove = 0;
   new_port->output = output;
   return new_port;
@@ -302,6 +323,7 @@ void dsp_bus_port_list_reverse(struct dsp_bus_port *head_port) {
 struct dsp_bus* dsp_bus_init(const char *bus_name) {
   struct dsp_bus *new_bus = (struct dsp_bus*)malloc(sizeof(struct dsp_bus));
   new_bus->name = bus_name;
+  new_bus->id = dsp_generate_object_id(bus_name);
   new_bus->prev = NULL;
   new_bus->next = NULL;
   new_bus->up = NULL;

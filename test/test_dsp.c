@@ -28,30 +28,62 @@ Copyright 2015 murray foster */
 #include "../dsp_ops.h"
 #include "../rtqueue.h"
 
+char*
+build_full_dsp_path(char *path_prefix, char *object_id) {
+  char *full_path;  
+  full_path = (char*)malloc(sizeof(char)*(strlen(object_id)+strlen(path_prefix)+1));
+  snprintf(full_path, strlen(object_id)+strlen(path_prefix)+1, "%s%s", path_prefix, object_id);
+  return full_path;
+}
+
 void
 test_dsp_add_busses() {
   fprintf(stderr, "  >> starting test_dsp_add_busses()\n");
   char *bus_path;
-
+  char *temp_bus_path, *delay_bus_path, *left_bus_path;
   dsp_global_bus_head = NULL;
-  struct dsp_bus *temp_bus = NULL;
+  struct dsp_bus *temp_bus_main, *temp_bus_delay, *temp_bus_left = NULL;
 
   /* create initial busses */
   fprintf(stderr, "adding bus 0\n");
   
-  temp_bus = dsp_bus_init("main");
-  dsp_add_bus("/", temp_bus, NULL, NULL);
-  fprintf(stderr, "adding bus 1\n");  
-  temp_bus = dsp_bus_init("delay");
-  dsp_add_bus("/main", temp_bus, NULL, NULL);
-  fprintf(stderr, "adding bus 2\n");
-  temp_bus = dsp_bus_init("left");
-  dsp_add_bus("/main/delay", temp_bus, NULL, NULL);
-  /* grab created busses */
-  bus_path = "/main/delay/left";
-  temp_bus = dsp_parse_bus_path(bus_path);
+  temp_bus_main = dsp_bus_init("main");
+  fprintf(stderr, "adding bus 1 id: %s\n", temp_bus_main->id);  
+  
+  dsp_add_bus("/", temp_bus_main, NULL, NULL);
 
-  if( strcmp(temp_bus->name, "left") == 0)
+  fprintf(stderr, "adding bus 1\n");  
+  temp_bus_delay = dsp_bus_init("delay");
+
+  temp_bus_path = build_full_dsp_path("/", temp_bus_main->id);
+  fprintf(stderr, "temp_bus_path: %s\n", temp_bus_path);
+ 
+  
+  temp_bus_left = dsp_bus_init("left");
+  dsp_add_bus(temp_bus_path, temp_bus_left, NULL, NULL);
+
+
+
+
+  fprintf(stderr, "adding bus 2\n");
+
+  fprintf(stderr, "delay: %s\n", temp_bus_delay->id);
+
+  delay_bus_path = build_full_dsp_path(temp_bus_path, "/");
+
+
+  temp_bus_path = build_full_dsp_path(delay_bus_path, temp_bus_delay->id);
+
+
+  dsp_add_bus(temp_bus_path, temp_bus_delay, NULL, NULL);
+
+  
+  /* grab created busses */  
+  temp_bus_path = build_full_dsp_path(temp_bus_path, temp_bus_left);
+  temp_bus_main = dsp_parse_bus_path(temp_bus_path);
+
+  free(temp_bus_path);
+  if( strcmp(temp_bus_main->id, temp_bus_left->id) == 0)
     fprintf(stderr, " >> success!\n");
   else
     fprintf(stderr, " >> failed..\n");
@@ -537,6 +569,9 @@ test_dsp_feed_outputs() {
   char *bus_path;
   struct dsp_bus *temp_bus;
   struct dsp_module *temp_module_in, *temp_module_out;
+
+  float insample = 0.12345;
+  float outsample;
     
   /* grab created busses */
   bus_path = "/main/delay/left";
@@ -558,6 +593,7 @@ test_dsp_feed_outputs() {
     fprintf(stderr, " >> successfully added block_processor 1!\n");
   else
     fprintf(stderr, " >> failed..\n");  
+
   
   fprintf(stderr, " >> success!\n");
 }
@@ -568,8 +604,6 @@ test_recurse_dsp_graph() {
 
   // do we have to map out the entire graph?
   // -- probably, need enumerated expectations
-
-  
   
   fprintf(stderr, " >> success!\n");
 }
