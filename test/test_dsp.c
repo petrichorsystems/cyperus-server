@@ -57,29 +57,26 @@ test_dsp_add_busses() {
 
   temp_bus_path = build_full_dsp_path("/", temp_bus_main->id);
   fprintf(stderr, "temp_bus_path: %s\n", temp_bus_path);
- 
-  
-  temp_bus_left = dsp_bus_init("left");
-  dsp_add_bus(temp_bus_path, temp_bus_left, NULL, NULL);
 
-
-
+  dsp_add_bus(temp_bus_path, temp_bus_delay, NULL, NULL);
 
   fprintf(stderr, "adding bus 2\n");
 
   fprintf(stderr, "delay: %s\n", temp_bus_delay->id);
 
   delay_bus_path = build_full_dsp_path(temp_bus_path, "/");
+  fprintf(stderr, "delay_bus_path: %s\n", delay_bus_path);
 
+  left_bus_path = build_full_dsp_path(delay_bus_path, temp_bus_delay->id);
+  fprintf(stderr, "left_bus_path: %s\n", left_bus_path);
 
-  temp_bus_path = build_full_dsp_path(delay_bus_path, temp_bus_delay->id);
+  temp_bus_left = dsp_bus_init("left");
+  dsp_add_bus(left_bus_path, temp_bus_left, NULL, NULL);
 
-
-  dsp_add_bus(temp_bus_path, temp_bus_delay, NULL, NULL);
-
+  left_bus_path = build_full_dsp_path(left_bus_path, "/");
+  temp_bus_path = build_full_dsp_path(left_bus_path, temp_bus_left->id);
+  fprintf(stderr, "temp_bus_path: %s\n", temp_bus_path);
   
-  /* grab created busses */  
-  temp_bus_path = build_full_dsp_path(temp_bus_path, temp_bus_left);
   temp_bus_main = dsp_parse_bus_path(temp_bus_path);
 
   free(temp_bus_path);
@@ -95,6 +92,7 @@ test_dsp_add_modules() {
   fprintf(stderr, "  >> starting test_dsp_add_modules()\n");
   char *bus_path;
   struct dsp_bus *temp_bus;
+  
   /* grab created busses */
   bus_path = "/main/delay/left";
   temp_bus = dsp_parse_bus_path(bus_path);
