@@ -90,11 +90,29 @@ test_dsp_add_busses() {
 void
 test_dsp_add_modules() {
   fprintf(stderr, "  >> starting test_dsp_add_modules()\n");
-  char *bus_path;
-  struct dsp_bus *temp_bus;
-  
+  char *main_path, *temp_delay_path, *delay_path, *left_path, *bus_path;
+  struct dsp_bus *main_bus, *delay_bus, *left_bus, *temp_bus;
+  char *main_id, *delay_id, *left_id;
+
   /* grab created busses */
-  bus_path = "/main/delay/left";
+  main_bus = dsp_global_bus_head;
+
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
+  
+  delay_bus = main_bus->down;
+  delay_id = delay_bus->id;
+
+  temp_delay_path = strconcat(main_path, "/");
+  delay_path = strconcat(temp_delay_path, delay_id);
+
+  left_bus = delay_bus->down;
+  left_id = left_bus->id;
+  left_path = strconcat(delay_path, "/");
+  bus_path = strconcat(left_path, left_id);
+
+  fprintf(stderr, "left_path: %s\n", bus_path);
+  
   temp_bus = dsp_parse_bus_path(bus_path);
   fprintf(stderr, "temp_bus->name '%s'\n", temp_bus->name);
   dsp_create_block_processor(temp_bus);
