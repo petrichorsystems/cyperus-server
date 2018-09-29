@@ -29,11 +29,11 @@ Copyright 2015 murray foster */
 #include "../rtqueue.h"
 
 char*
-build_full_dsp_path(char *path_prefix, char *object_id) {
-  char *full_path;  
-  full_path = (char*)malloc(sizeof(char)*(strlen(object_id)+strlen(path_prefix)+1));
-  snprintf(full_path, strlen(object_id)+strlen(path_prefix)+1, "%s%s", path_prefix, object_id);
-  return full_path;
+strconcat(char *str_prefix, char *str_suffix) {
+  char *full_str;  
+  full_str = (char*)malloc(sizeof(char)*(strlen(str_suffix)+strlen(str_prefix)+1));
+  snprintf(full_str, strlen(str_suffix)+strlen(str_prefix)+1, "%s%s", str_prefix, str_suffix);
+  return full_str;
 }
 
 void
@@ -55,7 +55,7 @@ test_dsp_add_busses() {
   fprintf(stderr, "adding bus 1\n");  
   temp_bus_delay = dsp_bus_init("delay");
 
-  temp_bus_path = build_full_dsp_path("/", temp_bus_main->id);
+  temp_bus_path = strconcat("/", temp_bus_main->id);
   fprintf(stderr, "temp_bus_path: %s\n", temp_bus_path);
 
   dsp_add_bus(temp_bus_path, temp_bus_delay, NULL, NULL);
@@ -64,17 +64,17 @@ test_dsp_add_busses() {
 
   fprintf(stderr, "delay: %s\n", temp_bus_delay->id);
 
-  delay_bus_path = build_full_dsp_path(temp_bus_path, "/");
+  delay_bus_path = strconcat(temp_bus_path, "/");
   fprintf(stderr, "delay_bus_path: %s\n", delay_bus_path);
 
-  left_bus_path = build_full_dsp_path(delay_bus_path, temp_bus_delay->id);
+  left_bus_path = strconcat(delay_bus_path, temp_bus_delay->id);
   fprintf(stderr, "left_bus_path: %s\n", left_bus_path);
 
   temp_bus_left = dsp_bus_init("left");
   dsp_add_bus(left_bus_path, temp_bus_left, NULL, NULL);
 
-  left_bus_path = build_full_dsp_path(left_bus_path, "/");
-  temp_bus_path = build_full_dsp_path(left_bus_path, temp_bus_left->id);
+  left_bus_path = strconcat(left_bus_path, "/");
+  temp_bus_path = strconcat(left_bus_path, temp_bus_left->id);
   fprintf(stderr, "temp_bus_path: %s\n", temp_bus_path);
   
   temp_bus_main = dsp_parse_bus_path(temp_bus_path);
