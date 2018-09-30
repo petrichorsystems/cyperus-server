@@ -283,31 +283,59 @@ test_dsp_find_module() {
 void
 test_dsp_find_port_out() {
   fprintf(stderr, "  >> starting test_dsp_find_port_out()\n");
-  char *module_name = "left";
+  struct dsp_port_out *temp_port_out, *head_port_out;
   char *result[3];
-  struct dsp_bus *temp_bus;
-  struct dsp_module *temp_module;
-  struct dsp_port_out *temp_port_out;
-  dsp_parse_path(result, "/main/delay/left?block_processor");
+  struct dsp_module *temp_module, *final_module;
+  char *main_path, *temp_delay_path, *delay_path, *left_path, *bus_path, *temp_module_path, *module_path;
+  struct dsp_bus *main_bus, *delay_bus, *left_bus, *temp_bus, *final_bus;
+  char *main_id, *delay_id, *left_id, *module_id, *port_out_id;
+
+  /* grab created busses */
+  main_bus = dsp_global_bus_head;
+
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
+  
+  delay_bus = main_bus->down;
+  delay_id = delay_bus->id;
+
+  temp_delay_path = strconcat(main_path, "/");
+  delay_path = strconcat(temp_delay_path, delay_id);
+
+  left_bus = delay_bus->down;
+  left_id = left_bus->id;
+  left_path = strconcat(delay_path, "/");
+  bus_path = strconcat(left_path, left_id);
+
+  temp_bus = dsp_parse_bus_path(bus_path);
+  temp_module = temp_bus->dsp_module_head;
+  module_id = temp_module->id;
+  temp_module_path = strconcat(left_path, "?");
+  module_path = strconcat(temp_module_path, module_id);
+
+  dsp_parse_path(result, module_path);
   if(strcmp(result[0], "?") == 0 &&
-     strcmp(result[1], "/main/delay/left") ==0 &&
-     strcmp(result[2], "block_processor") == 0)
+     strcmp(result[1], left_path) == 0 &&
+     strcmp(result[2], module_id) == 0)
     {}
-  else {
+  else
     fprintf(stderr, " >> failed..\n");
-    return;
-  }
-  temp_bus = dsp_parse_bus_path(result[1]);
-  temp_module = dsp_find_module(temp_bus->dsp_module_head, result[2]);
-  if( strcmp(temp_module->name, result[2]) == 0)
-    {}
-  else {
+
+  final_bus = dsp_parse_bus_path(result[1]);
+  final_module = dsp_find_module(temp_bus->dsp_module_head, result[2]);
+
+  if( strcmp(final_module->id, result[2]) == 0) {
+    fprintf(stderr, " >> success!\n");
+  } else
     fprintf(stderr, " >> failed!\n");
-    return;
-  }
+
   free(result[1]);
   free(result[2]);
-  temp_port_out = dsp_find_port_out(temp_module->outs, "out");
+
+  head_port_out = temp_module->outs;
+  port_out_id = head_port_out->id;
+
+  temp_port_out = dsp_find_port_out(temp_module->outs, port_out_id);
   if( strcmp(temp_port_out->name, "out") == 0) {
     fprintf(stderr, " >> success!\n");
   } else
@@ -342,6 +370,7 @@ test_dsp_find_port_in() {
   
   free(result[1]);
   free(result[2]);
+
   temp_port_in = dsp_find_port_in(temp_module->ins, "in");
 
   if( strcmp(temp_port_in->name, "in") == 0) {
@@ -475,17 +504,6 @@ test_dsp_bus_port_port_in() {
     fprintf(stderr, " >> success!\n");
   } else
     fprintf(stderr, " >> failed!\n"); 
-}
-
-void
-test_dsp_bus_connection_types() {
-  fprintf(stderr, "  >> starting test_dsp_bus_connection_typs()\n");
-  struct dsp_bus *target_bus;
-  struct dsp_bus_port *temp_bus_port;
-  struct dsp_port_in *temp_port_in;
-  struct dsp_port_out *temp_port_out;
-
-  target_bus = dsp_parse_bus_path("/main/aux");  
 }
 
 void
@@ -675,7 +693,6 @@ main(void) {
   test_dsp_bus_port_ports();
   test_dsp_bus_port_port_out();
   test_dsp_bus_port_port_in();
-  test_dsp_bus_connection_types();
   test_dsp_add_connection();
   test_dsp_feed_connections_bus();
   test_dsp_sum_inputs();
