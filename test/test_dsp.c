@@ -45,40 +45,18 @@ test_dsp_add_busses() {
   struct dsp_bus *temp_bus_main, *temp_bus_delay, *temp_bus_left = NULL;
 
   /* create initial busses */
-  fprintf(stderr, "adding bus 0\n");
-  
-  temp_bus_main = dsp_bus_init("main");
-  fprintf(stderr, "adding bus 1 id: %s\n", temp_bus_main->id);  
-  
+  temp_bus_main = dsp_bus_init("main");  
   dsp_add_bus("/", temp_bus_main, NULL, NULL);
-
-  fprintf(stderr, "adding bus 1\n");  
   temp_bus_delay = dsp_bus_init("delay");
-
   temp_bus_path = strconcat("/", temp_bus_main->id);
-  fprintf(stderr, "temp_bus_path: %s\n", temp_bus_path);
-
   dsp_add_bus(temp_bus_path, temp_bus_delay, NULL, NULL);
-
-  fprintf(stderr, "adding bus 2\n");
-
-  fprintf(stderr, "delay: %s\n", temp_bus_delay->id);
-
   delay_bus_path = strconcat(temp_bus_path, "/");
-  fprintf(stderr, "delay_bus_path: %s\n", delay_bus_path);
-
   left_bus_path = strconcat(delay_bus_path, temp_bus_delay->id);
-  fprintf(stderr, "left_bus_path: %s\n", left_bus_path);
-
   temp_bus_left = dsp_bus_init("left");
-  dsp_add_bus(left_bus_path, temp_bus_left, NULL, NULL);
-
+  dsp_add_bus(left_bus_path, temp_bus_left, "in", "out");
   left_bus_path = strconcat(left_bus_path, "/");
   temp_bus_path = strconcat(left_bus_path, temp_bus_left->id);
-  fprintf(stderr, "temp_bus_path: %s\n", temp_bus_path);
-  
   temp_bus_main = dsp_parse_bus_path(temp_bus_path);
-
   free(temp_bus_path);
   if( strcmp(temp_bus_main->id, temp_bus_left->id) == 0)
     fprintf(stderr, " >> success!\n");
@@ -93,31 +71,20 @@ test_dsp_add_modules() {
   char *main_path, *temp_delay_path, *delay_path, *left_path, *bus_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus, *temp_bus;
   char *main_id, *delay_id, *left_id;
-
   /* grab created busses */
   main_bus = dsp_global_bus_head;
-
   main_id = main_bus->id;
-  main_path = strconcat("/", main_id);
-  
+  main_path = strconcat("/", main_id);  
   delay_bus = main_bus->down;
   delay_id = delay_bus->id;
-
   temp_delay_path = strconcat(main_path, "/");
   delay_path = strconcat(temp_delay_path, delay_id);
-
   left_bus = delay_bus->down;
   left_id = left_bus->id;
   left_path = strconcat(delay_path, "/");
-  bus_path = strconcat(left_path, left_id);
-
-  fprintf(stderr, "left_path: %s\n", bus_path);
-  
+  bus_path = strconcat(left_path, left_id);  
   temp_bus = dsp_parse_bus_path(bus_path);
-  fprintf(stderr, "temp_bus->name '%s'\n", temp_bus->name);
   dsp_create_block_processor(temp_bus);
-  fprintf(stderr, "%s\n", temp_bus->dsp_module_head->name);
-
   if( strcmp(temp_bus->dsp_module_head->name, "block_processor") == 0)
     fprintf(stderr, " >> success!\n");
   else
@@ -130,7 +97,6 @@ test_dsp_parse_path_bus() {
   fprintf(stderr, "  >> starting test_dsp_parse_path_bus()\n");
   char *result[3]; 
   dsp_parse_path(result, "/main/delay/left");
-  fprintf(stderr, "resul[0]: %s, result[1]: %s, result[2]: '%s'\n", result[0], result[1], result[2]);
   if(strcmp(result[0], "/") == 0 &&
      strcmp(result[1], "/main/delay/left") == 0 &&
      strcmp(result[2], "left") == 0)
@@ -498,7 +464,6 @@ test_dsp_bus_port() {
 void
 test_dsp_bus_port_ports() {
   fprintf(stderr, "  >> starting test_dsp_bus_port_ports()\n");
-
   char *main_path, *temp_path, *bus_path;
   struct dsp_bus *main_bus;
   char *main_id, *module_id, *port_in_id;
@@ -529,23 +494,35 @@ test_dsp_bus_port_ports() {
     fprintf(stderr, " >> failed!\n"); 
 }
 
-
 void
 test_dsp_bus_port_port_out() {
   fprintf(stderr, "  >> starting test_dsp_bus_port_port_out()\n");
   struct dsp_port_out *port_out;
   struct dsp_bus_port *bus_port_out;
-  struct dsp_bus *target_bus;
-
-  target_bus = dsp_parse_bus_path("/main/delay/right");
-  bus_port_out = target_bus->outs;
-  port_out = target_bus->outs->out;
-
-  target_bus->outs->out->value = 6.66;
-  
-  if( strcmp(port_out->name, "out") == 0) {
+  char *result[3];
+  struct dsp_module *temp_module, *final_module;
+  char *main_path, *temp_delay_path, *delay_path, *left_path, *bus_path, *temp_module_path, *module_path;
+  struct dsp_bus *main_bus, *delay_bus, *left_bus, *temp_bus, *final_bus;
+  char *main_id, *delay_id, *left_id, *module_id, *port_in_id;
+  /* grab created busses */
+  main_bus = dsp_global_bus_head;
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
+  delay_bus = main_bus->down;
+  delay_id = delay_bus->id;
+  temp_delay_path = strconcat(main_path, "/");
+  delay_path = strconcat(temp_delay_path, delay_id);
+  left_bus = delay_bus->down;
+  left_id = left_bus->id;
+  left_path = strconcat(delay_path, "/");
+  bus_path = strconcat(left_path, left_id);
+  temp_bus = dsp_parse_bus_path(bus_path);
+  bus_port_out = temp_bus->outs;
+  port_out = temp_bus->outs->out;
+  temp_bus->outs->out->value = 6.66;
+  if( strcmp(port_out->name, "out") == 0)
     {}
-  } else
+  else
     fprintf(stderr, " >> failed!\n");
   /* account for rounding errors.. */
   if(port_out->value > 6.659999 && port_out->value < 6.660001) {
@@ -561,18 +538,33 @@ test_dsp_bus_port_port_in() {
   struct dsp_bus_port *bus_port_in;
   struct dsp_bus *target_bus;
   target_bus = dsp_parse_bus_path("/main/delay/right");
-  bus_port_in = target_bus->ins;
-  port_in = target_bus->ins->in;
+  struct dsp_module *temp_module, *final_module;
+  char *main_path, *temp_delay_path, *delay_path, *left_path, *bus_path, *temp_module_path, *module_path;
+  struct dsp_bus *main_bus, *delay_bus, *left_bus, *temp_bus, *final_bus;
+  char *main_id, *delay_id, *left_id, *module_id, *port_in_id;
+  /* grab created busses */
+  main_bus = dsp_global_bus_head;
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
+  delay_bus = main_bus->down;
+  delay_id = delay_bus->id;
+  temp_delay_path = strconcat(main_path, "/");
+  delay_path = strconcat(temp_delay_path, delay_id);
+  left_bus = delay_bus->down;
+  left_id = left_bus->id;
+  left_path = strconcat(delay_path, "/");
+  bus_path = strconcat(left_path, left_id);
+  temp_bus = dsp_parse_bus_path(bus_path);
+  bus_port_in = temp_bus->ins;
+  port_in = temp_bus->ins->in;
   float final_value, test_value;
-
   test_value = 6.66;
-  rtqueue_enq(target_bus->ins->in->values, test_value);
-  
+  rtqueue_enq(temp_bus->ins->in->values, test_value);
   if( strcmp(port_in->name, "in") == 0) {
     {}
   } else
     fprintf(stderr, " >> failed!\n");
-  final_value = rtqueue_deq(target_bus->ins->in->values);
+  final_value = rtqueue_deq(temp_bus->ins->in->values);
   /* account for rounding errors.. */
   if(final_value > 6.659999 && final_value < 6.660001) {
     fprintf(stderr, " >> success!\n");
