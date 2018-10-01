@@ -229,7 +229,6 @@ test_dsp_parse_path_module_output_port() {
 void
 test_dsp_find_module() {
   fprintf(stderr, "  >> starting test_dsp_find_module()\n");
-  char *module_name = "left";
   char *result[3];
   struct dsp_module *temp_module, *final_module;
 
@@ -407,9 +406,7 @@ test_dsp_find_port_in() {
 void
 test_dsp_block_processor() {
   fprintf(stderr, "  >> starting test_dsp_block_processor()\n");
-  char *module_name = "left";
   char *result[3];
-
   struct dsp_module *temp_module, *final_module;
   char *main_path, *temp_delay_path, *delay_path, *left_path, *bus_path, *temp_module_path, *module_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus, *temp_bus, *final_bus;
@@ -472,11 +469,22 @@ test_dsp_block_processor() {
 void
 test_dsp_bus_port() {
   fprintf(stderr, "  >> starting test_dsp_bus_port()\n");
+  char *main_path, *temp_path, *bus_path;
+  struct dsp_bus *main_bus;
+  char *main_id, *module_id, *port_in_id;
   struct dsp_bus_port *bus_port_in, *bus_port_out;
-  struct dsp_bus *target_bus, *new_bus, *temp_bus;
+  struct dsp_bus *target_bus, *new_bus;
+  /* grab created busses */
+  main_bus = dsp_global_bus_head;
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
   new_bus = dsp_bus_init("aux");
-  dsp_add_bus("/main", new_bus, "in", "out");
-  target_bus = dsp_parse_bus_path("/main/aux");
+
+  dsp_add_bus(main_path, new_bus, "in", "out");
+
+  temp_path = strconcat(main_path, "/");
+  bus_path = strconcat(temp_path, new_bus->id);
+  target_bus = dsp_parse_bus_path(bus_path);
   bus_port_in = target_bus->ins;
   bus_port_out = target_bus->outs;
   if( strcmp(bus_port_out->name, "out") == 0) {
@@ -496,11 +504,15 @@ test_dsp_bus_port_ports() {
   struct dsp_bus *target_bus, *new_bus, *temp_bus;
   struct dsp_port_in *port_in;
   struct dsp_port_out *port_out;
+
   new_bus = dsp_bus_init("right");
   dsp_add_bus("/main/delay", new_bus, "in", "out");
+
   target_bus = dsp_parse_bus_path("/main/delay/right");
+
   bus_port_in = target_bus->ins;
   bus_port_out = target_bus->outs;
+
   port_in = target_bus->ins->in;
   port_out = target_bus->outs->out;
   

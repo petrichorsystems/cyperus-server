@@ -1,4 +1,4 @@
-/* dsp_bus.c
+/* dsp_types.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -329,6 +329,9 @@ struct dsp_bus* dsp_bus_init(const char *bus_name) {
   new_bus->down = NULL;
   new_bus->remove = 0;
   new_bus->bypass = 0;
+  new_bus->ins = NULL;
+  new_bus->outs = NULL;
+  new_bus->dsp_module_head = NULL;
   return new_bus;
 }
 
@@ -346,12 +349,10 @@ void dsp_bus_insert_tail(struct dsp_bus *head_bus, struct dsp_bus *new_bus) {
   struct dsp_bus *temp_bus = head_bus;
   if(temp_bus == NULL) {
     head_bus = new_bus;
-    fprintf(stderr, "hey");
     return;
   }
   while(temp_bus->next != NULL)
     {
-      fprintf(stderr, "temp_bus: %s\n", temp_bus->name);
       temp_bus = temp_bus->next;
     }
   temp_bus->next = new_bus;
@@ -362,7 +363,6 @@ void dsp_bus_insert_tail_deep(struct dsp_bus *head_bus, struct dsp_bus *new_bus)
   struct dsp_bus *temp_bus = head_bus;
   if(temp_bus == NULL) {
     head_bus = new_bus;
-    fprintf(stderr, "hey");
     return;
   }
   while(temp_bus->down != NULL)

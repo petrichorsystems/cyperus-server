@@ -278,14 +278,11 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
       match_found = 0;
       if( output_token != NULL ) {
 	if( strcmp(output_token, "") != 0 ) {
+
 	  while( temp_bus_port != NULL ) {
-	    if( strcmp(temp_bus_port->id, output_token) == 0) {
-	      fprintf(stderr, "bus port called '%s' already exists! skipping\n", temp_bus_port->id);
-	      match_found = 1;
-	      break;
-	    }
 	    temp_bus_port = temp_bus_port->next;
 	  }
+
 	  if( !match_found ) {
 	    temp_bus_port = dsp_bus_port_init(output_token, out);
 	    port_in = dsp_port_in_init("in", 512);
@@ -318,12 +315,13 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
     temp_bus_port = dsp_build_bus_ports(temp_bus_port, ins, 0);
     new_bus->ins = temp_bus_port;
   }
+  
   if(outs != NULL) {
     temp_bus_port = new_bus->outs;
     temp_bus_port = dsp_build_bus_ports(temp_bus_port, outs, 1); /* output port */
     new_bus->outs = temp_bus_port;
   }
-    
+
   /* insert head bus, if that's what we're doing */
   if( !strcmp(target_bus_path, "/") || !strcmp(target_bus_path, "")) {
     if( dsp_global_bus_head != NULL )
