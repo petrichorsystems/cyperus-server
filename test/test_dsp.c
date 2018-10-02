@@ -575,7 +575,6 @@ test_dsp_bus_port_port_in() {
 void
 test_dsp_add_connection() {
   fprintf(stderr, "  >> starting test_dsp_add_connection()\n");
-
   char *main_path, *delay_path_temp, *delay_path, *left_path_temp, *left_path, *aux_path_temp, *aux_path,
     *main_aux_out_path_temp, *main_aux_out_path, *delay_left_in_path_temp, *delay_left_in_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
@@ -606,6 +605,9 @@ test_dsp_add_connection() {
   main_aux_out_path_temp = strconcat(aux_path, "?");
   main_aux_out_path = strconcat(main_aux_out_path_temp, aux_bus->outs->id);
 
+  fprintf(stderr, "aux_bus->outs->id: %s\n", aux_bus->outs->id);
+  fprintf(stderr, "MAIN_AUX_OUT_PATH: %s\n\n", main_aux_out_path);
+  
   delay_left_in_path_temp = strconcat(left_path, "?");
   delay_left_in_path = strconcat(delay_left_in_path_temp, left_bus->ins->id);
 
@@ -626,21 +628,35 @@ test_dsp_add_connection() {
 void
 test_dsp_feed_connections_bus() {
   fprintf(stderr, " >> starting test_dsp_feed_connections_bus()\n");
-  struct dsp_bus *aux_bus;
-  struct dsp_bus *right_bus;
-  struct dsp_bus_port *temp_bus_port;
-  struct dsp_port_in *temp_port_in;
-  struct dsp_port_out *temp_port_out;
-  struct dsp_connection *connection;
 
-  aux_bus = dsp_parse_bus_path("/main/aux");
-  right_bus = dsp_parse_bus_path("/main/delay/right");
+  char *main_path, *delay_path_temp, *delay_path, *left_path_temp, *left_path, *aux_path_temp, *aux_path;
+  struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
+  char *main_id, *delay_id, *aux_id, *left_id;
+  
+  /* grab created busses */
+  main_bus = dsp_global_bus_head;
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
+  delay_bus = main_bus->down;
+  delay_id = delay_bus->id;
+  delay_path_temp = strconcat(main_path, "/");
+  delay_path = strconcat(delay_path_temp, delay_id);
+  aux_bus = main_bus->down->next;
+  aux_id = aux_bus->id;
+  aux_path = strconcat(delay_path_temp, aux_id);
+  left_bus = delay_bus->down;
+  left_id = left_bus->id;
+  left_path_temp = strconcat(delay_path, "/");
+  left_path = strconcat(left_path_temp, left_id);
+  left_bus = dsp_parse_bus_path(left_path);
 
+  
   rtqueue_enq(aux_bus->outs->in->values, 0.12345);
-  dsp_feed_connections_bus("/main/aux/", aux_bus->outs);
-  dsp_feed_connections_bus("/main/delay/right/", right_bus->ins);
-  fprintf(stderr, "right_bus->ins->out->value: %f\n", right_bus->ins->out->value);
-  if( right_bus->ins->out->value != (float)0.12345 ) {
+  fprintf(stderr, "aux_bus->outs: %s/%s\n", aux_path, aux_bus->outs->id);
+  dsp_feed_connections_bus(strconcat(aux_path, "/"), aux_bus->outs);
+  dsp_feed_connections_bus(strconcat(left_path, "/"), left_bus->ins);
+  fprintf(stderr, "right_bus->ins->out->value: %f\n", left_bus->ins->out->value);
+  if( left_bus->ins->out->value != (float)0.12345 ) {
     fprintf(stderr, " >> failed!\n");
     return;
   }

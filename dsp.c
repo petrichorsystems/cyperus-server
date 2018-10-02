@@ -527,7 +527,7 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
       /* compare each connection 'out' with this one, enqueue each fifo with data
 	 that matches the 'out' port path */
       fprintf(stderr, "0.\n");
-      current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->out->id) + 1);
+      current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->id) + 1);
       fprintf(stderr, "0a.\n");
       if(current_path != NULL) {
 	fprintf(stderr, "1.\n");
@@ -542,10 +542,11 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
 	strcat(current_path, "?");
 	
 	fprintf(stderr, "5.\n");
-	strcat(current_path, temp_port->out->id);
+	strcat(current_path, temp_port->id);
       }
       fprintf(stderr, "1b.\n");
-
+      fprintf(stderr, "current_path %s\n", current_path);
+      fprintf(stderr, "temp_connection->id_out: %s\n", temp_connection->id_out);
       if(strcmp(current_path, temp_connection->id_out) == 0) {
 	fprintf(stderr, "1c.\n");
 	rtqueue_enq(temp_connection->in_values, temp_sample_in);
