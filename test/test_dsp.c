@@ -575,22 +575,48 @@ test_dsp_bus_port_port_in() {
 void
 test_dsp_add_connection() {
   fprintf(stderr, "  >> starting test_dsp_add_connection()\n");
-  struct dsp_bus *aux_bus;
-  struct dsp_bus *right_bus;
-  struct dsp_bus_port *temp_bus_port;
-  struct dsp_port_in *temp_port_in;
-  struct dsp_port_out *temp_port_out;
+
+  char *main_path, *delay_path_temp, *delay_path, *left_path_temp, *left_path, *aux_path_temp, *aux_path,
+    *main_aux_out_path_temp, *main_aux_out_path, *delay_left_in_path_temp, *delay_left_in_path;
+  struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
+  char *main_id, *delay_id, *aux_id, *left_id;
+  struct dsp_bus_port *bus_port_out, *bus_port_in;
   struct dsp_connection *connection;
   
-  aux_bus = dsp_parse_bus_path("/main/aux");
-  right_bus = dsp_parse_bus_path("/main/delay/right");  
+  /* grab created busses */
+  main_bus = dsp_global_bus_head;
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
+  delay_bus = main_bus->down;
+  delay_id = delay_bus->id;
+  delay_path_temp = strconcat(main_path, "/");
+  delay_path = strconcat(delay_path_temp, delay_id);
+  aux_bus = main_bus->down->next;
+  aux_id = aux_bus->id;
+  aux_path = strconcat(delay_path_temp, aux_id);
+  left_bus = delay_bus->down;
+  left_id = left_bus->id;
+  left_path_temp = strconcat(delay_path, "/");
+  left_path = strconcat(left_path_temp, left_id);
+  left_bus = dsp_parse_bus_path(left_path);
 
-  dsp_add_connection("/main/aux?out",
-		     "/main/delay/right?in");
+  bus_port_out = aux_bus->outs;
+  bus_port_in = left_bus->ins;
+
+  main_aux_out_path_temp = strconcat(aux_path, "?");
+  main_aux_out_path = strconcat(main_aux_out_path_temp, aux_bus->outs->id);
+
+  delay_left_in_path_temp = strconcat(left_path, "?");
+  delay_left_in_path = strconcat(delay_left_in_path_temp, left_bus->ins->id);
+
+  /* construct id paths */
+  dsp_add_connection(main_aux_out_path,
+		     delay_left_in_path);
 
   connection = dsp_global_connection_graph;
-  if( (strcmp(connection->id_out, "/main/aux?out") != 0) &&
-      (strcmp(connection->id_in, "/main/delay/right?in") != 0) ) {
+
+  if( (strcmp(connection->id_out, main_aux_out_path) != 0) &&
+      (strcmp(connection->id_in, delay_left_in_path) != 0) ) {
     fprintf(stderr, " >> failed!\n");
     return;
   }

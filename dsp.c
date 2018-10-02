@@ -27,7 +27,7 @@ Copyright 2015 murray foster */
 #include "dsp_types.h"
 #include "dsp_ops.h"
 
-#define MAX_PATH_ID_LENGTH 128
+#define MAX_PATH_ID_LENGTH 16384
 
 int fifo_out_is_waiting = 0;
 pthread_mutex_t fifo_out_is_waiting_mutex;
@@ -173,10 +173,10 @@ dsp_parse_path(char* result[], char *path) {
   for(i=0; i < strlen(path) - id_length - 1; i++)
     parsed_path[i] = path[i];
   parsed_path[++i] = '\0';
-  
   for(i=0; i < id_length; i++)
     parsed_id[i] = temp_string[strlen(path) - id_length + i];
-  parsed_id[++i] = '\0';
+    parsed_id[++i] = '\0';
+  
   if( strcmp(result[0], "/") )
     result[1] = parsed_path;
   else
@@ -422,7 +422,6 @@ dsp_add_connection(char *id_out, char *id_in) {
 					bus_port_id);
     port_out = target_bus_port->out;
   }
-  
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "<") == 0 ) {
@@ -446,6 +445,7 @@ dsp_add_connection(char *id_out, char *id_in) {
     bus_port_id = temp_result[2];
 
     dsp_parse_path(temp_result, bus_port_path);
+
     bus_path = temp_result[1];
 
     target_bus = dsp_parse_bus_path(bus_path);
@@ -454,7 +454,6 @@ dsp_add_connection(char *id_out, char *id_in) {
 					bus_port_id);
     port_in = target_bus_port->in;
   }
-
   if( (port_out == NULL) ||
       (port_in == NULL) ) {
     fprintf(stderr, "failed to add connection!\n");
