@@ -429,7 +429,6 @@ test_dsp_block_processor() {
   
   free(result[1]);
   free(result[2]);
-
 }
 
 void
@@ -602,13 +601,13 @@ test_dsp_add_connection() {
   bus_port_out = aux_bus->outs;
   bus_port_in = left_bus->ins;
 
-  main_aux_out_path_temp = strconcat(aux_path, "?");
+  main_aux_out_path_temp = strconcat(aux_path, ":");
   main_aux_out_path = strconcat(main_aux_out_path_temp, aux_bus->outs->id);
 
   fprintf(stderr, "aux_bus->outs->id: %s\n", aux_bus->outs->id);
   fprintf(stderr, "MAIN_AUX_OUT_PATH: %s\n\n", main_aux_out_path);
   
-  delay_left_in_path_temp = strconcat(left_path, "?");
+  delay_left_in_path_temp = strconcat(left_path, ":");
   delay_left_in_path = strconcat(delay_left_in_path_temp, left_bus->ins->id);
 
   /* construct id paths */
@@ -649,7 +648,6 @@ test_dsp_feed_connections_bus() {
   left_path_temp = strconcat(delay_path, "/");
   left_path = strconcat(left_path_temp, left_id);
   left_bus = dsp_parse_bus_path(left_path);
-
   
   rtqueue_enq(aux_bus->outs->in->values, 0.12345);
   fprintf(stderr, "aux_bus->outs: %s/%s\n", aux_path, aux_bus->outs->id);
@@ -667,26 +665,49 @@ void
 test_dsp_sum_inputs() {
   fprintf(stderr, " >> starting test_dsp_sum_inputs()\n");
 
-  char *module_name = "left";
   char *result[3];
-  struct dsp_bus *temp_bus;
-  struct dsp_module *temp_module;
-
+  struct dsp_module *module;
   float insample = 0.12345;
   float outsample;
-  
-  dsp_parse_path(result, "/main/delay/left?block_processor");
-  if(strcmp(result[0], "?") == 0 &&
-     strcmp(result[1], "/main/delay/left") ==0 &&
-     strcmp(result[2], "block_processor") == 0)
-    {}
-  else
-    fprintf(stderr, " >> failed..\n");
-  temp_bus = dsp_parse_bus_path(result[1]);
-  temp_module = dsp_find_module(temp_bus->dsp_module_head, result[2]);
 
-  rtqueue_enq(temp_module->ins->values, insample);
-  outsample = dsp_sum_input(temp_module->ins);
+  char *main_path, *delay_path_temp, *delay_path, *left_path_temp, *left_path, *aux_path_temp, *aux_path, *module_path_temp, *module_path;
+  struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
+  char *main_id, *delay_id, *aux_id, *left_id, *module_id;
+  
+  /* grab created busses */
+  main_bus = dsp_global_bus_head;
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
+  delay_bus = main_bus->down;
+  delay_id = delay_bus->id;
+  delay_path_temp = strconcat(main_path, "/");
+  delay_path = strconcat(delay_path_temp, delay_id);
+  left_bus = delay_bus->down;
+  left_id = left_bus->id;
+  left_path_temp = strconcat(delay_path, "/");
+  left_path = strconcat(left_path_temp, left_id);
+  left_bus = dsp_parse_bus_path(left_path);
+
+  module = left_bus->dsp_module_head;
+  module_id = module->id;
+
+  fprintf(stderr, "module->id: %s\n", module->id);
+  fprintf(stderr, "left_path: %s\n", left_path);
+  module_path_temp = strconcat(left_path, "?");
+  module_path = strconcat(module_path_temp, module_id);
+  dsp_parse_path(result, module_path);
+  fprintf(stderr, "type: %s, left_path: %s, module_id: %s\n", result[0], result[1], result[2]);
+  if(strcmp(result[0], "?") == 0 &&
+     strcmp(result[1], left_path) == 0 &&
+     strcmp(result[2], module_id) == 0)
+    {}
+  else {
+    fprintf(stderr, " >> failed..\n");
+    exit(1);
+  }
+  
+  rtqueue_enq(module->ins->values, insample);
+  outsample = dsp_sum_input(module->ins);
 
   fprintf(stderr, "outsample: %f\n", outsample);
 
@@ -698,39 +719,6 @@ test_dsp_sum_inputs() {
   free(result[1]);
   free(result[2]);  
 
-  fprintf(stderr, " >> success!\n");
-}
-
-void
-test_dsp_module_add() {
-  fprintf(stderr, " >> starting test_dsp_feed_outputs()\n");
-
-  char *bus_path;
-  struct dsp_bus *temp_bus;
-  struct dsp_module *temp_module_in, *temp_module_out;
-    
-  /* grab created busses */
-  bus_path = "/main/delay/right";
-  temp_bus = dsp_parse_bus_path(bus_path);
-  fprintf(stderr, "temp_bus->name '%s'\n", temp_bus->name);
-  dsp_create_block_processor(temp_bus);
-  fprintf(stderr, "%s\n", temp_bus->dsp_module_head->name);
-  temp_module_in = temp_bus->dsp_module_head;
-  if( strcmp(temp_module_in->name, "block_processor") == 0)
-    fprintf(stderr, " >> successfully added block_processor 0!\n");
-  else
-    fprintf(stderr, " >> failed..\n");    
-
-  dsp_create_block_processor(temp_bus);
-
-  temp_module_out = temp_module_in->next;
-  fprintf(stderr, "%s\n", temp_module_out->name);
-
-  if( strcmp(temp_module_out->name, "block_processor") == 0)
-    fprintf(stderr, " >> successfully added block_processor 1!\n");
-  else
-    fprintf(stderr, " >> failed..\n");  
-  
   fprintf(stderr, " >> success!\n");
 }
 
@@ -804,7 +792,6 @@ main(void) {
   test_dsp_add_connection();
   test_dsp_feed_connections_bus();
   test_dsp_sum_inputs();
-  test_dsp_module_add();
   test_dsp_feed_outputs();
   test_recurse_dsp_graph();
   exit(0);
