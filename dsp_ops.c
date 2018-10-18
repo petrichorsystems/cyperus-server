@@ -47,7 +47,8 @@ dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out 
   temp_out = outs;
   char *current_path;
 
-  if( dsp_global_connection_graph != NULL )
+  if( dsp_global_connection_graph != NULL ) {
+    temp_connection = dsp_global_connection_graph;
     while(temp_out != NULL) {
       temp_outsample = temp_out->value;
       while(temp_connection != NULL) {
@@ -72,6 +73,9 @@ dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out 
 	  strcat(current_path, temp_out->id);
 	}
 	fprintf(stderr, "1b.\n");
+
+	printf("current_path: %s\n", current_path);
+	printf("temp_connection->id_out: %s\n", temp_connection->id_out);
 	
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
 	  fprintf(stderr, "1c.\n");
@@ -81,6 +85,7 @@ dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out 
       }
       temp_out = temp_out->next;
     }
+  }
 } /* dsp_feed_outputs */
 
 void
