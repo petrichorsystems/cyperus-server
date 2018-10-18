@@ -381,7 +381,7 @@ dsp_bypass_module(struct dsp_module *module, int bypass) {
 void
 dsp_add_connection(char *id_out, char *id_in) {
   struct dsp_connection *new_connection;
-  struct dsp_port_out *port_out;
+  struct dsp_port_out *port_out = NULL;
   struct dsp_port_in *port_in = NULL;
   struct dsp_bus_port *bus_port = NULL;
   char *port_id;
@@ -407,6 +407,7 @@ dsp_add_connection(char *id_out, char *id_in) {
     target_module = dsp_find_module(target_bus->dsp_module_head,
 				    module_id);
     port_out = dsp_find_port_out(target_module->outs, port_out_id);
+    fprintf(stderr, "port_out->name: %s\n", port_out->name);
   }
   
   if( strcmp(temp_result[0], ":") == 0) {
@@ -422,18 +423,16 @@ dsp_add_connection(char *id_out, char *id_in) {
 					bus_port_id);
     port_out = target_bus_port->out;
   }
+
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "<") == 0 ) {
     module_path = temp_result[1];
     port_in_id = temp_result[2];
-    
     dsp_parse_path(temp_result, module_path);
     bus_path = temp_result[1];
     module_id = temp_result[2];
-
-    target_bus = dsp_parse_bus_path(bus_path);
-
+    target_bus = dsp_parse_bus_path(bus_path);    
     target_module = dsp_find_module(target_bus->dsp_module_head,
 				    module_id);
     port_in = dsp_find_port_in(target_module->ins, port_in_id);
@@ -454,6 +453,8 @@ dsp_add_connection(char *id_out, char *id_in) {
 					bus_port_id);
     port_in = target_bus_port->in;
   }
+  printf("port_in: %s\n", port_in->name);
+  
   if( (port_out == NULL) ||
       (port_in == NULL) ) {
     fprintf(stderr, "failed to add connection!\n");
@@ -468,6 +469,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   if(dsp_global_connection_graph == NULL)
     dsp_global_connection_graph = new_connection;
   else
+    
     dsp_connection_insert_tail(dsp_global_connection_graph,
 			       new_connection);
   return;

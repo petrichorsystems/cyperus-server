@@ -781,6 +781,10 @@ test_dsp_feed_outputs() {
   module1 = left_bus->dsp_module_head->next;
   module1_id = module1->id;
 
+  printf("module_id: %s, module1_id: %s\n", module->id, module1->id);
+
+  module1_path_temp = strconcat(left_path, "?");
+  module1_path = strconcat(module1_path_temp, module1_id);
 
   module_out_id = module->outs->id;
   module1_in_id = module1->ins->id;
@@ -788,7 +792,7 @@ test_dsp_feed_outputs() {
   module_out_path_temp = strconcat(module_path, ">");
   module_out_path = strconcat(module_out_path_temp, module_out_id);
 
-  module1_in_path_temp = strconcat(module_path, "<");
+  module1_in_path_temp = strconcat(module1_path, "<");
   module1_in_path = strconcat(module1_in_path_temp, module1_in_id);
 
   printf("module_out_path: %s\n", module_out_path);
@@ -799,13 +803,12 @@ test_dsp_feed_outputs() {
 
   rtqueue_enq(module->ins->values, insample);
   outsample = dsp_sum_input(module->ins);
-
+  module->outs->value = outsample;
   dsp_feed_outputs(left_path, module_id, module->outs);
-  
+  outsample = dsp_sum_input(module1->ins);
   fprintf(stderr, "outsample: %f\n", outsample);
 
   if( outsample == (float)0.12345 ) {
-    fprintf(stderr, " >> success!\n");
   } else
     fprintf(stderr, " >> failed!\n");
   
