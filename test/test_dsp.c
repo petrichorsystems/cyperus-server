@@ -607,12 +607,12 @@ test_dsp_add_connection() {
   main_aux_out_path_temp = strconcat(aux_path, ":");
   main_aux_out_path = strconcat(main_aux_out_path_temp, aux_bus->outs->id);
 
-  fprintf(stderr, "aux_bus->outs->id: %s\n", aux_bus->outs->id);
-  fprintf(stderr, "MAIN_AUX_OUT_PATH: %s\n\n", main_aux_out_path);
-  
   delay_left_in_path_temp = strconcat(left_path, ":");
   delay_left_in_path = strconcat(delay_left_in_path_temp, left_bus->ins->id);
 
+  printf("CREATED CONNECTION--\nmain_aux_out_path: %s\ndelay_left_in_path: %s\n\n", main_aux_out_path,
+	 delay_left_in_path);
+  
   /* construct id paths */
   dsp_add_connection(main_aux_out_path,
 		     delay_left_in_path);
@@ -653,9 +653,9 @@ test_dsp_feed_connections_bus() {
   left_bus = dsp_parse_bus_path(left_path);
   
   rtqueue_enq(aux_bus->outs->in->values, 0.12345);
-  fprintf(stderr, "aux_bus->outs: %s/%s\n", aux_path, aux_bus->outs->id);
-  dsp_feed_connections_bus(strconcat(aux_path, "/"), aux_bus->outs);
-  dsp_feed_connections_bus(strconcat(left_path, "/"), left_bus->ins);
+  fprintf(stderr, "aux_bus->outs: %s:%s\n", aux_path, aux_bus->outs->id);
+  dsp_feed_connections_bus(aux_path, aux_bus->outs);
+  dsp_feed_connections_bus(left_path, left_bus->ins);
   fprintf(stderr, "right_bus->ins->out->value: %f\n", left_bus->ins->out->value);
   if( left_bus->ins->out->value != (float)0.12345 ) {
     fprintf(stderr, " >> failed!\n");
