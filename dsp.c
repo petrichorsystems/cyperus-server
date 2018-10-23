@@ -407,7 +407,6 @@ dsp_add_connection(char *id_out, char *id_in) {
     target_module = dsp_find_module(target_bus->dsp_module_head,
 				    module_id);
     port_out = dsp_find_port_out(target_module->outs, port_out_id);
-    fprintf(stderr, "port_out->name: %s\n", port_out->name);
   }
   
   if( strcmp(temp_result[0], ":") == 0) {
@@ -453,8 +452,7 @@ dsp_add_connection(char *id_out, char *id_in) {
 					bus_port_id);
     port_in = target_bus_port->in;
   }
-  printf("port_in: %s\n", port_in->name);
-  
+
   if( (port_out == NULL) ||
       (port_in == NULL) ) {
     fprintf(stderr, "failed to add connection!\n");
@@ -537,13 +535,7 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
 	strcat(current_path, ":");
 	strcat(current_path, temp_port->id);
       }
-      fprintf(stderr, "current_path %s\n", current_path);
-      fprintf(stderr, "temp_connection->id_out: %s\n", temp_connection->id_out);
       if(strcmp(current_path, temp_connection->id_out) == 0) {
-
-	printf("\n\nMATCH MATCH MATCH!\n\n");
-
-	fprintf(stderr, "1c.\n");
 	rtqueue_enq(temp_connection->in_values, temp_sample_in);
       }
       temp_connection = temp_connection->next;

@@ -291,7 +291,6 @@ test_dsp_find_port_out() {
   final_module = dsp_find_module(temp_bus->dsp_module_head, result[2]);
 
   if( strcmp(final_module->id, result[2]) == 0) {
-    fprintf(stderr, " >> success!\n");
   } else
     fprintf(stderr, " >> failed!\n");
 
@@ -353,7 +352,6 @@ test_dsp_find_port_in() {
   final_module = dsp_find_module(temp_bus->dsp_module_head, result[2]);
 
   if( strcmp(final_module->id, result[2]) == 0) {
-    fprintf(stderr, " >> success!\n");
   } else
     fprintf(stderr, " >> failed!\n");
 
@@ -650,10 +648,8 @@ test_dsp_feed_connections_bus() {
   left_bus = dsp_parse_bus_path(left_path);
   
   rtqueue_enq(aux_bus->outs->in->values, 0.12345);
-  fprintf(stderr, "aux_bus->outs: %s:%s\n", aux_path, aux_bus->outs->id);
   dsp_feed_connections_bus(aux_path, aux_bus->outs);
   dsp_feed_connections_bus(left_path, left_bus->ins);
-  fprintf(stderr, "right_bus->ins->out->value: %f\n", left_bus->ins->out->value);
   if( left_bus->ins->out->value != (float)0.12345 ) {
     fprintf(stderr, " >> failed!\n");
     return;
@@ -691,12 +687,9 @@ test_dsp_sum_inputs() {
   module = left_bus->dsp_module_head;
   module_id = module->id;
 
-  fprintf(stderr, "module->id: %s\n", module->id);
-  fprintf(stderr, "left_path: %s\n", left_path);
   module_path_temp = strconcat(left_path, "?");
   module_path = strconcat(module_path_temp, module_id);
   dsp_parse_path(result, module_path);
-  fprintf(stderr, "type: %s, left_path: %s, module_id: %s\n", result[0], result[1], result[2]);
   if(strcmp(result[0], "?") == 0 &&
      strcmp(result[1], left_path) == 0 &&
      strcmp(result[2], module_id) == 0)
@@ -709,10 +702,7 @@ test_dsp_sum_inputs() {
   rtqueue_enq(module->ins->values, insample);
   outsample = dsp_sum_input(module->ins);
 
-  fprintf(stderr, "outsample: %f\n", outsample);
-
   if( outsample == (float)0.12345 ) {
-    fprintf(stderr, " >> success!\n");
   } else
     fprintf(stderr, " >> failed!\n");
   
@@ -775,8 +765,6 @@ test_dsp_feed_outputs() {
   module1 = left_bus->dsp_module_head->next;
   module1_id = module1->id;
 
-  printf("module_id: %s, module1_id: %s\n", module->id, module1->id);
-
   module1_path_temp = strconcat(left_path, "?");
   module1_path = strconcat(module1_path_temp, module1_id);
 
@@ -788,9 +776,6 @@ test_dsp_feed_outputs() {
 
   module1_in_path_temp = strconcat(module1_path, "<");
   module1_in_path = strconcat(module1_in_path_temp, module1_in_id);
-
-  printf("module_out_path: %s\n", module_out_path);
-  printf("module1_in_path: %s\n", module1_in_path);
   
   dsp_add_connection(module_out_path,
 		     module1_in_path);
@@ -800,7 +785,6 @@ test_dsp_feed_outputs() {
   module->outs->value = outsample;
   dsp_feed_outputs(left_path, module_id, module->outs);
   outsample = dsp_sum_input(module1->ins);
-  fprintf(stderr, "outsample: %f\n", outsample);
 
   if( outsample == (float)0.12345 )
     {}
