@@ -40,7 +40,7 @@ dsp_sum_input(struct dsp_port_in *in) {
 } /* dsp_sum_input */
 
 void
-dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out *outs) {
+dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;
@@ -55,7 +55,7 @@ dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out 
 	/* compare each connection 'out' with this one, enqueue each fifo with data
 	   that matches the 'out' port path */
 	fprintf(stderr, "0.\n");
-	current_path = (char *)malloc(strlen(current_bus_path) + strlen(module_name) + 1 + strlen(temp_out->id) + 1);
+	current_path = (char *)malloc(strlen(current_bus_path) + strlen(module_id) + 1 + strlen(temp_out->id) + 1);
 	fprintf(stderr, "0a.\n");
 	if(current_path != NULL) {
 	  fprintf(stderr, "1.\n");
@@ -64,12 +64,15 @@ dsp_feed_outputs(char *current_bus_path, char *module_name, struct dsp_port_out 
 	  strcpy(current_path, current_bus_path);
 	  
 	  fprintf(stderr, "3.\n");
-	  current_path[strlen(current_bus_path) - 1] = '\0'; /* expecting a '/' on the end, remove it */
-	  
-	  fprintf(stderr, "4.\n");
 	  strcat(current_path, "?");
-	  
+
+	  fprintf(stderr, "4.\n");
+	  strcat(current_path, module_id);
+
 	  fprintf(stderr, "5.\n");
+	  strcat(current_path, ">");
+
+	  fprintf(stderr, "6.\n");
 	  strcat(current_path, temp_out->id);
 	}
 	fprintf(stderr, "1b.\n");
@@ -127,7 +130,7 @@ dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack
 				      jack_samplerate, pos);
   /* drive outputs */
    block_processor->outs->value = outsample;
-   dsp_feed_outputs(bus_path, block_processor->dsp_param.block_processor.name, block_processor->outs);
+   dsp_feed_outputs(bus_path, block_processor->id, block_processor->outs);
    return;
 } /* dsp_block_processor */
   

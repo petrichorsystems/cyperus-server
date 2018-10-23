@@ -610,9 +610,6 @@ test_dsp_add_connection() {
   delay_left_in_path_temp = strconcat(left_path, ":");
   delay_left_in_path = strconcat(delay_left_in_path_temp, left_bus->ins->id);
 
-  printf("CREATED CONNECTION--\nmain_aux_out_path: %s\ndelay_left_in_path: %s\n\n", main_aux_out_path,
-	 delay_left_in_path);
-  
   /* construct id paths */
   dsp_add_connection(main_aux_out_path,
 		     delay_left_in_path);
@@ -757,12 +754,9 @@ test_dsp_feed_outputs() {
   module = left_bus->dsp_module_head;
   module_id = module->id;
 
-  fprintf(stderr, "module->id: %s\n", module->id);
-  fprintf(stderr, "left_path: %s\n", left_path);
   module_path_temp = strconcat(left_path, "?");
   module_path = strconcat(module_path_temp, module_id);
   dsp_parse_path(result, module_path);
-  fprintf(stderr, "type: %s, left_path: %s, module_id: %s\n", result[0], result[1], result[2]);
   if(strcmp(result[0], "?") == 0 &&
      strcmp(result[1], left_path) == 0 &&
      strcmp(result[2], module_id) == 0)
@@ -774,7 +768,7 @@ test_dsp_feed_outputs() {
   
   dsp_create_block_processor(left_bus);
   if( strcmp(left_bus->dsp_module_head->next->name, "block_processor") == 0)
-    fprintf(stderr, " >> success!\n");
+    {}
   else
     fprintf(stderr, " >> failed..\n");  
 
@@ -808,8 +802,9 @@ test_dsp_feed_outputs() {
   outsample = dsp_sum_input(module1->ins);
   fprintf(stderr, "outsample: %f\n", outsample);
 
-  if( outsample == (float)0.12345 ) {
-  } else
+  if( outsample == (float)0.12345 )
+    {}
+  else
     fprintf(stderr, " >> failed!\n");
   
   free(result[1]);
