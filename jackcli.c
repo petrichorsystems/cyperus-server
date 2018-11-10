@@ -41,9 +41,9 @@ static int _jackcli_process_callback(jack_nframes_t nframes, void *arg)
   for ( i = 0; i < nframes; i++)
     {
       for (n = 0; n < jackcli_channels_in; n++)
-	rtqueue_enq(fifo_main_ins[n], ins[n][i]);
+	rtqueue_enq(fifo_main_ins[n], jackcli_ins[n][i]);
       for (n = 0; n < jackcli_channels_in; n++)
-	outs[n][i] = rtqueue_deq(fifo_main_outs[n]);
+	jackcli_outs[n][i] = rtqueue_deq(fifo_main_outs[n]);
     }
   return 0 ;
 } /* _jackcli_process_callback */
@@ -76,6 +76,8 @@ void _jackcli_allocate_ports(int channels_in, int channels_out)
 int _jackcli_fifo_setup()
 {
   int i = 0;
+  *fifo_main_ins = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_in);
+  *fifo_main_outs = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_out);
   for( i=0; i < jackcli_channels_in; i++)
     fifo_main_ins[i] = rtqueue_init(jackcli_fifo_size);
   for( i=0; i < jackcli_channels_out; i++)
@@ -109,7 +111,7 @@ int _jackcli_activate_client()
 int _jackcli_open(char *jackcli_client_name)
 {
   /* create jack jackcli_client */
-  if ((jackcli_client = jack_jackcli_client_open(jackcli_client_name, JackNullOption,NULL)) == 0)
+  if ((jackcli_client = jack_client_open(jackcli_client_name, JackNullOption,NULL)) == 0)
     {
       fprintf(stderr, "Jack server not running?\n");
       return 1;
@@ -143,5 +145,5 @@ int jackcli_teardown()
 {
   _jackcli_close();
   return 0;
-} /* jackcli_teardown *
+} /* jackcli_teardown */
 

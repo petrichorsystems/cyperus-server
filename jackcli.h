@@ -37,8 +37,8 @@ jack_port_t **jackcli_ports_input;
 jack_port_t **jackcli_ports_output;
 jack_default_audio_sample_t **jackcli_outs;
 jack_default_audio_sample_t **jackcli_ins;
-rtqueue_t *fifo_main_ins[jackcli_channels_in];
-rtqueue_t *fifo_main_outs[jackcli_channels_out];
+rtqueue_t **fifo_main_ins;
+rtqueue_t **fifo_main_outs;
 
 static int _jackcli_process_callback(jack_nframes_t nframes, void *arg);
 void _jackcli_allocate_ports(int channels_in, int channels_out);
