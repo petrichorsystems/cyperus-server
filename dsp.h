@@ -22,6 +22,9 @@ Copyright 2015 murray foster */
 #ifndef DSP_H
 #define DSP_H
 
+float *dsp_main_ins;
+float *dsp_main_outs;
+
 struct dsp_module*
 dsp_find_module(struct dsp_module *head_module, char *name);
 struct dsp_bus_port*

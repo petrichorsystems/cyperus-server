@@ -24,7 +24,15 @@ Copyright 2015 murray foster */
 #include "jackcli.h"
 #include "rtqueue.h"
 
-static int _jackcli_process_callback(jack_nframes_t nframes, void *arg)
+const size_t jackcli_sample_size = sizeof (jack_default_audio_sample_t) ;
+
+jack_client_t *jackcli_client = NULL;
+jack_port_t **jackcli_ports_input;
+jack_port_t **jackcli_ports_output;
+jack_default_audio_sample_t **jackcli_outs;
+jack_default_audio_sample_t **jackcli_ins;
+
+static int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 {
   float sample; 
   unsigned i, n; 
@@ -41,15 +49,15 @@ static int _jackcli_process_callback(jack_nframes_t nframes, void *arg)
   for ( i = 0; i < nframes; i++)
     {
       for (n = 0; n < jackcli_channels_in; n++)
-	rtqueue_enq(fifo_main_ins[n], jackcli_ins[n][i]);
+	rtqueue_enq(jackcli_fifo_ins[n], jackcli_ins[n][i]);
       for (n = 0; n < jackcli_channels_in; n++)
-	jackcli_outs[n][i] = rtqueue_deq(fifo_main_outs[n]);
+	jackcli_outs[n][i] = rtqueue_deq(jackcli_fifo_outs[n]);
     }
   return 0 ;
-} /* _jackcli_process_callback */
+} /* jackcli_process_callback */
 
 
-void _jackcli_allocate_ports(int channels_in, int channels_out)
+void jackcli_allocate_ports(int channels_in, int channels_out)
 {
   int i = 0;
   char name [256];
@@ -71,34 +79,34 @@ void _jackcli_allocate_ports(int channels_in, int channels_out)
       snprintf(name, sizeof(name), "out_%d", i) ;
       jackcli_ports_output [i] = jack_port_register(jackcli_client, name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
     }
-} /* _jackcli_allocate_ports */
+} /* jackcli_allocate_ports */
 
-int _jackcli_fifo_setup()
+int jackcli_fifo_setup()
 {
   int i = 0;
-  *fifo_main_ins = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_in);
-  *fifo_main_outs = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_out);
+  *jackcli_fifo_ins = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_in);
+  *jackcli_fifo_outs = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_out);
   for( i=0; i < jackcli_channels_in; i++)
-    fifo_main_ins[i] = rtqueue_init(jackcli_fifo_size);
+    jackcli_fifo_ins[i] = rtqueue_init(jackcli_fifo_size);
   for( i=0; i < jackcli_channels_out; i++)
-    fifo_main_outs[i] = rtqueue_init(jackcli_fifo_size);
+    jackcli_fifo_outs[i] = rtqueue_init(jackcli_fifo_size);
   return 0;
-} /* _jackcli_fifo_setup */
+} /* jackcli_fifo_setup */
 
 
-static void _jackcli_shutdown_callback(void *arg)
+static void jackcli_shutdown_callback(void *arg)
 {
   exit(1);
-} /* _jackcli_shutdown_callback */
+} /* jackcli_shutdown_callback */
 
-int _jackcli_set_callbacks()
+int jackcli_set_callbacks()
 {
-  jack_set_process_callback(jackcli_client, _jackcli_process_callback, NULL);
-  jack_on_shutdown(jackcli_client, _jackcli_shutdown_callback, 0);
+  jack_set_process_callback(jackcli_client, jackcli_process_callback, NULL);
+  jack_on_shutdown(jackcli_client, jackcli_shutdown_callback, 0);
   return 0;
-} /* _jackcli_set_callbacks */
+} /* jackcli_set_callbacks */
 
-int _jackcli_activate_client()
+int jackcli_activate_client()
 {
   if (jack_activate (jackcli_client))
     {	
@@ -106,9 +114,9 @@ int _jackcli_activate_client()
       return 1;
     }
   return 0;
-} /* _jackcli_activate_client */
+} /* jackcli_activate_client */
 
-int _jackcli_open(char *jackcli_client_name)
+int jackcli_open(char *jackcli_client_name)
 {
   /* create jack jackcli_client */
   if ((jackcli_client = jack_client_open(jackcli_client_name, JackNullOption,NULL)) == 0)
@@ -118,9 +126,9 @@ int _jackcli_open(char *jackcli_client_name)
     }
   jackcli_samplerate = jack_get_sample_rate(jackcli_client);
   return 0;
-} /* _jackcli_open */
+} /* jackcli_open */
 
-int _jackcli_close()
+int jackcli_close()
 {  
   jack_client_close(jackcli_client);
   free (jackcli_ins);
@@ -131,11 +139,11 @@ int _jackcli_close()
 
 int jackcli_setup(char *jackcli_client_name, int bit_depth)
 {
-  _jackcli_open(jackcli_client_name);
-  _jackcli_fifo_setup();
-  _jackcli_set_callbacks();
-  _jackcli_allocate_ports(jackcli_channels_out, jackcli_channels_in);
-  if (_jackcli_activate_client() == 1)
+  jackcli_open(jackcli_client_name);
+  jackcli_fifo_setup();
+  jackcli_set_callbacks();
+  jackcli_allocate_ports(jackcli_channels_out, jackcli_channels_in);
+  if (jackcli_activate_client() == 1)
     return 1;
   return 0;
 
@@ -143,7 +151,7 @@ int jackcli_setup(char *jackcli_client_name, int bit_depth)
 
 int jackcli_teardown()
 {
-  _jackcli_close();
+  jackcli_close();
   return 0;
 } /* jackcli_teardown */
 

@@ -581,30 +581,40 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
 
 void
 *dsp_thread(void *arg) {
-  int pos;
+  int pos, i;
   float outsample = 0.0;
   char current_path[2] = "/";
   
   struct dsp_bus *temp_bus;
   struct dsp_module *temp_module;
 
+  /* allocate main inputs/outputs */
+  dsp_main_inputs = (float *)malloc(sizeof(float) * jackcli_channels_in);
+  dsp_main_outputs = (float *)malloc(sizeof(float) * jackcli_channels_out);
+  
   while(1) {
     for(pos=0; pos<jack_sr; pos++) {
       outsample = 0.0;
 
       /* process main inputs */
-      /* outsample = rtqueue_deq(fifo_in); */
+      for(i=0; i<jackcli_channels_in; i++)
+	dsp_main_ins[i] = rtqueue_deq(jackcli_fifo_ins[i]);
 					  
       temp_bus = dsp_global_bus_head;
-      while( temp_bus != NULL) {
+      while( temp_bus != NULL ) {
 	recurse_dsp_graph(temp_bus, current_path, jack_sr, pos);
 	temp_bus = temp_bus->next;
       }
       
       /* process main outputs */
-      /* rtqueue_enq(fifo_out, outsample); */
-      
+      for(i=0; i<jackcli_channels_out; i++)
+	rtqueue_enq(jackcli_fifo_outs[i], dsp_main_outs[i]);
     }
+
+    /* deallocate main inputs/outputs */
+    free(dsp_main_inputs);
+    free(dsp_main_outputs);
+    
   }
 } /* dsp_thread */
 

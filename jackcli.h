@@ -30,24 +30,9 @@ int jackcli_fifo_size = 2048;
 /* ====  END  to-be-defined cyperus params ==== */
 
 int jackcli_samplerate;
-const size_t jackcli_sample_size = sizeof (jack_default_audio_sample_t) ;
+rtqueue_t **jackcli_fifo_ins;
+rtqueue_t **jackcli_fifo_outs;
 
-jack_client_t *jackcli_client = NULL;
-jack_port_t **jackcli_ports_input;
-jack_port_t **jackcli_ports_output;
-jack_default_audio_sample_t **jackcli_outs;
-jack_default_audio_sample_t **jackcli_ins;
-rtqueue_t **fifo_main_ins;
-rtqueue_t **fifo_main_outs;
-
-static int _jackcli_process_callback(jack_nframes_t nframes, void *arg);
-void _jackcli_allocate_ports(int channels_in, int channels_out);
-int _jackcli_fifo_setup();
-static void _jackcli_shutdown_callback(void *arg);
-int _jackcli_set_callbacks();
-int _jackcli_activate_client();
-int _jackcli_open(char *jackcli_client_name);
-int _jackcli_close();
 int jackcli_setup(char *jackcli_client_name, int bit_depth);
 int jackcli_teardown();
 
