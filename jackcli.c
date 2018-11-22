@@ -24,6 +24,9 @@ Copyright 2015 murray foster */
 #include "jackcli.h"
 #include "rtqueue.h"
 
+rtqueue_t **jackcli_fifo_ins;
+rtqueue_t **jackcli_fifo_outs;
+
 const size_t jackcli_sample_size = sizeof (jack_default_audio_sample_t) ;
 
 jack_client_t *jackcli_client = NULL;
@@ -86,10 +89,12 @@ int jackcli_fifo_setup()
   int i = 0;
   *jackcli_fifo_ins = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_in);
   *jackcli_fifo_outs = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_out);
+
   for( i=0; i < jackcli_channels_in; i++)
     jackcli_fifo_ins[i] = rtqueue_init(jackcli_fifo_size);
   for( i=0; i < jackcli_channels_out; i++)
     jackcli_fifo_outs[i] = rtqueue_init(jackcli_fifo_size);
+
   return 0;
 } /* jackcli_fifo_setup */
 
@@ -124,7 +129,7 @@ int jackcli_open(char *jackcli_client_name)
       fprintf(stderr, "Jack server not running?\n");
       return 1;
     }
-  jackcli_samplerate = jack_get_sample_rate(jackcli_client);
+  int jackcli_samplerate = jack_get_sample_rate(jackcli_client);
   return 0;
 } /* jackcli_open */
 
@@ -137,12 +142,12 @@ int jackcli_close()
   free (jackcli_ports_input);
 }
 
-int jackcli_setup(char *jackcli_client_name, int bit_depth)
+int jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out)
 {
   jackcli_open(jackcli_client_name);
   jackcli_fifo_setup();
   jackcli_set_callbacks();
-  jackcli_allocate_ports(jackcli_channels_out, jackcli_channels_in);
+  jackcli_allocate_ports(channels_in, channels_out);
   if (jackcli_activate_client() == 1)
     return 1;
   return 0;

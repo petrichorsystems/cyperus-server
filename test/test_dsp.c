@@ -26,7 +26,6 @@ Copyright 2015 murray foster */
 #include "../dsp.h"
 #include "../dsp_types.h"
 #include "../dsp_ops.h"
-#include "../rtqueue.h"
 
 
 char*

@@ -26,6 +26,7 @@ Copyright 2015 murray foster */
 #include "dsp.h"
 #include "dsp_types.h"
 #include "dsp_ops.h"
+#include "jackcli.h"
 
 #define MAX_PATH_ID_LENGTH 16384
 
@@ -579,6 +580,10 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
   return;
 } /* recurse_dsp_graph */
 
+int jackcli_channels_in = 8;
+int jackcli_channels_out = 8;
+int jackcli_fifo_size = 2048;
+
 void
 *dsp_thread(void *arg) {
   int pos, i;
@@ -589,8 +594,8 @@ void
   struct dsp_module *temp_module;
 
   /* allocate main inputs/outputs */
-  dsp_main_inputs = (float *)malloc(sizeof(float) * jackcli_channels_in);
-  dsp_main_outputs = (float *)malloc(sizeof(float) * jackcli_channels_out);
+  dsp_main_ins = (float *)malloc(sizeof(float) * jackcli_channels_in);
+  dsp_main_outs = (float *)malloc(sizeof(float) * jackcli_channels_out);
   
   while(1) {
     for(pos=0; pos<jack_sr; pos++) {
@@ -612,8 +617,8 @@ void
     }
 
     /* deallocate main inputs/outputs */
-    free(dsp_main_inputs);
-    free(dsp_main_outputs);
+    free(dsp_main_ins);
+    free(dsp_main_outs);
     
   }
 } /* dsp_thread */
