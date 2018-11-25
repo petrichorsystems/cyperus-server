@@ -22,8 +22,8 @@ Copyright 2015 murray foster */
 #ifndef DSP_H
 #define DSP_H
 
-float *dsp_main_ins;
-float *dsp_main_outs;
+struct dsp_port_out *dsp_main_ins;
+struct dsp_port_in *dsp_main_outs;
 
 struct dsp_module*
 dsp_find_module(struct dsp_module *head_module, char *name);
@@ -62,6 +62,9 @@ dsp_parse_path(char *result[], char *path);
 
 void
 dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports);
+
+void
+dsp_mains_allocate();
 
 void
 *dsp_thread(void *arg);

@@ -580,9 +580,38 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
   return;
 } /* recurse_dsp_graph */
 
+
+
 int jackcli_channels_in = 8;
 int jackcli_channels_out = 8;
 int jackcli_fifo_size = 2048;
+
+
+
+void
+dsp_mains_allocate() {
+  struct dsp_port_out *temp_port_out = NULL;
+  struct dsp_port_in *temp_port_in = NULL;
+  int i;
+  
+  for(i=0; i<jackcli_channels_in; i++)
+    if( i == 0 ) {
+      temp_port_out = dsp_port_out_init("main_in", 1);
+      dsp_main_ins = temp_port_out;
+    } else {
+      temp_port_out->next = dsp_port_out_init("main_in", 1);
+      temp_port_out = temp_port_out->next;
+    }
+
+  for(i=0; i<jackcli_channels_out; i++)
+    if( i == 0 ) {
+      temp_port_in = dsp_port_in_init("main_out", 512);
+      dsp_main_ins = temp_port_in;
+    } else {
+      temp_port_in->next = dsp_port_in_init("main_out", 512);
+      temp_port_in = temp_port_in->next;
+    }
+}
 
 void
 *dsp_thread(void *arg) {
@@ -593,18 +622,24 @@ void
   struct dsp_bus *temp_bus;
   struct dsp_module *temp_module;
 
-  /* allocate main inputs/outputs */
-  dsp_main_ins = (float *)malloc(sizeof(float) * jackcli_channels_in);
-  dsp_main_outs = (float *)malloc(sizeof(float) * jackcli_channels_out);
+  struct dsp_port_out *temp_port_out = NULL;
+  struct dsp_port_in *temp_port_in = NULL;
+  
+  dsp_mains_allocate();
   
   while(1) {
     for(pos=0; pos<jack_sr; pos++) {
       outsample = 0.0;
 
       /* process main inputs */
-      for(i=0; i<jackcli_channels_in; i++)
-	dsp_main_ins[i] = rtqueue_deq(jackcli_fifo_ins[i]);
-					  
+      temp_port_out = dsp_main_ins;
+      i=0;
+      while(temp_port_out != NULL) {
+	temp_port_out->value = rtqueue_deq(jackcli_fifo_ins[i]);
+	temp_port_out = temp_port_out->next;
+	i += 1;
+      }
+      
       temp_bus = dsp_global_bus_head;
       while( temp_bus != NULL ) {
 	recurse_dsp_graph(temp_bus, current_path, jack_sr, pos);
@@ -612,14 +647,19 @@ void
       }
       
       /* process main outputs */
-      for(i=0; i<jackcli_channels_out; i++)
-	rtqueue_enq(jackcli_fifo_outs[i], dsp_main_outs[i]);
+      temp_port_in = dsp_main_outs;
+      i=0;
+      while(temp_port_in != NULL) {
+	rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_input(temp_port_in));
+	temp_port_in = temp_port_in->next;
+	i += 1;
+      }
     }
 
     /* deallocate main inputs/outputs */
     free(dsp_main_ins);
     free(dsp_main_outs);
-    
+
   }
 } /* dsp_thread */
 
