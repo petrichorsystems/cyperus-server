@@ -165,6 +165,32 @@ test_dsp_parse_path_output_port() {
 }
 
 void
+test_dsp_parse_path_mains_in() {
+  fprintf(stderr, "  >> starting test_dsp_parse_mains_in()\n");
+  char *result[3]; 
+  dsp_parse_path(result, "/mains{90401ba5-a77d-4115-b5d2-a67776aa4448");
+  if(strcmp(result[0], "{") == 0 &&
+     strcmp(result[1], "/mains")  == 0 &&
+     strcmp(result[2], "90401ba5-a77d-4115-b5d2-a67776aa4448") == 0)
+    fprintf(stderr, " >> success!\n");
+  else
+    fprintf(stderr, " >> failed..\n");
+}
+
+void
+test_dsp_parse_path_mains_out() {
+  fprintf(stderr, "  >> starting test_dsp_parse_mains_out()\n");
+  char *result[3]; 
+  dsp_parse_path(result, "/mains}90401ba5-a77d-4115-b5d2-a67776aa4448");
+  if(strcmp(result[0], "}") == 0 &&
+     strcmp(result[1], "/mains")  == 0 &&
+     strcmp(result[2], "90401ba5-a77d-4115-b5d2-a67776aa4448") == 0)
+    fprintf(stderr, " >> success!\n");
+  else
+    fprintf(stderr, " >> failed..\n");
+}
+
+void
 test_dsp_parse_path_module_output_port() {
   fprintf(stderr, "  >> starting test_dsp_parse_path_module_output_port()\n");
   char *result[3];
@@ -818,6 +844,8 @@ main(void) {
   test_dsp_parse_path_module();
   test_dsp_parse_path_input_port();
   test_dsp_parse_path_output_port();
+  test_dsp_parse_path_mains_in();
+  test_dsp_parse_path_mains_out();
   test_dsp_parse_path_module_output_port();
   test_dsp_find_module();
   test_dsp_find_port_out();

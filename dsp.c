@@ -162,6 +162,16 @@ dsp_parse_path(char* result[], char *path) {
       result[0] = ">";
       match_found = 1;
       break;
+    case '{':
+      /* MAINS input port */
+      result[0] = "{";
+      match_found = 1;
+      break;
+    case '}':
+      /* MAINS output port */
+      result[0] = "}";
+      match_found = 1;
+      break;
     default:
       break;
     }
@@ -176,7 +186,7 @@ dsp_parse_path(char* result[], char *path) {
   parsed_path[++i] = '\0';
   for(i=0; i < id_length; i++)
     parsed_id[i] = temp_string[strlen(path) - id_length + i];
-    parsed_id[++i] = '\0';
+  parsed_id[++i] = '\0';
   
   if( strcmp(result[0], "/") )
     result[1] = parsed_path;
@@ -580,13 +590,9 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
   return;
 } /* recurse_dsp_graph */
 
-
-
 int jackcli_channels_in = 8;
 int jackcli_channels_out = 8;
 int jackcli_fifo_size = 2048;
-
-
 
 void
 dsp_mains_allocate() {
