@@ -42,13 +42,11 @@ static int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 
   for(i = 0; i < jackcli_channels_in; i++)
     jackcli_ins[i] = jack_port_get_buffer(jackcli_ports_input[i], nframes);
-
   for(i=0; i < jackcli_channels_out; i++)
     {
       jackcli_outs[i] = jack_port_get_buffer(jackcli_ports_output[i], nframes);
       memset(jackcli_outs[i], 0, nframes * jackcli_sample_size);
-    }
-  
+    }  
   for ( i = 0; i < nframes; i++)
     {
       for (n = 0; n < jackcli_channels_in; n++)
