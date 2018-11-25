@@ -795,7 +795,7 @@ test_dsp_feed_outputs() {
 
   module_out_id = module->outs->id;
   module1_in_id = module1->ins->id;
-  
+
   module_out_path_temp = strconcat(module_path, ">");
   module_out_path = strconcat(module_out_path_temp, module_out_id);
 
@@ -871,10 +871,10 @@ test_dsp_feed_mains() {
   float outsample;
 
   char *main_path, *delay_path_temp, *delay_path, *left_path_temp, *left_path, *module_path_temp, *module_path,
-    *module1_path_temp, *module1_path, *module_out_path_temp, *module_out_path, *module1_in_path_temp, *module1_in_path;;
+    *module1_path_temp, *module1_path, *module_out_path_temp, *module_out_path, *module1_in_path_temp, *module1_in_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus;
   char *main_id, *delay_id, *left_id, *module_id, *module1_id, *module_out_id, *module1_in_id;;
-  
+
   /* grab created busses */
   main_bus = dsp_global_bus_head;
   main_id = main_bus->id;
@@ -904,7 +904,6 @@ test_dsp_feed_mains() {
     exit(1);
   }
   
-  dsp_create_block_processor(left_bus);
   if( strcmp(left_bus->dsp_module_head->next->name, "block_processor") == 0)
     {}
   else
@@ -924,9 +923,6 @@ test_dsp_feed_mains() {
 
   module1_in_path_temp = strconcat(module1_path, "<");
   module1_in_path = strconcat(module1_in_path_temp, module1_in_id);
-  
-  dsp_add_connection(module_out_path,
-		     module1_in_path);
 
   rtqueue_enq(module->ins->values, insample);
   outsample = dsp_sum_input(module->ins);
@@ -983,6 +979,7 @@ main(void) {
   test_dsp_sum_inputs();
   test_dsp_feed_outputs();
   test_dsp_mains_allocate();
+  test_dsp_feed_mains();
   test_recurse_dsp_graph();
   exit(0);
 }
