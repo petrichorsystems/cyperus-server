@@ -595,12 +595,12 @@ int jackcli_channels_out = 8;
 int jackcli_fifo_size = 2048;
 
 void
-dsp_mains_allocate() {
+dsp_mains_allocate(int channels_in, int channels_out, int fifo_size) {
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_port_in *temp_port_in = NULL;
   int i;
   
-  for(i=0; i<jackcli_channels_in; i++)
+  for(i=0; i<channels_in; i++)
     if( i == 0 ) {
       temp_port_out = dsp_port_out_init("main_in", 1);
       dsp_main_ins = temp_port_out;
@@ -609,12 +609,12 @@ dsp_mains_allocate() {
       temp_port_out = temp_port_out->next;
     }
 
-  for(i=0; i<jackcli_channels_out; i++)
+  for(i=0; i<channels_out; i++)
     if( i == 0 ) {
-      temp_port_in = dsp_port_in_init("main_out", 512);
-      dsp_main_ins = temp_port_in;
+      temp_port_in = dsp_port_in_init("main_out", fifo_size);
+      dsp_main_outs = temp_port_in;
     } else {
-      temp_port_in->next = dsp_port_in_init("main_out", 512);
+      temp_port_in->next = dsp_port_in_init("main_out", fifo_size);
       temp_port_in = temp_port_in->next;
     }
 }
@@ -631,8 +631,8 @@ void
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_port_in *temp_port_in = NULL;
   
-  dsp_mains_allocate();
-  
+  dsp_mains_allocate(jackcli_channels_in, jackcli_channels_out, jackcli_fifo_size);
+
   while(1) {
     for(pos=0; pos<jack_sr; pos++) {
       outsample = 0.0;
