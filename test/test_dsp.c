@@ -871,9 +871,9 @@ test_dsp_feed_mains() {
   float outsample;
 
   char *main_path, *delay_path_temp, *delay_path, *left_path_temp, *left_path, *module_path_temp, *module_path,
-    *module1_path_temp, *module1_path, *module_out_path_temp, *module_out_path, *module1_in_path_temp, *module1_in_path, *main_in_path, *main_out_path;
+    *module1_path_temp, *module1_path, *module_out_path_temp, *module_out_path, *module1_in_path_temp, *module1_in_path, *main_in_path, *main_out_path, *module1_out_path_temp, *module1_out_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus;
-  char *main_id, *delay_id, *left_id, *module_id, *module1_id, *module_out_id, *module1_in_id;;
+  char *main_id, *delay_id, *left_id, *module_id, *module1_id, *module_out_id, *module1_in_id, *module1_out_id;
 
   /* grab created busses */
   main_bus = dsp_global_bus_head;
@@ -928,27 +928,25 @@ test_dsp_feed_mains() {
   main_in_path = strconcat("/mains{", dsp_main_ins->id);
   dsp_add_connection(main_in_path,
 		     module1_in_path);
+
   dsp_main_ins->value = insample;
-  dsp_feed_main_inputs(dsp_main_ins);
-  
-  outsample = dsp_sum_input(module->ins);
-  module->outs->value = outsample;
-  dsp_feed_outputs(left_path, module_id, module->outs);
+  dsp_feed_main_inputs(dsp_main_ins);  
   outsample = dsp_sum_input(module1->ins);
 
-  /* dsp_main_outputs */
-  /* need to get outsample to module1->outs and then
-     add connection from outs to main_outs and sum
-     using dsp_sum_input(). lastly, compare output. */
-  
-  main_out_path = strconcat("/mains}", dsp_main_outs->id);
-  dsp_add_connection(main_in_path,
-		     module1_in_path);
-  dsp_main_ins->value = insample;
-  dsp_feed_main_inputs(dsp_main_ins);
+  module1->outs->value = outsample;
 
-  /* end dsp_main_outputs */
-  
+  module1_out_path_temp = strconcat(module1_path, ">");
+  module1_out_id = module1->outs->id;
+  module1_out_path = strconcat(module1_out_path_temp, module1_out_id);
+  main_out_path = strconcat("/mains}", dsp_main_outs->id);
+  dsp_add_connection(module1_out_path,
+		     main_out_path);
+  dsp_feed_outputs(left_path, module1_id, module1->outs);
+
+  /* sum main in */
+  outsample = 0.0;
+  outsample = dsp_sum_input(dsp_main_outs);
+
   if( outsample == (float)0.12345 )
     {}
   else

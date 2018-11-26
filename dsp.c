@@ -485,7 +485,6 @@ dsp_add_connection(char *id_out, char *id_in) {
   if(dsp_global_connection_graph == NULL)
     dsp_global_connection_graph = new_connection;
   else
-    
     dsp_connection_insert_tail(dsp_global_connection_graph,
 			       new_connection);
   return;
