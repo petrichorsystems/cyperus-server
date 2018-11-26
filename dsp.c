@@ -405,6 +405,10 @@ dsp_add_connection(char *id_out, char *id_in) {
   
   /* parsing id_out (connection output) */
   dsp_parse_path(temp_result, id_out);
+  if( strcmp(temp_result[0], "{") == 0) {
+    port_out = dsp_find_port_out(dsp_main_ins, temp_result[2]);
+  }
+
   if( strcmp(temp_result[0], ">") == 0 ) {
     module_path = temp_result[1];
     port_out_id = temp_result[2];
@@ -436,6 +440,9 @@ dsp_add_connection(char *id_out, char *id_in) {
 
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
+  if( strcmp(temp_result[0], "}") == 0) {
+    port_in = dsp_find_port_out(dsp_main_outs, temp_result[2]);
+  }
   if( strcmp(temp_result[0], "<") == 0 ) {
     module_path = temp_result[1];
     port_in_id = temp_result[2];

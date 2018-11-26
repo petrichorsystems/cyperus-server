@@ -649,7 +649,7 @@ test_dsp_add_connection() {
 
 void
 test_dsp_feed_connections_bus() {
-  fprintf(stderr, " >> starting test_dsp_feed_connections_bus()\n");
+  fprintf(stderr, "  >> starting test_dsp_feed_connections_bus()\n");
 
   char *main_path, *delay_path_temp, *delay_path, *left_path_temp, *left_path, *aux_path_temp, *aux_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
@@ -684,7 +684,7 @@ test_dsp_feed_connections_bus() {
 
 void
 test_dsp_sum_inputs() {
-  fprintf(stderr, " >> starting test_dsp_sum_inputs()\n");
+  fprintf(stderr, "  >> starting test_dsp_sum_inputs()\n");
 
   char *result[3];
   struct dsp_module *module;
@@ -739,7 +739,7 @@ test_dsp_sum_inputs() {
 
 void
 test_dsp_feed_outputs() {
-  fprintf(stderr, " >> starting test_dsp_feed_outputs()\n");
+  fprintf(stderr, "  >> starting test_dsp_feed_outputs()\n");
 
   char *result[3];
   struct dsp_module *module, *module1;
@@ -824,7 +824,7 @@ test_dsp_feed_outputs() {
 
 void
 test_dsp_mains_allocate() {
-  fprintf(stderr, " >> starting test_dsp_allocate_mains()\n");
+  fprintf(stderr, "  >> starting test_dsp_allocate_mains()\n");
 
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_port_in *temp_port_in = NULL;
@@ -862,7 +862,7 @@ test_dsp_mains_allocate() {
 
 void
 test_dsp_feed_mains() {
-  fprintf(stderr, " >> starting test_dsp_feed_mains()\n");
+  fprintf(stderr, "  >> starting test_dsp_feed_mains()\n");
 
   char *result[3];
   struct dsp_module *module, *module1;
@@ -871,7 +871,7 @@ test_dsp_feed_mains() {
   float outsample;
 
   char *main_path, *delay_path_temp, *delay_path, *left_path_temp, *left_path, *module_path_temp, *module_path,
-    *module1_path_temp, *module1_path, *module_out_path_temp, *module_out_path, *module1_in_path_temp, *module1_in_path;
+    *module1_path_temp, *module1_path, *module_out_path_temp, *module_out_path, *module1_in_path_temp, *module1_in_path, *main_in_path, *main_out_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus;
   char *main_id, *delay_id, *left_id, *module_id, *module1_id, *module_out_id, *module1_in_id;;
 
@@ -924,12 +924,31 @@ test_dsp_feed_mains() {
   module1_in_path_temp = strconcat(module1_path, "<");
   module1_in_path = strconcat(module1_in_path_temp, module1_in_id);
 
-  rtqueue_enq(module->ins->values, insample);
+  /* dsp_main_inputs */
+  main_in_path = strconcat("/mains{", dsp_main_ins->id);
+  dsp_add_connection(main_in_path,
+		     module1_in_path);
+  dsp_main_ins->value = insample;
+  dsp_feed_main_inputs(dsp_main_ins);
+  
   outsample = dsp_sum_input(module->ins);
   module->outs->value = outsample;
   dsp_feed_outputs(left_path, module_id, module->outs);
   outsample = dsp_sum_input(module1->ins);
 
+  /* dsp_main_outputs */
+  /* need to get outsample to module1->outs and then
+     add connection from outs to main_outs and sum
+     using dsp_sum_input(). lastly, compare output. */
+  
+  main_out_path = strconcat("/mains}", dsp_main_outs->id);
+  dsp_add_connection(main_in_path,
+		     module1_in_path);
+  dsp_main_ins->value = insample;
+  dsp_feed_main_inputs(dsp_main_ins);
+
+  /* end dsp_main_outputs */
+  
   if( outsample == (float)0.12345 )
     {}
   else
@@ -943,7 +962,7 @@ test_dsp_feed_mains() {
 
 void
 test_recurse_dsp_graph() {
-  fprintf(stderr, " >> starting test_recurse_dsp_graph()\n");
+  fprintf(stderr, "  >> starting test_recurse_dsp_graph()\n");
 
   // do we have to map out the entire graph?
   // -- probably, need enumerated expectations
