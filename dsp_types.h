@@ -172,20 +172,16 @@ struct dsp_port_out* dsp_port_out_init(const char *port_name, int audio);
 void dsp_port_out_insert_head(struct dsp_port_out *head_port, struct dsp_port_out *port_out);
 void dsp_port_out_insert_tail(struct dsp_port_out *head_port, struct dsp_port_out *port_out);
 
-struct
-dsp_connection* dsp_connection_init(const char *id_out,
-				    const char *id_in,
-				    struct dsp_port_out *port_out,
-				    struct dsp_port_in *port_in);
-
-void
-dsp_connection_insert_head(struct dsp_connection *head_connection, struct dsp_connection *connection);
-void
-dsp_connection_insert_tail(struct dsp_connection *head_connection, struct dsp_connection *connection);
-void
-dsp_connection_list(struct dsp_connection *head_connection);
-void
-dsp_connection_list_reverse(struct dsp_connection *head_connection);
+struct dsp_connection* dsp_connection_init(const char *id_out,
+					   const char *id_in,
+					   struct dsp_port_out *port_out,
+					   struct dsp_port_in *port_in);
+void dsp_connection_insert_head(struct dsp_connection *head_connection, struct dsp_connection *connection);
+void dsp_connection_insert_tail(struct dsp_connection *head_connection, struct dsp_connection *connection);
+void dsp_connection_list(struct dsp_connection *head_connection, void (*func)(struct dsp_connection*) );
+void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*func)(struct dsp_connection*) );
+void dsp_connection_fprintf(struct dsp_connection *connection);
+void dsp_connection_terminate(struct dsp_connection *connection);
 
 struct dsp_module* dsp_module_init(const char *module_name,
 				   void (*dsp_function) (char *, struct dsp_module*, int, int),

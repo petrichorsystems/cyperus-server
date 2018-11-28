@@ -153,6 +153,7 @@ struct dsp_connection* dsp_connection_init(const char *id_out,
 					   struct dsp_port_out *port_out,
 					   struct dsp_port_in *port_in) {
   struct dsp_connection *new_connection = (struct dsp_connection*)malloc(sizeof(struct dsp_connection));
+  new_connection->id = dsp_generate_object_id();
   new_connection->prev = NULL;
   new_connection->next = NULL;
   new_connection->remove = 0;
@@ -185,22 +186,44 @@ void dsp_connection_insert_tail(struct dsp_connection *head_connection, struct d
   connection->prev = temp_connection;
 }
 
-void dsp_connection_list(struct dsp_connection *head_connection) {
+void dsp_connection_list(struct dsp_connection *head_connection, void (*func)(struct dsp_connection*) ) {
   struct dsp_connection *temp_connection = head_connection;
   while(temp_connection != NULL) {
+    func(temp_connection);
     temp_connection = temp_connection->next;
   }
 }
 
-void dsp_connection_list_reverse(struct dsp_connection *head_connection) {
+void dsp_connection_fprintf(struct dsp_connection *connection) {
+  fprintf(stderr, "%s\n", connection->id);
+}
+
+void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*func)(struct dsp_connection*) ) {
   struct dsp_connection *temp_connection = head_connection;
+  struct dsp_connection *current_connection;
   if(temp_connection == NULL)
     return;
-  while(temp_connection != NULL)
-    temp_connection = temp_connection->next;
   while(temp_connection != NULL) {
+    current_connection = temp_connection;
+    temp_connection = temp_connection->next;
+  }
+  temp_connection = current_connection;
+  while(temp_connection != NULL) {
+    current_connection = temp_connection;
     temp_connection = temp_connection->prev;
+    func(current_connection);
   } 
+}
+
+void dsp_connection_terminate(struct dsp_connection *connection) {
+  connection->id_out = NULL;
+  connection->id_in = NULL;
+  connection->out_value = 0.00;
+  connection->in_values = NULL;
+  free(connection->id);
+  connection->id = NULL;
+  free(connection);
+  connection = NULL;
 }
 
 struct dsp_module* dsp_module_init(const char *module_name,

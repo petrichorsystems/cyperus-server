@@ -575,16 +575,13 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
       strcat(current_path, temp_bus->id);
       strcat(current_path, "/");
     } else {
-      printf("something went super wrong in recurse_dsp_graph()!!");
+      printf("couldn't allocate memory for bus path in recurse_dsp_graph()!!");
     }
     /* process bus inputs */
     dsp_feed_connections_bus(current_path, temp_bus->ins);
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
-
-      // construct module path?
-
       temp_module->dsp_function(current_path, temp_module, jack_sr, pos);
       temp_module = temp_module->next;
     }
@@ -596,9 +593,11 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
   return;
 } /* recurse_dsp_graph */
 
+
 int jackcli_channels_in = 8;
 int jackcli_channels_out = 8;
 int jackcli_fifo_size = 2048;
+
 
 void
 dsp_mains_allocate(int channels_in, int channels_out, int fifo_size) {
@@ -651,6 +650,7 @@ void
 	temp_port_out = temp_port_out->next;
 	i += 1;
       }
+      dsp_feed_main_inputs(dsp_main_ins);
       
       temp_bus = dsp_global_bus_head;
       while( temp_bus != NULL ) {

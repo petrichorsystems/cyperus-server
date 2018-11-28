@@ -964,6 +964,13 @@ test_recurse_dsp_graph() {
 
   // do we have to map out the entire graph?
   // -- probably, need enumerated expectations
+
+  fprintf(stderr, "   -- cleaning dsp connection graph -- start\n");
+
+  dsp_connection_list_reverse(dsp_global_connection_graph, &dsp_connection_fprintf);
+  dsp_connection_list_reverse(dsp_global_connection_graph, &dsp_connection_terminate);
+  dsp_connection_list_reverse(dsp_global_connection_graph, &dsp_connection_fprintf);
+  fprintf(stderr, "   -- cleaning dsp connection graph -- done\n");
   
   fprintf(stderr, " >> success!\n");
 }
