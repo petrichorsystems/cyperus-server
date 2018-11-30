@@ -563,27 +563,38 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
 } /* dsp_feed_connections_bus */
 
 void
-recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
+recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int pos) {
   struct dsp_module *temp_module;
   struct dsp_bus *temp_bus = head_bus;
   char *current_path;  
+  int parent_path_size = 0;
+
   while(temp_bus != NULL) {
     /* build current path */
+
     printf("whaddup\n");
-    fprintf(stderr, "path: %s\n", path);
-    if((*current_path = malloc(strlen(path) + 1 + strlen(temp_bus->id) + 1) != NULL)) {
-      current_path[0] = '\0';
-      strcat(current_path, path);
+    fprintf(stderr, "parent_path: %s\n", parent_path);
+
+    /* handle root path "/" (avoid adding extra path separator if it's root) */
+    if( strcmp(parent_path, "/") == 0 )
+      parent_path_size = 1;
+    else
+      parent_path_size = strlen(parent_path) + 1;
+
+    current_path = (char *)malloc(sizeof(char) * (parent_path_size + strlen(temp_bus->id) + 1));
+    strcpy(current_path, parent_path);
+    if( parent_path_size > 1 )
       strcat(current_path, "/");
-      strcat(current_path, temp_bus->id);
-    } else {
-      printf("couldn't allocate memory for bus path in recurse_dsp_graph()!!");
-    }
+    strcat(current_path, temp_bus->id);
+    
     fprintf(stderr, "current_path: %s\n", current_path);
+
     /* process bus inputs */
-    fprintf(stderr, "bus inputs");
+    fprintf(stderr, "temp_bus->ins: %s\n", temp_bus->ins->name);
+    fprintf(stderr, "bus inputs\n");
     dsp_feed_connections_bus(current_path, temp_bus->ins);
 
+    fprintf(stderr, "dsp modules\n");
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
