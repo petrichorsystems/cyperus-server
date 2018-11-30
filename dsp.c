@@ -569,16 +569,21 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
   char *current_path;  
   while(temp_bus != NULL) {
     /* build current path */
-    if((*current_path = malloc(strlen(path) + strlen(temp_bus->id) + 1) != NULL)) {
+    printf("whaddup\n");
+    fprintf(stderr, "path: %s\n", path);
+    if((*current_path = malloc(strlen(path) + 1 + strlen(temp_bus->id) + 1) != NULL)) {
       current_path[0] = '\0';
       strcat(current_path, path);
-      strcat(current_path, temp_bus->id);
       strcat(current_path, "/");
+      strcat(current_path, temp_bus->id);
     } else {
       printf("couldn't allocate memory for bus path in recurse_dsp_graph()!!");
     }
+    fprintf(stderr, "current_path: %s\n", current_path);
     /* process bus inputs */
+    fprintf(stderr, "bus inputs");
     dsp_feed_connections_bus(current_path, temp_bus->ins);
+
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
@@ -587,6 +592,7 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *path, int jack_sr, int pos) {
     }
     /* process bus outputs */
     dsp_feed_connections_bus(current_path, temp_bus->outs);
+
     recurse_dsp_graph(temp_bus->down, current_path, jack_sr, pos);
     temp_bus = temp_bus->next;
   }
@@ -669,6 +675,8 @@ void
     }
 
     /* deallocate main inputs/outputs */
+
+    /* NEED TO DO THIS BETTER (ie. iterate over outputs/inputs structs)*/
     free(dsp_main_ins);
     free(dsp_main_outs);
 
