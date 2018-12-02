@@ -22,8 +22,8 @@ Copyright 2015 murray foster */
 #ifndef DSP_H
 #define DSP_H
 
-struct dsp_port_out *dsp_main_ins;
-struct dsp_port_in *dsp_main_outs;
+extern struct dsp_port_out *dsp_main_ins;
+extern struct dsp_port_in *dsp_main_outs;
 
 struct dsp_module*
 dsp_find_module(struct dsp_module *head_module, char *name);

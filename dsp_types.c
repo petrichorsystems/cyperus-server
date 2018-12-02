@@ -136,18 +136,6 @@ void dsp_port_out_list(struct dsp_port_out *head_port) {
   }
 }
 
-void dsp_port_out_list_reverse(struct dsp_port_out *head_port) {
-  struct dsp_port_out *temp_port = head_port;
-  if(temp_port == NULL)
-    return;
-  while(temp_port != NULL)
-    temp_port = temp_port->next;
-  while(temp_port != NULL) {
-    printf("%s", temp_port->name);
-    temp_port = temp_port->prev;
-  } 
-}
-
 struct dsp_connection* dsp_connection_init(const char *id_out,
 					   const char *id_in,
 					   struct dsp_port_out *port_out,

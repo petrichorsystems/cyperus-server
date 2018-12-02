@@ -31,6 +31,7 @@ Copyright 2015 murray foster */
 #include "jackcli.h"
 #include "dsp.h"
 #include "dsp_ops.h"
+#include "osc.h"
 #include "osc_handlers.h"
 
 void print_usage() {

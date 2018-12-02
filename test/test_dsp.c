@@ -836,6 +836,7 @@ test_dsp_mains_allocate() {
   int fifo_size = 512;
 
   dsp_mains_allocate(channels_in, channels_out, fifo_size);
+
   for(i=0; i<channels_in; i++) {
     if( i == 0 ) {
       temp_port_out = dsp_main_ins;

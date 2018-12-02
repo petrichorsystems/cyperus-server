@@ -1,7 +1,7 @@
 /* osc_handlers.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
-hit under the terms of the GNU General Public License as published by
+it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
@@ -25,6 +25,9 @@ Copyright 2015 murray foster */
 #define OSC_HANDLERS_H
 
 void osc_error(int num, const char *msg, const char *path);
+
+int osc_list_mains_handler(const char *path, const char *types, lo_arg ** argv,
+			   int argc, void *data, void *user_data);
 
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
 			      int argc, void *data, void *user_data);

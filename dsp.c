@@ -30,6 +30,9 @@ Copyright 2015 murray foster */
 
 #define MAX_PATH_ID_LENGTH 16384
 
+struct dsp_port_out *dsp_main_ins;
+struct dsp_port_in *dsp_main_outs;
+
 int fifo_out_is_waiting = 0;
 pthread_mutex_t fifo_out_is_waiting_mutex;
 pthread_cond_t fifo_out_is_waiting_cond;
@@ -680,13 +683,13 @@ void
 	i += 1;
       }
     }
-
-    /* deallocate main inputs/outputs */
-
-    /* NEED TO DO THIS BETTER (ie. iterate over outputs/inputs structs)*/
-    free(dsp_main_ins);
-    free(dsp_main_outs);
-
   }
+  
+  /* deallocate main inputs/outputs */
+  
+  /* NEED TO DO THIS BETTER (ie. iterate over outputs/inputs structs)*/
+  free(dsp_main_ins);
+  free(dsp_main_outs);
+
 } /* dsp_thread */
 

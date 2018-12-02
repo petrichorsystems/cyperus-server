@@ -56,7 +56,7 @@ static int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     {
       for (n = 0; n < jackcli_channels_in; n++)
 	rtqueue_enq(jackcli_fifo_ins[n], jackcli_ins[n][i]);
-      for (n = 0; n < jackcli_channels_in; n++)
+      for (n = 0; n < jackcli_channels_out; n++)
 	if( !rtqueue_isempty(jackcli_fifo_outs[n]) )
 	  jackcli_outs[n][i] = rtqueue_deq(jackcli_fifo_outs[n]);
     }

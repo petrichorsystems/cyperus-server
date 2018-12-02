@@ -29,6 +29,13 @@ Copyright 2015 murray foster */
 #include "osc.h"
 #include "osc_handlers.h"
 
+char* concat(char *str_prefix, char *str_suffix) {
+  char *full_str;  
+  full_str = (char*)malloc(sizeof(char)*(strlen(str_suffix)+strlen(str_prefix)+1));
+  snprintf(full_str, strlen(str_suffix)+strlen(str_prefix)+1, "%s%s", str_prefix, str_suffix);
+  return full_str;
+}
+
 void osc_error(int num, const char *msg, const char *path)
 {
   printf("liblo server error %d in path %s: %s\n", num, path, msg);
@@ -52,7 +59,33 @@ int generic_handler(const char *path, const char *types, lo_arg ** argv,
   return 0;
 }
 
+int osc_list_mains_handler(const char *path, const char *types, lo_arg ** argv,
+			   int argc, void *data, void *user_data)
+{
+  struct dsp_port_out *temp_port_out;
+  struct dsp_port_in *temp_port_in;
+  char *mains_str = NULL;
+  char *temp_str = NULL;
+  
+  printf("path: <%s>\n", path);
 
+  /* process main inputs */
+  temp_port_out = dsp_main_ins;
+  while(temp_port_out != NULL) {
+    printf("in: %s\n", temp_port_out->id);
+    temp_port_out = temp_port_out->next;
+  }
+  
+  temp_port_in = dsp_main_outs;
+  while(temp_port_in != NULL) {
+    printf("out: %s\n", temp_port_in->id);
+    temp_port_in = temp_port_in->next;
+  }
+
+  //lo_send(lo_addr_send,"/cyperus/list/mains", "s", mains_str);
+  
+  return 0;
+} /* osc_remove_module_handler */
 
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
 			      int argc, void *data, void *user_data)
