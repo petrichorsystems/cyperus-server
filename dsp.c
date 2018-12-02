@@ -582,8 +582,6 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int 
   while(temp_bus != NULL) {
     /* build current path */
 
-    fprintf(stderr, "parent_path: %s\n", parent_path);
-
     /* handle root path "/" (avoid adding extra path separator if it's root) */
     if( strcmp(parent_path, "/") == 0 )
       parent_path_size = 1;
@@ -595,15 +593,10 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int 
     if( parent_path_size > 1 )
       strcat(current_path, "/");
     strcat(current_path, temp_bus->id);
-    
-    fprintf(stderr, "current_path: %s\n", current_path);
 
     /* process bus inputs */
-    fprintf(stderr, "temp_bus->ins: %s\n", temp_bus->ins->name);
-    fprintf(stderr, "bus inputs\n");
     dsp_feed_connections_bus(current_path, temp_bus->ins);
 
-    fprintf(stderr, "dsp modules\n");
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
