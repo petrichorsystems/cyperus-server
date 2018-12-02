@@ -975,20 +975,33 @@ test_recurse_dsp_graph() {
 
   struct dsp_bus *bus0a, *bus0b, *bus0c;
   char *path_bus0a, *path_bus0b, *path_bus0c;
+  char *path_bus0a_in0;
+  char *path_bus0a_out0;
   
   struct dsp_bus *bus1a;
   char *path_bus1a;
+  char *path_bus1a_in0;
   char *path_bus1a_module0;
+  char *path_bus1a_out0;
   
   struct dsp_bus *bus2a, *bus2b;
   char *path_bus2a, *path_bus2b;
-
+  char *path_bus2a_in0;
+  char *path_bus2a_out0;
+  
   struct dsp_bus *bus3a, *bus3b;
   char *path_bus3a, *path_bus3b;
+  char *path_bus3a_in0;
   char *path_bus3a_module0, *path_bus3a_module1;
+  char *path_bus3a_out0;
+  char *path_bus3b_in0;
   char *path_bus3b_module0;
+  char *path_bus3b_out0;
 
   char *path_mains_in0;
+  char *path_mains_out0;
+
+  float mains_out_sample0 = 0.0;
   
   fprintf(stderr, "   -- cleaning dsp connection graph -- start\n");
   dsp_connection_list_reverse(dsp_global_connection_graph, &dsp_connection_terminate);
@@ -1025,13 +1038,26 @@ test_recurse_dsp_graph() {
   dsp_add_bus(path_bus1a, bus2b, "bus2b_in", "bus2b_out");
 
   temp_path = strconcat(path_bus1a, "/");
-  path_bus2b = strconcat(temp_path, bus2b->id);
+  path_bus2a = strconcat(temp_path, bus2a->id);
   free(temp_path);
   
+  temp_path = strconcat(path_bus1a, "/");
+  path_bus2b = strconcat(temp_path, bus2b->id);
+  free(temp_path);
+
   bus3a = dsp_bus_init("bus3a");
   dsp_add_bus(path_bus2b, bus3a, "bus3a_in", "bus3a_out");
   bus3b = dsp_bus_init("bus3b");
   dsp_add_bus(path_bus2b, bus3b, "bus3b_in", "bus3b_out");
+
+  temp_path = strconcat(path_bus2b, "/");
+  path_bus3a = strconcat(temp_path, bus3a->id);
+  free(temp_path);
+
+  temp_path = strconcat(path_bus2b, "/");
+  path_bus3b = strconcat(temp_path, bus3b->id);
+  free(temp_path);
+  
   fprintf(stderr, "   -- creating dsp busses for test -- finish\n");
 
   fprintf(stderr, "   -- creating dsp modules for test -- start\n");
@@ -1061,6 +1087,7 @@ test_recurse_dsp_graph() {
   
   fprintf(stderr, "   -- creating dsp connection graph for test -- start\n");
   path_mains_in0 = strconcat("/mains{", dsp_main_ins->id);
+
   temp_path = strconcat(path_bus_recurse, ":");
   path_bus_recurse_in0 = strconcat(temp_path, bus_recurse->ins->id);
   free(temp_path);
@@ -1080,6 +1107,70 @@ test_recurse_dsp_graph() {
   path_bus_recurse_out0 = strconcat(temp_path, bus_recurse->outs->id);
   dsp_add_connection(path_bus_recurse_module0_out,
 		     path_bus_recurse_out0);
+
+  temp_path = strconcat(path_bus0a, ":");
+  path_bus0a_in0 = strconcat(temp_path, bus0a->ins->id);
+  free(temp_path);
+  dsp_add_connection(path_bus_recurse_out0,
+		     path_bus0a_in0);
+
+  temp_path = strconcat(path_bus0a, ":");
+  path_bus0a_out0 = strconcat(temp_path, bus0a->outs->id);
+  free(temp_path);
+  dsp_add_connection(path_bus0a_in0,
+		     path_bus0a_out0);
+
+  temp_path = strconcat(path_bus1a, ":");
+  path_bus1a_in0 = strconcat(temp_path, bus1a->ins->id);
+  free(temp_path);
+  dsp_add_connection(path_bus0a_out0,
+		     path_bus1a_in0);
+
+  temp_path = strconcat(path_bus1a, ":");
+  path_bus1a_out0 = strconcat(temp_path, bus1a->outs->id);
+  free(temp_path);
+  dsp_add_connection(path_bus1a_in0,
+		     path_bus1a_out0);
+
+  temp_path = strconcat(path_bus2a, ":");
+  path_bus2a_in0 = strconcat(temp_path, bus2a->ins->id);
+  free(temp_path);
+  dsp_add_connection(path_bus1a_out0,
+		     path_bus2a_in0);
+
+  temp_path = strconcat(path_bus2a, ":");
+  path_bus2a_out0 = strconcat(temp_path, bus2a->outs->id);
+  free(temp_path);
+  dsp_add_connection(path_bus2a_in0,
+		     path_bus2a_out0);
+
+  temp_path = strconcat(path_bus3a, ":");
+  path_bus3a_in0 = strconcat(temp_path, bus3a->ins->id);
+  free(temp_path);
+  dsp_add_connection(path_bus2a_out0,
+		     path_bus3a_in0);
+
+  temp_path = strconcat(path_bus3a, ":");
+  path_bus3a_out0 = strconcat(temp_path, bus3a->outs->id);
+  free(temp_path);
+  dsp_add_connection(path_bus3a_in0,
+		     path_bus3a_out0);
+
+  temp_path = strconcat(path_bus3b, ":");
+  path_bus3b_in0 = strconcat(temp_path, bus3b->ins->id);
+  free(temp_path);
+  dsp_add_connection(path_bus3a_out0,
+		     path_bus3b_in0);
+
+  temp_path = strconcat(path_bus3b, ":");
+  path_bus3b_out0 = strconcat(temp_path, bus3b->outs->id);
+  free(temp_path);
+  dsp_add_connection(path_bus3b_in0,
+		     path_bus3b_out0);
+
+  path_mains_out0 = strconcat("/mains}", dsp_main_outs->id);
+  dsp_add_connection(path_bus3b_out0,
+		     path_mains_out0);
   fprintf(stderr, "   -- creating dsp connection graph for test -- finish\n");  
 
   fprintf(stderr, "   -- recursing test dsp graph -- start\n");
@@ -1087,6 +1178,16 @@ test_recurse_dsp_graph() {
   dsp_feed_main_inputs(dsp_main_ins);
   recurse_dsp_graph(bus_recurse, "/", 48000, 1);
   fprintf(stderr, "bus_recurse->outs->out->value: %f\n", bus_recurse->outs->out->value);
+  fprintf(stderr, "bus0a->ins->out->value: %f\n", bus0a->ins->out->value);
+  fprintf(stderr, "bus1a->outs->out->value: %f\n", bus1a->outs->out->value);
+  fprintf(stderr, "bus2a->ins->out->value: %f\n", bus2a->ins->out->value);
+  fprintf(stderr, "bus2a->outs->out->value: %f\n", bus2a->outs->out->value);
+  fprintf(stderr, "bus3a->ins->out->value: %f\n", bus3a->ins->out->value);
+  fprintf(stderr, "bus3a->outs->out->value: %f\n", bus3a->outs->out->value);
+  fprintf(stderr, "bus3b->ins->out->value: %f\n", bus3b->ins->out->value);
+  fprintf(stderr, "bus3b->outs->out->value: %f\n", bus3b->outs->out->value);
+  mains_out_sample0 = rtqueue_deq(dsp_main_outs->values);
+  fprintf(stderr, "mains_out_sample0: %f\n", mains_out_sample0);
   fprintf(stderr, "   -- recursing test dsp graph -- finish\n");  
 
   fprintf(stderr, " >> success!\n");
