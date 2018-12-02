@@ -1,2 +1,2 @@
 dsp:
-	gcc  -o test_dsp test_dsp.c ../rtqueue.c ../libcyperus.c ../dsp.c ../dsp_types.c ../dsp_ops.c ../osc_handlers.c ../jackcli.c -ljack -lpthread -lm -llo -lfftw3_threads -lfftw3 -luuid -ljack
+	gcc  -o test_dsp test_dsp.c ../rtqueue.c ../libcyperus.c ../dsp.c ../dsp_types.c ../dsp_ops.c ../jackcli.c ../osc.c ../osc_handlers.c -ljack -lpthread -lm -llo -lfftw3_threads -lfftw3 -luuid -ljack
