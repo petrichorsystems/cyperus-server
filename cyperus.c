@@ -1,4 +1,4 @@
-/* test_osc.c
+/* cyperus.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -33,8 +33,7 @@ Copyright 2015 murray foster */
 #include "dsp_ops.h"
 #include "osc_handlers.h"
 
-int
-print_usage() {
+void print_usage() {
   fprintf(stdout,"Usage: cyperus [options] [arg]\n\n");
   fprintf(stdout,"Options:\n"
 	  " -h,  --help          displays this menu\n"
@@ -43,15 +42,13 @@ print_usage() {
 	  " -b,  --bitdepth      set bitdepth of capture to 8,16,24,32,64, or 128. default: 24\n"
 	  " -p,  --port          set osc interface receiving port. default: 97211\n"
 	  " -sp, --send-port     set osc interface sending port. default: 97217\n"
-	  " -f,  --file          set path of session file to load preexisting sounds.\n\n"
+	  " -f,  --file          set path of session file to load preexisting sounds.\n"
+	  " -fi, --fifo-size     set fifo buffer size for each channel. default: 2048\n\n"
           "documentation available soon\n\n");
-  exit(0);
-
-  return 0;
 } /* print_usage */
 
 void print_header(void) {
-  printf("\n"
+  printf("\n\n"
 	 "welcome to the\n"	                             
 	 ",-. . . ,-. ,-. ,-. . . ,-. \n"
 	 "|   | | | | |-' |   | | `-. \n"
@@ -64,12 +61,17 @@ void print_header(void) {
  
 int main(int argc, char *argv[])
 {
-  int i=0;
-  int input;
-  int output;
+  int c = 0;
+  int input = 8;
+  int output = 8;
   int bitdepth;
-  char *osc_port_in;
-  char *osc_port_out;
+  int fifo_size = 2048;
+  char *osc_port_in = NULL;
+  char *osc_port_out = NULL;
+  char *file_path = NULL;
+
+  char *store_flag=NULL;
+  char *store_input=NULL;
 
   if( argc > 1 )
     if( !strcmp(argv[1], "-h") ||
@@ -80,8 +82,93 @@ int main(int argc, char *argv[])
     }
   
   print_header();
-  jackcli_setup("cyperus", 32, 8, 8);
+
+  /* process command-line input */
+  for(c=1; c<argc; c++)
+    {
+      store_flag = argv[c];
+      if( store_flag != NULL )
+	{
+	  if( !strcmp(store_flag,"-p") ||
+	      !strcmp(store_flag,"--port")) {
+	    store_input=argv[c+1];
+	    osc_port_in=store_input;
+	  }
+
+	  if( !strcmp(store_flag,"-sp") ||
+	      !strcmp(store_flag,"--send-port")) {
+	    store_input=argv[c+1];
+	    osc_port_out=store_input;
+	  }
+	  
+	  if( !strcmp(store_flag,"-b") ||
+	      !strcmp(store_flag,"--bitdepth")) {
+	    store_input = argv[c+1];
+	    bitdepth=atoi(store_input);
+	  }
+	  
+	  if( !strcmp(store_flag,"-i") ||
+	      !strcmp(store_flag,"--input")) {
+	    store_input = argv[c+1];
+	    input=atoi(store_input);
+	  }
+
+	  if( !strcmp(store_flag,"-o") ||
+	      !strcmp(store_flag,"--output")) {
+	    store_input = argv[c+1];
+	    output=atoi(store_input);
+	  }
+	  
+	  if( !strcmp(store_flag,"-f") ||
+	      !strcmp(store_flag,"--file")) {
+	    store_input = argv[c+1];
+	    file_path=store_input;
+	  }
+	  
+	  if( !strcmp(store_flag,"-fi") ||
+	      !strcmp(store_flag,"--fifo-size")) {
+	    store_input = argv[c+1];
+	    fifo_size=atoi(store_input);
+	  }
+
+	  /* reset temporarily stored flag&input */
+	  store_input=NULL;
+	  store_flag=NULL;
+	}
+    }
+
   
+  if( osc_port_in == NULL )
+    osc_port_in="97211";
+  
+  if( osc_port_out == NULL )
+    osc_port_out="97217";
+  
+  /* if it's not 8,16,24,32,or 64 assign 24 bits as default */
+  switch(bitdepth) {
+  case 8:
+    break;
+  case 16:
+    break;
+  case 24:
+    break;
+  case 32:
+    break;
+  case 64:
+    break;
+  default:
+    bitdepth=24;
+  }
+
+  jackcli_setup("cyperus", 32, 8, 8, 2048);
+
+  printf("channels in: %d\n", input);
+  printf("channels out: %d\n", output);
+  printf("bitdepth: %dbits\n", bitdepth);
+  printf("fifo size: %d\n", fifo_size);
+  printf("osc receive port: %s\n", osc_port_in);
+  printf("osc send port: %s\n", osc_port_out);
+  printf("filepath: %s\n\n\n", file_path);
   pthread_t dsp_thread_id;
   //pthread_create(&dsp_thread_id, NULL, dsp_thread, NULL);
   //pthread_detach(dsp_thread_id);

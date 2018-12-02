@@ -612,12 +612,6 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int 
   return;
 } /* recurse_dsp_graph */
 
-
-int jackcli_channels_in = 8;
-int jackcli_channels_out = 8;
-int jackcli_fifo_size = 2048;
-
-
 void
 dsp_mains_allocate(int channels_in, int channels_out, int fifo_size) {
   struct dsp_port_out *temp_port_out = NULL;

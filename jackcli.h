@@ -33,7 +33,7 @@ extern int jackcli_samplerate;
 extern rtqueue_t **jackcli_fifo_ins;
 extern rtqueue_t **jackcli_fifo_outs;
 
-int jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out);
+int jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out, int fifo_size);
 int jackcli_teardown();
 
 #endif

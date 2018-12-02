@@ -28,6 +28,10 @@ rtqueue_t **jackcli_fifo_ins;
 rtqueue_t **jackcli_fifo_outs;
 
 int jackcli_samplerate;
+int jackcli_channels_in;
+int jackcli_channels_out;
+int jackcli_fifo_size;
+
 const size_t jackcli_sample_size = sizeof (jack_default_audio_sample_t) ;
 
 jack_client_t *jackcli_client = NULL;
@@ -50,10 +54,12 @@ static int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     }  
   for ( i = 0; i < nframes; i++)
     {
+      /*
       for (n = 0; n < jackcli_channels_in; n++)
 	rtqueue_enq(jackcli_fifo_ins[n], jackcli_ins[n][i]);
       for (n = 0; n < jackcli_channels_in; n++)
 	jackcli_outs[n][i] = rtqueue_deq(jackcli_fifo_outs[n]);
+      */
     }
   return 0 ;
 } /* jackcli_process_callback */
@@ -86,6 +92,7 @@ void jackcli_allocate_ports(int channels_in, int channels_out)
 int jackcli_fifo_setup()
 {
   int i = 0;
+  /*
   *jackcli_fifo_ins = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_in);
   *jackcli_fifo_outs = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_out);
 
@@ -93,7 +100,7 @@ int jackcli_fifo_setup()
     jackcli_fifo_ins[i] = rtqueue_init(jackcli_fifo_size);
   for( i=0; i < jackcli_channels_out; i++)
     jackcli_fifo_outs[i] = rtqueue_init(jackcli_fifo_size);
-
+  */
   return 0;
 } /* jackcli_fifo_setup */
 
@@ -141,11 +148,16 @@ int jackcli_close()
   free (jackcli_ports_input);
 } /* jackcli_close() */
 
-int jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out)
+int jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out, int fifo_size)
 {
+  jackcli_channels_in = channels_in;
+  jackcli_channels_out = channels_out;
+  jackcli_fifo_size = fifo_size;
+  
   jackcli_open(jackcli_client_name);
   jackcli_fifo_setup();
   jackcli_set_callbacks();
+
   jackcli_allocate_ports(channels_in, channels_out);
   if (jackcli_activate_client() == 1)
     return 1;
