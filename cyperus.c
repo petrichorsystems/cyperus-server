@@ -58,7 +58,7 @@ void print_header(void) {
 	 "\t\trealtime music system\n");
   printf("\n");
 } /* print_header */
- 
+
 int main(int argc, char *argv[])
 {
   int c = 0;
@@ -137,14 +137,13 @@ int main(int argc, char *argv[])
 	}
     }
 
-  
   if( osc_port_in == NULL )
     osc_port_in="97211";
   
   if( osc_port_out == NULL )
     osc_port_out="97217";
   
-  /* if it's not 8,16,24,32,or 64 assign 24 bits as default */
+  /* if it's not 8, 16, 24, 32, or 64 assign 24 bits as default */
   switch(bitdepth) {
   case 8:
     break;
@@ -160,7 +159,7 @@ int main(int argc, char *argv[])
     bitdepth=24;
   }
 
-  jackcli_setup("cyperus", 32, 8, 8, 2048);
+  jackcli_setup("cyperus", bitdepth, input, output, fifo_size);
 
   printf("channels in: %d\n", input);
   printf("channels out: %d\n", output);
@@ -169,6 +168,7 @@ int main(int argc, char *argv[])
   printf("osc receive port: %s\n", osc_port_in);
   printf("osc send port: %s\n", osc_port_out);
   printf("filepath: %s\n\n\n", file_path);
+
   pthread_t dsp_thread_id;
   //pthread_create(&dsp_thread_id, NULL, dsp_thread, NULL);
   //pthread_detach(dsp_thread_id);
