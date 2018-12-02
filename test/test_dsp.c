@@ -1002,10 +1002,12 @@ test_recurse_dsp_graph() {
   char *path_mains_out0;
 
   float mains_out_sample0 = 0.0;
-  
+
+  /* cleanup dsp connection graph in preparation for tests */
   dsp_connection_list_reverse(dsp_global_connection_graph, &dsp_connection_terminate);
   dsp_global_connection_graph = NULL;
 
+  /* create dsp busses and modules */
   bus_recurse = dsp_bus_init("recurse");
   dsp_add_bus("/", bus_recurse, "recurse_in", "recurse_out");
   
@@ -1078,6 +1080,7 @@ test_recurse_dsp_graph() {
   path_bus3b_module0 = strconcat(temp_path, bus3b->dsp_module_head->id);
   free(temp_path);
 
+  /* add dsp connections to the global graph */
   path_mains_in0 = strconcat("/mains{", dsp_main_ins->id);
 
   temp_path = strconcat(path_bus_recurse, ":");
@@ -1164,30 +1167,19 @@ test_recurse_dsp_graph() {
   dsp_add_connection(path_bus3b_out0,
 		     path_mains_out0);
 
+  /* add sample data to main inputs and recurse dsp graph */
   dsp_main_ins->value = 0.666;
   dsp_feed_main_inputs(dsp_main_ins);
   recurse_dsp_graph(bus_recurse, "/", 48000, 1);
-  /*
-  fprintf(stderr, "bus_recurse->outs->out->value: %f\n", bus_recurse->outs->out->value);
-  fprintf(stderr, "bus0a->ins->out->value: %f\n", bus0a->ins->out->value);
-  fprintf(stderr, "bus1a->outs->out->value: %f\n", bus1a->outs->out->value);
-  fprintf(stderr, "bus2a->ins->out->value: %f\n", bus2a->ins->out->value);
-  fprintf(stderr, "bus2a->outs->out->value: %f\n", bus2a->outs->out->value);
-  fprintf(stderr, "bus3a->ins->out->value: %f\n", bus3a->ins->out->value);
-  fprintf(stderr, "bus3a->outs->out->value: %f\n", bus3a->outs->out->value);
-  fprintf(stderr, "bus3b->ins->out->value: %f\n", bus3b->ins->out->value);
-  fprintf(stderr, "bus3b->outs->out->value: %f\n", bus3b->outs->out->value);
-  */
+
+  /* dequeue sample from main output and verify */
+  mains_out_sample0 = 0.0;
   mains_out_sample0 = rtqueue_deq(dsp_main_outs->values);
-  /*
-  fprintf(stderr, "mains_out_sample0: %f\n", mains_out_sample0);
-  */
   if( mains_out_sample0 > 0.665 &&
       mains_out_sample0 < 0.667)
     fprintf(stderr, " >> success!\n");
   else
     fprintf(stderr, " >> failed..\n");
-  
 }
 
 int
