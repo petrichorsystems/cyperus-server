@@ -39,7 +39,7 @@ void print_usage() {
 	  " -h,  --help          displays this menu\n"
 	  " -i,  --input         input channels.  default: 8\n"
 	  " -o,  --output        output channels. default: 8\n"
-	  " -b,  --bitdepth      set bitdepth of capture to 8,16,24,32,64, or 128. default: 24\n"
+	  " -b,  --bitdepth      set bitdepth of capture to 8, 16, 24, 32, 64, or 128. default: 24\n"
 	  " -p,  --port          set osc interface receiving port. default: 97211\n"
 	  " -sp, --send-port     set osc interface sending port. default: 97217\n"
 	  " -f,  --file          set path of session file to load preexisting sounds.\n"
@@ -55,8 +55,7 @@ void print_header(void) {
 	 "`-' `-| |-' `-' '   `-' `-' \n"
 	 "     /| |                   \n"
 	 "    `-' '                   \n"
-	 "\t\trealtime music system\n");
-  printf("\n");
+	 "\t\trealtime music system\n\n\n");
 } /* print_header */
 
 int main(int argc, char *argv[])
@@ -73,6 +72,8 @@ int main(int argc, char *argv[])
   char *store_flag=NULL;
   char *store_input=NULL;
 
+  int exit_key;
+  
   if( argc > 1 )
     if( !strcmp(argv[1], "-h") ||
 	!strcmp(argv[1], "--help") ) {
@@ -170,11 +171,18 @@ int main(int argc, char *argv[])
   printf("filepath: %s\n\n\n", file_path);
 
   pthread_t dsp_thread_id;
-  //pthread_create(&dsp_thread_id, NULL, dsp_thread, NULL);
-  //pthread_detach(dsp_thread_id);
-  
-  while(1){sleep(1);};
+  pthread_create(&dsp_thread_id, NULL, dsp_thread, NULL);
+  pthread_detach(dsp_thread_id);
 
+  osc_setup(osc_port_in, osc_port_out, "127.0.0.1");
+  
+  printf("press <ENTER> to quit\n\n");
+  
+  while(!exit_key) {
+    exit_key = getchar();
+    usleep(10000);
+  }
+  
   jackcli_teardown();
   
   return 0;

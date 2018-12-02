@@ -54,12 +54,11 @@ static int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     }  
   for ( i = 0; i < nframes; i++)
     {
-      /*
       for (n = 0; n < jackcli_channels_in; n++)
 	rtqueue_enq(jackcli_fifo_ins[n], jackcli_ins[n][i]);
       for (n = 0; n < jackcli_channels_in; n++)
-	jackcli_outs[n][i] = rtqueue_deq(jackcli_fifo_outs[n]);
-      */
+	if( !rtqueue_isempty(jackcli_fifo_outs[n]) )
+	  jackcli_outs[n][i] = rtqueue_deq(jackcli_fifo_outs[n]);
     }
   return 0 ;
 } /* jackcli_process_callback */
@@ -92,15 +91,15 @@ void jackcli_allocate_ports(int channels_in, int channels_out)
 int jackcli_fifo_setup()
 {
   int i = 0;
-  /*
-  *jackcli_fifo_ins = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_in);
-  *jackcli_fifo_outs = (rtqueue_t*)malloc(sizeof(rtqueue_t) * jackcli_channels_out);
+  
+  jackcli_fifo_ins = malloc(sizeof(rtqueue_t*) * jackcli_channels_in);
+  jackcli_fifo_outs = malloc(sizeof(rtqueue_t*) * jackcli_channels_out);
 
   for( i=0; i < jackcli_channels_in; i++)
     jackcli_fifo_ins[i] = rtqueue_init(jackcli_fifo_size);
   for( i=0; i < jackcli_channels_out; i++)
     jackcli_fifo_outs[i] = rtqueue_init(jackcli_fifo_size);
-  */
+
   return 0;
 } /* jackcli_fifo_setup */
 

@@ -26,7 +26,67 @@ Copyright 2015 murray foster */
 #include "dsp.h"
 #include "dsp_types.h"
 #include "dsp_ops.h"
+#include "osc.h"
 #include "osc_handlers.h"
+
+void osc_error(int num, const char *msg, const char *path)
+{
+  printf("liblo server error %d in path %s: %s\n", num, path, msg);
+  fflush(stdout);
+}
+
+/* catch any incoming messages and display them. returning 1 means that the
+ * message has not been fully handled and the server should try other methods */
+int generic_handler(const char *path, const char *types, lo_arg ** argv,
+                    int argc, void *data, void *user_data)
+{
+  int i;
+  
+  fprintf(stdout,"path: <%s>\n", path);
+  for (i = 0; i < argc; i++) {
+    fprintf(stderr,"arg %d '%c' ", i, types[i]);
+    lo_arg_pp((lo_type)types[i], argv[i]);
+    fprintf(stdout,"\n");
+  }
+  return 0;
+}
+
+int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
+			      int argc, void *data, void *user_data)
+{
+  int voice;
+  int module_no;
+  
+  fprintf(stdout, "path: <%s>\n", path);
+  module_no=argv[0]->i;
+
+  fprintf(stderr, "removing module #%d..\n",module_no);
+  
+  dsp_remove_module(0,module_no);
+  
+  return 0;
+} /* osc_remove_module_handler */
+
+int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,
+			     int argc, void *data, void *user_data)
+{
+  int voice_no;
+  char *module_list;
+  char return_string[100];
+  
+  fprintf(stdout, "path: <%s>\n", path);
+  voice_no=argv[0]->i;
+
+  module_list = dsp_list_modules(voice_no);
+  
+  fprintf(stderr, "listing modules for voice #%d..\n",voice_no);
+
+  lo_send(lo_addr_send,"/cyperus/list","s",module_list);
+
+  free(module_list);
+  return 0;
+  
+} /* osc_list_modules_handler */
 
 int osc_add_sine_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
