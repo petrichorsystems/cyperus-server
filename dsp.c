@@ -250,7 +250,7 @@ dsp_parse_bus_path(char *target_path) {
 		  temp_bus = temp_bus->down;
 		  break;
 		} else {
-		  fprintf(stderr, "ain't no bus existin': %s!\n", temp_bus->id);
+		  printf("ain't no bus existin': %s!\n", temp_bus->id);
 		  return NULL;
 		}
 	    } 
@@ -483,7 +483,7 @@ dsp_add_connection(char *id_out, char *id_in) {
 
   if( (port_out == NULL) ||
       (port_in == NULL) ) {
-    fprintf(stderr, "failed to add connection!\n");
+    printf("failed to add connection!\n");
     return;
   }
 

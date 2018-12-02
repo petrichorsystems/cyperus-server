@@ -34,17 +34,17 @@ Copyright 2015 murray foster */
 #include "osc_handlers.h"
 
 void print_usage() {
-  fprintf(stdout,"Usage: cyperus [options] [arg]\n\n");
-  fprintf(stdout,"Options:\n"
-	  " -h,  --help          displays this menu\n"
-	  " -i,  --input         input channels.  default: 8\n"
-	  " -o,  --output        output channels. default: 8\n"
-	  " -b,  --bitdepth      set bitdepth of capture to 8, 16, 24, 32, 64, or 128. default: 24\n"
-	  " -p,  --port          set osc interface receiving port. default: 97211\n"
-	  " -sp, --send-port     set osc interface sending port. default: 97217\n"
-	  " -f,  --file          set path of session file to load preexisting sounds.\n"
-	  " -fi, --fifo-size     set fifo buffer size for each channel. default: 2048\n\n"
-          "documentation available soon\n\n");
+  printf("Usage: cyperus [options] [arg]\n\n");
+  printf("Options:\n"
+	 " -h,  --help          displays this menu\n"
+	 " -i,  --input         input channels.  default: 8\n"
+	 " -o,  --output        output channels. default: 8\n"
+	 " -b,  --bitdepth      set bitdepth of capture to 8, 16, 24, 32, 64, or 128. default: 24\n"
+	 " -p,  --port          set osc interface receiving port. default: 97211\n"
+	 " -sp, --send-port     set osc interface sending port. default: 97217\n"
+	 " -f,  --file          set path of session file to load preexisting sounds.\n"
+	 " -fi, --fifo-size     set fifo buffer size for each channel. default: 2048\n\n"
+	 "documentation available soon\n\n");
 } /* print_usage */
 
 void print_header(void) {

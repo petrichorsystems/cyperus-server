@@ -120,7 +120,7 @@ int jackcli_activate_client()
 {
   if (jack_activate (jackcli_client))
     {	
-      fprintf(stderr, "Cannot activate jackcli_client.\n");
+      printf("Cannot activate jackcli_client.\n");
       return 1;
     }
   return 0;
@@ -131,7 +131,7 @@ int jackcli_open(char *jackcli_client_name)
   /* create jack jackcli_client */
   if ((jackcli_client = jack_client_open(jackcli_client_name, JackNullOption,NULL)) == 0)
     {
-      fprintf(stderr, "Jack server not running?\n");
+      printf("Jack server not running?\n");
       return 1;
     }
   jackcli_samplerate = jack_get_sample_rate(jackcli_client);

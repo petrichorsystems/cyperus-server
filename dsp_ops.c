@@ -338,23 +338,23 @@ dsp_create_vocoder(float freq, float amp) {
 
   vocoder_param.vocoder.cyperus_params[0].signal_buffer_out = (float *)calloc(20*4096, sizeof(float));  
 
-  fprintf(stderr, "about to memset fft_buffer");
+  printf("about to memset fft_buffer");
   
   // memset(vocoder_param.vocoder.cyperus_params[0].fft_buffer, 0, 2*VOCODERFRAMESIZE*sizeof(float));
 
-  fprintf(stderr, "about to memset last_phase");
+  printf("about to memset last_phase");
   vocoder_param.vocoder.cyperus_params[0].last_phase = (float *)malloc(VOCODERFRAMESIZE*sizeof(float));
   memset(vocoder_param.vocoder.cyperus_params[0].last_phase, 0, (VOCODERFRAMESIZE)*sizeof(float));
 
-  fprintf(stderr, "about to memset sum_phase");
+  printf("about to memset sum_phase");
   vocoder_param.vocoder.cyperus_params[0].sum_phase = (float *)malloc(VOCODERFRAMESIZE*sizeof(float));
   memset(vocoder_param.vocoder.cyperus_params[0].sum_phase, 0, (VOCODERFRAMESIZE)*sizeof(float));
 
-  fprintf(stderr, "output accumulator");
+  printf("output accumulator");
   vocoder_param.vocoder.cyperus_params[0].output_accumulator = (float *)malloc(VOCODERFRAMESIZE*sizeof(float));
   memset(vocoder_param.vocoder.cyperus_params[0].output_accumulator, 0, VOCODERFRAMESIZE*sizeof(float));
 
-  fprintf(stderr, "about to memset signal_buffer_out");
+  printf("about to memset signal_buffer_out");
   vocoder_param.vocoder.cyperus_params[0].signal_buffer_out = (float *)malloc(VOCODERFRAMESIZE*sizeof(float));
   memset(vocoder_param.vocoder.cyperus_params[0].signal_buffer_out,0, VOCODERFRAMESIZE*sizeof(float));
   
@@ -362,7 +362,7 @@ dsp_create_vocoder(float freq, float amp) {
   vocoder_param.vocoder.cyperus_params[0].vocoder_pos = 0;
   //dsp_add_module(dsp_vocoder,vocoder_param);
   
-  fprintf(stderr, "vocoder module added");
+  printf("vocoder module added");
   return 0;
 } /* dsp_create_vocoder */
 

@@ -194,8 +194,8 @@ void dsp_connection_list(struct dsp_connection *head_connection, void (*func)(st
   }
 }
 
-void dsp_connection_fprintf(struct dsp_connection *connection) {
-  fprintf(stderr, "%s\n", connection->id);
+void dsp_connection_printf(struct dsp_connection *connection) {
+  printf("%s\n", connection->id);
 }
 
 void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*func)(struct dsp_connection*) ) {
@@ -390,12 +390,12 @@ void dsp_bus_insert_tail_deep(struct dsp_bus *head_bus, struct dsp_bus *new_bus)
   }
   while(temp_bus->down != NULL)
     {
-      fprintf(stderr, "DOWN temp_bus: %s\n", temp_bus->name);
+      printf("DOWN temp_bus: %s\n", temp_bus->name);
       temp_bus = temp_bus->down;
     }
   while(temp_bus->next != NULL)
     {
-      fprintf(stderr, "NEXT temp_bus: %s\n", temp_bus->name);
+      printf("NEXT temp_bus: %s\n", temp_bus->name);
       temp_bus = temp_bus->next;
     }
   temp_bus->next = new_bus;
