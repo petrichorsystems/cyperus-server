@@ -93,7 +93,7 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	  current_path[0] = '\0';
 	  strcpy(current_path, "/mains{");
 	  strcat(current_path, temp_out->id);
-	}	
+	}
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
 	  rtqueue_enq(temp_connection->in_values, temp_outsample);
 	}

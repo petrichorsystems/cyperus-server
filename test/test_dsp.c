@@ -968,7 +968,11 @@ test_recurse_dsp_graph() {
   struct dsp_bus *bus_recurse;
   char *path_bus_recurse;
   char *path_bus_recurse_module0;
-  
+  char *path_bus_recurse_in0;
+  char *path_bus_recurse_module0_in;
+  char *path_bus_recurse_module0_out;
+  char *path_bus_recurse_out0;
+
   struct dsp_bus *bus0a, *bus0b, *bus0c;
   char *path_bus0a, *path_bus0b, *path_bus0c;
   
@@ -984,11 +988,11 @@ test_recurse_dsp_graph() {
   char *path_bus3a_module0, *path_bus3a_module1;
   char *path_bus3b_module0;
 
-  char *paths_mains_in[8];
-  char *paths_mains_out[4];
-
+  char *path_mains_in0;
+  
   fprintf(stderr, "   -- cleaning dsp connection graph -- start\n");
   dsp_connection_list_reverse(dsp_global_connection_graph, &dsp_connection_terminate);
+  dsp_global_connection_graph = NULL;
   fprintf(stderr, "   -- cleaning dsp connection graph -- finish\n");
 
   fprintf(stderr, "   -- creating dsp busses for test -- start\n");
@@ -1056,11 +1060,33 @@ test_recurse_dsp_graph() {
   fprintf(stderr, "   -- creating dsp modules for test -- finish\n");  
   
   fprintf(stderr, "   -- creating dsp connection graph for test -- start\n");
-  
+  path_mains_in0 = strconcat("/mains{", dsp_main_ins->id);
+  temp_path = strconcat(path_bus_recurse, ":");
+  path_bus_recurse_in0 = strconcat(temp_path, bus_recurse->ins->id);
+  free(temp_path);
+  dsp_add_connection(path_mains_in0,
+		     path_bus_recurse_in0);
+
+  temp_path = strconcat(path_bus_recurse_module0, "<");
+  path_bus_recurse_module0_in = strconcat(temp_path, bus_recurse->dsp_module_head->ins->id);
+  free(temp_path);
+  dsp_add_connection(path_bus_recurse_in0,
+		     path_bus_recurse_module0_in);
+
+  temp_path = strconcat(path_bus_recurse_module0, ">");
+  path_bus_recurse_module0_out = strconcat(temp_path, bus_recurse->dsp_module_head->outs->id);
+  free(temp_path);
+  temp_path = strconcat(path_bus_recurse, ":");
+  path_bus_recurse_out0 = strconcat(temp_path, bus_recurse->outs->id);
+  dsp_add_connection(path_bus_recurse_module0_out,
+		     path_bus_recurse_out0);
   fprintf(stderr, "   -- creating dsp connection graph for test -- finish\n");  
 
   fprintf(stderr, "   -- recursing test dsp graph -- start\n");
-  recurse_dsp_graph(bus_recurse, path_bus_recurse, 48000, 1);
+  dsp_main_ins->value = 0.666;
+  dsp_feed_main_inputs(dsp_main_ins);
+  recurse_dsp_graph(bus_recurse, "/", 48000, 1);
+  fprintf(stderr, "bus_recurse->outs->out->value: %f\n", bus_recurse->outs->out->value);
   fprintf(stderr, "   -- recursing test dsp graph -- finish\n");  
 
   fprintf(stderr, " >> success!\n");

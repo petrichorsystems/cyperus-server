@@ -183,10 +183,10 @@ dsp_parse_path(char* result[], char *path) {
   parsed_path = (char *)malloc(sizeof(char) * strlen(path) - id_length + 1 + 1);
   for(i=0; i < strlen(path) - id_length - 1; i++)
     parsed_path[i] = path[i];
-  parsed_path[++i] = '\0';
+  parsed_path[i++] = '\0';
   for(i=0; i < id_length; i++)
     parsed_id[i] = temp_string[strlen(path) - id_length + i];
-  parsed_id[++i] = '\0';
+  parsed_id[i++] = '\0';
   
   if( strcmp(result[0], "/") )
     result[1] = parsed_path;
@@ -300,7 +300,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 	    port_out = dsp_port_out_init("out", 1);
 	    temp_bus_port->in = port_in;
 	    temp_bus_port->out = port_out;
-	    
+
 	    if(head_bus_port != NULL) {
 	      dsp_bus_port_insert_tail(head_bus_port, temp_bus_port);
 	    }
@@ -423,7 +423,6 @@ dsp_add_connection(char *id_out, char *id_in) {
 				    module_id);
     port_out = dsp_find_port_out(target_module->outs, port_out_id);
   }
-  
   if( strcmp(temp_result[0], ":") == 0) {
     bus_port_path = temp_result[1];
     bus_port_id = temp_result[2];
@@ -432,10 +431,16 @@ dsp_add_connection(char *id_out, char *id_in) {
     bus_path = temp_result[1];
 
     target_bus = dsp_parse_bus_path(bus_path);
-
     target_bus_port = dsp_find_bus_port(target_bus->outs,
 					bus_port_id);
-    port_out = target_bus_port->out;
+    if( target_bus_port == NULL ) {
+      target_bus_port = dsp_find_bus_port(target_bus->ins,
+					  bus_port_id);
+      if( target_bus_port )
+	port_out = target_bus_port->out;
+    } else {
+      port_out = target_bus_port->out;
+    }
   }
 
   /* parsing id_in (to connection input) */
@@ -461,14 +466,19 @@ dsp_add_connection(char *id_out, char *id_in) {
     bus_port_id = temp_result[2];
 
     dsp_parse_path(temp_result, bus_port_path);
-
     bus_path = temp_result[1];
 
     target_bus = dsp_parse_bus_path(bus_path);
-
     target_bus_port = dsp_find_bus_port(target_bus->ins,
 					bus_port_id);
-    port_in = target_bus_port->in;
+    if( target_bus_port == NULL ) {
+      target_bus_port = dsp_find_bus_port(target_bus->outs,
+					  bus_port_id);
+      if( target_bus_port )
+	port_in = target_bus_port->in;
+    } else {
+      port_in = target_bus_port->in;
+    }
   }
 
   if( (port_out == NULL) ||
@@ -572,7 +582,6 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int 
   while(temp_bus != NULL) {
     /* build current path */
 
-    printf("whaddup\n");
     fprintf(stderr, "parent_path: %s\n", parent_path);
 
     /* handle root path "/" (avoid adding extra path separator if it's root) */
@@ -668,7 +677,7 @@ void
 	i += 1;
       }
       dsp_feed_main_inputs(dsp_main_ins);
-      
+
       temp_bus = dsp_global_bus_head;
       while( temp_bus != NULL ) {
 	recurse_dsp_graph(temp_bus, current_path, jack_sr, pos);
