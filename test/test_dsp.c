@@ -1174,7 +1174,7 @@ test_recurse_dsp_graph() {
 
   /* dequeue sample from main output and verify */
   mains_out_sample0 = 0.0;
-  mains_out_sample0 = rtqueue_deq(dsp_main_outs->values);
+  mains_out_sample0 = dsp_sum_input(dsp_main_outs);
   if( mains_out_sample0 > 0.665 &&
       mains_out_sample0 < 0.667)
     fprintf(stderr, " >> success!\n");

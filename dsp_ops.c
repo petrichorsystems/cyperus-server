@@ -20,6 +20,7 @@ Copyright 2018 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
+#include "jackcli.h"
 #include "cyperus.h"
 #include "libcyperus.h"
 #include "dsp.h"
@@ -157,7 +158,7 @@ int dsp_create_sine(float freq, float amp, float phase) {
   sine_param.sine.amp = amp;
   sine_param.sine.phase = phase;
   
-  sine_param.sine.cyperus_params[0].block_fifo = *rtqueue_init(jack_sr*2);
+  sine_param.sine.cyperus_params[0].block_fifo = *rtqueue_init(jackcli_samplerate*2);
   sine_param.sine.cyperus_params[0].last_freq = freq;
   sine_param.sine.cyperus_params[0].phase_delta = 0.0;
   
@@ -279,9 +280,9 @@ dsp_create_delay(float amt, float time, float feedback) {
   delay_param.delay.name = "delay";
   delay_param.delay.cyperus_params = malloc(sizeof(struct cyperus_parameters));
   delay_param.delay.amt = amt;
-  delay_param.delay.time = time * jack_sr;
+  delay_param.delay.time = time * jackcli_samplerate;
   delay_param.delay.feedback = feedback;
-  delay_param.delay.cyperus_params[0].signal_buffer = (float *)calloc(time * jack_sr * 30, sizeof(float));
+  delay_param.delay.cyperus_params[0].signal_buffer = (float *)calloc(time * jackcli_samplerate * 30, sizeof(float));
 
   delay_param.delay.cyperus_params[0].pos = 0;
   delay_param.delay.cyperus_params[0].delay_pos = 0;
@@ -295,7 +296,7 @@ dsp_edit_delay(int module_no, float amt, float time, float feedback) {
   int i = 0;
 
   dsp_voice_parameters[module_no].delay.amt = amt;
-  dsp_voice_parameters[module_no].delay.time = time * jack_sr;
+  dsp_voice_parameters[module_no].delay.time = time * jackcli_samplerate;
   dsp_voice_parameters[module_no].delay.feedback = feedback;
   /*
   dsp_voice_parameters[module_no].delay.cyperus_params[0].pos = 0;
@@ -403,7 +404,7 @@ dsp_create_pitch_shift(float amp, float shift, float mix) {
   pitch_shift_param.pitch_shift.name = "pitch shift";
   pitch_shift_param.pitch_shift.cyperus_params = malloc(sizeof(struct cyperus_parameters));
 
-  pitch_shift_param.pitch_shift.cyperus_params[0].block_fifo = *rtqueue_init(jack_sr*4);
+  pitch_shift_param.pitch_shift.cyperus_params[0].block_fifo = *rtqueue_init(jackcli_samplerate*4);
   pitch_shift_param.pitch_shift.cyperus_params[0].signal_buffer = (float *)calloc(4096, sizeof(float));  
   pitch_shift_param.pitch_shift.cyperus_params[0].pos = 0;
 

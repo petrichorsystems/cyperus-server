@@ -27,6 +27,7 @@ Copyright 2015 murray foster */
 rtqueue_t **jackcli_fifo_ins;
 rtqueue_t **jackcli_fifo_outs;
 
+int jackcli_samplerate;
 const size_t jackcli_sample_size = sizeof (jack_default_audio_sample_t) ;
 
 jack_client_t *jackcli_client = NULL;
@@ -127,7 +128,7 @@ int jackcli_open(char *jackcli_client_name)
       fprintf(stderr, "Jack server not running?\n");
       return 1;
     }
-  int jackcli_samplerate = jack_get_sample_rate(jackcli_client);
+  jackcli_samplerate = jack_get_sample_rate(jackcli_client);
   return 0;
 } /* jackcli_open */
 
@@ -138,7 +139,7 @@ int jackcli_close()
   free (jackcli_outs);
   free (jackcli_ports_output);
   free (jackcli_ports_input);
-}
+} /* jackcli_close() */
 
 int jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out)
 {

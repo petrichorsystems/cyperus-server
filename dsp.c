@@ -658,7 +658,7 @@ void
   dsp_mains_allocate(jackcli_channels_in, jackcli_channels_out, jackcli_fifo_size);
 
   while(1) {
-    for(pos=0; pos<jack_sr; pos++) {
+    for(pos=0; pos<jackcli_samplerate; pos++) {
       outsample = 0.0;
 
       /* process main inputs */
@@ -673,7 +673,7 @@ void
 
       temp_bus = dsp_global_bus_head;
       while( temp_bus != NULL ) {
-	recurse_dsp_graph(temp_bus, current_path, jack_sr, pos);
+	recurse_dsp_graph(temp_bus, current_path, jackcli_samplerate, pos);
 	temp_bus = temp_bus->next;
       }
       
