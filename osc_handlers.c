@@ -26,6 +26,7 @@ Copyright 2015 murray foster */
 #include "dsp.h"
 #include "dsp_types.h"
 #include "dsp_ops.h"
+#include "jackcli.h"
 #include "osc.h"
 #include "osc_handlers.h"
 
@@ -64,25 +65,32 @@ int osc_list_mains_handler(const char *path, const char *types, lo_arg ** argv,
 {
   struct dsp_port_out *temp_port_out;
   struct dsp_port_in *temp_port_in;
-  char *mains_str = NULL;
-  char *temp_str = NULL;
-  
-  printf("path: <%s>\n", path);
-
+  char *mains_str = malloc(sizeof(char) * ((44 * (jackcli_channels_in +
+						  jackcli_channels_out)) +
+					   4 + /* strlen("in:\n") */
+					   5 + /* strlen("out:\n") */
+					   1));
+  strcpy(mains_str, "in:\n");
   /* process main inputs */
   temp_port_out = dsp_main_ins;
   while(temp_port_out != NULL) {
-    printf("in: %s\n", temp_port_out->id);
+    strcat(mains_str, "/mains{");
+    strcat(mains_str, temp_port_out->id);
+    strcat(mains_str, "\n");
     temp_port_out = temp_port_out->next;
   }
-  
+
+  strcat(mains_str, "out:\n");
+  /* process main outputs */
   temp_port_in = dsp_main_outs;
   while(temp_port_in != NULL) {
-    printf("out: %s\n", temp_port_in->id);
+    strcat(mains_str, "/mains}");
+    strcat(mains_str, temp_port_in->id);
+    strcat(mains_str, "\n");
     temp_port_in = temp_port_in->next;
   }
 
-  //lo_send(lo_addr_send,"/cyperus/list/mains", "s", mains_str);
+  lo_send(lo_addr_send,"/cyperus/list/mains", "s", mains_str);
   
   return 0;
 } /* osc_remove_module_handler */

@@ -1,4 +1,4 @@
-#N canvas 4799 29 2879 682 10;
+#N canvas 3840 29 957 2109 10;
 #X msg 22 40 connect localhost 97211;
 #X msg 113 72 disconnect;
 #X obj 22 133 netsend -u -b;
@@ -9,6 +9,10 @@
 #X obj 228 72 oscformat cyperus list mains;
 #X obj 228 41 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
+#X obj 22 308 netreceive -u -b 97217;
+#X obj 22 331 oscparse;
+#X obj 22 354 list trim;
+#X obj 22 400 print;
 #X connect 0 0 2 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
@@ -17,3 +21,6 @@
 #X connect 6 0 5 0;
 #X connect 7 0 6 0;
 #X connect 8 0 7 0;
+#X connect 9 0 10 0;
+#X connect 10 0 11 0;
+#X connect 11 0 12 0;
