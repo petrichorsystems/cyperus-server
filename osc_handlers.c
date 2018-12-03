@@ -30,13 +30,6 @@ Copyright 2015 murray foster */
 #include "osc.h"
 #include "osc_handlers.h"
 
-char* concat(char *str_prefix, char *str_suffix) {
-  char *full_str;  
-  full_str = (char*)malloc(sizeof(char)*(strlen(str_suffix)+strlen(str_prefix)+1));
-  snprintf(full_str, strlen(str_suffix)+strlen(str_prefix)+1, "%s%s", str_prefix, str_suffix);
-  return full_str;
-}
-
 void osc_error(int num, const char *msg, const char *path)
 {
   printf("liblo server error %d in path %s: %s\n", num, path, msg);
@@ -60,7 +53,7 @@ int generic_handler(const char *path, const char *types, lo_arg ** argv,
   return 0;
 }
 
-int osc_list_mains_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_list_mains_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
   struct dsp_port_out *temp_port_out;
@@ -79,7 +72,6 @@ int osc_list_mains_handler(const char *path, const char *types, lo_arg ** argv,
     strcat(mains_str, "\n");
     temp_port_out = temp_port_out->next;
   }
-
   strcat(mains_str, "out:\n");
   /* process main outputs */
   temp_port_in = dsp_main_outs;
@@ -89,11 +81,35 @@ int osc_list_mains_handler(const char *path, const char *types, lo_arg ** argv,
     strcat(mains_str, "\n");
     temp_port_in = temp_port_in->next;
   }
-
   lo_send(lo_addr_send,"/cyperus/list/mains", "s", mains_str);
-  
+  free(mains_str);
   return 0;
-} /* osc_remove_module_handler */
+} /* osc_list_mains_handler */
+
+int osc_list_buses_handler(const char *path, const char *types, lo_arg **argv,
+			   int argc, void *data, void *user_data)
+{
+  struct dsp_bus *temp_bus;
+  char *query_str, *result_str = NULL;
+
+  query_str = argv[0]->s;
+
+  lo_send(lo_addr_send,"/cyperus/list/buses", "ss", query_str, result_str);  
+  return 0;
+} /* osc_list_buses_handler */
+
+int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
+			   int argc, void *data, void *user_data)
+{
+  struct dsp_bus *temp_bus;
+  char *path_str, *query_str, *result_str = NULL;
+
+  path_str = argv[0]->s;
+  query_str = argv[1]->s;
+
+  lo_send(lo_addr_send,"/cyperus/add/bus", "sss", path_str, query_str, result_str);  
+  return 0;
+} /* osc_add_bus_handler */
 
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
 			      int argc, void *data, void *user_data)

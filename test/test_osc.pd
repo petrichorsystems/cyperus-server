@@ -13,6 +13,7 @@
 #X obj 22 331 oscparse;
 #X obj 22 354 list trim;
 #X obj 22 400 print;
+#X text 261 40 /cyperus/list/mains;
 #X connect 0 0 2 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
