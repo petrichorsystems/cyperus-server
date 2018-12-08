@@ -86,15 +86,116 @@ int osc_list_mains_handler(const char *path, const char *types, lo_arg **argv,
   return 0;
 } /* osc_list_mains_handler */
 
+char *int_to_str(int x) {
+  char *buffer = malloc(sizeof(char) * 13);
+  printf("after malloc\n");
+  if(buffer)
+    sprintf(buffer, "%d", x);
+  else
+    printf("double fuck\n");
+  return buffer;
+} /* int_to_str */
+
 int osc_list_buses_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
   struct dsp_bus *temp_bus;
-  char *query_str, *result_str = NULL;
+  char *path_str, *result_str = NULL;
+  int list_type = 0;
+  size_t result_str_size = 0;
+  struct dsp_bus *head_bus = NULL;
+  struct dsp_bus_port *temp_bus_port = NULL;
+  int count_bus_ports;;
+  char *bus_ins_str, *bus_outs_str;
 
-  query_str = argv[0]->s;
+  path_str = argv[0];
+  list_type = argv[1]->i;
 
-  lo_send(lo_addr_send,"/cyperus/list/buses", "ss", query_str, result_str);  
+  printf("path: <%s>\n", path);
+  printf("path_str: %s\n", path_str);
+  printf("list_type: %d\n", list_type);
+  
+  /* list types
+     0 - peer
+     1 - all peers
+     2 - direct descendant
+     3 - all descendants */
+  
+  switch(list_type) {
+  case 0: /* list peer */
+    if( !strcmp(path_str, "/") ||
+	 !strcmp(path_str, "") ) {
+	  head_bus = dsp_global_bus_head;
+      
+      /* no buses, return NULL strng */
+      if(head_bus == NULL) {
+	printf("empty bus list!\n");
+	result_str = "";
+      }
+
+      printf("head bus id: %s\n", head_bus->id);
+      printf("head bus name: %s\n", head_bus->name);
+      
+      count_bus_ports = 0;
+      temp_bus_port = head_bus->ins;
+      while(temp_bus_port != NULL) {
+	count_bus_ports += 1;
+	temp_bus_port = temp_bus_port->next;
+      }
+      fprintf(stderr, "fuck\n");
+      bus_ins_str = int_to_str(count_bus_ports);
+      fprintf(stderr, "not so fuck\n");
+      count_bus_ports = 0;
+      temp_bus_port = head_bus->outs;
+      while(temp_bus_port != NULL) {
+	count_bus_ports += 1;
+	temp_bus_port = temp_bus_port->next;
+      }
+      bus_outs_str = int_to_str(count_bus_ports);
+      printf("bus_outs_str: %s\n", bus_outs_str);
+
+      printf("starting to allocate result_str mem\n");
+      result_str_size += strlen(head_bus->id) + 1 + strlen(head_bus->name) + 1 +
+	strlen(bus_ins_str) + 1 + strlen(bus_outs_str) + 2;
+      result_str = malloc(sizeof(char) * result_str_size);
+      printf("finished to allocate result_str mem\n");
+      
+      printf("head_bus->id: %s\n", head_bus->id);
+      strcpy(result_str, head_bus->id);
+      printf("strcpy\n");
+      strcat(result_str, "|");
+      printf("strcat\n");
+      printf("head_bus->name: %s\n", head_bus->name);
+      strcat(result_str, head_bus->name);
+      printf("strcat1\n");
+      strcat(result_str, "|");
+      printf("strcat2\n");
+      strcat(result_str, bus_ins_str);
+      printf("strcat3\n");
+      strcat(result_str, "|");
+      printf("strcat4\n");
+      strcat(result_str, bus_outs_str);
+            printf("strcat5\n");
+      printf("result_str: %s\n", result_str);
+      free(bus_ins_str);
+      free(bus_outs_str);
+      break;
+    }
+    break;
+  case 1: /* list all peers */
+    break;
+  case 2: /* list direct descendant */
+    break;
+  case 3: /* list all direct descendants */
+    break;
+  default: /* ? */
+    break;
+  }
+
+  /* returns path_str, list_type, and string containing comma-separated:
+       id,name,num input bus ports,num output bus ports
+     multple entries are separated by newlines */
+  lo_send(lo_addr_send,"/cyperus/list/buses", "sis", path_str, list_type, result_str);  
   return 0;
 } /* osc_list_buses_handler */
 
@@ -102,12 +203,27 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
   struct dsp_bus *temp_bus;
-  char *path_str, *query_str, *result_str = NULL;
+  char *path_str, *bus_str, *ins_str, *outs_str = NULL;
 
-  path_str = argv[0]->s;
-  query_str = argv[1]->s;
+  struct dsp_bus *new_bus;
+  
+  printf("path: <%s>\n", path);
 
-  lo_send(lo_addr_send,"/cyperus/add/bus", "sss", path_str, query_str, result_str);  
+  path_str = argv[0];
+  bus_str = argv[1];
+  ins_str = argv[2];
+  outs_str = argv[3];
+  
+  printf("path_str: %s\n", path_str);
+  printf("bus_str: %s\n", bus_str);
+  printf("ins_str: %s\n", ins_str);
+  printf("outs_str: %s\n", outs_str);
+
+  new_bus = dsp_bus_init(bus_str);
+  dsp_add_bus(path_str, new_bus, ins_str, outs_str);
+  
+  lo_send(lo_addr_send,"/cyperus/add/bus", "ssssi", path_str, bus_str, ins_str, outs_str,
+	  strcmp(new_bus->name, bus_str));  
   return 0;
 } /* osc_add_bus_handler */
 

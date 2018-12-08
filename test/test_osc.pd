@@ -1,4 +1,4 @@
-#N canvas 3840 29 957 2109 10;
+#N canvas 1535 29 2303 682 10;
 #X msg 22 40 connect localhost 97211;
 #X msg 113 72 disconnect;
 #X obj 22 133 netsend -u -b;
@@ -14,6 +14,13 @@
 #X obj 22 354 list trim;
 #X obj 22 400 print;
 #X text 261 40 /cyperus/list/mains;
+#X obj 471 109 oscformat cyperus add bus;
+#X msg 467 28 list / main in out;
+#X obj 705 368 print;
+#X msg 684 20 list / 0;
+#X obj 696 98 oscformat cyperus list buses;
+#X text 484 71 /cyperus/add/bus;
+#X text 716 62 /cyperus/list/buses;
 #X connect 0 0 2 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
@@ -25,3 +32,8 @@
 #X connect 9 0 10 0;
 #X connect 10 0 11 0;
 #X connect 11 0 12 0;
+#X connect 14 0 6 0;
+#X connect 15 0 14 0;
+#X connect 17 0 18 0;
+#X connect 18 0 16 0;
+#X connect 18 0 6 0;
