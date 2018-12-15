@@ -88,14 +88,76 @@ int osc_list_mains_handler(const char *path, const char *types, lo_arg **argv,
 
 char *int_to_str(int x) {
   char *buffer = malloc(sizeof(char) * 13);
-  printf("after malloc\n");
   if(buffer)
     sprintf(buffer, "%d", x);
-  else
-    printf("double fuck\n");
   return buffer;
 } /* int_to_str */
 
+char *build_bus_list_str(struct dsp_bus *head_bus,
+			 const char *separator,
+			 int single,
+			 int descendants) {
+  struct dsp_bus *temp_bus = head_bus;
+  char *single_result_str, *result_str = NULL;
+  size_t single_result_str_size, result_str_size = 0;
+  struct dsp_bus_port *temp_bus_port = NULL;
+  int count_bus_ports;;
+  char *bus_ins_str, *bus_outs_str;
+
+  while(temp_bus != NULL) {
+    /* parse inputs */
+    count_bus_ports = 0;
+    temp_bus_port = temp_bus->ins;
+    while(temp_bus_port != NULL) {
+      count_bus_ports += 1;
+      temp_bus_port = temp_bus_port->next;
+    }
+    bus_ins_str = int_to_str(count_bus_ports);
+    
+    /* parse_outputs */
+    count_bus_ports = 0;
+    temp_bus_port = temp_bus->outs;
+    while(temp_bus_port != NULL) {
+      count_bus_ports += 1;
+      temp_bus_port = temp_bus_port->next;
+    }
+    bus_outs_str = int_to_str(count_bus_ports);
+
+    /* construct result string */
+    single_result_str_size = strlen(temp_bus->id) + 1 + strlen(temp_bus->name) + 1 +
+      strlen(bus_ins_str) + 1 + strlen(bus_outs_str) + 2;
+    result_str_size += single_result_str_size;
+    
+    single_result_str = malloc(sizeof(char) * single_result_str_size);
+    strcpy(single_result_str, temp_bus->id);
+    strcat(single_result_str, separator);
+    strcat(single_result_str, temp_bus->name);
+    strcat(single_result_str, separator);
+    strcat(single_result_str, bus_ins_str);
+    strcat(single_result_str, separator);
+    strcat(single_result_str, bus_outs_str);
+    strcat(single_result_str, "\n");
+    free(bus_ins_str);
+    free(bus_outs_str);
+    if(single)
+      break;
+    if(descendants)
+      temp_bus = temp_bus->down;
+    else
+      temp_bus = temp_bus->next;
+
+    if(result_str == NULL) {
+      result_str = malloc(sizeof(char) * single_result_str_size);
+      strcpy(result_str, single_result_str);
+    } else {
+      result_str = realloc(result_str, sizeof(char) * (result_str_size + 1));
+      strcat(result_str, single_result_str);
+    }
+  }
+  return result_str;
+} /* build_bus_list_str */
+
+			 
 int osc_list_buses_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
@@ -120,82 +182,38 @@ int osc_list_buses_handler(const char *path, const char *types, lo_arg **argv,
      1 - all peers
      2 - direct descendant
      3 - all descendants */
-  
-  switch(list_type) {
-  case 0: /* list peer */
-    if( !strcmp(path_str, "/") ||
-	 !strcmp(path_str, "") ) {
-	  head_bus = dsp_global_bus_head;
-      
-      /* no buses, return NULL strng */
-      if(head_bus == NULL) {
-	printf("empty bus list!\n");
-	result_str = "";
-      }
 
-      printf("head bus id: %s\n", head_bus->id);
-      printf("head bus name: %s\n", head_bus->name);
-      
-      count_bus_ports = 0;
-      temp_bus_port = head_bus->ins;
-      while(temp_bus_port != NULL) {
-	count_bus_ports += 1;
-	temp_bus_port = temp_bus_port->next;
-      }
-      fprintf(stderr, "fuck\n");
-      bus_ins_str = int_to_str(count_bus_ports);
-      fprintf(stderr, "not so fuck\n");
-      count_bus_ports = 0;
-      temp_bus_port = head_bus->outs;
-      while(temp_bus_port != NULL) {
-	count_bus_ports += 1;
-	temp_bus_port = temp_bus_port->next;
-      }
-      bus_outs_str = int_to_str(count_bus_ports);
-      printf("bus_outs_str: %s\n", bus_outs_str);
+  if( !strcmp(path_str, "/") ||
+      !strcmp(path_str, "") )
+    head_bus = dsp_global_bus_head;
+  else
+    head_bus = dsp_parse_bus_path(path_str);
 
-      printf("starting to allocate result_str mem\n");
-      result_str_size += strlen(head_bus->id) + 1 + strlen(head_bus->name) + 1 +
-	strlen(bus_ins_str) + 1 + strlen(bus_outs_str) + 2;
-      result_str = malloc(sizeof(char) * result_str_size);
-      printf("finished to allocate result_str mem\n");
-      
-      printf("head_bus->id: %s\n", head_bus->id);
-      strcpy(result_str, head_bus->id);
-      printf("strcpy\n");
-      strcat(result_str, "|");
-      printf("strcat\n");
-      printf("head_bus->name: %s\n", head_bus->name);
-      strcat(result_str, head_bus->name);
-      printf("strcat1\n");
-      strcat(result_str, "|");
-      printf("strcat2\n");
-      strcat(result_str, bus_ins_str);
-      printf("strcat3\n");
-      strcat(result_str, "|");
-      printf("strcat4\n");
-      strcat(result_str, bus_outs_str);
-            printf("strcat5\n");
-      printf("result_str: %s\n", result_str);
-      free(bus_ins_str);
-      free(bus_outs_str);
+  if(head_bus == NULL) {
+    /* no buses, return new-line char-as-str */
+    result_str = "\n";
+  } else {
+    switch(list_type) {
+    case 0: /* list peer */
+      result_str = build_bus_list_str(head_bus, "|", 1, 0);
+      break;
+    case 1: /* list all peers */
+      result_str = build_bus_list_str(head_bus, "|", 0, 0);
+      break;
+    case 2: /* list direct descendant */
+      result_str = build_bus_list_str(head_bus, "|", 1, 1);
+      break;
+    case 3: /* list all direct descendants */
+      result_str = build_bus_list_str(head_bus, "|", 0, 1);
+      break;
+    default: /* ? */
       break;
     }
-    break;
-  case 1: /* list all peers */
-    break;
-  case 2: /* list direct descendant */
-    break;
-  case 3: /* list all direct descendants */
-    break;
-  default: /* ? */
-    break;
   }
+  lo_send(lo_addr_send,"/cyperus/list/buses", "sis", path_str, list_type, result_str);
 
-  /* returns path_str, list_type, and string containing comma-separated:
-       id,name,num input bus ports,num output bus ports
-     multple entries are separated by newlines */
-  lo_send(lo_addr_send,"/cyperus/list/buses", "sis", path_str, list_type, result_str);  
+  if(strcmp(result_str, "\n"))
+    free(result_str);
   return 0;
 } /* osc_list_buses_handler */
 
