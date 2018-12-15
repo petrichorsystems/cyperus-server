@@ -139,6 +139,7 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
     strcat(single_result_str, "\n");
     free(bus_ins_str);
     free(bus_outs_str);
+
     if(single)
       break;
     if(descendants)
@@ -153,7 +154,9 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
       result_str = realloc(result_str, sizeof(char) * (result_str_size + 1));
       strcat(result_str, single_result_str);
     }
+    free(single_result_str);
   }
+  free(single_result_str);
   return result_str;
 } /* build_bus_list_str */
 
