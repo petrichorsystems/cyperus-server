@@ -127,7 +127,6 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
     single_result_str_size = strlen(temp_bus->id) + 1 + strlen(temp_bus->name) + 1 +
       strlen(bus_ins_str) + 1 + strlen(bus_outs_str) + 2;
     result_str_size += single_result_str_size;
-    
     single_result_str = malloc(sizeof(char) * single_result_str_size);
     strcpy(single_result_str, temp_bus->id);
     strcat(single_result_str, separator);
@@ -140,13 +139,6 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
     free(bus_ins_str);
     free(bus_outs_str);
 
-    if(single)
-      break;
-    if(descendants)
-      temp_bus = temp_bus->down;
-    else
-      temp_bus = temp_bus->next;
-
     if(result_str == NULL) {
       result_str = malloc(sizeof(char) * single_result_str_size);
       strcpy(result_str, single_result_str);
@@ -155,11 +147,17 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
       strcat(result_str, single_result_str);
     }
     free(single_result_str);
+
+    if(single)
+      break;
+    if(descendants)
+      temp_bus = temp_bus->down;
+    else
+      temp_bus = temp_bus->next;
   }
-  free(single_result_str);
+
   return result_str;
 } /* build_bus_list_str */
-
 			 
 int osc_list_buses_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
