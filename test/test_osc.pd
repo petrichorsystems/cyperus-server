@@ -35,6 +35,10 @@
 #X obj 228 120 oscformat cyperus list main;
 #X obj 354 1489 oscformat cyperus list bus;
 #X obj 82 1488 oscformat cyperus list bus;
+#X text 90 1594 list bus ports;
+#X msg 75 1636 list /;
+#X obj 75 1666 oscformat cyperus list bus_port;
+#X text 86 1696 /cyperus/list/bus_port /;
 #X connect 0 0 2 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
@@ -58,3 +62,5 @@
 #X connect 32 0 6 0;
 #X connect 33 0 6 0;
 #X connect 34 0 6 0;
+#X connect 36 0 37 0;
+#X connect 37 0 6 0;
