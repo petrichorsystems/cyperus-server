@@ -39,12 +39,12 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   /* below is for debug, add method that will match any path and args */
   /* lo_server_thread_add_method(st, NULL, NULL, generic_handler, NULL); */
 
-  lo_server_thread_add_method(lo_thread, "/cyperus/list/mains", NULL, osc_list_mains_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/list/main", NULL, osc_list_main_handler, NULL);
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/bus", "ssss", osc_add_bus_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/list/buses", "si", osc_list_buses_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/list/bus", "si", osc_list_bus_handler, NULL);
 
-  lo_server_thread_add_method(lo_thread, "/cyperus/list/bus_ports", "s", osc_list_bus_ports_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/list/bus_port", "s", osc_list_bus_port_handler, NULL);
 
   lo_server_thread_add_method(lo_thread, "/cyperus/remove", "i", osc_remove_module_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/list", "i", osc_list_modules_handler, NULL);
