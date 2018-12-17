@@ -94,6 +94,7 @@ char *int_to_str(int x) {
 } /* int_to_str */
 
 char *build_bus_list_str(struct dsp_bus *head_bus,
+			 int root_level,
 			 const char *separator,
 			 int single,
 			 int descendants) {
@@ -104,6 +105,12 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
   int count_bus_ports;;
   char *bus_ins_str, *bus_outs_str;
 
+  if(!root_level)
+    if(descendants)
+      temp_bus = temp_bus->down;
+    else
+      temp_bus = temp_bus->next;
+  
   while(temp_bus != NULL) {
     /* parse inputs */
     count_bus_ports = 0;
@@ -162,7 +169,6 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
 int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
-  struct dsp_bus *temp_bus;
   char *path_str, *result_str = NULL;
   int list_type = 0;
   size_t result_str_size = 0;
@@ -170,7 +176,8 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   struct dsp_bus_port *temp_bus_port = NULL;
   int count_bus_ports;;
   char *bus_ins_str, *bus_outs_str;
-
+  int root_level = 0;
+  
   path_str = argv[0];
   list_type = argv[1]->i;
 
@@ -185,8 +192,10 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
      3 - all descendants */
 
   if( !strcmp(path_str, "/") ||
-      !strcmp(path_str, "") )
+      !strcmp(path_str, "") ) {
     head_bus = dsp_global_bus_head;
+    root_level = 1;
+  }
   else
     head_bus = dsp_parse_bus_path(path_str);
 
@@ -196,22 +205,25 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   } else {
     switch(list_type) {
     case 0: /* list peer */
-      result_str = build_bus_list_str(head_bus, "|", 1, 0);
+      result_str = build_bus_list_str(head_bus, root_level, "|", 1, 0);
       break;
     case 1: /* list all peers */
-      result_str = build_bus_list_str(head_bus, "|", 0, 0);
+      result_str = build_bus_list_str(head_bus, root_level, "|", 0, 0);
       break;
     case 2: /* list direct descendant */
-      result_str = build_bus_list_str(head_bus, "|", 1, 1);
+      result_str = build_bus_list_str(head_bus, root_level, "|", 1, 1);
       break;
     case 3: /* list all direct descendants */
-      result_str = build_bus_list_str(head_bus, "|", 0, 1);
+      result_str = build_bus_list_str(head_bus, root_level, "|", 0, 1);
       break;
     default: /* ? */
       break;
     }
   }
 
+  if(result_str == NULL)
+    result_str = "\n";
+  
   lo_send(lo_addr_send,"/cyperus/list/bus", "sis", path_str, list_type, result_str);
 
   if(strcmp(result_str, "\n"))
@@ -305,7 +317,6 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
   new_bus = dsp_bus_init(bus_str);
   dsp_add_bus(path_str, new_bus, ins_str, outs_str);
 
-  
   for(i=0; i < strlen(ins_str); i++)
     if(ins_str[i] == ',')
       ins_str[i] = '|';
