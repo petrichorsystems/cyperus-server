@@ -304,6 +304,14 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
   
   new_bus = dsp_bus_init(bus_str);
   dsp_add_bus(path_str, new_bus, ins_str, outs_str);
+
+  
+  for(i=0; i < strlen(ins_str); i++)
+    if(ins_str[i] == ',')
+      ins_str[i] = '|';
+  for(i=0; i < strlen(outs_str); i++)
+    if(outs_str[i] == ',')
+      outs_str[i] = '|';
   
   lo_send(lo_addr_send,"/cyperus/add/bus", "ssssi", path_str, bus_str, ins_str, outs_str,
 	  strcmp(new_bus->name, bus_str));  

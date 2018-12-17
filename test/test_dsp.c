@@ -456,6 +456,37 @@ test_dsp_block_processor() {
 }
 
 void
+test_dsp_build_bus_ports() {
+  fprintf(stderr, "  >> starting test_dsp_build_bus_ports()\n");
+  char *main_path, *temp_path, *bus_path;
+  struct dsp_bus *main_bus;
+  char *main_id, *module_id, *port_in_id;
+  struct dsp_bus_port *bus_port_in, *bus_port_out;
+  struct dsp_bus *target_bus, *new_bus;
+  /* grab created busses */
+  main_bus = dsp_global_bus_head;
+  main_id = main_bus->id;
+  main_path = strconcat("/", main_id);
+  new_bus = dsp_bus_init("aux");
+
+  new_bus->ins = dsp_build_bus_ports(new_bus->ins, "test0,testy1,testity2", 0);
+
+  if( strcmp(new_bus->ins->name, "test0") == 0) {
+    {}
+  } else
+    fprintf(stderr, " >> failed!\n");
+  
+  if(strcmp(new_bus->ins->next->name, "testy1") == 0)
+    {} else
+    fprintf(stderr, " >> failed!\n");
+  
+  if(strcmp(new_bus->ins->next->next->name, "testity2") == 0) {
+    fprintf(stderr, " >> success!\n");
+  } else
+    fprintf(stderr, " >> failed!\n"); 
+}
+
+void
 test_dsp_bus_port() {
   fprintf(stderr, "  >> starting test_dsp_bus_port()\n");
   char *main_path, *temp_path, *bus_path;
@@ -1203,6 +1234,7 @@ main(void) {
   test_dsp_find_port_in();
   test_dsp_block_processor();
   test_dsp_bus_port();
+  test_dsp_build_bus_ports();
   test_dsp_bus_port_ports();
   test_dsp_bus_port_port_out();
   test_dsp_bus_port_port_in();

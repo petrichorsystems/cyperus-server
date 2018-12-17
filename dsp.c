@@ -271,50 +271,66 @@ struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 		    char *bus_ports, int out) {
 
-  char target_bus_ports[256];
-  strcpy(target_bus_ports, bus_ports);
-
+  char *target_bus_ports = malloc(sizeof(char) * strlen(bus_ports) + 1);
+  char *output_token;
+  int i;
   char *port_id;
   struct dsp_bus_port *temp_bus_port = NULL;
   struct dsp_bus_port *target_bus_port = NULL;
   struct dsp_port_in *port_in = NULL;
   struct dsp_port_out *port_out = NULL;
   int match_found = 0;
-  char *p = target_bus_ports;
+  char *p;
+
+  int multi_port = 0;
+  
   temp_bus_port = head_bus_port;
-  while (*p)                      /* while not end of string */
-    {
-      char *sp = p;                  /* set a start pointer */
-      while (*p && *p != ',') p++;   /* advance to space    */
-      char *output_token = malloc (p - sp + 1); /* allocate */
-      strncpy (output_token, sp, p - sp);         /* copy   */
-      output_token[p - sp] = 0;   /* force null-termination */
-      match_found = 0;
-      if( output_token != NULL ) {
-	if( strcmp(output_token, "") != 0 ) {
+  strcpy(target_bus_ports, bus_ports);
 
-	  while( temp_bus_port != NULL ) {
-	    temp_bus_port = temp_bus_port->next;
-	  }
+  for(i=0; i < strlen(target_bus_ports); i++)
+    if(target_bus_ports[i] == ',') {
+      multi_port = 1;
+      break;
+    }
 
-	  if( !match_found ) {
+  if(!multi_port) {
+    temp_bus_port = dsp_bus_port_init(target_bus_ports, out);
+    port_in = dsp_port_in_init("in", 512);
+    port_out = dsp_port_out_init("out", 1);
+    temp_bus_port->in = port_in;
+    temp_bus_port->out = port_out;
+
+    if(head_bus_port != NULL) {
+      dsp_bus_port_insert_tail(head_bus_port, temp_bus_port);
+    }
+    else {
+      head_bus_port = temp_bus_port;
+    }
+  } else {
+    p = target_bus_ports;
+    while (*p)                      /* while not end of string */
+      {
+	char *sp = p;                  /* set a start pointer */
+	while (*p && *p != ',') p++;   /* advance to space    */
+	output_token = malloc (p - sp + 1); /* allocate */
+	strncpy (output_token, sp, p - sp);         /* copy   */
+	output_token[p - sp] = 0;   /* force null-termination */
+	if( output_token != NULL ) {
+	  if( strcmp(output_token, "") != 0 ) {
 	    temp_bus_port = dsp_bus_port_init(output_token, out);
 	    port_in = dsp_port_in_init("in", 512);
 	    port_out = dsp_port_out_init("out", 1);
 	    temp_bus_port->in = port_in;
 	    temp_bus_port->out = port_out;
-
-	    if(head_bus_port != NULL) {
+	    if(head_bus_port != NULL)
 	      dsp_bus_port_insert_tail(head_bus_port, temp_bus_port);
-	    }
-	    else {
+	    else
 	      head_bus_port = temp_bus_port;
-	    }
 	  }
 	}
+	while (*p && *p == ',') p++;   /* find next non-space */
       }
-      while (*p && *p == '/') p++;   /* find next non-space */
-    }
+  }
   return head_bus_port;
 } /* dsp_build_bus_ports */
 
@@ -335,7 +351,7 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
     temp_bus_port = dsp_build_bus_ports(temp_bus_port, outs, 1); /* output port */
     new_bus->outs = temp_bus_port;
   }
-
+  
   /* insert head bus, if that's what we're doing */
   if( !strcmp(target_bus_path, "/") || !strcmp(target_bus_path, "")) {
     if( dsp_global_bus_head != NULL )
