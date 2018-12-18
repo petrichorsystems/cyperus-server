@@ -227,6 +227,7 @@ dsp_parse_bus_path(char *target_path) {
 	  bus_count += 1;
 	}
       }
+      free(output_token);
       while (*p && *p == '/') p++;   /* find next non-space */
     }
 
@@ -261,6 +262,7 @@ dsp_parse_bus_path(char *target_path) {
 	  }
 	}
       }
+      free(output_token);
       while (*p && *p == '/') p++;   /* find next non-space */
     }
   return NULL;
@@ -328,6 +330,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 	      head_bus_port = temp_bus_port;
 	  }
 	}
+	free(output_token);
 	while (*p && *p == ',') p++;   /* find next non-space */
       }
   }
@@ -627,6 +630,7 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int 
 
     recurse_dsp_graph(temp_bus->down, current_path, jack_sr, pos);
     temp_bus = temp_bus->next;
+    free(current_path);
   }
   return;
 } /* recurse_dsp_graph */
@@ -661,7 +665,7 @@ void
   int pos, i;
   float outsample = 0.0;
   char current_path[2] = "/";
-  
+
   struct dsp_bus *temp_bus;
   struct dsp_module *temp_module;
 
@@ -689,12 +693,13 @@ void
 	recurse_dsp_graph(temp_bus, current_path, jackcli_samplerate, pos);
 	temp_bus = temp_bus->next;
       }
-      
+
       /* process main outputs */
       temp_port_in = dsp_main_outs;
       i=0;
       while(temp_port_in != NULL) {
-	rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_input(temp_port_in));
+	if(!rtqueue_isfull(jackcli_fifo_outs[i]))
+	  rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_input(temp_port_in));
 	temp_port_in = temp_port_in->next;
 	i += 1;
       }
