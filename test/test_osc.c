@@ -31,7 +31,6 @@ char *incoming_message;
 int generic_handler(const char *path, const char *types, lo_arg ** argv,
                     int argc, void *data, void *user_data) {
     int i;
-
     printf("path: <%s>\n", path);
     for (i = 0; i < argc; i++) {
         printf("arg %d '%c' ", i, types[i]);
@@ -40,7 +39,6 @@ int generic_handler(const char *path, const char *types, lo_arg ** argv,
     }
     printf("\n");
     fflush(stdout);
-
     return 1;
 }
 
@@ -163,7 +161,6 @@ void test_single_channel_single_bus_passthru() {
   usleep(500);
   bus_id = malloc(sizeof(char) * (strlen(incoming_message) + 1));
   strcpy(bus_id, incoming_message);
-  printf("bus_id: %s\n", incoming_message);
   free(incoming_message);
 
   bus_path = malloc(sizeof(char) * 38);
@@ -178,14 +175,12 @@ void test_single_channel_single_bus_passthru() {
   usleep(500);
   bus_ports = malloc(sizeof(char) * (strlen(incoming_message) + 1));
   strcpy(bus_ports, incoming_message);
-  printf("bus_ports: %s\n", bus_ports);
   free(incoming_message);
 
   bus_port_in = malloc(sizeof(char) * 37);
   for(count=4; count<40; count++) {
     bus_port_in[count - 4] = bus_ports[count];
   }
-  printf("bus_port_in: %s\n", bus_port_in);
 
   subptr = malloc(sizeof(char) * (strlen(bus_ports) + 1));
   subptr = strstr(bus_ports, "out:");
@@ -194,7 +189,6 @@ void test_single_channel_single_bus_passthru() {
   for(count=out_pos+5; count<out_pos+36+5; count++) {
     bus_port_out[count - 5 - out_pos] = bus_ports[count];
   }
-  printf("bus_port_out: %s\n", bus_port_out);
 
   bus_port_in_path = malloc(sizeof(char) * (36 * 2 + 2));
   bus_port_out_path = malloc(sizeof(char) * (36 * 2 + 2));
@@ -206,18 +200,17 @@ void test_single_channel_single_bus_passthru() {
   strcat(bus_port_out_path, ":");
   strcat(bus_port_out_path, bus_port_out);
 
-  printf("bus_port_in_path: %s\n", bus_port_in_path);
-  printf("bus_port_out_path: %s\n", bus_port_out_path);
-  
   printf("sending /cyperus/add/connection %s %s ... \n", main_in_0, bus_port_in_path);
   lo_send(t, "/cyperus/add/connection", "ss", main_in_0, bus_port_in_path);
-
+  printf("sent.\n");
+  
   printf("sending /cyperus/add/connection %s %s ... \n", bus_port_in_path, bus_port_out_path);
   lo_send(t, "/cyperus/add/connection", "ss", bus_port_in_path, bus_port_out_path);
-
+  printf("sent.\n");
+  
   printf("sending /cyperus/add/connection %s %s ... \n", bus_port_out_path, main_out_0);
   lo_send(t, "/cyperus/add/connection", "ss", bus_port_out_path, main_out_0);
-  //printf("sent.\n");
+  printf("sent.\n");
 
   free(bus_id);
   free(bus_path);
