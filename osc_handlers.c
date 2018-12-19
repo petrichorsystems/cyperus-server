@@ -172,11 +172,19 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   char *path_str, *result_str = NULL;
   int list_type = 0;
   size_t result_str_size = 0;
+
+  char *partial_result_str = NULL;
+  size_t partial_result_str_size = 0;
+  
   struct dsp_bus *head_bus = NULL;
   struct dsp_bus_port *temp_bus_port = NULL;
   int count_bus_ports;;
   char *bus_ins_str, *bus_outs_str;
   int root_level = 0;
+
+  char *part_result_str = NULL;
+  int more = 0;
+  int current_index, last_break, last_cutoff, copy_index = 0;
   
   path_str = argv[0];
   list_type = argv[1]->i;
@@ -223,9 +231,34 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 
   if(result_str == NULL)
     result_str = "\n";
-  
-  lo_send(lo_addr_send,"/cyperus/list/bus", "sis", path_str, list_type, result_str);
 
+  /* split bus list into 768-byte chunks */
+  if(strlen(result_str) > 768) {
+    more = 1;
+    for(current_index=0; current_index<strlen(result_str); current_index++) {
+      if(result_str[current_index] == '\n')
+	last_break = current_index;
+      if((current_index - last_cutoff) > 768) {	
+	part_result_str = malloc(sizeof(char) * (last_break - last_cutoff + 1));
+	for(copy_index=last_cutoff; copy_index<last_break; copy_index++)
+	  part_result_str[copy_index - last_cutoff] = result_str[copy_index];
+	part_result_str[copy_index] = '\0';
+	last_cutoff = last_break;
+	if(last_cutoff == strlen(result_str - 1))
+	   more = 0;
+	lo_send(lo_addr_send,"/cyperus/list/bus", "siis", path_str, list_type, more, part_result_str);
+	free(part_result_str);
+      }
+    }
+  }
+  if(more) {
+    for(current_index=last_cutoff; current_index<strlen(result_str); current_index++) {
+      result_str[current_index - last_cutoff] = result_str[current_index];
+    }
+    result_str[current_index - last_cutoff] = '\0';
+  }
+  lo_send(lo_addr_send,"/cyperus/list/bus", "siis", path_str, list_type, 0, result_str);
+  
   if(strcmp(result_str, "\n"))
     free(result_str);
   return 0;
@@ -276,7 +309,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
     strcat(result_str, "\n");
     temp_bus_port = temp_bus_port->next;
   }
-  
+
   lo_send(lo_addr_send,"/cyperus/list/bus_ports", "ss", path_str, result_str);
 
   free(result_str);
@@ -344,6 +377,26 @@ int osc_remove_module_handler(const char *path, const char *types, lo_arg ** arg
   
   return 0;
 } /* osc_remove_module_handler */
+
+
+int osc_add_connection_handler(const char *path, const char *types, lo_arg **argv,
+			       int argc, void *data, void *user_data)
+{
+  char *path_out, *path_in;
+
+  printf("path: <%s>\n", path);
+
+  path_out = argv[0];
+  path_in = argv[1];
+  
+  printf("path_out: %s\n", path_out);
+  printf("path_in: %s\n", path_in);
+
+  dsp_add_connection(path_out, path_in);
+  
+  lo_send(lo_addr_send,"/cyperus/add/connection", "ssi", path_out, path_in, 0);
+  return 0;
+} /* osc_add_connection_handler */
 
 int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,
 			     int argc, void *data, void *user_data)
