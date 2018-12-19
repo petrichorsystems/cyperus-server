@@ -81,7 +81,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
     strcat(mains_str, "\n");
     temp_port_in = temp_port_in->next;
   }
-  lo_send(lo_addr_send,"/cyperus/list/mains", "s", mains_str);
+  lo_send(lo_addr_send,"/cyperus/list/main", "s", mains_str);
   free(mains_str);
   return 0;
 } /* osc_list_main_handler */
@@ -310,7 +310,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
     temp_bus_port = temp_bus_port->next;
   }
 
-  lo_send(lo_addr_send,"/cyperus/list/bus_ports", "ss", path_str, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/bus_port", "ss", path_str, result_str);
 
   free(result_str);
   return 0;
