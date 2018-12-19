@@ -147,8 +147,13 @@ struct dsp_connection* dsp_connection_init(const char *id_out,
   new_connection->prev = NULL;
   new_connection->next = NULL;
   new_connection->remove = 0;
-  new_connection->id_out = id_out;
-  new_connection->id_in = id_in;
+
+  new_connection->id_out = malloc(sizeof(char) * strlen(id_out) + 1);
+  strcpy(new_connection->id_out, id_out);
+  
+  new_connection->id_in = malloc(sizeof(char) * strlen(id_in) + 1);
+  strcpy(new_connection->id_in, id_in);
+
   new_connection->out_value = port_out->value;
   new_connection->in_values = port_in->values;
   return new_connection;
