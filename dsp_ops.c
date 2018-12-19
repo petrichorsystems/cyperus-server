@@ -68,6 +68,7 @@ dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *o
 	  rtqueue_enq(temp_connection->in_values, temp_outsample);
 	}
 	temp_connection = temp_connection->next;
+	free(current_path);
       }
       temp_out = temp_out->next;
     }
@@ -99,6 +100,7 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	  rtqueue_enq(temp_connection->in_values, temp_outsample);
 	}
 	temp_connection = temp_connection->next;
+	free(current_path);
       }
       temp_out = temp_out->next;
     }
