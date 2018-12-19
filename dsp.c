@@ -588,6 +588,8 @@ dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
 	rtqueue_enq(temp_connection->in_values, temp_sample_in);
       }
       temp_connection = temp_connection->next;
+      if(current_path != NULL)
+	free(current_path);
     }
     temp_port = temp_port->next;
     temp_port_idx++;

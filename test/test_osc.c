@@ -238,9 +238,7 @@ int main(void) {
   //test_single_channel_passthru();
   test_single_channel_single_bus_passthru();
 
-  while(1) {
   usleep(1000);
-  }
   
   exit(0);
 }
