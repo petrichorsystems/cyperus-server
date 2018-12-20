@@ -33,10 +33,6 @@ Copyright 2015 murray foster */
 struct dsp_port_out *dsp_main_ins;
 struct dsp_port_in *dsp_main_outs;
 
-int fifo_out_is_waiting = 0;
-pthread_mutex_t fifo_out_is_waiting_mutex;
-pthread_cond_t fifo_out_is_waiting_cond;
-
 struct dsp_bus_port
 *dsp_find_bus_port(struct dsp_bus_port *target_bus_port, char *id) {
   struct dsp_bus_port *temp_bus_port;
