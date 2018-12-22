@@ -430,8 +430,12 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   struct dsp_port_in *temp_port_in;
   struct dsp_port_out *temp_port_out;
 
+  printf("module ports!!\n");
+
   path_str = argv[0];
 
+  printf("path_str: %s\n", path_str);
+  
   bus_path = malloc(sizeof(char) * (strlen(path_str) - 37));
   for(count=0; count<strlen(path_str)-37; count++)
     bus_path[count] = path_str[count];
@@ -440,9 +444,19 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   for(count=strlen(path_str)-38; count<strlen(path_str); count++) {
     module_id[count - 38] = path_str[count];
   }
+
+  printf("before find\n");
   
   temp_bus = dsp_parse_bus_path(bus_path);
+
+  printf("after parse_bus_path\n");
+  printf("temp_bus->name: %s\n", temp_bus->name);
+  printf("temp_bus->dsp_module_head: %s\n", temp_bus->dsp_module_head);
+  printf("module_id: %s\n", module_id);
+  
   temp_module = dsp_find_module(temp_bus->dsp_module_head, module_id);
+
+  printf("after find\n");
   
   result_str_size = 4;
   result_str = malloc(sizeof(char) * (result_str_size + 1));
@@ -475,7 +489,7 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   }
 
   lo_send(lo_addr_send,"/cyperus/list/module_port", "ss", path_str, result_str);
-
+  
   free(result_str);
   return 0;
   
@@ -484,7 +498,7 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 int osc_add_module_block_processor_handler(const char *path, const char *types, lo_arg ** argv,
 					   int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *bus_path, *module_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
   printf("path: <%s>\n", path);
@@ -505,7 +519,86 @@ int osc_add_module_block_processor_handler(const char *path, const char *types, 
   lo_send(lo_addr_send,"/cyperus/add/module/block_processor","s", module_id);
   
   return 0;
-} /* osc_add_module_handler */
+} /* osc_add_module_block_processor_handler */
+
+
+int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
+				 int argc, void *data, void *user_data)
+{
+  char *bus_path, *module_id = NULL;
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
+
+  float amt;
+  float time;
+  float feedback;
+  
+  printf("path: <%s>\n", path);
+
+  bus_path = argv[0];
+  amt=argv[1]->f;
+  time=argv[2]->f;
+  feedback=argv[3]->f;
+
+  target_bus = dsp_parse_bus_path(bus_path);  
+  dsp_create_delay(target_bus, amt, time, feedback);
+  
+  temp_module = target_bus->dsp_module_head;
+  while(temp_module != NULL) {
+    target_module = temp_module;
+    temp_module = temp_module->next;
+  }
+  module_id = malloc(sizeof(char) * 37);
+  strcpy(module_id, target_module->id);
+
+  printf("add_module_delay_handler, module_id: %s\n", module_id);
+  
+  lo_send(lo_addr_send,"/cyperus/add/module/delay","sfff", module_id, amt, time, feedback);
+  return 0;
+} /* osc_add_module_delay_handler */
+
+
+int
+osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
+		     int argc, void *data, void *user_data)
+{
+  char *module_path, *module_id;
+  char *bus_path;
+  struct dsp_bus *target_bus;
+  struct dsp_module *target_module;
+  float amt;
+  float time;
+  float feedback;
+  int count;
+  printf("path: <%s>\n", path);
+
+  module_path = argv[0];
+  amt=argv[1]->f;
+  time=argv[2]->f;
+  feedback=argv[3]->f;
+
+  /* split up path */
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  for(count=0; count < (strlen(module_path) - 38); count++)
+    bus_path[count] = module_path[count];
+
+  module_path = malloc(sizeof(char) * 37);
+  for(count=strlen(module_path) - 37; count < strlen(module_path) + 1; count++) {
+    module_id[count - strlen(module_path) - 37] = module_path[count];
+  }
+  
+  target_bus = dsp_parse_bus_path(bus_path);
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+
+  dsp_edit_delay(target_module, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/add/module/delay","sfff", module_id, amt, time, feedback);
+  
+  return 0;
+} /* osc_edit_module_delay_handler */
+
+
+/* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
+
 
 int osc_add_sine_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
@@ -635,47 +728,6 @@ int osc_edit_butterworth_biquad_lowpass_handler(const char *path, const char *ty
   
   return 0;
 } /* osc_edit_butterworth_biquad_lowpass_handler */
-
-int osc_add_delay_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  float amt;
-  float time;
-  float feedback;
-  
-  printf("path: <%s>\n", path);
-  amt=argv[0]->f;
-  time=argv[1]->f;
-  feedback=argv[2]->f;
-  
-  printf("creating delay with amount %f, time %f seconds, and feedback %f..\n",amt,time,feedback);
-  
-  dsp_create_delay(amt,time,feedback);
-  
-  return 0;
-} /* osc_add_delay_handler */
-
-int
-osc_edit_delay_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  int module_no;
-  float amt;
-  float time;
-  float feedback;
-  
-  printf("path: <%s>\n", path);
-  module_no=argv[0]->i;
-  amt=argv[1]->f;
-  time=argv[2]->f;
-  feedback=argv[3]->f;
-  
-  printf("module_no %d, editing delay of amount %f, time %f seconds, and feedback %f..\n",module_no,amt,time,feedback);
-  
-  dsp_edit_delay(module_no,amt,time,feedback);
-  
-  return 0;
-} /* osc_edit_delay_handler */
 
 int osc_add_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
 				int argc, void *data, void *user_data)

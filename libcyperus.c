@@ -174,6 +174,7 @@ float cyperus_moog_vcf(struct cyperus_parameters *filtr, int jack_sr, int pos) {
 float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
   float outsample = 0.0;
 
+  
   if( delay->pos >= delay->delay_time )
     delay->pos = 0;
 
@@ -184,7 +185,7 @@ float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
 
   outsample = delay->signal_buffer[delay->pos] = delay->in + (delay->signal_buffer[delay->delay_pos] * delay->fb);
   delay->pos += 1;
-  
+
   return outsample * delay->delay_amt;
 }
 

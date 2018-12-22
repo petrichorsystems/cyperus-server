@@ -138,6 +138,7 @@ dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack
   float insample = 0.0;
   float outsample = 0.0;
   dsp_parameter dsp_param = block_processor->dsp_param;
+
   /* sum inputs */
   insample = dsp_sum_input(block_processor->ins);
   /* process */
@@ -149,7 +150,79 @@ dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack
    dsp_feed_outputs(bus_path, block_processor->id, block_processor->outs);
    return;
 } /* dsp_block_processor */
+
+int
+dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback) {
+  dsp_parameter delay_param;
+  struct dsp_port_in *ins;
+  struct dsp_port_out *outs;
+  delay_param.type = DSP_DELAY_PARAMETER_ID;
+  delay_param.pos = 0;
+  delay_param.delay.name = "delay";
+  delay_param.delay.cyperus_params = malloc(sizeof(struct cyperus_parameters));
+  delay_param.delay.amt = amt;
+  delay_param.delay.time = time * jackcli_samplerate;
+  delay_param.delay.feedback = feedback;
+  delay_param.delay.cyperus_params[0].signal_buffer = (float *)calloc(time * jackcli_samplerate * 30, sizeof(float));
+
+  delay_param.delay.cyperus_params[0].pos = 0;
+  delay_param.delay.cyperus_params[0].delay_pos = 0;
   
+  ins = dsp_port_in_init("in", 512);
+  outs = dsp_port_out_init("out", 1);
+  dsp_add_module(target_bus,
+		 "delay",
+		 dsp_delay,
+		 delay_param,
+		 ins,
+		 outs);
+  return 0;
+} /* dsp_create_delay*/
+
+void
+dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos) {
+
+  float insample = 0.0;
+  float outsample = 0.0;
+  dsp_parameter dsp_param = delay->dsp_param;
+
+  
+  /* sum audio inputs */
+  insample = dsp_sum_input(delay->ins);
+  
+  delay->dsp_param.delay.cyperus_params->in = insample;
+  delay->dsp_param.delay.cyperus_params->delay_amt = dsp_param.delay.amt;
+  delay->dsp_param.delay.cyperus_params->delay_time = dsp_param.delay.time;
+  delay->dsp_param.delay.cyperus_params->fb = dsp_param.delay.feedback;
+
+  outsample = cyperus_delay(delay->dsp_param.delay.cyperus_params,
+			    jack_samplerate, pos);
+
+  /* drive audio outputs */
+  delay->outs->value = outsample;
+  dsp_feed_outputs(bus_path, delay->id, delay->outs);
+
+  return;
+} /* dsp_delay */
+
+
+void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback) {
+  int i = 0;
+  dsp_parameter dsp_param = delay->dsp_param;
+  
+  dsp_param.delay.amt = amt;
+  dsp_param.delay.time = time * jackcli_samplerate;
+  dsp_param.delay.feedback = feedback;
+  
+  /*
+    dsp_voice_parameters[module_no].delay.cyperus_params[0].pos = 0;
+    dsp_voice_parameters[module_no].delay.cyperus_params[0].delay_pos = 0;
+  */
+} /* dsp_edit_delay */
+
+
+/* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
+
 int dsp_create_sine(float freq, float amp, float phase) {
   dsp_parameter sine_param;
   sine_param.type = DSP_SINE_PARAMETER_ID;
@@ -273,52 +346,6 @@ dsp_butterworth_biquad_lowpass(dsp_parameter filter_param, int jack_samplerate, 
   
   return outsample;
 } /* dsp_butterworth_biquad_lowpass */
-
-int
-dsp_create_delay(float amt, float time, float feedback) {
-  dsp_parameter delay_param;
-  delay_param.type = DSP_DELAY_PARAMETER_ID;
-  delay_param.pos = 0;
-  delay_param.delay.name = "delay";
-  delay_param.delay.cyperus_params = malloc(sizeof(struct cyperus_parameters));
-  delay_param.delay.amt = amt;
-  delay_param.delay.time = time * jackcli_samplerate;
-  delay_param.delay.feedback = feedback;
-  delay_param.delay.cyperus_params[0].signal_buffer = (float *)calloc(time * jackcli_samplerate * 30, sizeof(float));
-
-  delay_param.delay.cyperus_params[0].pos = 0;
-  delay_param.delay.cyperus_params[0].delay_pos = 0;
-  
-  //dsp_add_module(dsp_delay,delay_param);
-  return 0;
-} /* dsp_create_delay*/
-
-int
-dsp_edit_delay(int module_no, float amt, float time, float feedback) {
-  int i = 0;
-
-  dsp_voice_parameters[module_no].delay.amt = amt;
-  dsp_voice_parameters[module_no].delay.time = time * jackcli_samplerate;
-  dsp_voice_parameters[module_no].delay.feedback = feedback;
-  /*
-  dsp_voice_parameters[module_no].delay.cyperus_params[0].pos = 0;
-  dsp_voice_parameters[module_no].delay.cyperus_params[0].delay_pos = 0;
-  */
-  return 0;
-} /* dsp_edit_delay */
-
-float
-dsp_delay(dsp_parameter delay_param, int jack_samplerate, int pos) {
-  float outsample = 0.0;
-  
-  delay_param.delay.cyperus_params[0].in = delay_param.in;
-  delay_param.delay.cyperus_params[0].delay_amt = delay_param.delay.amt;
-  delay_param.delay.cyperus_params[0].delay_time = delay_param.delay.time;
-  delay_param.delay.cyperus_params[0].fb = delay_param.delay.feedback;
-
-  outsample = cyperus_delay(&(delay_param.delay.cyperus_params[0]),jack_samplerate,pos);
-  return outsample;
-} /* dsp_delay */
 
 int
 dsp_create_vocoder(float freq, float amp) {

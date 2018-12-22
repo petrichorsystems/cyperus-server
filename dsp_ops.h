@@ -32,6 +32,14 @@ void dsp_feed_main_inputs(struct dsp_port_out *outs);
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos);
 
+
+int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);
+void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);
+void dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos);
+
+/* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
+
+
 int dsp_create_sine(float freq, float amp, float phase);
 int dsp_edit_sine(int module_no, float freq, float amp, float phase);
 float dsp_sine(dsp_parameter sine_param, int jack_samplerate, int pos);
@@ -46,10 +54,6 @@ float dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos);
 int dsp_create_butterworth_biquad_lowpass(float freq, float res);
 int dsp_edit_butterworth_biquad_lowpass(int module_no, float freq, float res);
 float dsp_butterworth_biquad_lowpass(dsp_parameter filter_param, int jack_samplerate, int pos);
-
-int dsp_create_delay(float amt, float time, float feedback);
-int dsp_edit_delay(int module_no, float amt, float time, float feedback);
-float dsp_delay(dsp_parameter delay_param, int jack_samplerate, int pos);
 
 int dsp_create_vocoder(float freq, float amp);
 int dsp_edit_vocoder(int module_no, float freq, float amp);

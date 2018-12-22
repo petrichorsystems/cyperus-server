@@ -391,8 +391,6 @@ dsp_add_module(struct dsp_bus *target_bus,
   else
     dsp_module_insert_tail(target_bus->dsp_module_head, new_module);
   return;
-
-
 } /* dsp_add_module */
 
 void

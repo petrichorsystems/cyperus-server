@@ -46,11 +46,21 @@ int osc_remove_module_handler(const char *path, const char *types, lo_arg ** arg
 int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,
 			     int argc, void *data, void *user_data);
 
-int osc_add_module_block_processor_handler(const char *path, const char *types, lo_arg ** argv,
-					   int argc, void *data, void *user_data);
 
 int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data);
+
+int osc_add_module_block_processor_handler(const char *path, const char *types, lo_arg ** argv,
+					   int argc, void *data, void *user_data);
+
+int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
+				 int argc, void *data, void *user_data);
+int osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
+				  int argc, void *data, void *user_data);
+
+
+/* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
+
 
 int osc_add_sine_handler(const char *path, const char *types, lo_arg ** argv,
 			 int argc, void *data, void *user_data);
@@ -72,12 +82,6 @@ int osc_add_butterworth_biquad_lowpass_handler(const char *path, const char *typ
 
 int osc_edit_butterworth_biquad_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data);
-
-int osc_add_delay_handler(const char *path, const char *types, lo_arg ** argv,
-			  int argc, void *data, void *user_data);
-int
-osc_edit_delay_handler(const char *path, const char *types, lo_arg ** argv,
-		       int argc, void *data, void *user_data);
 
 int osc_add_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
 				int argc, void *data, void *user_data);

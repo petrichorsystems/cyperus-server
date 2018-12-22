@@ -50,6 +50,9 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/block_processor", "s", osc_add_module_block_processor_handler, NULL);
 
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/delay", "sfff", osc_add_module_delay_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/delay", "sfff", osc_edit_module_delay_handler, NULL);
+
   lo_server_thread_add_method(lo_thread, "/cyperus/list/module_port", "s", osc_list_module_port_handler, NULL);
 
   /* below are deprecated or to-be reimplemented */
@@ -67,9 +70,6 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/butterworth_biquad_lowpass", "ff", osc_add_butterworth_biquad_lowpass_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/butterworth_biquad_lowpass", "iff", osc_edit_butterworth_biquad_lowpass_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/delay", "fff", osc_add_delay_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/delay", "ifff", osc_edit_delay_handler, NULL);
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/pitch_shift", "fff", osc_add_pitch_shift_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/pitch_shift", "ifff", osc_edit_pitch_shift_handler, NULL);
