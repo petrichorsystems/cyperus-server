@@ -53,15 +53,15 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/delay", "sfff", osc_add_module_delay_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/delay", "sfff", osc_edit_module_delay_handler, NULL);
 
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/sine", "sfff", osc_add_module_sine_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/sine", "sfff", osc_edit_module_sine_handler, NULL);
+
   lo_server_thread_add_method(lo_thread, "/cyperus/list/module_port", "s", osc_list_module_port_handler, NULL);
 
   /* below are deprecated or to-be reimplemented */
   
   lo_server_thread_add_method(lo_thread, "/cyperus/remove", "i", osc_remove_module_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/list", "i", osc_list_modules_handler, NULL);
-  
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/sine", "fff", osc_add_sine_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/sine", "ifff", osc_edit_sine_handler, NULL);
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/square", "ff", osc_add_square_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/square", "iff", osc_edit_square_handler, NULL);

@@ -221,10 +221,11 @@ void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedb
 } /* dsp_edit_delay */
 
 
-/* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 
-int dsp_create_sine(float freq, float amp, float phase) {
+int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase) {
   dsp_parameter sine_param;
+  struct dsp_port_in *ins;
+  struct dsp_port_out *outs;
   sine_param.type = DSP_SINE_PARAMETER_ID;
   sine_param.pos = 0;
   sine_param.sine.name = "sine";
@@ -236,31 +237,50 @@ int dsp_create_sine(float freq, float amp, float phase) {
   sine_param.sine.cyperus_params[0].block_fifo = *rtqueue_init(jackcli_samplerate*2);
   sine_param.sine.cyperus_params[0].last_freq = freq;
   sine_param.sine.cyperus_params[0].phase_delta = 0.0;
+
+  ins = dsp_port_in_init("in", 512);
+  outs = dsp_port_out_init("out", 1);
+  dsp_add_module(target_bus,
+		 "sine",
+		 dsp_sine,
+		 sine_param,
+		 ins,
+		 outs);
   
-  //dsp_add_module(dsp_sine,sine_param);
   return 0;
 } /* dsp_create_sine */
 
-int
-dsp_edit_sine(int module_no, float freq, float amp, float phase) {
-  dsp_voice_parameters[module_no].sine.freq = freq;
-  dsp_voice_parameters[module_no].sine.amp = amp;
-  dsp_voice_parameters[module_no].sine.phase = phase;
-  return 0;
+void
+dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase) {
+  dsp_parameter dsp_param = sine->dsp_param;
+
+  dsp_param.sine.freq = freq;
+  dsp_param.sine.amp = amp;
+  dsp_param.sine.phase = phase;
+  return;
 } /* dsp_edit_sine */
 
-
-float
-dsp_sine(dsp_parameter sine_param, int jack_samplerate, int pos) {
+void
+dsp_sine(char *bus_path, struct dsp_module *sine, dsp_parameter sine_param, int jack_samplerate, int pos) {
   float outsample = 0.0;
-  sine_param.sine.cyperus_params[0].freq = sine_param.sine.freq;
-  sine_param.sine.cyperus_params[0].amp = sine_param.sine.amp;
-  sine_param.sine.cyperus_params[0].phase = sine_param.sine.phase;
+  dsp_parameter dsp_param = sine->dsp_param;
+
+  sine->dsp_param.sine.cyperus_params->freq = dsp_param.sine.freq;
+  sine->dsp_param.sine.cyperus_params->amp = dsp_param.sine.amp;
+  sine->dsp_param.sine.cyperus_params->phase = dsp_param.sine.phase;
   
-  outsample = cyperus_sine(&(sine_param.sine.cyperus_params[0]),jack_samplerate,pos);
+  outsample = cyperus_sine(sine->dsp_param.sine.cyperus_params,
+			   jack_samplerate, pos);
+
+  /* drive audio outputs */
+  sine->outs->value = outsample;
+  dsp_feed_outputs(bus_path, sine->id, sine->outs);
   
-  return outsample;
+  return;
 } /* dsp_sine */
+
+
+/* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 
 int
 dsp_create_square(float freq, float amp) {

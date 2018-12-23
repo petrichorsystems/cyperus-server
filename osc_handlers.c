@@ -596,51 +596,82 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
   return 0;
 } /* osc_edit_module_delay_handler */
 
+int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** argv,
+				 int argc, void *data, void *user_data)
+{
+  char *bus_path, *module_id = NULL;
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
+
+  float amt;
+  float time;
+  float feedback;
+  
+  printf("path: <%s>\n", path);
+
+  bus_path = argv[0];
+  amt=argv[1]->f;
+  time=argv[2]->f;
+  feedback=argv[3]->f;
+
+  target_bus = dsp_parse_bus_path(bus_path);  
+  dsp_create_sine(target_bus, amt, time, feedback);
+  
+  temp_module = target_bus->dsp_module_head;
+  while(temp_module != NULL) {
+    target_module = temp_module;
+    temp_module = temp_module->next;
+  }
+  module_id = malloc(sizeof(char) * 37);
+  strcpy(module_id, target_module->id);
+
+  printf("add_module_sine_handler, module_id: %s\n", module_id);
+  
+  lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, amt, time, feedback);
+  return 0;
+} /* osc_add_module_sine_handler */
+
+
+int
+osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv,
+		     int argc, void *data, void *user_data)
+{
+  char *module_path, *module_id;
+  char *bus_path;
+  struct dsp_bus *target_bus;
+  struct dsp_module *target_module;
+  float amt;
+  float time;
+  float feedback;
+  int count;
+  printf("path: <%s>\n", path);
+
+  module_path = argv[0];
+  amt=argv[1]->f;
+  time=argv[2]->f;
+  feedback=argv[3]->f;
+
+  /* split up path */
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  for(count=0; count < (strlen(module_path) - 38); count++)
+    bus_path[count] = module_path[count];
+
+  module_path = malloc(sizeof(char) * 37);
+  for(count=strlen(module_path) - 37; count < strlen(module_path) + 1; count++) {
+    module_id[count - strlen(module_path) - 37] = module_path[count];
+  }
+  
+  target_bus = dsp_parse_bus_path(bus_path);
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+
+  dsp_edit_sine(target_module, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, amt, time, feedback);
+  
+  return 0;
+} /* osc_edit_module_sine_handler */
+
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
-
-
-int osc_add_sine_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  float freq;
-  float amp;
-  float phase;
-  
-  printf("path: <%s>\n", path);
-  freq=argv[0]->f;
-  amp=argv[1]->f;
-  phase=argv[2]->f;
-
-  printf("creating sine wave at freq %f and amp %f..\n",freq,amp);
-  
-  /* add sine() function from libcyperus onto correct voice/signal chain */
-  dsp_create_sine(freq,amp,phase);
-  
-  return 0;
-} /* osc_create_sine_handler */
-
-int osc_edit_sine_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  int module_no;
-  float freq;
-  float amp;
-  float phase;
-  
-  printf("path: <%s>\n", path);
-  module_no=argv[0]->i;
-  freq=argv[1]->f;
-  amp=argv[2]->f;
-  phase=argv[3]->f;
-  
-  printf("module_no %d, editing sine wave to freq %f and amp %f..\n",module_no,freq,amp);
-  
-  /* add sine() function from libcyperus onto correct voice/signal chain */
-  dsp_edit_sine(module_no,freq,amp,phase);
-  
-  return 0;
-} /* osc_edit_sine_handler */
 
 int osc_add_square_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
