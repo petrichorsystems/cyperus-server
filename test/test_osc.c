@@ -74,6 +74,15 @@ int osc_add_block_processor_handler(const char *path, const char *types, lo_arg 
   return 0;
 } /* osc_add_block_processor_handler */
 
+int osc_add_module_sine_handler(const char *path, const char *types, lo_arg **argv,
+				    int argc, void *data, void *user_data)
+{
+  char *sine_id = argv[0];
+  incoming_message = malloc(sizeof(char) * (strlen(sine_id) + 1));
+  strcpy(incoming_message, sine_id);
+  return 0;
+} /* osc_add_module_sine_handler */
+
 
 int osc_add_module_delay_handler(const char *path, const char *types, lo_arg **argv,
 				    int argc, void *data, void *user_data)
@@ -600,6 +609,181 @@ void test_single_channel_single_bus_delay() {
   
 } /* test_single_channel_single_bus_delay */
 
+
+void test_single_channel_single_bus_sine() {
+  char *mains_str;
+  char *main_in_0, *main_out_0;
+  char *bus_id;
+  char *bus_ports;
+  char *bus_port_in, *bus_port_out;
+  char *bus_port_in_path, *bus_port_out_path;
+  char *bus_path = NULL;
+  char *sine_id = NULL;
+  char *module_path = NULL;
+  char *module_ports = NULL;
+  char *module_port_in, *module_port_out;
+  char *module_port_in_path, *module_port_out_path;
+
+  float freq = 330;
+  float amp = 1.0;
+  float phase = 0.0;
+
+  int count;
+
+  printf("sending /cyperus/list/main ...\n");
+  lo_send(t, "/cyperus/list/main", NULL);
+  printf("sent.\n");
+  usleep(100);
+  mains_str = malloc(sizeof(char) * (strlen(incoming_message) + 1));
+  strcpy(mains_str, incoming_message);
+  free(incoming_message);
+
+  int out_pos;
+  char *subptr = malloc(sizeof(char) * (strlen(mains_str) + 1));
+
+  main_in_0 = malloc(sizeof(char) * 44);
+  for(count=4; count<47; count++) {
+    main_in_0[count - 4] = mains_str[count];
+  }
+
+  main_out_0 = malloc(sizeof(char) * 44);
+  subptr = strstr(mains_str, "out:");
+  out_pos = subptr - mains_str;
+  for(count=out_pos + 5; count<out_pos + 44 + 4; count++) {
+    main_out_0[count - 5 - out_pos] = mains_str[count];
+  }
+
+  printf("sending /cyperus/add/bus / main0 in out ... \n");
+  lo_send(t, "/cyperus/add/bus", "ssss", "/", "main0", "in", "out");
+  printf("sent.\n");
+  
+  printf("sending /cyperus/list/bus / 1 ... \n");
+  lo_send(t, "/cyperus/list/bus", "si", "/", 1);
+  printf("sent.\n");
+  usleep(500);
+  bus_id = malloc(sizeof(char) * (strlen(incoming_message) + 1));
+  strcpy(bus_id, incoming_message);
+  free(incoming_message);
+
+  bus_path = malloc(sizeof(char) * 38);
+  bus_path[0] = '/';
+  for(count=0; count < 37; count++)
+    bus_path[count+1] = bus_id[count];
+  bus_path[count] = '\0';
+  
+  printf("sending /cyperus/list/bus_port %s ... \n", bus_path);
+  lo_send(t, "/cyperus/list/bus_port", "s", bus_path);
+  printf("sent.\n");
+  usleep(500);
+  bus_ports = malloc(sizeof(char) * (strlen(incoming_message) + 1));
+  strcpy(bus_ports, incoming_message);
+  free(incoming_message);
+
+  bus_port_in = malloc(sizeof(char) * 37);
+  for(count=4; count<40; count++) {
+    bus_port_in[count - 4] = bus_ports[count];
+  }
+
+  subptr = malloc(sizeof(char) * (strlen(bus_ports) + 1));
+  subptr = strstr(bus_ports, "out:");
+  out_pos = subptr - bus_ports;
+  bus_port_out = malloc(sizeof(char) * 37);
+  for(count=out_pos+5; count<out_pos+36+5; count++) {
+    bus_port_out[count - 5 - out_pos] = bus_ports[count];
+  }
+
+  bus_port_in_path = malloc(sizeof(char) * (36 * 2 + 2));
+  bus_port_out_path = malloc(sizeof(char) * (36 * 2 + 2));
+
+  strcpy(bus_port_in_path, bus_path);
+  strcat(bus_port_in_path, ":");
+  strcat(bus_port_in_path, bus_port_in);
+  strcpy(bus_port_out_path, bus_path);
+  strcat(bus_port_out_path, ":");
+  strcat(bus_port_out_path, bus_port_out);
+
+  printf("sending /cyperus/add/module/sine %s %f %f %f ... \n", bus_path, freq, amp, phase);
+  lo_send(t, "/cyperus/add/module/sine", "sfff", bus_path, freq, amp, phase);
+  printf("sent.\n");
+  sleep(1);
+  sine_id = malloc(sizeof(char) * (strlen(incoming_message) + 1));
+  strcpy(sine_id, incoming_message);
+  free(incoming_message);
+
+  printf("sine_id: %s\n", sine_id);
+  
+  module_path = malloc(sizeof(char) * (strlen(bus_path) + 38));
+  strcpy(module_path, bus_path);
+  strcat(module_path, "?");
+  strcat(module_path, sine_id);
+  
+  printf("sending /cyperus/list/module_port %s ... \n", module_path);
+  lo_send(t, "/cyperus/list/module_port", "s", module_path);
+  printf("sent.\n");
+  usleep(500);
+  module_ports = malloc(sizeof(char) * (strlen(incoming_message) + 1));
+  strcpy(module_ports, incoming_message);
+  free(incoming_message);
+
+  printf("module_ports: %s\n", module_ports);
+  /* add sine and associated ports */
+  
+  module_port_in = malloc(sizeof(char) * 37);
+  for(count=4; count<40; count++) {
+    module_port_in[count - 4] = module_ports[count];
+  }
+  
+  subptr = malloc(sizeof(char) * (strlen(module_ports) + 1));
+  subptr = strstr(module_ports, "out:");
+  out_pos = subptr - module_ports;
+  module_port_out = malloc(sizeof(char) * 37);
+  for(count=out_pos+5; count<out_pos+36+5; count++) {
+    module_port_out[count - 5 - out_pos] = module_ports[count];
+  }
+
+  module_port_in_path = malloc(sizeof(char) * (36 * 3 + 3));
+  module_port_out_path = malloc(sizeof(char) * (36 * 3 + 3));
+
+  strcpy(module_port_in_path, module_path);
+  strcat(module_port_in_path, "<");
+  strcat(module_port_in_path, module_port_in);
+  strcpy(module_port_out_path, module_path);
+  strcat(module_port_out_path, ">");
+  strcat(module_port_out_path, module_port_out);
+
+  printf("module_port_in_path: %s\n", module_port_in_path);
+  printf("module_port_out_path: %s\n", module_port_out_path);
+  
+  
+  printf("sending /cyperus/add/connection %s %s ... \n", main_in_0, bus_port_in_path);
+  lo_send(t, "/cyperus/add/connection", "ss", main_in_0, bus_port_in_path);
+  printf("sent.\n");
+  
+  printf("sending /cyperus/add/connection %s %s ... \n", bus_port_in_path, module_port_in_path);
+  lo_send(t, "/cyperus/add/connection", "ss", bus_port_in_path, module_port_in_path);
+  printf("sent.\n");
+
+  printf("sending /cyperus/add/connection %s %s ... \n", module_port_out_path, bus_port_out_path);
+  lo_send(t, "/cyperus/add/connection", "ss", module_port_out_path, bus_port_out_path);
+  printf("sent.\n");
+  
+  printf("sending /cyperus/add/connection %s %s ... \n", bus_port_out_path, main_out_0);
+  lo_send(t, "/cyperus/add/connection", "ss", bus_port_out_path, main_out_0);
+  printf("sent.\n");
+
+  free(bus_id);
+  free(bus_path);
+  free(bus_ports);
+  free(bus_port_in);
+  free(bus_port_out);
+  free(bus_port_in_path);
+  free(bus_port_out_path);
+  free(main_in_0);
+  free(main_out_0);
+  free(mains_str);
+  
+} /* test_single_channel_single_bus_sine */
+
 int main(void) {
   lo_server_thread st = lo_server_thread_new("97217", error);
   lo_server_thread_add_method(st, "/cyperus/list/main", "s", osc_list_main_handler, NULL);
@@ -608,6 +792,7 @@ int main(void) {
   lo_server_thread_add_method(st, "/cyperus/list/module_port", "ss", osc_list_module_port_handler, NULL);
   lo_server_thread_add_method(st, "/cyperus/add/module/block_processor", "s", osc_add_block_processor_handler, NULL);
   lo_server_thread_add_method(st, "/cyperus/add/module/delay", "sfff", osc_add_module_delay_handler, NULL);
+  lo_server_thread_add_method(st, "/cyperus/add/module/sine", "sfff", osc_add_module_sine_handler, NULL);
   lo_server_thread_add_method(st, NULL, NULL, generic_handler, NULL);
   lo_server_thread_start(st);
 
@@ -616,7 +801,8 @@ int main(void) {
   //test_single_channel_passthru();
   //test_single_channel_single_bus_passthru();
   //test_single_channel_single_bus_block_processor();
-  test_single_channel_single_bus_delay();
+  //test_single_channel_single_bus_delay();
+  test_single_channel_single_bus_sine();
 
   usleep(1000);
   
