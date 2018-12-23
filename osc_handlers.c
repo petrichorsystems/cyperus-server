@@ -603,19 +603,19 @@ int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** a
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
-  float amt;
-  float time;
-  float feedback;
+  float freq;
+  float amp;
+  float phase;
   
   printf("path: <%s>\n", path);
 
   bus_path = argv[0];
-  amt=argv[1]->f;
-  time=argv[2]->f;
-  feedback=argv[3]->f;
+  freq=argv[1]->f;
+  amp=argv[2]->f;
+  phase=argv[3]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_sine(target_bus, amt, time, feedback);
+  dsp_create_sine(target_bus, freq, amp, phase);
   
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -627,7 +627,7 @@ int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** a
 
   printf("add_module_sine_handler, module_id: %s\n", module_id);
   
-  lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, freq, amp, phase);
   return 0;
 } /* osc_add_module_sine_handler */
 
@@ -640,16 +640,16 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
-  float amt;
-  float time;
-  float feedback;
+  float freq;
+  float amp;
+  float phase;
   int count;
   printf("path: <%s>\n", path);
 
   module_path = argv[0];
-  amt=argv[1]->f;
-  time=argv[2]->f;
-  feedback=argv[3]->f;
+  freq=argv[1]->f;
+  amp=argv[2]->f;
+  phase=argv[3]->f;
 
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
@@ -664,8 +664,8 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
   target_bus = dsp_parse_bus_path(bus_path);
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
 
-  dsp_edit_sine(target_module, amt, time, feedback);
-  lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, amt, time, feedback);
+  dsp_edit_sine(target_module, freq, amp, phase);
+  lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, freq, amp, phase);
   
   return 0;
 } /* osc_edit_module_sine_handler */
