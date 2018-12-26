@@ -41,6 +41,9 @@ struct cyperus_parameters {
   float delay_amt; /* delay amount, 0-1 */
   float delay_time; /* init this with
 		       = seconds * sample_rate */
+  float attack;
+  float decay;
+
   int pos;
   int delay_pos;
   float avg;
@@ -83,6 +86,7 @@ struct cyperus_parameters {
 
 /* signal generators */
 float cyperus_block_processor(struct cyperus_parameters *block_processor, int jack_sr, int pos);
+float cyperus_envelope_follower(struct cyperus_parameters *envelope_follower, int jack_sr, int pos);
 float cyperus_sine(struct cyperus_parameters *sinewav, int jack_sr, int pos);
 float cyperus_square(struct cyperus_parameters *squarewav, int jack_sr, int pos);
 float cyperus_triangle(struct cyperus_parameters *triwav, int jack_sr, int pos);

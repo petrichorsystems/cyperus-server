@@ -48,6 +48,25 @@ float cyperus_block_processor(struct cyperus_parameters *block_processor, int ja
   return outsample;
 }
 
+float cyperus_envelope_follower(struct cyperus_parameters *envelope_follower, int jack_sr, int pos)
+{
+  float attack_ms = envelope_follower->attack;
+  float decay_ms = envelope_follower->decay;
+  float coeff_attack = exp(log(0.01) / (attack_ms * jack_sr * 0.001));
+  float coeff_decay = exp(log(0.01) / (decay_ms * jack_sr * 0.001));
+  
+  float insample = envelope_follower->in;
+  float outsample, absin = 0.0;
+  
+  absin = fabs(insample);
+  if(absin > envelope_follower->signal_buffer[0])
+    outsample = coeff_attack * (outsample - absin) + outsample;
+  else
+    outsample = coeff_decay * (outsample - absin) + outsample;
+  envelope_follower->signal_buffer[0] = outsample;
+  return outsample;
+}
+
 float cyperus_sine(struct cyperus_parameters *sinewav, int jack_sr, int pos)
 {
   sinewav->phase_delta += 2.0 * M_PI * sinewav->freq * (1.0/jack_sr) + sinewav->phase;
