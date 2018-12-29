@@ -538,6 +538,8 @@ param_to_module_name(dsp_parameter module) {
     return module.block_processor.name;
   case DSP_PITCH_SHIFT_PARAMETER_ID:
     return module.pitch_shift.name;
+  case DSP_ENVELOPE_FOLLOWER_PARAMETER_ID:
+    return module.envelope_follower.name;
   default:
     module.null.name="null";
     return module.null.name;

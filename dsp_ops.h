@@ -41,6 +41,10 @@ int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float pha
 void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);
 void dsp_sine(char *bus_path, struct dsp_module *sine, dsp_parameter sine_param, int jack_samplerate, int pos);
 
+int dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale);
+void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale);
+void dsp_envelope_follower(char *bus_path, struct dsp_module *envelope_follower, int jack_samplerate, int pos);
+
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 

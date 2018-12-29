@@ -77,6 +77,13 @@ typedef struct dsp_module_parameter {
       float shift; /* 1.0 -> 2.0 octave up,  1.0 -> 0.0 octave down */
       struct cyperus_parameters *cyperus_params;
     } pitch_shift;
+    struct {
+      char *name;
+      float attack; /* ms */
+      float decay; /* ms */
+      float scale;
+      struct cyperus_parameters *cyperus_params;
+    } envelope_follower;
   };
 }dsp_parameter;
 
@@ -90,7 +97,8 @@ typedef enum dsp_parameter_identifiers{
   DSP_DELAY_PARAMETER_ID=8,
   DSP_VOCODER_PARAMETER_ID=9,
   DSP_BLOCK_PROCESSOR_PARAMETER_ID=10,
-  DSP_PITCH_SHIFT_PARAMETER_ID=11
+  DSP_PITCH_SHIFT_PARAMETER_ID=11,
+  DSP_ENVELOPE_FOLLOWER_PARAMETER_ID=12
 }dsp_param_identifiers;
 
 struct dsp_port_in {

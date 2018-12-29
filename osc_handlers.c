@@ -670,6 +670,80 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
   return 0;
 } /* osc_edit_module_sine_handler */
 
+int osc_add_module_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
+				 int argc, void *data, void *user_data)
+{
+  char *bus_path, *module_id = NULL;
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
+
+  float attack;
+  float decay;
+  float scale;
+  
+  printf("path: <%s>\n", path);
+
+  bus_path = argv[0];
+  attack=argv[1]->f;
+  decay=argv[2]->f;
+  scale=argv[3]->f;
+
+  target_bus = dsp_parse_bus_path(bus_path);  
+  dsp_create_envelope_follower(target_bus, attack, decay, scale);
+  
+  temp_module = target_bus->dsp_module_head;
+  while(temp_module != NULL) {
+    target_module = temp_module;
+    temp_module = temp_module->next;
+  }
+  module_id = malloc(sizeof(char) * 37);
+  strcpy(module_id, target_module->id);
+
+  printf("add_module_envelope_follower_handler, module_id: %s\n", module_id);
+  
+  lo_send(lo_addr_send,"/cyperus/add/module/envelope_follower","sfff", module_id, attack, decay, scale);
+  return 0;
+} /* osc_add_module_envelope_follower_handler */
+
+
+int
+osc_edit_module_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
+		     int argc, void *data, void *user_data)
+{
+  char *module_path, *module_id;
+  char *bus_path;
+  struct dsp_bus *target_bus;
+  struct dsp_module *target_module;
+  float attack;
+  float decay;
+  float scale;
+  int count;
+  printf("path: <%s>\n", path);
+
+  module_path = argv[0];
+  attack=argv[1]->f;
+  decay=argv[2]->f;
+  scale=argv[3]->f;
+
+  /* split up path */
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  for(count=0; count < (strlen(module_path) - 38); count++)
+    bus_path[count] = module_path[count];
+
+  module_path = malloc(sizeof(char) * 37);
+  for(count=strlen(module_path) - 37; count < strlen(module_path) + 1; count++) {
+    module_id[count - strlen(module_path) - 37] = module_path[count];
+  }
+  
+  target_bus = dsp_parse_bus_path(bus_path);
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+
+  dsp_edit_envelope_follower(target_module, attack, decay, scale);
+  lo_send(lo_addr_send,"/cyperus/add/module/envelope_follower","sfff", module_id, attack, decay, scale);
+  
+  return 0;
+} /* osc_edit_module_envelope_follower_handler */
+
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 
