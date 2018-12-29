@@ -301,7 +301,7 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float dec
 		 ins,
 		 outs);
   return 0;
-} /* dsp_create_envelope_follower*/
+} /* dsp_create_envelope_follower */
 
 void
 dsp_envelope_follower(char *bus_path, struct dsp_module *envelope_follower, int jack_samplerate, int pos) {
