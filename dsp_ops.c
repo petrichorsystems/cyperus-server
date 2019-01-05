@@ -168,7 +168,8 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
   delay_param.delay.cyperus_params[0].pos = 0;
   delay_param.delay.cyperus_params[0].delay_pos = 0;
   
-  ins = dsp_port_in_init("in,in_time", 512);
+  ins = dsp_port_in_init("in", 512);
+  ins->next = dsp_port_in_init("param_time", 512);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "delay",
@@ -183,6 +184,7 @@ void
 dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos) {
 
   float insample = 0.0;
+  float time_param = 0.0; 
   float outsample = 0.0;
   dsp_parameter dsp_param = delay->dsp_param;
 
@@ -192,7 +194,12 @@ dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos
   
   delay->dsp_param.delay.cyperus_params->in = insample;
   delay->dsp_param.delay.cyperus_params->delay_amt = dsp_param.delay.amt;
+
+  if(!rtqueue_isempty(delay->ins->next->values))
+    dsp_param.delay.time = dsp_sum_input(delay->ins->next) * jack_samplerate;
+
   delay->dsp_param.delay.cyperus_params->delay_time = dsp_param.delay.time;
+  
   delay->dsp_param.delay.cyperus_params->fb = dsp_param.delay.feedback;
 
   outsample = cyperus_delay(delay->dsp_param.delay.cyperus_params,
@@ -322,6 +329,7 @@ dsp_envelope_follower(char *bus_path, struct dsp_module *envelope_follower, int 
   outsample = cyperus_envelope_follower(envelope_follower->dsp_param.envelope_follower.cyperus_params,
 			    jack_samplerate, pos);
 
+  
   /* drive audio outputs */
   envelope_follower->outs->value = outsample;
   dsp_feed_outputs(bus_path, envelope_follower->id, envelope_follower->outs);

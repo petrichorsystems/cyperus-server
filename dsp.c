@@ -221,9 +221,9 @@ dsp_parse_bus_path(char *target_path) {
 	if( strcmp(output_token, "") != 0 ) {
 	  path_index[bus_count] = output_token;
 	  bus_count += 1;
+	  free(output_token);
 	}
       }
-      free(output_token);
       while (*p && *p == '/') p++;   /* find next non-space */
     }
 
@@ -256,9 +256,9 @@ dsp_parse_bus_path(char *target_path) {
 	    } 
 	    temp_bus = temp_bus->next;
 	  }
+	  free(output_token);
 	}
       }
-      free(output_token);
       while (*p && *p == '/') p++;   /* find next non-space */
     }
   return NULL;
@@ -324,9 +324,9 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 	      dsp_bus_port_insert_tail(head_bus_port, temp_bus_port);
 	    else
 	      head_bus_port = temp_bus_port;
+	    free(output_token);
 	  }
 	}
-	free(output_token);
 	while (*p && *p == ',') p++;   /* find next non-space */
       }
   }
@@ -459,12 +459,20 @@ dsp_add_connection(char *id_out, char *id_in) {
     }
   }
 
+  printf("mmmm\n");
+  
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "}") == 0) {
     port_in = dsp_find_port_out(dsp_main_outs, temp_result[2]);
   }
+
+  printf("temp_result[0]: %s\n", temp_result[0]);
+  
   if( strcmp(temp_result[0], "<") == 0 ) {
+
+    printf(" yep \n");
+
     module_path = temp_result[1];
     port_in_id = temp_result[2];
     dsp_parse_path(temp_result, module_path);
@@ -628,7 +636,8 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int 
 
     recurse_dsp_graph(temp_bus->down, current_path, jack_sr, pos);
     temp_bus = temp_bus->next;
-    free(current_path);
+    if(current_path)
+      free(current_path);
   }
   return;
 } /* recurse_dsp_graph */

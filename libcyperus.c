@@ -64,7 +64,7 @@ float cyperus_envelope_follower(struct cyperus_parameters *envelope_follower, in
   else
     outsample = coeff_decay * (outsample - absin) + outsample;
   envelope_follower->signal_buffer[0] = outsample;
-  return outsample;
+  return fabs(outsample);
 }
 
 float cyperus_sine(struct cyperus_parameters *sinewav, int jack_sr, int pos)

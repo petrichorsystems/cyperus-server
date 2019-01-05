@@ -1073,8 +1073,11 @@ void test_single_channel_single_bus_sine_envelope_follower_delay() {
   char *delay_module_ports = NULL;
   char *delay_module_port_in, *delay_module_port_out;
   char *delay_module_port_in_path, *delay_module_port_out_path;
-  
-  float freq = 0.25;
+
+  char *delay_module_param_time_port_in;
+  char *delay_module_param_time_port_in_path;
+
+  float freq = 0.06125;
   float amp = 1.0;
   float phase = 0.0;
 
@@ -1096,7 +1099,7 @@ void test_single_channel_single_bus_sine_envelope_follower_delay() {
   strcpy(mains_str, incoming_message);
   free(incoming_message);
 
-  int out_pos;
+  int in_pos, out_pos;
   char *subptr = malloc(sizeof(char) * (strlen(mains_str) + 1));
 
   main_in_0 = malloc(sizeof(char) * 44);
@@ -1308,40 +1311,59 @@ void test_single_channel_single_bus_sine_envelope_follower_delay() {
   for(count=out_pos+5; count<out_pos+36+5; count++) {
     delay_module_port_out[count - 5 - out_pos] = delay_module_ports[count];
   }
+  
+  subptr = malloc(sizeof(char) * (strlen(delay_module_ports) + 1));
+  delay_module_param_time_port_in = malloc(sizeof(char) * 37);
+  for(count=44; count<80; count++) {
+    delay_module_param_time_port_in[count - 44] = delay_module_ports[count];
+  }
 
+  delay_module_param_time_port_in_path = malloc(sizeof(char) * (36 * 3 + 3));
   delay_module_port_in_path = malloc(sizeof(char) * (36 * 3 + 3));
   delay_module_port_out_path = malloc(sizeof(char) * (36 * 3 + 3));
 
   strcpy(delay_module_port_in_path, delay_module_path);
   strcat(delay_module_port_in_path, "<");
   strcat(delay_module_port_in_path, delay_module_port_in);
+
+  strcpy(delay_module_param_time_port_in_path, delay_module_path);
+  strcat(delay_module_param_time_port_in_path, "<");
+  strcat(delay_module_param_time_port_in_path, delay_module_param_time_port_in);
+  
   strcpy(delay_module_port_out_path, delay_module_path);
   strcat(delay_module_port_out_path, ">");
   strcat(delay_module_port_out_path, delay_module_port_out);
 
   printf("delay_module_port_in_path: %s\n", delay_module_port_in_path);
+  printf("delay_module_param_time_port_in_path: %s\n", delay_module_param_time_port_in_path);
   printf("delay_module_port_out_path: %s\n", delay_module_port_out_path);
   
   /* end delay module */
-  
+
   printf("sending /cyperus/add/connection %s %s ... \n", main_in_0, bus_port_in_path);
   lo_send(t, "/cyperus/add/connection", "ss", main_in_0, bus_port_in_path);
   printf("sent.\n");
   
-  printf("sending /cyperus/add/connection %s %s ... \n", bus_port_in_path, module_port_in_path);
-  lo_send(t, "/cyperus/add/connection", "ss", bus_port_in_path, module_port_in_path);
+  printf("sending /cyperus/add/connection %s %s ... \n", bus_port_in_path, delay_module_port_in_path);
+  lo_send(t, "/cyperus/add/connection", "ss", bus_port_in_path, delay_module_port_in_path);
   printf("sent.\n");
   
   printf("sending /cyperus/add/connection %s %s ... \n", module_port_out_path, follower_module_port_in_path);
   lo_send(t, "/cyperus/add/connection", "ss", module_port_out_path, follower_module_port_in_path);
   printf("sent.\n");
-  
-  printf("sending /cyperus/add/connection %s %s ... \n", follower_module_port_out_path, bus_port_out_path);
-  lo_send(t, "/cyperus/add/connection", "ss", follower_module_port_out_path, bus_port_out_path);
+
+  printf("sending /cyperus/add/connection %s %s ... \n", follower_module_port_out_path, delay_module_param_time_port_in_path);
+  lo_send(t, "/cyperus/add/connection", "ss", follower_module_port_out_path, delay_module_param_time_port_in_path);
   printf("sent.\n");
   
+  printf("sending /cyperus/add/connection %s %s ... \n", delay_module_port_out_path, bus_port_out_path);
+  lo_send(t, "/cyperus/add/connection", "ss", delay_module_port_out_path, bus_port_out_path);
+
+    
   printf("sending /cyperus/add/connection %s %s ... \n", bus_port_out_path, main_out_0);
   lo_send(t, "/cyperus/add/connection", "ss", bus_port_out_path, main_out_0);
+  printf("sent.\n");
+
   printf("sent.\n");
 
   free(bus_id);
