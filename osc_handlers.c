@@ -82,7 +82,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
     temp_port_in = temp_port_in->next;
   }
   lo_send(lo_addr_send,"/cyperus/list/main", "s", mains_str);
-  free(mains_str);
+  //free(mains_str);
   return 0;
 } /* osc_list_main_handler */
 
@@ -143,8 +143,8 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
     strcat(single_result_str, separator);
     strcat(single_result_str, bus_outs_str);
     strcat(single_result_str, "\n");
-    free(bus_ins_str);
-    free(bus_outs_str);
+    //free(bus_ins_str);
+    //free(bus_outs_str);
 
     if(result_str == NULL) {
       result_str = malloc(sizeof(char) * single_result_str_size);
@@ -153,7 +153,7 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
       result_str = realloc(result_str, sizeof(char) * (result_str_size + 1));
       strcat(result_str, single_result_str);
     }
-    free(single_result_str);
+    //free(single_result_str);
 
     if(single)
       break;
@@ -247,7 +247,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	if(last_cutoff == strlen(result_str - 1))
 	   more = 0;
 	lo_send(lo_addr_send,"/cyperus/list/bus", "siis", path_str, list_type, more, part_result_str);
-	free(part_result_str);
+	//free(part_result_str);
       }
     }
   }
@@ -260,7 +260,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   lo_send(lo_addr_send,"/cyperus/list/bus", "siis", path_str, list_type, 0, result_str);
   
   if(strcmp(result_str, "\n"))
-    free(result_str);
+    {}//free(result_str);
   return 0;
 } /* osc_list_bus_handler */
 
@@ -312,7 +312,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
 
   lo_send(lo_addr_send,"/cyperus/list/bus_port", "ss", path_str, result_str);
 
-  free(result_str);
+  //free(result_str);
   return 0;
 } /* osc_list_bus_port_handler */
 
@@ -414,7 +414,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 
   lo_send(lo_addr_send,"/cyperus/list","s",module_list);
   
-  free(module_list);
+  //free(module_list);
   return 0;
   
 } /* osc_list_modules_handler */
@@ -443,8 +443,9 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   module_id = malloc(sizeof(char) * 37);
   for(count=strlen(path_str)-38; count<strlen(path_str); count++) {
     module_id[count - 38] = path_str[count];
+    printf("path_str[%d]: %c\n", count, path_str[count]);
   }
-
+  module_id[36] = '\0';
   printf("before find\n");
   
   temp_bus = dsp_parse_bus_path(bus_path);
@@ -461,8 +462,15 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   result_str_size = 4;
   result_str = malloc(sizeof(char) * (result_str_size + 1));
   strcpy(result_str, "in:\n");
+
+  printf("copied result\n");
+
+  printf("temp_module: %s\n", temp_module);
+  
   /* process main inputs */
   temp_port_in = temp_module->ins;
+
+  printf("starting while\n");
   while(temp_port_in != NULL) {
     result_str_size += strlen(temp_port_in->id) + 1 + strlen(temp_port_in->name) + 2;
     result_str = realloc(result_str, sizeof(char) * result_str_size);
@@ -473,6 +481,8 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
     temp_port_in = temp_port_in->next;
   }
 
+  printf("processing main outputs\n");
+  
   result_str_size += 4;
   result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
   strcat(result_str, "out:\n");
@@ -488,9 +498,12 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
     temp_port_out = temp_port_out->next;
   }
 
+  printf(" about to send response\n");
   lo_send(lo_addr_send,"/cyperus/list/module_port", "ss", path_str, result_str);
+
+  printf("sente response\n");
   
-  free(result_str);
+  //free(result_str);
   return 0;
   
 } /* osc_list_module_port_handler */
