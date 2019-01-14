@@ -130,7 +130,7 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
             sine_module_ports['in'].append(elem)
     print('sine_module_ports', sine_module_ports)
 
-    liblo.send(dest, "/cyperus/add/module/delay", "/{}".format(bus_main0_uuid), 1.0, 1.0, 1.0)
+    liblo.send(dest, "/cyperus/add/module/delay", "/{}".format(bus_main0_uuid), 1.0, 1.0, 0.8)
     response = responses.get()
     delay_module_uuid = response[0]
 
@@ -151,7 +151,6 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
         else:
             delay_module_ports['in'].append(elem)
     print('delay_module_ports', delay_module_ports)
-
     
     liblo.send(dest, "/cyperus/add/module/envelope_follower", "/{}".format(bus_main0_uuid), 1.0, 1.0, 1.0)
     response = responses.get()
@@ -173,35 +172,58 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
             follower_module_ports['in'].append(elem)
     print('follower_module_ports', follower_module_ports)
 
-
-    liblo.send(dest, "/cyperus/add/connection", mains['in'][0], "/{}:{}".format(bus_main0_uuid,
-                                                                                bus_ports['in'][0].split('|')[0]))
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               mains['in'][0],
+               "/{}:{}".format(bus_main0_uuid,
+                               bus_ports['in'][0].split('|')[0]))
     response = responses.get()
 
     delay_module_port_in0 = "/{}?{}<{}".format(bus_main0_uuid, delay_module_uuid,
                                                delay_module_ports['in'][0].split('|')[0])
-    liblo.send(dest, "/cyperus/add/connection", "/{}:{}".format(bus_main0_uuid,
-                                                                bus_ports['in'][0].split('|')[0]),
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               "/{}:{}".format(bus_main0_uuid,
+                               bus_ports['in'][0].split('|')[0]),
                delay_module_port_in0)
     response = responses.get()
 
     print('bus_ports', bus_ports)
-    delay_module_port_out0 = "/{}?{}<{}".format(bus_main0_uuid, delay_module_uuid,
+    delay_module_port_out0 = "/{}?{}>{}".format(bus_main0_uuid, delay_module_uuid,
                                                 delay_module_ports['out'][0].split('|')[0])
-    liblo.send(dest, "/cyperus/add/connection", delay_module_port_out0,
-               "/{}:{}".format(bus_main0_uuid, bus_ports['in'][0].split('|')[0]))
+
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               delay_module_port_out0,
+               "/{}:{}".format(bus_main0_uuid, bus_ports['out'][0].split('|')[0]))
     response = responses.get()
 
-    liblo.send(dest, "/cyperus/add/connection", "/{}:{}".format(bus_main0_uuid, bus_ports['in'][0].split('|')[0]),
+
+    liblo.send(dest, "/cyperus/add/connection",
+               "/{}:{}".format(bus_main0_uuid, bus_ports['out'][0].split('|')[0]),
                mains['out'][0])
     response = responses.get()
     
     sine_module_out0 = "/{}?{}>{}".format(bus_main0_uuid,
                                            sine_module_uuid,
                                            sine_module_ports['out'][0].split('|')[0])
+
+    follower_module_in0  = "/{}?{}<{}".format(bus_main0_uuid,
+                                              follower_module_uuid,
+                                              follower_module_ports['in'][0].split('|')[0])
+    
+    follower_module_out0 = "/{}?{}>{}".format(bus_main0_uuid,
+                                              follower_module_uuid,
+                                              follower_module_ports['out'][0].split('|')[0])
+
     delay_module_port_in_time = "/{}?{}<{}".format(bus_main0_uuid, delay_module_uuid,
                                                    delay_module_ports['in'][1].split('|')[0])
-    liblo.send(dest, "/cyperus/add/connection", sine_module_out0, delay_module_port_in_time)
+
+
+    liblo.send(dest, "/cyperus/add/connection", sine_module_out0, follower_module_in0)
+    response = responses.get()
+
+    liblo.send(dest, "/cyperus/add/connection", follower_module_out0, delay_module_port_in_time)
     response = responses.get()    
 
 if __name__ == '__main__':
