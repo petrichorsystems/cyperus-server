@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="../../assets/ico/favicon.png">
+    <link rel="stylesheet" id="font-awesome-css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" type="text/css" media="screen">
+    <title>cyperus user manual</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap-3.0.0/dist/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="grid.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../assets/js/html5shiv.js"></script>
+      <script src="../../assets/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>    
+    <div class="container">
+
+      <div class="page-header">
+        <h1><i>cyperus</i> user manual</h1>
+	<p>
+	  <img src="images/header.jpg">
+	</p>
+        <p>welcome to the <i>cyperus</i> realtime music system</p>
+	<p>this linux software enables a computer to process and generate musically-inclined signals in realtime. it is a client of the Jack Audio Connection Kit (<a target="_blank" href="http://jackaudio.org">http://jackaudio.org</a>).</p><br />
+	<p>please file questions, concerns, and bugs on <a target="_blank" href="https://github.com/petrichorsystems/cyperus">github</a> or send directly to me at <a href="mailto:murray@petrichor.systems">murray@petrichor.systems</a>.
+      </div>
+
+      <div id="tableofcontents">
+	<h4><b>table of contents</b></h4>
+
+	<ol>
+	  <li><a href="#systemrequirements">required dependencies</a></li>
+	  <li><a href="#installation">building and installation</a></li>
+	  <li><a href="#runtime">runtime options</a></li>
+	  <ol>
+	    <li><a href="#osc">open sound control</a></li>
+	  </ol>
+	  <li><a href="#gettingstarted">getting started</a></li>
+	  
+	  <li><a href="#opensoundcontrol">open sound control</a></li>
+	  <ol>
+	    <li><a href="#opensoundcontroloverview">overview</a></li>  
+	  </ol>
+	</ol>
+      </div>
+      
+      <hr>
+
+      <div id="systemrequirements">
+	<h4><b>1. required dependencies</b></h4>
+	
+	<p>
+	  <ul>
+	    <li>linux, maybe mac os x</li>
+	    <li>alsa and alsa development libraries - (<a target="_blank" href="http://www.alsa-project.org/">http://alsa-project.org/</a>)</li>
+	    <li>JACK server installed and running with development libraries - (<a target="_blank" href="http://jackaudio.org">http://jackaudio.org</a>)</li>
+	    <li>liblo - lightweight OSC implementation (<a target="_blank" href="http://liblo.sourceforge.net">http://liblo.sourceforge.net</a>)</li>
+	    <li>FFTW - C subroutines for the discrete Fourier transform (<a target="_blank" href="http://www.fftw.org/">http://www.fftw.org/</a>)</li>
+	  </ul>
+	</p>
+      </div>
+
+      <hr>
+      
+      <div id="installation">
+	<h4><b>2. building and installation</b></h4>
+	<ol>
+	  <li>
+	    <p>
+	      Clone the <i>cyperus</i> github repository
+<pre>
+$ git clone https://github.com/petrichorsystems/cyperus
+</pre>
+	    </p>
+	  </li>
+
+	  <li>
+	    <p>
+	      Descend into repository directory and build <i>cyperus</i>.
+<pre>
+$ cd cyperus
+$ make
+</pre>
+	    </p>
+	</ol>
+      </div>
+
+      <hr>
+
+      <div id="runtime">
+	<h4><b>3. runtime options</b></h4>
+<pre>
+
+$ ./cyperus -h
+welcome to the cyperus realtime music system
+
+Usage: cyperus [options] [arg]
+
+Options:
+ -h,  --help          displays this menu
+ -i,  --input         input channels.  default: 8
+ -o,  --output        output channels. default: 8
+ -b,  --bitdepth      set bitdepth of capture to 8, 16, 24, 32, 64, or 128. default: 24
+ -p,  --port          set osc interface receiving port. default: 97211
+ -sp, --send-port     set osc interface sending port. default: 97217
+ -f,  --file          set path of session file to load preexisting sounds.
+ -fi, --fifo-size     set fifo buffer size for each channel. default: 2048
+
+documentation available soon
+
+</pre>
+      </div>
+      
+
+      <hr >
+
+      <div id="gettingstarted">
+	<h4><b>5. getting started</b></h4>
+	<ol>
+	  <li>
+	    <p>
+	      Start jackd and then <i>cyperus</i> or start <i>cyperus</i> and jackd will be started automatically with your saved jackd settings.
+	      <pre>
+$ jackd -d alsa -p 128 &
+$ ./cyperus</pre>
+	    </p>
+	  <li>
+	    <p>
+	      By default, <i>cyperus</i> will start up a a JACK client and an OpenSoundControl server with the listed defaults.
+	    </p><br />
+	    <p>
+<img src="images/started.jpg">
+	    </p>
+	  </li>
+	</ol>
+      </div>
+
+      <hr>
+
+<div id="opensoundcontrol">
+  <h4><b>8. open sound control</b></h4>
+  <ol>
+    <li>
+      <p id="opensoundcontroloverview">
+	<h5><b>overview</b></h5>
+	<p>
+	  The open sound control interface provided by <i>cyperus</i> expresses functions of Ficus and clock-related messages for the sequencer. While the osc interface can be used simulataneously with the monome, the monome may not update its interface for all state changes initiated by osc messages. Also keep in mind you have a maximum of forty-eight banks for sounds and eight channels in+out for related functions.<br /><br />
+	</p>
+        <p>/cyperus/load si [path] [bank] <b><i>-- loads a wav from filesystem</i></b></p>    
+	<p>/cyperus/loop ii [bank] [state] <b><i>-- sets looping state of a bank</i></b></p>
+	<p>/cyperus/setmixout iii [bank] [channel] [state] <b><i>-- sets 1/on or 0/off state for mixing of capture/playback channels</i></b><br />
+	  /cyperus/setmixin iii [bank] [channel] [state]</p>
+	<p>/cyperus/jackmonitor iii [channel_out] [channel_in] [state] <b><i>-- makes raw JACK port connections, 1/on 0/off</i></b></p>
+	<p>/cyperus/playback i [bank] <b><i>-- plays back a sound</i></b></p>
+	<p>/cyperus/playback_speed if [bank] [speed_multiplier] <b><i>-- sets playback speed of a sound, positive/negative multiplier</i></b></p>
+      <p>/cyperus/playback_rampup if [bank] [length] <b><i>-- amplitude ramp, decimal fraction of sound</i></b><br />
+	/cyperus/playback_rampdown if [bank] [length]</p>
+      <p>/cyperus/capture ii [bank] [seconds] <b><i>-- begin capture on sound for n seconds</i></b></p>
+      <p>/cyperus/capturef ii [bank] [frames] <b><i>-- begin capture on sound for n frames</i></b></p>
+      <p>/cyperus/durationf_out i [bank] <b><i>-- get duration of sound in frames</i></b></p>
+      <p>/cyperus/durationf_in i [bank] <b><i>-- get duration of captured sound in frames (may or may not be loaded in cyperus)</i></b></p>
+      <p>/cyperus/killplayback i [bank] <b><i>-- stops playback of sound</i></b></p>
+      <p>/cyperus/killcapture i [bank] <b><i>-- stops capture of sound</i></b></p>
+      <p>/cyperus/isplaying i [bank] <b><i>-- returns whether sound is playing,  1/is and 0/isn't</i></b></p>
+      <p>/cyperus/iscapturing i [bank] <b><i>-- returns whether sound is capturing</i></b></p>
+      <p>/cyperus/islooping i [bank] <b><i>-- returns whether sound is looping</i></b></p>
+      <p>/cyperus/clock <b><i>-- if clock input is turned on via monome, advance cyperus's sequencer by one step</b></i></p>
+      </p>
+    </li>
+  </ol>
+</div>
+</div>
+</div>
+
+      <hr>
+
+</div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+</body>
+</html>
