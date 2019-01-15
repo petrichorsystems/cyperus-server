@@ -153,29 +153,6 @@ $ ./cyperus</pre>
     <li>
       <p id="opensoundcontroloverview">
 	<h5><b>overview</b></h5>
-	<p>
-	  The open sound control interface provided by <i>cyperus</i> expresses functions of Ficus and clock-related messages for the sequencer. While the osc interface can be used simulataneously with the monome, the monome may not update its interface for all state changes initiated by osc messages. Also keep in mind you have a maximum of forty-eight banks for sounds and eight channels in+out for related functions.<br /><br />
-	</p>
-        <p>/cyperus/load si [path] [bank] <b><i>-- loads a wav from filesystem</i></b></p>    
-	<p>/cyperus/loop ii [bank] [state] <b><i>-- sets looping state of a bank</i></b></p>
-	<p>/cyperus/setmixout iii [bank] [channel] [state] <b><i>-- sets 1/on or 0/off state for mixing of capture/playback channels</i></b><br />
-	  /cyperus/setmixin iii [bank] [channel] [state]</p>
-	<p>/cyperus/jackmonitor iii [channel_out] [channel_in] [state] <b><i>-- makes raw JACK port connections, 1/on 0/off</i></b></p>
-	<p>/cyperus/playback i [bank] <b><i>-- plays back a sound</i></b></p>
-	<p>/cyperus/playback_speed if [bank] [speed_multiplier] <b><i>-- sets playback speed of a sound, positive/negative multiplier</i></b></p>
-      <p>/cyperus/playback_rampup if [bank] [length] <b><i>-- amplitude ramp, decimal fraction of sound</i></b><br />
-	/cyperus/playback_rampdown if [bank] [length]</p>
-      <p>/cyperus/capture ii [bank] [seconds] <b><i>-- begin capture on sound for n seconds</i></b></p>
-      <p>/cyperus/capturef ii [bank] [frames] <b><i>-- begin capture on sound for n frames</i></b></p>
-      <p>/cyperus/durationf_out i [bank] <b><i>-- get duration of sound in frames</i></b></p>
-      <p>/cyperus/durationf_in i [bank] <b><i>-- get duration of captured sound in frames (may or may not be loaded in cyperus)</i></b></p>
-      <p>/cyperus/killplayback i [bank] <b><i>-- stops playback of sound</i></b></p>
-      <p>/cyperus/killcapture i [bank] <b><i>-- stops capture of sound</i></b></p>
-      <p>/cyperus/isplaying i [bank] <b><i>-- returns whether sound is playing,  1/is and 0/isn't</i></b></p>
-      <p>/cyperus/iscapturing i [bank] <b><i>-- returns whether sound is capturing</i></b></p>
-      <p>/cyperus/islooping i [bank] <b><i>-- returns whether sound is looping</i></b></p>
-      <p>/cyperus/clock <b><i>-- if clock input is turned on via monome, advance cyperus's sequencer by one step</b></i></p>
-      </p>
     </li>
   </ol>
 </div>
