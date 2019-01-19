@@ -21,9 +21,11 @@ Copyright 2015 murray foster */
 
 #include <lo/lo.h>
 
-extern lo_address lo_addr_send;
+volatile char *send_host_out;
+volatile char *send_port_out;
 extern lo_server_thread lo_thread;
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
+int osc_change_address(char *new_host_out, char *new_port_out);
 
 #endif

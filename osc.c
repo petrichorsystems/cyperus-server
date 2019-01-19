@@ -29,11 +29,37 @@ Copyright 2015 murray foster */
 #include "osc.h"
 #include "osc_handlers.h"
 
-lo_address lo_addr_send;
+volatile char *send_host_out;
+volatile char *send_port_out;
 lo_server_thread lo_thread;
 
+int osc_change_address(char *new_host_out, char *new_port_out) {
+  free(send_host_out);
+  free(send_port_out);
+
+  send_host_out = malloc(sizeof(char) * strlen(new_host_out) + 1);
+  strcpy(send_host_out, new_host_out);
+
+  send_port_out = malloc(sizeof(char) * strlen(new_port_out) + 1);
+  strcpy(send_port_out, new_port_out);
+  
+  lo_address lo_addr_send = lo_address_new((const char*)new_host_out, (const char*)new_port_out);
+  lo_send(lo_addr_send,"/cyperus/address", "ss", new_host_out, new_port_out);
+  free(lo_addr_send);
+  printf("changed osc server and port to: %s:%s\n", new_host_out, new_port_out);
+  return 0;
+}
+
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
-  lo_addr_send = lo_address_new("127.0.0.1",osc_port_out);
+  send_host_out = "127.0.0.1";
+  send_port_out = osc_port_out;
+
+  send_host_out = malloc(sizeof(char) * 10);
+  strcpy(send_host_out, "127.0.0.1");
+
+  send_port_out = malloc(sizeof(char) * 6);
+  strcpy(send_port_out, osc_port_out);
+
   lo_thread = lo_server_thread_new(osc_port_in, osc_error);
 
   /* below is for debug, add method that will match any path and args */

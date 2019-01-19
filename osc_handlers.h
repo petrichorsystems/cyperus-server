@@ -30,7 +30,7 @@ int osc_address_handler(const char *path, const char *types, lo_arg ** argv,
 			int argc, void *data, void *user_data);
 
 int osc_list_main_handler(const char *path, const char *types, lo_arg ** argv,
-			   int argc, void *data, void *user_data);
+			  int argc, void *data, void *user_data);
 
 int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 			int argc, void *data, void *user_data);

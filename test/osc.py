@@ -2,13 +2,19 @@
 
 import liblo
 from liblo import *
-import queue, sys
+import queue, sys, time
 
 responses = queue.Queue()
 
 class OscServer(ServerThread):
     def __init__(self):
         ServerThread.__init__(self, 97217)
+        
+    @make_method('/cyperus/address', 'ss')
+    def osc_address_handler(self, path, args):
+        s = args
+        responses.put(s)
+        print("received '/cyperus/address'")
 
     @make_method('/cyperus/list/main', 's')
     def osc_list_main_handler(self, path, args):
@@ -75,8 +81,6 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
     follower_module_uuid = None
     follower_module_ports = {'in': [],
                          'out': []}
-
-    liblo.send(dest, "/cyperus/address", "127.0.0.1", "97217")
     
     liblo.send(dest, "/cyperus/list/main")
     response = responses.get()
