@@ -53,6 +53,19 @@ int generic_handler(const char *path, const char *types, lo_arg ** argv,
   return 0;
 }
 
+
+int osc_address_handler(const char *path, const char *types, lo_arg **argv,
+			int argc, void *data, void *user_data)
+{
+  char *new_ip_out = argv[0];
+  char *new_port_out = argv[1];
+  lo_address_free(lo_addr_send);
+  lo_addr_send = lo_address_new(new_ip_out, new_port_out);
+  lo_send(lo_addr_send,"/cyperus/address", "ss", new_ip_out, new_port_out);
+  printf("changed osc server and port to: %s:%s\n", new_ip_out, new_port_out);
+  return 0;
+} /* osc_address_handler */
+
 int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {

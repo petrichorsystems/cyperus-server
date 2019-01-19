@@ -76,8 +76,11 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
     follower_module_ports = {'in': [],
                          'out': []}
 
+    liblo.send(dest, "/cyperus/address", "127.0.0.1", "97217")
+    
     liblo.send(dest, "/cyperus/list/main")
     response = responses.get()
+    print('response', response)
     raw_mains = response[0].split('\n')
     outs = False
     for elem in filter(None, raw_mains):

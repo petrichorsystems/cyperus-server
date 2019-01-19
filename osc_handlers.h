@@ -26,6 +26,9 @@ Copyright 2015 murray foster */
 
 void osc_error(int num, const char *msg, const char *path);
 
+int osc_address_handler(const char *path, const char *types, lo_arg ** argv,
+			int argc, void *data, void *user_data);
+
 int osc_list_main_handler(const char *path, const char *types, lo_arg ** argv,
 			   int argc, void *data, void *user_data);
 
