@@ -169,8 +169,59 @@ struct dsp_bus {
   int bypass; /* boolean bypass flag */
 };
 
-struct dsp_bus *dsp_global_bus_head; /* GLOBAL */
-struct dsp_connection *dsp_global_connection_graph; /* GLOBAL */
+struct dsp_sample {
+  const char *id;
+  const char *dsp_id;
+  struct dsp_sample *next;
+  struct dsp_sample *prev;
+  float value;
+  struct dsp_sample *down;
+};
+
+struct dsp_operation {
+  const char *id;
+  const char *dsp_id;
+  struct dsp_operation *next;
+  struct dsp_operation *prev;
+  struct dsp_module *module;
+  struct dsp_sample *ins;
+  struct dsp_sample *outs;
+};
+
+struct dsp_translation_connection {
+  char *id_out;
+  char *id_in;
+
+  struct dsp_connection *connection;  
+  
+  struct dsp_operation *operation_out;
+  struct dsp_operation *operation_in;
+
+  struct dsp_sample *sample_out;
+  struct dsp_sample *sample_in;
+  
+  struct dsp_translation_connection *next;
+  struct dsp_translation_connection *prev;
+};
+
+struct dsp_translation_sample {
+  char *id_in;
+  char *id_out;
+
+  struct dsp_sample *sample_in;
+  struct dsp_sample *sample_out;
+};
+
+/* pre-optimized */
+volatile struct dsp_connection *dsp_global_connection_graph; /* GLOBAL */
+volatile struct dsp_bus *dsp_global_bus_head; /* GLOBAL */
+
+/* optimized */
+volatile struct dsp_translation_connection *dsp_global_translation_connection_graph_processing; /* GLOBAL */
+volatile struct dsp_operation *dsp_global_operation_head_processing; /* GLOBAL */
+
+volatile struct dsp_operation *dsp_global_translation_graph; /* GLOBAL */
+volatile struct dsp_operation *dsp_global_operation_head; /* GLOBAL */
 
 struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size);
 void dsp_port_in_insert_head(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
@@ -207,5 +258,24 @@ struct dsp_bus* dsp_bus_init(const char *bus_name);
 void dsp_bus_insert_head(struct dsp_bus *head_bus, struct dsp_bus *new_bus);
 void dsp_bus_insert_tail(struct dsp_bus *head_bus, struct dsp_bus *new_bus);
 void dsp_bus_insert_tail_deep(struct dsp_bus *head_bus, struct dsp_bus *new_bus);
+
+struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_connection *connection,
+								   char *id_out,
+								   char *id_in,
+								   struct dsp_operation *op_out,
+								   struct dsp_operation *op_in,
+								   struct dsp_sample *sample_out,
+								   struct dsp_sample *sample_in);
+
+void dsp_translation_connection_insert_tail(struct dsp_translation_connection *head_translation_connection, struct dsp_translation_connection *new_translation_connection);
+
+struct dsp_operation* dsp_operation_init();
+void dsp_operation_insert_head(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
+void dsp_operation_insert_tail(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
+void dsp_operation_insert_tail_deep(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
+
+struct dsp_sample* dsp_sample_init(char *dsp_id, float value);
+void dsp_sample_insert_head(struct dsp_sample *head_sample, struct dsp_sample *new_sample);
+void dsp_sample_insert_tail(struct dsp_sample *head_sample, struct dsp_sample *new_sample);
 
 #endif

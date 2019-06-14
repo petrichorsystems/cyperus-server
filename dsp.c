@@ -33,6 +33,9 @@ Copyright 2015 murray foster */
 struct dsp_port_out *dsp_main_ins;
 struct dsp_port_in *dsp_main_outs;
 
+struct dsp_operation *dsp_optimized_main_ins;
+struct dsp_operation *dsp_optimized_main_outs;
+
 struct dsp_bus_port
 *dsp_find_bus_port(struct dsp_bus_port *target_bus_port, char *id) {
   struct dsp_bus_port *temp_bus_port;
@@ -459,19 +462,13 @@ dsp_add_connection(char *id_out, char *id_in) {
     }
   }
 
-  printf("mmmm\n");
-  
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "}") == 0) {
     port_in = dsp_find_port_out(dsp_main_outs, temp_result[2]);
   }
-
-  printf("temp_result[0]: %s\n", temp_result[0]);
   
   if( strcmp(temp_result[0], "<") == 0 ) {
-
-    printf(" yep \n");
 
     module_path = temp_result[1];
     port_in_id = temp_result[2];
@@ -560,48 +557,212 @@ dsp_list_modules() {
 } /* dsp_list_modules */
 
 void
-dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
+dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
   struct dsp_bus_port *temp_port = ports;
   struct dsp_connection *temp_connection;
-  float temp_sample_in;
   char *current_path = NULL;
 
-  int temp_port_idx = 0; 
+  struct dsp_operation *temp_op = NULL;
+  struct dsp_operation *temp_op_out = NULL;
+  struct dsp_operation *temp_op_in = NULL;
+
+  struct dsp_operation *matched_op_out, *matched_op_in = NULL;
+  
+  struct dsp_operation *temp_translation_op = NULL;
+
+  struct dsp_sample *temp_sample_out = NULL;
+  struct dsp_sample *temp_sample_in = NULL;
+  struct dsp_sample *found_sample_out = NULL;
+  struct dsp_sample *found_sample_in = NULL;
+  
+  struct dsp_translation_connection *temp_translation_conn = NULL;
+
+  char *temp_result[3];
+  char *temp_op_out_path, *temp_op_in_path = NULL;
+  
+  int temp_port_idx = 0;
+
   while(temp_port != NULL) {
+
     /* handle bus input */
-    temp_sample_in = 0.0;
-    while(rtqueue_isempty(temp_port->in->values) == 0) {
+    //temp_sample_in = 0.0;
+
+    /* while(rtqueue_isempty(temp_port->in->values) == 0) {
       temp_sample_in += rtqueue_deq(temp_port->in->values);
     }
-    temp_port->out->value = temp_sample_in;
+    */
+    
+    // temp_port->out->value = temp_sample_in;
     /* enqueue out samples on in fifo's based on connection graph */
     temp_connection = dsp_global_connection_graph;
+
+    current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->id) + 1);
+    if(current_path != NULL) {
+      current_path[0] = '\0';
+      strcpy(current_path, current_bus_path);
+      current_path[strlen(current_bus_path)] = '\0'; /* expecting a '/' on the end, remove it */
+      strcat(current_path, ":");
+      strcat(current_path, temp_port->id);
+    }
 
     while(temp_connection != NULL) {
       /* compare each connection 'out' with this one, enqueue each fifo with data
 	 that matches the 'out' port path */
-      current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->id) + 1);
-      if(current_path != NULL) {
-	current_path[0] = '\0';
-	strcpy(current_path, current_bus_path);
-	current_path[strlen(current_bus_path)] = '\0'; /* expecting a '/' on the end, remove it */
-	strcat(current_path, ":");
-	strcat(current_path, temp_port->id);
-      }
+
       if(strcmp(current_path, temp_connection->id_out) == 0) {
-	rtqueue_enq(temp_connection->in_values, temp_sample_in);
+	/* commented out data movement logic */
+	/* rtqueue_enq(temp_connection->in_values, temp_sample_in); */
+
+	/* -- BEGIN OPTIMIZATION LOGIC -- */
+
+	/* is the below ever actually the case? */
+
+	/* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
+	   versus dsp_global_operation_head_processing is not populated? do we care? */
+
+
+	int is_bus_port = 0;
+
+	printf("temp_connection->id_out: %s\n", temp_connection->id_out);
+
+	dsp_parse_path(temp_result, temp_connection->id_out);
+	if( strstr(":", temp_result[0]) ) {
+	  temp_op_out_path = current_path;
+	  is_bus_port = 1;
+	}
+	else if( strstr("<", temp_result[0]) )
+	  temp_op_out_path = temp_result[1];
+	else if( strstr(">", temp_result[0]) )
+	  temp_op_out_path = temp_result[1];
+	else
+	  temp_op_out_path = current_path;
+
+	if( dsp_global_operation_head_processing == NULL ) {
+	  /* never hits this */
+	  printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
+	} else {
+	  /* grab 'out' op and sample address */
+	  temp_op_out = dsp_global_operation_head_processing;
+
+	  while(temp_op_out != NULL) {
+	    if( strcmp(temp_op_out->dsp_id, temp_op_out_path) == 0 ) {
+	      matched_op_out = temp_op_out;
+	      temp_sample_out = temp_op_out->outs;
+	      if( is_bus_port == 0 ) {
+		while(temp_sample_out != NULL) {
+		  if( strcmp(temp_sample_out->dsp_id, temp_result[2]) == 0 ) {
+		    found_sample_out = temp_sample_out;
+		    break;
+		  }
+		  temp_sample_out = temp_sample_out->next;
+		}
+	      } else {
+		found_sample_out = temp_sample_out;
+	      }
+	      break;
+	    }
+	    temp_op_out = temp_op_out->next;
+	  }
+	}
+
+	if( matched_op_out )
+	  if( found_sample_out == NULL ) {
+	    if( is_bus_port )
+	      found_sample_out = dsp_sample_init("<bus port out>", 0.0);
+	    else
+	      found_sample_out = dsp_sample_init(temp_result[2], 0.0);
+	    dsp_sample_insert_tail(temp_op_out->outs, found_sample_out);
+	  }
+
+	if( found_sample_out == NULL ) {
+	  printf("no operations for this bus port: %s, temp_port->id: %s found\n", current_bus_path, temp_port->id);
+	  break;
+	}
+	printf("temp_connection->id_in: %s\n", temp_connection->id_in);
+
+	dsp_parse_path(temp_result, temp_connection->id_in);
+	if( strstr(":", temp_result[0]) ) {
+	  temp_op_in_path = current_path;
+	  is_bus_port = 1;
+	}
+	else if( strstr("<", temp_result[0]) )
+	  temp_op_in_path = temp_result[1];
+	else if( strstr(">", temp_result[0]) )
+	  temp_op_in_path = temp_result[1];
+	else
+	  temp_op_in_path = current_path;
+
+	if( dsp_global_operation_head_processing == NULL ) {
+	  /* never hits this */
+	  printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
+	  exit(1);
+	} else {
+	  /* grab 'in' op and sample address */
+	  temp_op_in = dsp_global_operation_head_processing;
+
+	  while(temp_op_in != NULL) {
+	    if( strcmp(temp_op_in->dsp_id, temp_op_in_path) == 0 ) {
+	      temp_sample_in = temp_op_in->ins;
+	      if( is_bus_port == 0 ) {
+		while(temp_sample_in != NULL) {
+		  if( strcmp(temp_sample_in->dsp_id, temp_result[2]) == 0 ) {
+		    found_sample_in = temp_sample_in;
+		    break;
+		  }
+		  temp_sample_in = temp_sample_in->next;
+		}
+	      } else
+		found_sample_in = temp_sample_in;
+	      break;
+	    }
+	    temp_op_in = temp_op_in->next;
+	  }
+
+	  if( found_sample_in == NULL ) {
+	    found_sample_in = dsp_sample_init("<bus port in>", 0.0);
+
+	    if( temp_op_in == NULL )
+	      temp_op = dsp_operation_init(temp_connection->id_in);
+	    else
+	      temp_op = temp_op_in;
+	    
+	    dsp_sample_insert_tail(temp_op->ins, found_sample_in);
+	    dsp_operation_insert_tail(dsp_global_operation_head_processing,
+				      temp_op);
+	  } else {
+	    /* if 'in' sample address DOES exist */
+
+	    /* insert sample onto end of the list */
+	    dsp_sample_insert_tail(found_sample_in, found_sample_out);
+	  }
+
+	  /* create translation */
+	  temp_translation_conn = dsp_translation_connection_init(temp_connection,
+								  temp_connection->id_out,
+								  temp_connection->id_in,
+								  temp_op_out,
+								  temp_op_in,
+								  found_sample_out,
+								  found_sample_in);
+	  dsp_translation_connection_insert_tail(dsp_global_translation_connection_graph_processing,
+						 temp_translation_conn);
+	}
+
       }
+      /* -- END OPTIMIZATION LOGIC -- */
       temp_connection = temp_connection->next;
-      if(current_path != NULL)
-	free(current_path);
+	
     }
+    if(current_path != NULL)
+      free(current_path);
+
     temp_port = temp_port->next;
     temp_port_idx++;
   }
-} /* dsp_feed_connections_bus */
+} /* dsp_optimize_connections_bus */
 
 void
-recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int pos) {
+dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int pos) {
   struct dsp_module *temp_module;
   struct dsp_bus *temp_bus = head_bus;
   char *current_path;  
@@ -623,52 +784,146 @@ recurse_dsp_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int 
     strcat(current_path, temp_bus->id);
 
     /* process bus inputs */
-    dsp_feed_connections_bus(current_path, temp_bus->ins);
+    dsp_optimize_connections_bus(current_path, temp_bus->ins);
 
     /* handle dsp modules */
-    temp_module = temp_bus->dsp_module_head;
+    /* temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
       temp_module->dsp_function(current_path, temp_module, jack_sr, pos);
       temp_module = temp_module->next;
-    }
-    /* process bus outputs */
-    dsp_feed_connections_bus(current_path, temp_bus->outs);
+    } */
 
-    recurse_dsp_graph(temp_bus->down, current_path, jack_sr, pos);
+    /* process bus outputs */
+    dsp_optimize_connections_bus(current_path, temp_bus->outs);
+
+    dsp_optimize_graph(temp_bus->down, current_path, jack_sr, pos);
     temp_bus = temp_bus->next;
+    printf("\n\nNEXT\n\n");
     if(current_path)
       free(current_path);
   }
   return;
-} /* recurse_dsp_graph */
+} /* dsp_optimize_graph */
+
 
 void
-dsp_mains_allocate(int channels_in, int channels_out, int fifo_size) {
+dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
+  struct dsp_operation *temp_op = head_op;
+
+  while(temp_op != NULL) {
+
+    /* iterate and sum in-samples here */
+    
+    /* handle dsp modules */
+    /* temp_module = temp_op->dsp_module_head;
+    while(temp_module != NULL) {
+      temp_module->dsp_function(current_path, temp_module, jack_sr, pos);
+      temp_module = temp_module->next;
+    } */
+
+    /* assign out-samples here */
+    
+    temp_op = temp_op->next;
+  }
+  return;
+} /* dsp_process */
+
+
+void
+dsp_build_mains(int channels_in, int channels_out) {
+
+  char *formal_main_name = NULL;
+
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_port_in *temp_port_in = NULL;
+
+  struct dsp_operation *temp_op = NULL;
+  struct dsp_sample *temp_sample = NULL;
+
   int i;
+
+  int fifo_size = 1024;
   
   for(i=0; i<channels_in; i++)
     if( i == 0 ) {
       temp_port_out = dsp_port_out_init("main_in", 1);
       dsp_main_ins = temp_port_out;
+
+      formal_main_name = (char *)malloc(44);
+      if(formal_main_name != NULL) {
+	formal_main_name[0] = '\0';
+	strcpy(formal_main_name, "/mains{");
+	strcat(formal_main_name, temp_port_out->id);
+      }
+
+      temp_op = dsp_operation_init(formal_main_name);      
+      temp_sample = dsp_sample_init("", (float)0.0);
+
+      temp_op->outs = temp_sample;
+      dsp_optimized_main_ins = temp_op;
+      free(formal_main_name);
     } else {
       temp_port_out->next = dsp_port_out_init("main_in", 1);
       temp_port_out = temp_port_out->next;
+
+      formal_main_name = (char *)malloc(44);
+      if(formal_main_name != NULL) {
+	formal_main_name[0] = '\0';
+	strcpy(formal_main_name, "/mains{");
+	strcat(formal_main_name, temp_port_out->id);
+      }
+
+      temp_op = dsp_operation_init(formal_main_name);      
+      temp_sample = dsp_sample_init("", (float)0.0);
+
+      temp_op->outs = temp_sample;
+      dsp_operation_insert_tail(dsp_optimized_main_ins, temp_op);
+      dsp_operation_insert_tail(dsp_global_operation_head_processing, temp_op);
+      
+      free(formal_main_name);
     }
 
   for(i=0; i<channels_out; i++)
     if( i == 0 ) {
       temp_port_in = dsp_port_in_init("main_out", fifo_size);
       dsp_main_outs = temp_port_in;
+
+      formal_main_name = (char *)malloc(44);
+      if(formal_main_name != NULL) {
+	formal_main_name[0] = '\0';
+	strcpy(formal_main_name, "/mains}");
+	strcat(formal_main_name, temp_port_in->id);
+      }
+
+      temp_op = dsp_operation_init(formal_main_name);
+      temp_sample = dsp_sample_init("", (float)0.0);
+
+      temp_op->ins = temp_sample;
+      dsp_optimized_main_outs = temp_op;
+      free(formal_main_name);
     } else {
       temp_port_in->next = dsp_port_in_init("main_out", fifo_size);
       temp_port_in = temp_port_in->next;
+
+      formal_main_name = (char *)malloc(44);
+      if(formal_main_name != NULL) {
+	formal_main_name[0] = '\0';
+	strcpy(formal_main_name, "/mains}");
+	strcat(formal_main_name, temp_port_in->id);
+      }
+
+      temp_op = dsp_operation_init(formal_main_name);
+      temp_sample = dsp_sample_init("", (float)0.0);
+
+      temp_op->ins = temp_sample;
+      dsp_operation_insert_tail(dsp_optimized_main_outs, temp_op);
+
+      free(formal_main_name);
     }
-}
+} /* dsp_build_mains */
 
 void
-*dsp_thread(void *arg) {
+*dsp_build_optimized_graph(void *arg) {
   int pos, i;
   float outsample = 0.0;
   char current_path[2] = "/";
@@ -678,8 +933,52 @@ void
 
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_port_in *temp_port_in = NULL;
+
+  dsp_build_mains(jackcli_channels_in, jackcli_channels_out);
+
+  /* process main inputs */
+  temp_port_out = dsp_main_ins;
+  i=0;
+  while(temp_port_out != NULL) {
+    temp_port_out->value = rtqueue_deq(jackcli_fifo_ins[i]);
+    temp_port_out = temp_port_out->next;
+    i += 1;
+  }
+  dsp_feed_main_inputs(dsp_main_ins);
   
-  dsp_mains_allocate(jackcli_channels_in, jackcli_channels_out, jackcli_fifo_size);
+  temp_bus = dsp_global_bus_head;
+  while( temp_bus != NULL ) {
+    dsp_optimize_graph(temp_bus, current_path, jackcli_samplerate, pos);
+    temp_bus = temp_bus->next;
+  }
+
+  /* process main outputs */
+  temp_port_in = dsp_main_outs;
+  i=0;
+  while(temp_port_in != NULL) {
+    if(!rtqueue_isfull(jackcli_fifo_outs[i]))
+      rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_input(temp_port_in));
+    temp_port_in = temp_port_in->next;
+    i += 1;
+  }
+  
+  /* deallocate mains */
+
+} /* dsp_build_optimized_graph */
+
+void
+*dsp_thread(void *arg) {
+  int pos, i;
+  float outsample = (float)0.0;
+  char current_path[2] = "/";
+
+  struct dsp_bus *temp_bus;
+  struct dsp_module *temp_module;
+
+  struct dsp_port_out *temp_port_out = NULL;
+  struct dsp_port_in *temp_port_in = NULL;
+
+  /* dsp_mains_allocate(jackcli_channels_in, jackcli_channels_out, jackcli_fifo_size); */
 
   while(1) {
     for(pos=0; pos<jackcli_samplerate; pos++) {
@@ -697,7 +996,7 @@ void
 
       temp_bus = dsp_global_bus_head;
       while( temp_bus != NULL ) {
-	recurse_dsp_graph(temp_bus, current_path, jackcli_samplerate, pos);
+	/* recurse_dsp_graph(temp_bus, current_path, jackcli_samplerate, pos); */
 	temp_bus = temp_bus->next;
       }
 

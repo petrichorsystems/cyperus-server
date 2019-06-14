@@ -66,6 +66,9 @@ dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *o
 	}	
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
 	  rtqueue_enq(temp_connection->in_values, temp_outsample);
+
+	  /* optimization logic */
+	  
 	}
 	temp_connection = temp_connection->next;
 	free(current_path);
@@ -80,9 +83,16 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;
-  temp_out = outs;
-  char *current_path;
+  char *current_path, *temp_op_in_path;
 
+  struct dsp_operation *temp_op_out, *temp_op_in = NULL;
+  struct dsp_sample *temp_sample, *temp_sample_out, *temp_sample_in, *found_sample_in = NULL;
+
+  struct dsp_translation_connection *temp_translation_connection = NULL;
+
+  char *temp_result[3];
+  
+  temp_out = outs;
   if( dsp_global_connection_graph != NULL ) {
     temp_connection = dsp_global_connection_graph;
     while(temp_out != NULL) {
@@ -97,7 +107,106 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	  strcat(current_path, temp_out->id);
 	}
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
-	  rtqueue_enq(temp_connection->in_values, temp_outsample);
+	  /* commented out data movement logic */
+	  /* rtqueue_enq(temp_connection->in_values, temp_outsample); */
+
+	  /* BEGIN OPTIMIZATION LOGIC */	  
+
+	  /* are we assuming all connections are made to a bus in
+	     the below logic? */
+
+	  /* find existing 'out' operation (main in) */
+	  temp_op_out = dsp_optimized_main_ins;
+	  while( temp_op_out != NULL ) {
+	    if( strcmp(temp_op_out->dsp_id, temp_connection->id_out) == 0 ){
+	      temp_sample_out = temp_op_out->outs;
+	      break;
+	    }
+	    temp_op_out->next = temp_op_out;
+	  }
+
+	  /* let program know there's something majorly wrong,
+	     exit */
+	  if(temp_sample_out == NULL) {
+	    printf("no operation describing main input!!: %s\n", temp_connection->id_out);
+	    printf("BAILING\n"); 
+	  }
+
+	  /* look for 'in' operation */
+	  temp_op_in = dsp_global_operation_head_processing;
+
+	  int is_bus_port = 0;
+
+	  printf("temp_connection->id_in: %s\n", temp_connection->id_in);
+	  
+	  dsp_parse_path(temp_result, temp_connection->id_in);
+	  if( strstr(":", temp_result[0]) ) {
+	    temp_op_in_path = current_path;
+	    is_bus_port = 1;
+	  }
+	  else if( strstr("<", temp_result[0]) )
+	    temp_op_in_path = temp_result[1];
+	  else if( strstr(">", temp_result[0]) )
+	    temp_op_in_path = temp_result[1];
+	  else
+	    temp_op_in_path = current_path;
+
+	  while( temp_op_in != NULL ) {
+	    if( strcmp(temp_op_in->dsp_id, temp_op_in_path) == 0 ) {
+	      temp_sample_in = temp_op_in->ins;
+	      if( is_bus_port == 0) {
+		while( temp_sample_in != NULL ) {
+		  if( strcmp(temp_sample_in->dsp_id, temp_result[2]) == 0 ) {
+		    found_sample_in = temp_sample_in;
+		    break;
+		  }
+		  temp_sample_in->next = temp_sample_in;
+		}
+	      } else
+		found_sample_in = temp_sample_in;
+	      break;
+	    }
+	    temp_op_in = temp_op_in->next;
+	  }
+
+	  if( found_sample_in == NULL ) {
+	    if( is_bus_port ) {
+	      found_sample_in = dsp_sample_init("<bus port in>", 0.0);
+	      temp_op_in = dsp_operation_init(temp_connection->id_in);
+	    }
+	    else {
+	      found_sample_in = dsp_sample_init(temp_result[2], 0.0);
+	      temp_op_in = dsp_operation_init(temp_result[1]);
+	    }
+	    dsp_sample_insert_tail(temp_op_in->ins, found_sample_in);
+	    
+	    if( dsp_global_operation_head_processing == NULL ) {
+	      dsp_global_operation_head_processing = temp_op_in;
+	      printf("inserted out operation: temp_op_in->dsp_id: %s\n", temp_op_in->dsp_id);
+	      printf("with out sample: found_sample_in->dsp_id: %s\n", found_sample_in->dsp_id);
+	    } else {
+	      dsp_operation_insert_tail(dsp_global_operation_head_processing,
+					temp_op_in);
+	      printf("inserted out operation: temp_op_in->dsp_id: %s\n", temp_op_in->dsp_id);
+	      printf("with out sample: found_sample_in->dsp_id: %s\n", found_sample_in->dsp_id);
+	    }
+	    temp_translation_connection = dsp_translation_connection_init(temp_connection,
+									  temp_connection->id_out,
+									  temp_connection->id_in,
+									  temp_op_out,
+									  temp_op_in,
+									  temp_sample_out,
+									  temp_op_in->ins);
+
+	    if(dsp_global_translation_connection_graph_processing == NULL)
+	      dsp_global_translation_connection_graph_processing = temp_translation_connection;
+	    else
+	      dsp_translation_connection_insert_tail(dsp_global_translation_connection_graph_processing,
+						     temp_translation_connection);  /* is this last arg always the same? */
+	  } else
+	    dsp_sample_insert_tail(found_sample_in, temp_sample_out);
+
+	  /* END OPTIMIZATION LOGIC */
 	}
 	temp_connection = temp_connection->next;
 	free(current_path);
@@ -182,16 +291,14 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
 
 void
 dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos) {
-
   float insample = 0.0;
   float time_param = 0.0; 
   float outsample = 0.0;
   dsp_parameter dsp_param = delay->dsp_param;
 
-  
   /* sum audio inputs */
   insample = dsp_sum_input(delay->ins);
-  
+
   delay->dsp_param.delay.cyperus_params->in = insample;
   delay->dsp_param.delay.cyperus_params->delay_amt = dsp_param.delay.amt;
 
@@ -199,7 +306,7 @@ dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos
     dsp_param.delay.time = dsp_sum_input(delay->ins->next) * jack_samplerate;
 
   delay->dsp_param.delay.cyperus_params->delay_time = dsp_param.delay.time;
-  
+
   delay->dsp_param.delay.cyperus_params->fb = dsp_param.delay.feedback;
 
   outsample = cyperus_delay(delay->dsp_param.delay.cyperus_params,

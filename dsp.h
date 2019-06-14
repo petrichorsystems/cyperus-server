@@ -25,6 +25,9 @@ Copyright 2015 murray foster */
 extern struct dsp_port_out *dsp_main_ins;
 extern struct dsp_port_in *dsp_main_outs;
 
+extern struct dsp_operation *dsp_optimized_main_ins;
+extern struct dsp_operation *dsp_optimized_main_outs;
+
 struct dsp_module*
 dsp_find_module(struct dsp_module *head_module, char *name);
 struct dsp_bus_port*
