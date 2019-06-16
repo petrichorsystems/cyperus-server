@@ -438,6 +438,7 @@ void dsp_operation_insert_head(struct dsp_operation *head_operation, struct dsp_
     head_operation = new_operation;
     return;
   }
+
   head_operation->prev = new_operation;
   new_operation->next = head_operation;
   head_operation = new_operation;
@@ -450,7 +451,7 @@ void dsp_operation_insert_tail(struct dsp_operation *head_operation, struct dsp_
     head_operation = new_operation;
     return;
   }
-  
+
   while(temp_operation->next != NULL)
     {
       temp_operation = temp_operation->next;

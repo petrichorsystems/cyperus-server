@@ -137,7 +137,6 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 
 	  int is_bus_port = 0;
 
-	  printf("temp_connection->id_in: %s\n", temp_connection->id_in);
 	  
 	  dsp_parse_path(temp_result, temp_connection->id_in);
 	  if( strstr(":", temp_result[0]) ) {
@@ -178,17 +177,20 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	      found_sample_in = dsp_sample_init(temp_result[2], 0.0);
 	      temp_op_in = dsp_operation_init(temp_result[1]);
 	    }
-	    dsp_sample_insert_tail(temp_op_in->ins, found_sample_in);
+
+	    if(temp_op_in->ins == NULL)
+	      temp_op_in->ins = found_sample_in;
+	    else
+	      dsp_sample_insert_tail(temp_op_in->ins, found_sample_in);
 	    
 	    if( dsp_global_operation_head_processing == NULL ) {
 	      dsp_global_operation_head_processing = temp_op_in;
-	      printf("inserted out operation: temp_op_in->dsp_id: %s\n", temp_op_in->dsp_id);
-	      printf("with out sample: found_sample_in->dsp_id: %s\n", found_sample_in->dsp_id);
 	    } else {
-	      dsp_operation_insert_tail(dsp_global_operation_head_processing,
-					temp_op_in);
-	      printf("inserted out operation: temp_op_in->dsp_id: %s\n", temp_op_in->dsp_id);
-	      printf("with out sample: found_sample_in->dsp_id: %s\n", found_sample_in->dsp_id);
+	      if(dsp_global_operation_head_processing == NULL)
+		dsp_global_operation_head_processing = temp_op_in;
+	      else
+		dsp_operation_insert_tail(dsp_global_operation_head_processing,
+					  temp_op_in);
 	    }
 	    temp_translation_connection = dsp_translation_connection_init(temp_connection,
 									  temp_connection->id_out,

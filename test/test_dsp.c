@@ -921,11 +921,6 @@ test_dsp_feed_mains() {
   /* dsp_main_inputs */
   main_in_path = strconcat("/mains{", dsp_main_ins->id);
 
-  printf("\nADDING CONNECTION:\n");
-  printf("main_in_path: %s\n", main_in_path);
-  printf("delay_bus_port_in_path: %s\n", delay_bus_port_in_path);
-  printf("\n");
-
   dsp_add_connection(main_in_path,
 		     delay_bus_port_in_path);
   
@@ -936,19 +931,6 @@ test_dsp_feed_mains() {
   /* TEST OPTIMIZATION LOGIC */
   struct dsp_operation *temp_operation;
   struct dsp_translation_connection *temp_translation_conn;
-
-  temp_operation = dsp_global_operation_head_processing;
-  while( temp_operation != NULL ) {
-    printf("op, dsp_id: %s\n", temp_operation->dsp_id);
-    temp_operation = temp_operation->next;
-  }
-
-  temp_translation_conn = dsp_global_translation_connection_graph_processing;
-  while( temp_translation_conn != NULL ) {
-    printf("conn, id_out: %s, id_in: %s\n", temp_translation_conn->id_out,
-	   temp_translation_conn->id_in);
-    temp_translation_conn = temp_translation_conn->next;
-  }
 
   outsample = dsp_sum_input(module1->ins);
   module1->outs->value = outsample;
@@ -962,15 +944,7 @@ test_dsp_feed_mains() {
 
   dsp_feed_outputs(left_path, module1_id, module1->outs);
 
-  /* sum main in */
-  outsample = 0.0;
-  outsample = dsp_sum_input(dsp_main_outs);
-
-  if( outsample == (float)0.12345 )
-    {}
-  else
-    fprintf(stderr, " >> failed!\n");
-
+ 
   free(result[1]);
   free(result[2]);  
 
@@ -1008,16 +982,24 @@ test_dsp_optimize_connections_bus() {
   left_bus = dsp_parse_bus_path(left_path);
   
   rtqueue_enq(aux_bus->outs->in->values, 0.12345);
-
-  printf("delay_bus_port_in_path: %s\n", delay_bus_port_in_path);
-  printf("delay_Bus_port_out_path: %s\n", delay_bus_port_out_path);
   
   dsp_add_connection(delay_bus_port_in_path,
 		     delay_bus_port_out_path);
-
-  printf("optimizing\n");
+  
   dsp_optimize_connections_bus(delay_path, delay_bus->ins);
-
+  
+  struct dsp_operation *temp_operation;
+  temp_operation = dsp_global_operation_head_processing;
+  while(temp_operation != NULL) {
+    printf("temp_operation->dsp_id: %s\n", temp_operation->dsp_id);
+    printf("temp_operation->ins->dsp_id: %s\n", temp_operation->ins->dsp_id);
+    printf("temp_operation->ins->dsp_id: %s\n", temp_operation->ins->dsp_id);
+    
+    if(temp_operation->outs != NULL)
+    printf("temp_operation->outs->dsp_id: %s\n", temp_operation->outs->dsp_id);
+    temp_operation = temp_operation->next;
+  }
+  
 
   if( left_bus->ins->out->value != (float)0.12345 ) {
     fprintf(stderr, " >> failed!\n");
