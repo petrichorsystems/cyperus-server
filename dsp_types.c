@@ -535,14 +535,12 @@ void dsp_sample_insert_tail(struct dsp_sample *head_sample, struct dsp_sample *n
     head_sample = new_sample;
     return;
   }
-  printf("before while\n");
   while(temp_sample->next != NULL)
     {
       printf("post while check\n");
       temp_sample = temp_sample->next;
       printf("post temp_sample assignment: %d\n", temp_sample);
     }
-  printf("after while\n");
   temp_sample->next = new_sample;
   new_sample->prev = temp_sample;
 }

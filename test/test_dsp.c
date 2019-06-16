@@ -955,7 +955,7 @@ void
 test_dsp_optimize_connections_bus() {
   fprintf(stderr, "  >> starting test_dsp_optimize_connections_bus()\n");
 
-  char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *aux_path_temp, *aux_path;
+  char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *left_bus_port_in_path_temp, *left_bus_port_in_path, *aux_path_temp, *aux_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
   char *main_id, *delay_id, *aux_id, *left_id;
 
@@ -979,24 +979,31 @@ test_dsp_optimize_connections_bus() {
   left_id = left_bus->id;
   left_path_temp = strconcat(delay_path, "/");
   left_path = strconcat(left_path_temp, left_id);
+  left_bus_port_in_path_temp = strconcat(left_path, ":");
+  left_bus_port_in_path = strconcat(left_bus_port_in_path_temp, left_bus->ins->id);
   left_bus = dsp_parse_bus_path(left_path);
   
   rtqueue_enq(aux_bus->outs->in->values, 0.12345);
-  
+
+
   dsp_add_connection(delay_bus_port_in_path,
 		     delay_bus_port_out_path);
   
   dsp_optimize_connections_bus(delay_path, delay_bus->ins);
+
+  dsp_add_connection(delay_bus_port_out_path,
+		     left_bus_port_in_path);
+    
+  dsp_optimize_connections_bus(delay_path, delay_bus->outs);
   
   struct dsp_operation *temp_operation;
   temp_operation = dsp_global_operation_head_processing;
   while(temp_operation != NULL) {
     printf("temp_operation->dsp_id: %s\n", temp_operation->dsp_id);
     printf("temp_operation->ins->dsp_id: %s\n", temp_operation->ins->dsp_id);
-    printf("temp_operation->ins->dsp_id: %s\n", temp_operation->ins->dsp_id);
     
     if(temp_operation->outs != NULL)
-    printf("temp_operation->outs->dsp_id: %s\n", temp_operation->outs->dsp_id);
+      printf("temp_operation->outs->dsp_id: %s\n", temp_operation->outs->dsp_id);
     temp_operation = temp_operation->next;
   }
   
