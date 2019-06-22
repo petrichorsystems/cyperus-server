@@ -136,7 +136,6 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	  temp_op_in = dsp_global_operation_head_processing;
 
 	  int is_bus_port = 0;
-
 	  
 	  dsp_parse_path(temp_result, temp_connection->id_in);
 	  if( strstr(":", temp_result[0]) ) {
@@ -145,9 +144,11 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	  }
 	  else if( strstr("<", temp_result[0]) )
 	    temp_op_in_path = temp_result[1];
-	  else if( strstr(">", temp_result[0]) )
+	  else if( strstr(">", temp_result[0]) ) {
 	    temp_op_in_path = temp_result[1];
-	  else
+	    printf("temp_connection->id_in: '%s', contains output! aborting..\n");
+	    exit(1);
+	  } else
 	    temp_op_in_path = current_path;
 
 	  while( temp_op_in != NULL ) {
@@ -237,7 +238,7 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "block_processor",
-		 dsp_block_processor,
+		 dsp_optimize_block_processor,
 		 block_processor_param,
 		 ins,
 		 outs);
@@ -261,6 +262,26 @@ dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack
    dsp_feed_outputs(bus_path, block_processor->id, block_processor->outs);
    return;
 } /* dsp_block_processor */
+
+void
+dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos) {
+  float insample = 0.0;
+  float outsample = 0.0;
+  dsp_parameter dsp_param = block_processor->dsp_param;
+
+  /* sum inputs */
+  /* insample = dsp_sum_input(block_processor->ins); */\
+
+  /* process */
+  block_processor->dsp_param.block_processor.cyperus_params->in = insample;
+  outsample = cyperus_block_processor(block_processor->dsp_param.block_processor.cyperus_params,
+				      jack_samplerate, pos);
+  /* drive outputs */
+   block_processor->outs->value = outsample;
+
+   dsp_feed_outputs(bus_path, block_processor->id, block_processor->outs);
+   return;
+} /* dsp_optimize_block_processor */
 
 int
 dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback) {

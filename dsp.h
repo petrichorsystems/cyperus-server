@@ -64,7 +64,11 @@ void
 dsp_parse_path(char *result[], char *path);
 
 void
-dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports);
+dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports);
+
+void
+dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection);
+
 
 void
 dsp_mains_allocate();

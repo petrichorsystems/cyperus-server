@@ -9,7 +9,7 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-You should have received a copy of the GNU General Public License
+xoYou should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 'cyperus' is a JACK client for learning about software synthesis
@@ -557,10 +557,11 @@ dsp_list_modules() {
 } /* dsp_list_modules */
 
 void
-dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
-  struct dsp_bus_port *temp_port = ports;
-  struct dsp_connection *temp_connection;
-  char *current_path = NULL;
+dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection) {
+  /* is the below ever actually the case? */
+  
+  /* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
+     versus dsp_global_operation_head_processing is not populated? do we care? */
 
   struct dsp_operation *temp_op = NULL;
   struct dsp_operation *temp_op_out = NULL;
@@ -580,6 +581,154 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
   char *temp_result[3];
   char *temp_op_out_path, *temp_op_in_path = NULL;
   
+
+  int is_bus_port = 0;
+
+  dsp_parse_path(temp_result, connection->id_out);
+  if( strstr(":", temp_result[0]) ) {
+    temp_op_out_path = current_path;
+    is_bus_port = 1;
+  }
+  else if( strstr("<", temp_result[0]) )
+    temp_op_out_path = temp_result[1];
+  else if( strstr(">", temp_result[0]) )
+    temp_op_out_path = temp_result[1];
+  else
+    temp_op_out_path = current_path;
+
+  if( dsp_global_operation_head_processing == NULL ) {
+    /* never hits this */
+    printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
+  } else {
+    /* grab 'out' op and sample address */
+    temp_op_out = dsp_global_operation_head_processing;
+
+    while(temp_op_out != NULL) {
+      if( strcmp(temp_op_out->dsp_id, temp_op_out_path) == 0 ) {
+	matched_op_out = temp_op_out;
+	temp_sample_out = temp_op_out->outs;
+	if( is_bus_port == 0 ) {
+	  while(temp_sample_out != NULL) {
+	    if( strcmp(temp_sample_out->dsp_id, temp_result[2]) == 0 ) {
+	      found_sample_out = temp_sample_out;
+	      break;
+	    }
+	    temp_sample_out = temp_sample_out->next;
+	  }
+	} else {
+	  found_sample_out = temp_sample_out;
+	}
+	break;
+      }
+      temp_op_out = temp_op_out->next;
+    }
+  }
+
+  if( matched_op_out ) {
+    if( found_sample_out == NULL ) {
+      if( is_bus_port )
+	found_sample_out = dsp_sample_init("<bus port out>", 0.0);
+      else
+	found_sample_out = dsp_sample_init(temp_result[2], 0.0);
+      if( temp_op_out->outs == NULL )
+	temp_op_out->outs = found_sample_out;
+      else
+	dsp_sample_insert_tail(temp_op_out->outs, found_sample_out);
+    }
+  }
+
+  if( found_sample_out == NULL ) {
+    printf("no operations for this path: %s found\n", current_path);
+    return;
+  }
+
+  dsp_parse_path(temp_result, connection->id_in);
+  if( strstr(":", temp_result[0]) ) {
+    temp_op_in_path = connection->id_in;
+    is_bus_port = 1;
+  }
+  else if( strstr("<", temp_result[0]) )
+    temp_op_in_path = temp_result[1];
+  else if( strstr(">", temp_result[0]) ) {
+    printf("found connection output connected to connection output! BAD. and bailing\n");
+    exit(1);
+  } else
+    temp_op_in_path = current_path;
+
+  if( dsp_global_operation_head_processing == NULL ) {
+    /* never hits this */
+    printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
+    exit(1);
+  } else {
+    /* grab 'in' op and sample address */
+    temp_op_in = dsp_global_operation_head_processing;
+
+    while(temp_op_in != NULL) {
+      if( strcmp(temp_op_in->dsp_id, temp_op_in_path) == 0 ) {
+	temp_sample_in = temp_op_in->ins;
+	if( is_bus_port == 0 ) {
+	  while(temp_sample_in != NULL) {
+	    if( strcmp(temp_sample_in->dsp_id, temp_result[2]) == 0 ) {
+	      found_sample_in = temp_sample_in;
+	      break;
+	    }
+	    temp_sample_in = temp_sample_in->next;
+	  }
+	} else
+	  found_sample_in = temp_sample_in;
+	break;
+      }
+      temp_op_in = temp_op_in->next;
+    }
+
+    if( found_sample_in == NULL ) {
+      found_sample_in = dsp_sample_init("<bus port in>", 0.0);
+
+      if( temp_op_in == NULL )
+	temp_op = dsp_operation_init(connection->id_in);
+      else
+	temp_op = temp_op_in;
+
+      if(temp_op->ins == NULL)
+	temp_op->ins = found_sample_in;
+      else
+	dsp_sample_insert_tail(temp_op->ins, found_sample_in);
+      if(dsp_global_operation_head_processing == NULL)
+	dsp_global_operation_head_processing = temp_op;
+      else
+	dsp_operation_insert_tail(dsp_global_operation_head_processing,
+				  temp_op);
+
+    } else {
+      /* if 'in' sample address DOES exist */
+
+      /* insert sample onto end of the list */
+      dsp_sample_insert_tail(found_sample_in, found_sample_out);
+    }
+ 
+    /* create translation */
+    temp_translation_conn = dsp_translation_connection_init(connection,
+							    connection->id_out,
+							    connection->id_in,
+							    temp_op_out,
+							    temp_op_in,
+							    found_sample_out,
+							    found_sample_in);
+    if( dsp_global_translation_connection_graph_processing == NULL )
+      dsp_global_translation_connection_graph_processing = temp_translation_conn;
+    else
+      dsp_translation_connection_insert_tail(dsp_global_translation_connection_graph_processing,
+					     temp_translation_conn);
+ 
+  }
+} /* dsp_optimize_connections_input */
+
+void
+dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
+  struct dsp_bus_port *temp_port = ports;
+  struct dsp_connection *temp_connection;
+  char *current_path = NULL;
+
   int temp_port_idx = 0;
 
   while(temp_port != NULL) {
@@ -610,159 +759,10 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
       if(strcmp(current_path, temp_connection->id_out) == 0) {
 	/* commented out data movement logic */
 	/* rtqueue_enq(temp_connection->in_values, temp_sample_in); */
-
-	/* -- BEGIN OPTIMIZATION LOGIC -- */
-
-	/* is the below ever actually the case? */
-
-	/* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
-	   versus dsp_global_operation_head_processing is not populated? do we care? */
-
-
-	int is_bus_port = 0;
-
-	dsp_parse_path(temp_result, temp_connection->id_out);
-	if( strstr(":", temp_result[0]) ) {
-	  temp_op_out_path = current_path;
-	  is_bus_port = 1;
-	}
-	else if( strstr("<", temp_result[0]) )
-	  temp_op_out_path = temp_result[1];
-	else if( strstr(">", temp_result[0]) )
-	  temp_op_out_path = temp_result[1];
-	else
-	  temp_op_out_path = current_path;
-
-	if( dsp_global_operation_head_processing == NULL ) {
-	  /* never hits this */
-	  printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
-	} else {
-	  /* grab 'out' op and sample address */
-	  temp_op_out = dsp_global_operation_head_processing;
-
-	  while(temp_op_out != NULL) {
-	    if( strcmp(temp_op_out->dsp_id, temp_op_out_path) == 0 ) {
-	      matched_op_out = temp_op_out;
-	      temp_sample_out = temp_op_out->outs;
-	      if( is_bus_port == 0 ) {
-		while(temp_sample_out != NULL) {
-		  if( strcmp(temp_sample_out->dsp_id, temp_result[2]) == 0 ) {
-		    found_sample_out = temp_sample_out;
-		    break;
-		  }
-		  temp_sample_out = temp_sample_out->next;
-		}
-	      } else {
-		found_sample_out = temp_sample_out;
-	      }
-	      break;
-	    }
-	    temp_op_out = temp_op_out->next;
-	  }
-	}
-
-	if( matched_op_out ) {
-	  if( found_sample_out == NULL ) {
-	    if( is_bus_port )
-	      found_sample_out = dsp_sample_init("<bus port out>", 0.0);
-	    else
-	      found_sample_out = dsp_sample_init(temp_result[2], 0.0);
-	    if( temp_op_out->outs == NULL )
-	      temp_op_out->outs = found_sample_out;
-	    else
-	      dsp_sample_insert_tail(temp_op_out->outs, found_sample_out);
-	  }
-	}
-
-	if( found_sample_out == NULL ) {
-	  printf("no operations for this bus port: %s, temp_port->id: %s found\n", current_bus_path, temp_port->id);
-	  break;
-	}
-
-	dsp_parse_path(temp_result, temp_connection->id_in);
-	if( strstr(":", temp_result[0]) ) {
-	  temp_op_in_path = temp_connection->id_in;
-	  is_bus_port = 1;
-	}
-	else if( strstr("<", temp_result[0]) )
-	  temp_op_in_path = temp_result[1];
-	else if( strstr(">", temp_result[0]) )
-	  temp_op_in_path = temp_result[1];
-	else
-	  temp_op_in_path = current_path;
-	
-	if( dsp_global_operation_head_processing == NULL ) {
-	  /* never hits this */
-	  printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
-	  exit(1);
-	} else {
-	  /* grab 'in' op and sample address */
-	  temp_op_in = dsp_global_operation_head_processing;
-	  
-	  while(temp_op_in != NULL) {
-	    if( strcmp(temp_op_in->dsp_id, temp_op_in_path) == 0 ) {
-	      temp_sample_in = temp_op_in->ins;
-	      if( is_bus_port == 0 ) {
-		while(temp_sample_in != NULL) {
-		  if( strcmp(temp_sample_in->dsp_id, temp_result[2]) == 0 ) {
-		    found_sample_in = temp_sample_in;
-		    break;
-		  }
-		  temp_sample_in = temp_sample_in->next;
-		}
-	      } else
-		found_sample_in = temp_sample_in;
-	      break;
-	    }
-	    temp_op_in = temp_op_in->next;
-	  }
-
-	  if( found_sample_in == NULL ) {
-	    found_sample_in = dsp_sample_init("<bus port in>", 0.0);
-
-	    
-	    if( temp_op_in == NULL )
-	      temp_op = dsp_operation_init(temp_connection->id_in);
-	    else
-	      temp_op = temp_op_in;
-	    
-	    if(temp_op->ins == NULL)
-	      temp_op->ins = found_sample_in;
-	    else
-	      dsp_sample_insert_tail(temp_op->ins, found_sample_in);
-	    if(dsp_global_operation_head_processing == NULL)
-	      dsp_global_operation_head_processing = temp_op;
-	    else
-	      dsp_operation_insert_tail(dsp_global_operation_head_processing,
-					temp_op);
-
-	  } else {
-	    /* if 'in' sample address DOES exist */
-
-	    /* insert sample onto end of the list */
-	    dsp_sample_insert_tail(found_sample_in, found_sample_out);
-	  }
-
-	  /* create translation */
-	  temp_translation_conn = dsp_translation_connection_init(temp_connection,
-								  temp_connection->id_out,
-								  temp_connection->id_in,
-								  temp_op_out,
-								  temp_op_in,
-								  found_sample_out,
-								  found_sample_in);
-	  if( dsp_global_translation_connection_graph_processing == NULL )
-	    dsp_global_translation_connection_graph_processing = temp_translation_conn;
-	  else
-	    dsp_translation_connection_insert_tail(dsp_global_translation_connection_graph_processing,
-						   temp_translation_conn);
-
-	}
-
+	dsp_optimize_connections_input(current_path,
+				       temp_connection);
       }
-      /* -- END OPTIMIZATION LOGIC -- */
       temp_connection = temp_connection->next;
-	
     }
     if(current_path != NULL)
       free(current_path);
