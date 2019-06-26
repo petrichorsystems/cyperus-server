@@ -223,6 +223,7 @@ void dsp_connection_terminate(struct dsp_connection *connection) {
 
 struct dsp_module* dsp_module_init(const char *module_name,
 				   void (*dsp_function) (char*, struct dsp_module*, int, int),
+				   void (*dsp_optimize) (char*, struct dsp_module*),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,
 				   struct dsp_port_out *outs) {
@@ -233,6 +234,7 @@ struct dsp_module* dsp_module_init(const char *module_name,
   strcpy(new_module->name, module_name);
   new_module->id = dsp_generate_object_id();
   new_module->dsp_function = dsp_function;
+  new_module->dsp_optimize = dsp_optimize;
   new_module->dsp_param = dsp_param;
   new_module->remove = 0;
   new_module->bypass = 0;

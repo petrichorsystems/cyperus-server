@@ -31,20 +31,22 @@ void dsp_feed_main_inputs(struct dsp_port_out *outs);
 
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos);
-void dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos);
+void dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor);
 
 int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);
 void dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos);
+void dsp_optimize_delay(char *bus_path, struct dsp_module *delay);
 
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase);
 void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);
 void dsp_sine(char *bus_path, struct dsp_module *sine, dsp_parameter sine_param, int jack_samplerate, int pos);
+void dsp_optimize_sine(char *bus_path, struct dsp_module *sine);
 
 int dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale);
 void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale);
 void dsp_envelope_follower(char *bus_path, struct dsp_module *envelope_follower, int jack_samplerate, int pos);
-
+void dsp_optimize_envelope_follower(char *bus_path, struct dsp_module *envelope_follower);
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 

@@ -51,6 +51,7 @@ void
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (char*, struct dsp_module*, int, int),
+	       void (*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
 	       struct dsp_port_out *outs);

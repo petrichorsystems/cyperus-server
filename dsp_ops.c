@@ -238,6 +238,7 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "block_processor",
+		 dsp_block_processor,
 		 dsp_optimize_block_processor,
 		 block_processor_param,
 		 ins,
@@ -264,23 +265,12 @@ dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack
 } /* dsp_block_processor */
 
 void
-dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos) {
-  float insample = 0.0;
-  float outsample = 0.0;
+dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor) {
   dsp_parameter dsp_param = block_processor->dsp_param;
 
-  /* sum inputs */
-  /* insample = dsp_sum_input(block_processor->ins); */\
 
-  /* process */
-  block_processor->dsp_param.block_processor.cyperus_params->in = insample;
-  outsample = cyperus_block_processor(block_processor->dsp_param.block_processor.cyperus_params,
-				      jack_samplerate, pos);
-  /* drive outputs */
-   block_processor->outs->value = outsample;
-
-   dsp_feed_outputs(bus_path, block_processor->id, block_processor->outs);
-   return;
+  
+  return;
 } /* dsp_optimize_block_processor */
 
 int
@@ -306,11 +296,17 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
   dsp_add_module(target_bus,
 		 "delay",
 		 dsp_delay,
+		 dsp_optimize_delay,
 		 delay_param,
 		 ins,
 		 outs);
   return 0;
 } /* dsp_create_delay*/
+
+void
+dsp_optimize_delay(char *bus_path, struct dsp_module *delay) {
+
+} /* dsp_optimize_delay */
 
 void
 dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos) {
@@ -378,6 +374,7 @@ int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float pha
   dsp_add_module(target_bus,
 		 "sine",
 		 dsp_sine,
+		 dsp_optimize_sine,
 		 sine_param,
 		 ins,
 		 outs);
@@ -414,6 +411,11 @@ dsp_sine(char *bus_path, struct dsp_module *sine, dsp_parameter sine_param, int 
   return;
 } /* dsp_sine */
 
+void
+dsp_optimize_sine(char *bus_path, struct dsp_module *sine) {
+
+} /* dsp_optimize_sine */
+
 
 int
 dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale) {
@@ -434,6 +436,7 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float dec
   dsp_add_module(target_bus,
 		 "envelope_follower",
 		 dsp_envelope_follower,
+		 dsp_optimize_envelope_follower,
 		 envelope_follower_param,
 		 ins,
 		 outs);
@@ -467,6 +470,10 @@ dsp_envelope_follower(char *bus_path, struct dsp_module *envelope_follower, int 
   return;
 } /* dsp_envelope_follower */
 
+void
+dsp_optimize_envelope_follower(char *bus_path, struct dsp_module *envelope_follower) {
+
+} /* dsp_optimize_envelope_follower */
 
 void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale) {
   int i = 0;
@@ -511,6 +518,7 @@ dsp_square(dsp_parameter square_param, int jack_samplerate, int pos) {
   
   return outsample;
 } /* dsp_square */
+
 
 int
 dsp_create_pinknoise(void) {

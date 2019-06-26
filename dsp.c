@@ -381,11 +381,13 @@ void
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (char*, struct dsp_module*, int, int),
+	       void (*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
 	       struct dsp_port_out *outs) {
   struct dsp_module *new_module  = dsp_module_init(name,
 						   dsp_function,
+						   dsp_optimize,
 						   dsp_param,
 						   ins,
 						   outs);
@@ -579,10 +581,13 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   struct dsp_translation_connection *temp_translation_conn = NULL;
 
   char *temp_result[3];
+  char *temp_result_module[3];
   char *temp_op_out_path, *temp_op_in_path = NULL;
-  
+
+  struct dsp_bus *temp_bus;
 
   int is_bus_port = 0;
+  int is_module = 0;
 
   dsp_parse_path(temp_result, connection->id_out);
   if( strstr(":", temp_result[0]) ) {
@@ -647,9 +652,12 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     temp_op_in_path = connection->id_in;
     is_bus_port = 1;
   }
-  else if( strstr("<", temp_result[0]) )
+  else if( strstr("<", temp_result[0]) ) {
     temp_op_in_path = temp_result[1];
-  else if( strstr(">", temp_result[0]) ) {
+    dsp_parse_path(temp_result_module, temp_result[1]);
+    if( strcmp(temp_result[0], "?") == 0 )
+      is_module = 1;
+  } else if( strstr(">", temp_result[0]) ) {
     printf("found connection output connected to connection output! BAD. and bailing\n");
     exit(1);
   } else
@@ -682,11 +690,30 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     }
 
     if( found_sample_in == NULL ) {
-      found_sample_in = dsp_sample_init("<bus port in>", 0.0);
+      if( is_bus_port )
+	found_sample_in = dsp_sample_init("<bus port in>", 0.0);
+      else if( is_module )
+	found_sample_in = dsp_sample_init(temp_result[2], 0.0);
+      else {
+	printf("found unknown dsp object type!! (?) exiting..\n");
+	exit(1);
+      }
 
-      if( temp_op_in == NULL )
-	temp_op = dsp_operation_init(connection->id_in);
-      else
+      if( temp_op_in == NULL ) {
+	if( is_module ) {
+	  /* init operation based off module path */
+	  temp_op = dsp_operation_init(temp_result[1]);
+
+	  /* grab bus from associated module */
+	  temp_bus = dsp_parse_bus_path(temp_result_module[1]);
+
+	  /* dsp_module init-stuff logic */
+	  
+	  
+	} else
+	  temp_op = dsp_operation_init(connection->id_in);
+	  
+      } else
 	temp_op = temp_op_in;
 
       if(temp_op->ins == NULL)
@@ -775,7 +802,7 @@ void
 dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int pos) {
   struct dsp_module *temp_module;
   struct dsp_bus *temp_bus = head_bus;
-  char *current_path;  
+  char *current_path;
   int parent_path_size = 0;
 
   while(temp_bus != NULL) {
