@@ -272,9 +272,10 @@ struct dsp_operation
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_sample *temp_sample = NULL;
   struct dsp_operation *new_op = NULL;
-
+  
   char *full_module_path = malloc(sizeof(char) * (strlen(bus_path) + strlen(block_processor->id) + 2));
   snprintf(full_module_path, strlen(bus_path)+strlen(block_processor->id)+2, "%s?%s", bus_path, block_processor->id);
+  printf("full_module_path: %s\n", full_module_path);
   new_op = dsp_operation_init(full_module_path);
   
   temp_port_in = block_processor->ins;

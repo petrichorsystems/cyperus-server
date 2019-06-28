@@ -648,6 +648,8 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     return;
   }
 
+      printf("connection->id_in: %s\n", connection->id_in);
+  
   dsp_parse_path(temp_result, connection->id_in);
   if( strstr(":", temp_result[0]) ) {
     temp_op_in_path = connection->id_in;
@@ -656,8 +658,9 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   else if( strstr("<", temp_result[0]) ) {
     temp_op_in_path = temp_result[1];
     dsp_parse_path(temp_result_module, temp_result[1]);
-    if( strcmp(temp_result[0], "?") == 0 )
+    if( strcmp(temp_result_module[0], "?") == 0 ) {
       is_module = 1;
+    }
   } else if( strstr(">", temp_result[0]) ) {
     printf("found connection output connected to connection output! BAD. and bailing\n");
     exit(1);
@@ -705,8 +708,15 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 	  /* grab bus from associated module */
 	  temp_bus = dsp_parse_bus_path(temp_result_module[1]);
 
-	  temp_module = dsp_find_module(temp_bus->dsp_module_head, temp_result[1]);
+	  printf("temp_result_module[2]: %s\n", temp_result_module[2]);
+	  temp_module = dsp_find_module(temp_bus->dsp_module_head, temp_result_module[2]);
+
+	  printf("-- about to optimze module -- \n");
+	  printf("temp_result[1]: %s\n", temp_result[1]);
+	  printf("temp_result_module[1]: %s\n", temp_result_module[1]);
+	  printf("temp_module->id: %s\n", temp_module->id);
 	  temp_op = temp_module->dsp_optimize(temp_result_module[1], temp_module);
+
 	} else
 	  temp_op = dsp_operation_init(connection->id_in);
 	  

@@ -1018,7 +1018,7 @@ test_dsp_optimize_connections_bus() {
 test_dsp_optimize_modules() {
   fprintf(stderr, "  >> starting test_dsp_optimize_modules()\n");
 
-  char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *left_bus_port_in_path_temp, *left_bus_port_in_path, *aux_path_temp, *aux_path;
+  char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *left_bus_port_in_path_temp, *left_bus_port_in_path, *aux_path_temp, *aux_path, *block_processor_temp_path, *block_processor_path, *block_processor_temp_port_in_path, *block_processor_port_in_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
   char *main_id, *delay_id, *aux_id, *left_id;
 
@@ -1045,13 +1045,22 @@ test_dsp_optimize_modules() {
   left_bus_port_in_path_temp = strconcat(left_path, ":");
   left_bus_port_in_path = strconcat(left_bus_port_in_path_temp, left_bus->ins->id);
   left_bus = dsp_parse_bus_path(left_path);
-  
 
-  /*
-  dsp_add_connection(delay_bus_port_in_path,
-		     delay_bus_port_out_path);
+  dsp_create_block_processor(delay_bus);
+
+  block_processor_temp_path = strconcat(delay_path, "?");
+  block_processor_path = strconcat(block_processor_temp_path, delay_bus->dsp_module_head->id);
+  block_processor_temp_port_in_path = strconcat(block_processor_path, "<");
+  block_processor_port_in_path = strconcat(block_processor_temp_port_in_path, delay_bus->dsp_module_head->ins->id);
   
+  printf("block_processor_port_in_path: %s\n", block_processor_port_in_path);
+  dsp_add_connection(delay_bus_port_in_path,
+		     block_processor_port_in_path);
+
+
   dsp_optimize_connections_bus(delay_path, delay_bus->ins);
+  
+  /*
 
   dsp_add_connection(delay_bus_port_out_path,
 		     left_bus_port_in_path);
