@@ -264,11 +264,28 @@ dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack
    return;
 } /* dsp_block_processor */
 
-void
-dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor) {
+struct dsp_operation
+*dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor) {
   dsp_parameter dsp_param = block_processor->dsp_param;
 
+  struct dsp_port_in *temp_port_in = NULL;
+  struct dsp_port_out *temp_port_out = NULL;
+  struct dsp_sample *temp_sample = NULL;
+  struct dsp_operation *new_op = NULL;
 
+  char *full_module_path = malloc(sizeof(char) * (strlen(bus_path) + strlen(block_processor->id) + 2));
+  snprintf(full_module_path, strlen(bus_path)+strlen(block_processor->id)+2, "%s?%s", bus_path, block_processor->id);
+  new_op = dsp_operation_init(full_module_path);
+  
+  temp_port_in = block_processor->ins;
+  temp_sample = dsp_sample_init(temp_port_in->id, 0.0);
+
+  new_op->ins = temp_sample;
+  
+  temp_port_out = block_processor->outs;
+  temp_sample = dsp_sample_init(temp_port_out->id, 0.0);
+
+  new_op->outs = temp_sample;
   
   return;
 } /* dsp_optimize_block_processor */

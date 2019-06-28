@@ -31,7 +31,7 @@ void dsp_feed_main_inputs(struct dsp_port_out *outs);
 
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos);
-void dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor);
+struct dsp_operation *dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor);
 
 int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);

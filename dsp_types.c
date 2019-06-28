@@ -223,7 +223,7 @@ void dsp_connection_terminate(struct dsp_connection *connection) {
 
 struct dsp_module* dsp_module_init(const char *module_name,
 				   void (*dsp_function) (char*, struct dsp_module*, int, int),
-				   void (*dsp_optimize) (char*, struct dsp_module*),
+				   struct dsp_operation (*dsp_optimize) (char*, struct dsp_module*),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,
 				   struct dsp_port_out *outs) {

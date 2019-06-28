@@ -381,7 +381,7 @@ void
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (char*, struct dsp_module*, int, int),
-	       void (*dsp_optimize) (char*, struct dsp_module*),
+	       struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
 	       struct dsp_port_out *outs) {
@@ -585,6 +585,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   char *temp_op_out_path, *temp_op_in_path = NULL;
 
   struct dsp_bus *temp_bus;
+  struct dsp_module *temp_module;
 
   int is_bus_port = 0;
   int is_module = 0;
@@ -692,24 +693,20 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     if( found_sample_in == NULL ) {
       if( is_bus_port )
 	found_sample_in = dsp_sample_init("<bus port in>", 0.0);
-      else if( is_module )
-	found_sample_in = dsp_sample_init(temp_result[2], 0.0);
-      else {
+      else if( is_module ) {
+	/* found_sample_in = dsp_sample_init(temp_result[2], 0.0); */
+      } else {
 	printf("found unknown dsp object type!! (?) exiting..\n");
 	exit(1);
       }
 
       if( temp_op_in == NULL ) {
 	if( is_module ) {
-	  /* init operation based off module path */
-	  temp_op = dsp_operation_init(temp_result[1]);
-
 	  /* grab bus from associated module */
 	  temp_bus = dsp_parse_bus_path(temp_result_module[1]);
 
-	  /* dsp_module init-stuff logic */
-	  
-	  
+	  temp_module = dsp_find_module(temp_bus->dsp_module_head, temp_result[1]);
+	  temp_op = temp_module->dsp_optimize(temp_result_module[1], temp_module);
 	} else
 	  temp_op = dsp_operation_init(connection->id_in);
 	  
