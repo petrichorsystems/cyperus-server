@@ -79,6 +79,43 @@ dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *o
 } /* dsp_feed_outputs */
 
 void
+dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct dsp_port_out *outs) {
+  struct dsp_port_out *temp_out;
+  struct dsp_connection *temp_connection;
+  float temp_outsample;
+  temp_out = outs;
+  char *current_path;
+
+  if( dsp_global_connection_graph != NULL ) {
+    temp_connection = dsp_global_connection_graph;
+    while(temp_out != NULL) {
+      temp_outsample = temp_out->value;
+      while(temp_connection != NULL) {
+	/* compare each connection 'out' with this one, enqueue each fifo with data
+	   that matches the 'out' port path */
+	current_path = (char *)malloc(strlen(current_bus_path) + strlen(module_id) + 1 + strlen(temp_out->id) + 1);
+	if(current_path != NULL) {
+	  current_path[0] = '\0';
+	  strcpy(current_path, current_bus_path);
+	  strcat(current_path, "?");
+	  strcat(current_path, module_id);
+	  strcat(current_path, ">");
+	  strcat(current_path, temp_out->id);
+	}
+	if(strcmp(current_path, temp_connection->id_out) == 0) {
+	  dsp_optimize_connections_input(current_path,
+					 temp_connection);
+	  
+	}
+	temp_connection = temp_connection->next;
+	free(current_path);
+      }
+      temp_out = temp_out->next;
+    }
+  }
+} /* dsp_optimize_connections_module */
+
+void
 dsp_feed_main_inputs(struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
@@ -287,8 +324,10 @@ struct dsp_operation
   temp_sample = dsp_sample_init(temp_port_out->id, 0.0);
 
   new_op->outs = temp_sample;
+
+  dsp_optimize_connections_module(bus_path, block_processor->id, block_processor->outs);
   
-  return;
+  return new_op;
 } /* dsp_optimize_block_processor */
 
 int

@@ -711,7 +711,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 	  printf("temp_result_module[2]: %s\n", temp_result_module[2]);
 	  temp_module = dsp_find_module(temp_bus->dsp_module_head, temp_result_module[2]);
 
-	  printf("-- about to optimze module -- \n");
+	  printf("-- about to optimize module -- \n");
 	  printf("temp_result[1]: %s\n", temp_result[1]);
 	  printf("temp_result_module[1]: %s\n", temp_result_module[1]);
 	  printf("temp_module->id: %s\n", temp_module->id);

@@ -27,6 +27,8 @@ float dsp_sum_input(struct dsp_port_in *in);
 
 void dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
 
+void dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
+
 void dsp_feed_main_inputs(struct dsp_port_out *outs);
 
 void dsp_create_block_processor(struct dsp_bus *target_bus);
