@@ -325,6 +325,8 @@ struct dsp_operation
 
   new_op->outs = temp_sample;
 
+  new_op->module = block_processor;
+  
   dsp_optimize_connections_module(bus_path, block_processor->id, block_processor->outs);
   
   return new_op;
