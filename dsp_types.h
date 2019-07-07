@@ -176,7 +176,7 @@ struct dsp_sample {
   struct dsp_sample *next;
   struct dsp_sample *prev;
   float value;
-  struct dsp_sample *down;
+  struct dsp_sample *summands;
 };
 
 struct dsp_operation {
@@ -279,5 +279,6 @@ void dsp_operation_insert_tail_deep(struct dsp_operation *head_operation, struct
 struct dsp_sample* dsp_sample_init(char *dsp_id, float value);
 void dsp_sample_insert_head(struct dsp_sample *head_sample, struct dsp_sample *new_sample);
 void dsp_sample_insert_tail(struct dsp_sample *head_sample, struct dsp_sample *new_sample);
+void dsp_sample_insert_tail_summand(struct dsp_sample *head_sample, struct dsp_sample *new_sample);
 
 #endif

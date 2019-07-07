@@ -539,10 +539,22 @@ void dsp_sample_insert_tail(struct dsp_sample *head_sample, struct dsp_sample *n
   }
   while(temp_sample->next != NULL)
     {
-      printf("post while check\n");
       temp_sample = temp_sample->next;
-      printf("post temp_sample assignment: %d\n", temp_sample);
     }
   temp_sample->next = new_sample;
   new_sample->prev = temp_sample;
+}
+
+
+void dsp_sample_insert_tail_summand(struct dsp_sample *head_sample, struct dsp_sample *new_sample) {
+  struct dsp_sample *temp_sample = head_sample;
+  if(temp_sample == NULL) {
+    head_sample = new_sample;
+    return;
+  }
+  while(temp_sample->summands != NULL)
+    {
+      temp_sample = temp_sample->summands;
+    }
+  temp_sample->summands = new_sample;
 }

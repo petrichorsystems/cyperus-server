@@ -576,7 +576,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   struct dsp_sample *temp_sample_out = NULL;
   struct dsp_sample *temp_sample_in = NULL;
   struct dsp_sample *found_sample_out = NULL;
-  struct dsp_sample *found_sample_in = NULL;
+  struct dsp_sample *sample_in = NULL;
   
   struct dsp_translation_connection *temp_translation_conn = NULL;
 
@@ -648,7 +648,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     return;
   }
 
-      printf("connection->id_in: %s\n", connection->id_in);
+  printf("connection->id_in: %s\n", connection->id_in);
   
   dsp_parse_path(temp_result, connection->id_in);
   if( strstr(":", temp_result[0]) ) {
@@ -681,23 +681,23 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 	if( is_bus_port == 0 ) {
 	  while(temp_sample_in != NULL) {
 	    if( strcmp(temp_sample_in->dsp_id, temp_result[2]) == 0 ) {
-	      found_sample_in = temp_sample_in;
+	      sample_in = temp_sample_in;
 	      break;
 	    }
 	    temp_sample_in = temp_sample_in->next;
 	  }
 	} else
-	  found_sample_in = temp_sample_in;
+	  sample_in = temp_sample_in;
 	break;
       }
       temp_op_in = temp_op_in->next;
     }
 
-    if( found_sample_in == NULL ) {
+    if( sample_in == NULL ) {
       if( is_bus_port )
-	found_sample_in = dsp_sample_init("<bus port in>", 0.0);
+	sample_in = dsp_sample_init("<bus port in>", 0.0);
       else if( is_module ) {
-	/* found_sample_in = dsp_sample_init(temp_result[2], 0.0); */
+	/* sample_in = dsp_sample_init(temp_result[2], 0.0); */
       } else {
 	printf("found unknown dsp object type!! (?) exiting..\n");
 	exit(1);
@@ -705,55 +705,28 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 
       if( temp_op_in == NULL ) {
 	if( is_module ) {
-	  /* grab bus from associated module */
 	  temp_bus = dsp_parse_bus_path(temp_result_module[1]);
-
-	  printf("temp_result_module[2]: %s\n", temp_result_module[2]);
 	  temp_module = dsp_find_module(temp_bus->dsp_module_head, temp_result_module[2]);
-
-	  printf("-- about to optimize module -- \n");
-	  printf("temp_result[1]: %s\n", temp_result[1]);
-	  printf("temp_result_module[1]: %s\n", temp_result_module[1]);
-	  printf("temp_module->id: %s\n", temp_module->id);
 	  temp_op = temp_module->dsp_optimize(temp_result_module[1], temp_module);
-
 	} else
 	  temp_op = dsp_operation_init(connection->id_in);
-	  
       } else
 	temp_op = temp_op_in;
 
       if(temp_op->ins == NULL)
-	temp_op->ins = found_sample_in;
+	temp_op->ins = sample_in;
       else
-	dsp_sample_insert_tail(temp_op->ins, found_sample_in);
+	dsp_sample_insert_tail(temp_op->ins, sample_in);
       if(dsp_global_operation_head_processing == NULL)
 	dsp_global_operation_head_processing = temp_op;
       else
 	dsp_operation_insert_tail(dsp_global_operation_head_processing,
 				  temp_op);
 
-    } else {
-      /* if 'in' sample address DOES exist */
-
-      /* insert sample onto end of the list */
-      dsp_sample_insert_tail(found_sample_in, found_sample_out);
     }
- 
-    /* create translation */
-    temp_translation_conn = dsp_translation_connection_init(connection,
-							    connection->id_out,
-							    connection->id_in,
-							    temp_op_out,
-							    temp_op_in,
-							    found_sample_out,
-							    found_sample_in);
-    if( dsp_global_translation_connection_graph_processing == NULL )
-      dsp_global_translation_connection_graph_processing = temp_translation_conn;
-    else
-      dsp_translation_connection_insert_tail(dsp_global_translation_connection_graph_processing,
-					     temp_translation_conn);
- 
+    
+    dsp_sample_insert_tail_summand(sample_in, temp_sample_out);
+    
   }
 } /* dsp_optimize_connections_input */
 
@@ -773,7 +746,7 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
       temp_sample_in += rtqueue_deq(temp_port->in->values);
     }
     */
-    
+
     // temp_port->out->value = temp_sample_in;
     /* enqueue out samples on in fifo's based on connection graph */
     temp_connection = dsp_global_connection_graph;

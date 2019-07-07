@@ -123,7 +123,7 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
   char *current_path, *temp_op_in_path;
 
   struct dsp_operation *temp_op_out, *temp_op_in = NULL;
-  struct dsp_sample *temp_sample, *temp_sample_out, *temp_sample_in, *found_sample_in = NULL;
+  struct dsp_sample *temp_sample, *temp_sample_out, *temp_sample_in, *sample_in = NULL;
 
   struct dsp_translation_connection *temp_translation_connection = NULL;
 
@@ -194,32 +194,31 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	      if( is_bus_port == 0) {
 		while( temp_sample_in != NULL ) {
 		  if( strcmp(temp_sample_in->dsp_id, temp_result[2]) == 0 ) {
-		    found_sample_in = temp_sample_in;
+		    sample_in = temp_sample_in;
 		    break;
 		  }
 		  temp_sample_in->next = temp_sample_in;
 		}
 	      } else
-		found_sample_in = temp_sample_in;
+		sample_in = temp_sample_in;
 	      break;
 	    }
 	    temp_op_in = temp_op_in->next;
 	  }
 
-	  if( found_sample_in == NULL ) {
+	  if( sample_in == NULL ) {
 	    if( is_bus_port ) {
-	      found_sample_in = dsp_sample_init("<bus port in>", 0.0);
+	      sample_in = dsp_sample_init("<bus port in>", 0.0);
 	      temp_op_in = dsp_operation_init(temp_connection->id_in);
-	    }
-	    else {
-	      found_sample_in = dsp_sample_init(temp_result[2], 0.0);
+	    } else {
+	      sample_in = dsp_sample_init(temp_result[2], 0.0);
 	      temp_op_in = dsp_operation_init(temp_result[1]);
 	    }
 
 	    if(temp_op_in->ins == NULL)
-	      temp_op_in->ins = found_sample_in;
+	      temp_op_in->ins = sample_in;
 	    else
-	      dsp_sample_insert_tail(temp_op_in->ins, found_sample_in);
+	      dsp_sample_insert_tail(temp_op_in->ins, sample_in);
 	    
 	    if( dsp_global_operation_head_processing == NULL ) {
 	      dsp_global_operation_head_processing = temp_op_in;
@@ -243,8 +242,9 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	    else
 	      dsp_translation_connection_insert_tail(dsp_global_translation_connection_graph_processing,
 						     temp_translation_connection);  /* is this last arg always the same? */
-	  } else
-	    dsp_sample_insert_tail(found_sample_in, temp_sample_out);
+	  }
+	  
+	  dsp_sample_insert_tail_summand(sample_in, temp_sample_out);
 
 	  /* END OPTIMIZATION LOGIC */
 	}
