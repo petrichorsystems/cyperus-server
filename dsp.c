@@ -883,7 +883,7 @@ dsp_build_mains(int channels_in, int channels_out) {
     }
 	
     temp_op = dsp_operation_init(formal_main_name);      
-    temp_sample = dsp_sample_init("<dsp_port_out>", (float)0.0);
+    temp_sample = dsp_sample_init("<main port in>", (float)0.0);
 
     if(temp_op->outs == NULL)
       temp_op->outs = temp_sample;

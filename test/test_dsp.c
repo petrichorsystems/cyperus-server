@@ -1006,8 +1006,9 @@ test_dsp_optimize_connections_bus() {
       printf("temp_operation->outs->dsp_id: %s\n", temp_operation->outs->dsp_id);
     temp_operation = temp_operation->next;
   }
-  
 
+  printf("\nNEED TO TEST WHETHER dsp_sample POINTER ASSIGNMENTS ARE CORRECT HERE\n");
+  
   if( left_bus->ins->out->value != (float)0.12345 ) {
     fprintf(stderr, " >> failed!\n");
     return;
@@ -1065,12 +1066,16 @@ test_dsp_optimize_modules() {
   dsp_add_connection(block_processor_port_out_path,
 		     delay_bus_port_out_path);
 
-  delay_bus->dsp_module_head->dsp_optimize(block_processor_path,
+  delay_bus->dsp_module_head->dsp_optimize(delay_path,
 					   delay_bus->dsp_module_head);
+
+  dsp_optimize_connections_bus(delay_path, delay_bus->outs);
 
   struct dsp_operation *temp_operation;
   temp_operation = dsp_global_operation_head_processing;
   while(temp_operation != NULL) {
+    printf("START OPERATION PARSE\n");
+    
     printf("temp_operation->dsp_id: %s\n", temp_operation->dsp_id);
     printf("temp_operation->ins->dsp_id: %s\n", temp_operation->ins->dsp_id);
 
@@ -1081,8 +1086,20 @@ test_dsp_optimize_modules() {
 
     if(temp_operation->outs != NULL)
       printf("temp_operation->outs->dsp_id: %s\n", temp_operation->outs->dsp_id);
+
+    if(temp_operation->ins != NULL)
+      if(temp_operation->ins->summands != NULL)
+	printf("temp_operation->ins->summands->dsp_id: %s\n", temp_operation->ins->summands->dsp_id);
+
+    if(temp_operation->ins != NULL)
+      if(temp_operation->ins->summands != NULL)
+	if(temp_operation->ins->summands->summands != NULL)
+	printf("temp_operation->ins->summands->summands->dsp_id: %s\n", temp_operation->ins->summands->summands->dsp_id);
+
     temp_operation = temp_operation->next;
   }
+
+  printf("\nNEED TO TEST WHETHER dsp_sample POINTER ASSIGNMENTS ARE CORRECT HERE\n");
   
   /*
   if( left_bus->ins->out->value != (float)0.12345 ) {
@@ -1143,6 +1160,7 @@ test_dsp_optimize_connections() {
   
   fprintf(stderr, " >> success!\n");
 }
+
 
 void
 test_dsp_sum_inputs() {
