@@ -467,8 +467,8 @@ struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_co
 								   char *id_in,
 								   struct dsp_operation *op_out,
 								   struct dsp_operation *op_in,
-								   struct dsp_sample *sample_out,
-								   struct dsp_sample *sample_in) {
+								   struct dsp_operation_sample *sample_out,
+								   struct dsp_operation_sample *sample_in) {
   struct dsp_translation_connection *new_translation_conn = (struct dsp_translation_connection*)malloc(sizeof(struct dsp_translation_connection));
   new_translation_conn->prev = NULL;
   new_translation_conn->next = NULL;
@@ -510,18 +510,29 @@ void dsp_translation_connection_insert_tail(struct dsp_translation_connection *h
   new_translation_conn->prev = temp_translation_conn;
 }
 
-struct dsp_sample* dsp_sample_init(char *dsp_id, float value) {
+struct dsp_sample* dsp_sample_init(float value) {
   struct dsp_sample *new_sample = (struct dsp_sample*)malloc(sizeof(struct dsp_sample));
   new_sample->id = dsp_generate_object_id();
-  new_sample->dsp_id = malloc(sizeof(char) * strlen(dsp_id) + 1);
-  strcpy(new_sample->dsp_id, dsp_id);
-  new_sample->prev = NULL;
-  new_sample->next = NULL;
   new_sample->value = value;
   return new_sample;
 }
 
-void dsp_sample_insert_head(struct dsp_sample *head_sample, struct dsp_sample *new_sample) {
+struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, float value, int init_sample) {
+  struct dsp_operation_sample *new_operation_sample = (struct dsp_operation_sample*)malloc(sizeof(struct dsp_operation_sample));
+  new_operation_sample->id = dsp_generate_object_id();
+  new_operation_sample->dsp_id = malloc(sizeof(char) * strlen(dsp_id) + 1);
+  strcpy(new_operation_sample->dsp_id, dsp_id);
+  new_operation_sample->prev = NULL;
+  new_operation_sample->next = NULL;
+  new_operation_sample->summands = NULL;
+
+  if( init_sample )
+    new_operation_sample->sample = dsp_sample_init(value);
+  
+  return new_operation_sample;
+}
+
+void dsp_operation_sample_insert_head(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample) {
   if(head_sample == NULL) {
     head_sample = new_sample;
     return;
@@ -531,8 +542,8 @@ void dsp_sample_insert_head(struct dsp_sample *head_sample, struct dsp_sample *n
   head_sample = new_sample;
 }
 
-void dsp_sample_insert_tail(struct dsp_sample *head_sample, struct dsp_sample *new_sample) {
-  struct dsp_sample *temp_sample = head_sample;
+void dsp_operation_sample_insert_tail(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample) {
+  struct dsp_operation_sample *temp_sample = head_sample;
   if(temp_sample == NULL) {
     head_sample = new_sample;
     return;
@@ -543,18 +554,4 @@ void dsp_sample_insert_tail(struct dsp_sample *head_sample, struct dsp_sample *n
     }
   temp_sample->next = new_sample;
   new_sample->prev = temp_sample;
-}
-
-
-void dsp_sample_insert_tail_summand(struct dsp_sample *head_sample, struct dsp_sample *new_sample) {
-  struct dsp_sample *temp_sample = head_sample;
-  if(temp_sample == NULL) {
-    head_sample = new_sample;
-    return;
-  }
-  while(temp_sample->summands != NULL)
-    {
-      temp_sample = temp_sample->summands;
-    }
-  temp_sample->summands = new_sample;
 }

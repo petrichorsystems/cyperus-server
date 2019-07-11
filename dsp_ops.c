@@ -123,8 +123,9 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
   char *current_path, *temp_op_in_path;
 
   struct dsp_operation *temp_op_out, *temp_op_in = NULL;
-  struct dsp_sample *temp_sample, *temp_sample_out, *temp_sample_in, *sample_in = NULL;
-
+  struct dsp_operation_sample *temp_sample, *temp_sample_out, *temp_sample_in, *sample_in = NULL;
+  struct dsp_operation_sample *new_summand = NULL;
+  
   struct dsp_translation_connection *temp_translation_connection = NULL;
 
   char *temp_result[3];
@@ -208,17 +209,17 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 
 	  if( sample_in == NULL ) {
 	    if( is_bus_port ) {
-	      sample_in = dsp_sample_init("<bus port in>", 0.0);
+	      sample_in = dsp_operation_sample_init("<bus port in>", 0.0, 1);
 	      temp_op_in = dsp_operation_init(temp_connection->id_in);
 	    } else {
-	      sample_in = dsp_sample_init(temp_result[2], 0.0);
+	      sample_in = dsp_operation_sample_init(temp_result[2], 0.0, 1);
 	      temp_op_in = dsp_operation_init(temp_result[1]);
 	    }
 
 	    if(temp_op_in->ins == NULL)
 	      temp_op_in->ins = sample_in;
 	    else
-	      dsp_sample_insert_tail(temp_op_in->ins, sample_in);
+	      dsp_operation_sample_insert_tail(temp_op_in->ins, sample_in);
 	    
 	    if( dsp_global_operation_head_processing == NULL ) {
 	      dsp_global_operation_head_processing = temp_op_in;
@@ -243,8 +244,15 @@ dsp_feed_main_inputs(struct dsp_port_out *outs) {
 	      dsp_translation_connection_insert_tail(dsp_global_translation_connection_graph_processing,
 						     temp_translation_connection);  /* is this last arg always the same? */
 	  }
-	  
-	  dsp_sample_insert_tail_summand(sample_in, temp_sample_out);
+
+
+          new_summand = dsp_operation_sample_init(temp_sample_out->dsp_id, 0.0, 0);
+          new_summand->sample = temp_sample_out->sample;
+          if( sample_in->summands == NULL )
+            sample_in->summands = new_summand;
+          else
+            dsp_operation_sample_insert_tail(sample_in->summands, new_summand);
+          
 
 	  /* END OPTIMIZATION LOGIC */
 	}
@@ -307,27 +315,24 @@ struct dsp_operation
 
   struct dsp_port_in *temp_port_in = NULL;
   struct dsp_port_out *temp_port_out = NULL;
-  struct dsp_sample *temp_sample = NULL;
+  struct dsp_operation_sample *temp_sample = NULL;
   struct dsp_operation *new_op = NULL;
   
   char *full_module_path = malloc(sizeof(char) * (strlen(bus_path) + strlen(block_processor->id) + 2));
   snprintf(full_module_path, strlen(bus_path)+strlen(block_processor->id)+2, "%s?%s", bus_path, block_processor->id);
-  printf("full_module_path: %s\n", full_module_path);
   new_op = dsp_operation_init(full_module_path);
   
   temp_port_in = block_processor->ins;
-  temp_sample = dsp_sample_init(temp_port_in->id, 0.0);
+  temp_sample = dsp_operation_sample_init(temp_port_in->id, 0.0, 1);
 
   new_op->ins = temp_sample;
   
   temp_port_out = block_processor->outs;
-  temp_sample = dsp_sample_init(temp_port_out->id, 0.0);
+  temp_sample = dsp_operation_sample_init(temp_port_out->id, 0.0, 1);
 
   new_op->outs = temp_sample;
 
   new_op->module = block_processor;
-  
-  dsp_optimize_connections_module(bus_path, block_processor->id, block_processor->outs);
   
   return new_op;
 } /* dsp_optimize_block_processor */
