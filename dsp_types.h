@@ -279,8 +279,7 @@ void dsp_translation_connection_insert_tail(struct dsp_translation_connection *h
 struct dsp_operation* dsp_operation_init();
 void dsp_operation_insert_head(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
 void dsp_operation_insert_tail(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
-void dsp_operation_insert_tail_deep(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
-
+void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struct dsp_operation *new_operation);
 struct dsp_sample* dsp_sample_init(float value);
 
 struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, float value, int init_sample);

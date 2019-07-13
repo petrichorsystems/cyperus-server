@@ -103,6 +103,28 @@ test_dsp_types_insert_operation_tail() {
   free(new_operation);
   dsp_optimized_main_ins = NULL;
 }
+void
+test_dsp_types_insert_operation_behind() {
+  fprintf(stderr, "  >> starting test_dsp_types_insert_operation_behind()\n");
+
+  dsp_optimized_main_ins = NULL;
+
+  struct dsp_operation *head_operation;;
+  struct dsp_operation *new_operation;
+
+  head_operation = dsp_operation_init("head");
+  new_operation = dsp_operation_init("new");
+  dsp_operation_insert_head(head_operation, new_operation);
+
+  if( strcmp(head_operation->prev->id, new_operation->id) == 0)
+    fprintf(stderr, " >> success!\n");
+  else
+    fprintf(stderr, " >> failed..\n");
+
+  free(head_operation);
+  free(new_operation);
+  dsp_optimized_main_ins = NULL;
+}
 
 void
 test_dsp_add_busses() {
@@ -1411,6 +1433,7 @@ main(void) {
 
   test_dsp_sample();
   test_dsp_types_insert_operation_tail();
+  test_dsp_types_insert_operation_behind();
 
   test_dsp_add_busses();
   test_dsp_add_modules();

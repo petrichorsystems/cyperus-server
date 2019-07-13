@@ -742,9 +742,13 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 
       if(dsp_global_operation_head_processing == NULL)
 	dsp_global_operation_head_processing = temp_op;
-      else
-	dsp_operation_insert_tail(dsp_global_operation_head_processing,
-				  temp_op);
+      else {
+        if( is_module_in )
+          dsp_operation_insert_behind(matched_op_out, temp_op);
+        else
+          dsp_operation_insert_tail(dsp_global_operation_head_processing,
+                                    temp_op);
+      }
     }
     new_summand = dsp_operation_sample_init(found_sample_out->dsp_id, 0.0, 0);
     new_summand->sample = found_sample_out->sample;

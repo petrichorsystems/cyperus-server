@@ -462,6 +462,12 @@ void dsp_operation_insert_tail(struct dsp_operation *head_operation, struct dsp_
   new_operation->prev = temp_operation;
 }
 
+void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struct dsp_operation *new_operation) {
+  new_operation->prev = existing_operation->prev;
+  new_operation->next = existing_operation;
+  existing_operation->prev = new_operation;
+}
+
 struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_connection *connection,
 								   char *id_out,
 								   char *id_in,
