@@ -77,8 +77,6 @@ test_dsp_sample() {
     exit(1);
   }
 
-
-
   fprintf(stderr, " >> success!\n");
 }
 
@@ -1002,11 +1000,14 @@ void
 test_dsp_optimization_simple() {
   fprintf(stderr, "  >> starting test_dsp_optimization_simple()\n");
 
-  char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *left_bus_port_in_path_temp, *left_bus_port_in_path, *aux_path_temp, *aux_path, *block_processor_temp_path, *block_processor_path, *block_processor_temp_port_in_path, *block_processor_port_in_path, *block_processor_temp_port_out_path, *block_processor_port_out_path;
+  char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *left_bus_port_in_path_temp, *left_bus_port_in_path, *left_bus_port_out_path_temp, *left_bus_port_out_path, *aux_path_temp, *aux_path, *block_processor_temp_path, *block_processor_path, *block_processor_temp_port_in_path, *block_processor_port_in_path, *block_processor_temp_port_out_path, *block_processor_port_out_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
   char *main_id, *delay_id, *aux_id, *left_id;
+  char *main_out_path;
   struct dsp_operation *temp_operation;
   struct dsp_operation *comparison_operation, *comparison_operation_module;
+
+  main_out_path = strconcat("/mains}", dsp_main_outs->id);
 
   /* grab created busses */
   main_bus = dsp_global_bus_head;
@@ -1028,6 +1029,8 @@ test_dsp_optimization_simple() {
   left_path = strconcat(left_path_temp, left_id);
   left_bus_port_in_path_temp = strconcat(left_path, ":");
   left_bus_port_in_path = strconcat(left_bus_port_in_path_temp, left_bus->ins->id);
+  left_bus_port_out_path_temp = strconcat(left_path, ":");
+  left_bus_port_out_path = strconcat(left_bus_port_out_path_temp, left_bus->outs->id);
   left_bus = dsp_parse_bus_path(left_path);
 
   dsp_create_block_processor(delay_bus);
@@ -1048,12 +1051,24 @@ test_dsp_optimization_simple() {
 		     block_processor_port_in_path);
   dsp_add_connection(block_processor_port_out_path,
 		     delay_bus_port_out_path);
+  dsp_add_connection(left_bus_port_in_path,
+                     left_bus_port_out_path);
+  /* dsp_add_connection(left_bus_port_out_path,
+     main_out_path); */
 
-  dsp_optimize_connections_bus(delay_path, delay_bus->ins);  
+  printf("dsp_optimized_main_ins->dsp_id: %s\n", dsp_optimized_main_ins->dsp_id);
+  printf("dsp_optimized_main_ins->outs->id: %s\n", dsp_optimized_main_ins->outs->id);
+  printf("\n");
+  printf("dsp_optimized_main_outs->dsp_id: %s\n", dsp_optimized_main_outs->dsp_id);
+  printf("dsp_optimized_main_outs->ins->id: %s\n", dsp_optimized_main_outs->ins->id);
+
+  dsp_optimize_connections_bus(delay_path, delay_bus->ins);
   dsp_optimize_connections_module(delay_path,
                                   delay_bus->dsp_module_head->id,
                                   delay_bus->dsp_module_head->outs);
   dsp_optimize_connections_bus(delay_path, delay_bus->outs);
+  dsp_optimize_connections_bus(left_path, left_bus->ins);
+  dsp_optimize_connections_bus(left_path, left_bus->outs);
 
   temp_operation = dsp_global_operation_head_processing;
   while(temp_operation != NULL) {
@@ -1068,11 +1083,11 @@ test_dsp_optimization_simple() {
       if( temp_operation->ins->summands->sample != comparison_operation->outs->sample ) {
         printf(" >> failed! -- operation representing delay_bus->outs->ins, missing correct summand from delay_bus->ins->outs");
         exit(1);
-      } 
+      }
       if( temp_operation->ins->summands->next->sample != comparison_operation_module->outs->sample ) {
         printf(" >> failed! -- operation representing delay_bus->outs->ins, missing correct summand from delay_bus->dsp_module_head->outs\n");
         exit(1);
-      } 
+      }
     } else if( strstr(left_bus_port_in_path, temp_operation->dsp_id) ) {
       comparison_operation = dsp_global_operation_head_processing->next;
       if( temp_operation->ins->summands->sample != comparison_operation->outs->sample ) {
@@ -1096,6 +1111,12 @@ test_dsp_optimization_simple() {
       }
       if(temp_operation->ins->summands->sample != comparison_operation->outs->sample) {
         printf(" >> failed! -- operation representing block processor dsp module, missing correct summand\n");
+        exit(1);
+      }
+    } else if( strstr(left_bus_port_out_path, temp_operation->dsp_id) ) {
+      comparison_operation = dsp_global_operation_head_processing->next->next->next;
+      if( temp_operation->ins->summands->sample != comparison_operation->outs->sample ) {
+        printf(" >> failed! -- operation representing left_bus->outs->ins, missing correct summand from left_bus->ins->outs");
         exit(1);
       }
     }
