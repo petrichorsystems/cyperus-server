@@ -77,14 +77,14 @@ test_dsp_sample() {
     exit(1);
   }
 
-  
+
 
   fprintf(stderr, " >> success!\n");
 }
 
 void
 test_dsp_types_insert_operation_tail() {
-  fprintf(stderr, "  >> starting test_dsp_types_insert_operation()\n");
+  fprintf(stderr, "  >> starting test_dsp_types_insert_operation_tail()\n");
 
   dsp_optimized_main_ins = NULL;
 
@@ -999,102 +999,14 @@ test_dsp_feed_mains() {
 }
 
 void
-test_dsp_optimize_connections_bus() {
-  fprintf(stderr, "  >> starting test_dsp_optimize_connections_bus()\n");
-
-  char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *left_bus_port_in_path_temp, *left_bus_port_in_path, *aux_path_temp, *aux_path;
-  struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
-  char *main_id, *delay_id, *aux_id, *left_id;
-
-  struct dsp_translation_connection *temp_translation_conn;
-
-  /* grab created busses */
-  main_bus = dsp_global_bus_head;
-  main_id = main_bus->id;
-  main_path = strconcat("/", main_id);
-  delay_bus = main_bus->down;
-  delay_id = delay_bus->id;
-  delay_path_temp = strconcat(main_path, "/");
-  delay_path = strconcat(delay_path_temp, delay_id);
-  delay_bus_port_in_path_temp = strconcat(delay_path, ":");
-  delay_bus_port_in_path = strconcat(delay_bus_port_in_path_temp, delay_bus->ins->id);
-  delay_bus_port_out_path = strconcat(delay_bus_port_in_path_temp, delay_bus->outs->id);
-  aux_bus = main_bus->down->next;
-  aux_id = aux_bus->id;
-  aux_path = strconcat(delay_path_temp, aux_id);
-  left_bus = delay_bus->down;
-  left_id = left_bus->id;
-  left_path_temp = strconcat(delay_path, "/");
-  left_path = strconcat(left_path_temp, left_id);
-  left_bus_port_in_path_temp = strconcat(left_path, ":");
-  left_bus_port_in_path = strconcat(left_bus_port_in_path_temp, left_bus->ins->id);
-  left_bus = dsp_parse_bus_path(left_path);
-
-  rtqueue_enq(aux_bus->outs->in->values, 0.12345);
-
-
-  dsp_add_connection(delay_bus_port_in_path,
-		     delay_bus_port_out_path);
-
-  
-  dsp_add_connection(delay_bus_port_out_path,
-		     left_bus_port_in_path);
-
-  /* dsp_optimize_connections_bus(delay_path, delay_bus->ins); */
-
-  /* dsp_optimize_connections_bus(delay_path, delay_bus->outs); */
-
-  struct dsp_operation *temp_operation;
-  temp_operation = dsp_global_operation_head_processing;
-  while(temp_operation != NULL) {
-    printf("START OPERATION PARSE\n");
-
-    printf("temp_operation->dsp_id: %s\n", temp_operation->dsp_id);
-    printf("temp_operation->ins->dsp_id: %s\n", temp_operation->ins->dsp_id);
-    printf("temp_operation->ins: %d\n", temp_operation->ins);
-
-    if(temp_operation->module != NULL) {
-      printf("temp_operation->module->name: %s\n", temp_operation->module->name);
-      printf("temp_operation->module->id: %s\n", temp_operation->module->id);
-    }
-
-    if(temp_operation->outs != NULL) {
-      printf("temp_operation->outs->dsp_id: %s\n", temp_operation->outs->dsp_id);
-      printf("temp_operation->outs: %d\n", temp_operation->outs);
-    }
-
-    if(temp_operation->ins != NULL)
-      if(temp_operation->ins->summands != NULL) {
-	printf("temp_operation->ins->summands->dsp_id: %s\n", temp_operation->ins->summands->dsp_id);
-        printf("temp_operation->ins->summands: %d\n", temp_operation->ins->summands);
-      }
-
-    if(temp_operation->ins != NULL)
-      if(temp_operation->ins->summands != NULL)
-	if(temp_operation->ins->summands->summands != NULL)
-	printf("temp_operation->ins->summands->summands->dsp_id: %s\n", temp_operation->ins->summands->summands->dsp_id);
-
-    temp_operation = temp_operation->next;
-  }
-
-
-  printf("\nNEED TO TEST WHETHER dsp_operation_sample POINTER ASSIGNMENTS ARE CORRECT HERE\n");
-
-  if( left_bus->ins->out->value != (float)0.12345 ) {
-    fprintf(stderr, " >> failed!\n");
-    return;
-  }
-  fprintf(stderr, " >> success!\n");
-}
-
-test_dsp_optimize_modules() {
-  fprintf(stderr, "  >> starting test_dsp_optimize_modules()\n");
+test_dsp_optimization_simple() {
+  fprintf(stderr, "  >> starting test_dsp_optimization_simple()\n");
 
   char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *left_bus_port_in_path_temp, *left_bus_port_in_path, *aux_path_temp, *aux_path, *block_processor_temp_path, *block_processor_path, *block_processor_temp_port_in_path, *block_processor_port_in_path, *block_processor_temp_port_out_path, *block_processor_port_out_path;
   struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
   char *main_id, *delay_id, *aux_id, *left_id;
-
-  struct dsp_translation_connection *temp_translation_conn;
+  struct dsp_operation *temp_operation;
+  struct dsp_operation *comparison_operation, *comparison_operation_module;
 
   /* grab created busses */
   main_bus = dsp_global_bus_head;
@@ -1125,128 +1037,72 @@ test_dsp_optimize_modules() {
   block_processor_temp_port_in_path = strconcat(block_processor_path, "<");
   block_processor_port_in_path = strconcat(block_processor_temp_port_in_path, delay_bus->dsp_module_head->ins->id);
 
-  printf("delay_bus_port_in_path: %s\n", delay_bus_port_in_path);
-  printf("block_processor_port_in_path: %s\n", block_processor_port_in_path);
-  dsp_add_connection(delay_bus_port_in_path,
-		     block_processor_port_in_path);
-
-
   block_processor_temp_port_out_path = strconcat(block_processor_path, ">");
   block_processor_port_out_path = strconcat(block_processor_temp_port_out_path, delay_bus->dsp_module_head->outs->id);
 
-  printf("block_processor_port_out_path: %s\n", block_processor_port_out_path);
-  printf("delay_bus_port_out_path: %s\n", delay_bus_port_out_path);
+  dsp_add_connection(delay_bus_port_in_path,
+		     delay_bus_port_out_path);
+  dsp_add_connection(delay_bus_port_out_path,
+		     left_bus_port_in_path);
+  dsp_add_connection(delay_bus_port_in_path,
+		     block_processor_port_in_path);
   dsp_add_connection(block_processor_port_out_path,
 		     delay_bus_port_out_path);
 
-  dsp_optimize_connections_bus(delay_path, delay_bus->ins);
-
+  dsp_optimize_connections_bus(delay_path, delay_bus->ins);  
   dsp_optimize_connections_module(delay_path,
                                   delay_bus->dsp_module_head->id,
                                   delay_bus->dsp_module_head->outs);
-
   dsp_optimize_connections_bus(delay_path, delay_bus->outs);
 
-  struct dsp_operation *temp_operation;
   temp_operation = dsp_global_operation_head_processing;
   while(temp_operation != NULL) {
-    printf("START OPERATION PARSE\n");
-
-    printf("temp_operation->dsp_id: %s\n", temp_operation->dsp_id);
-    printf("temp_operation->ins->dsp_id: %s\n", temp_operation->ins->dsp_id);
-    printf("temp_operation->ins: %d\n", temp_operation->ins);
-
-    if(temp_operation->module != NULL) {
-      printf("temp_operation->module->name: %s\n", temp_operation->module->name);
-      printf("temp_operation->module->id: %s\n", temp_operation->module->id);
-    }
-
-    if(temp_operation->outs != NULL) {
-      printf("temp_operation->outs->dsp_id: %s\n", temp_operation->outs->dsp_id);
-      printf("temp_operation->outs: %d\n", temp_operation->outs);
-    }
-
-    if(temp_operation->ins != NULL)
-      if(temp_operation->ins->summands != NULL) {
-	printf("temp_operation->ins->summands->dsp_id: %s\n", temp_operation->ins->summands->dsp_id);
-        printf("temp_operation->ins->summands: %d\n", temp_operation->ins->summands);
+    if( strstr(delay_bus_port_in_path, temp_operation->dsp_id) ) {
+      if( dsp_optimized_main_ins->outs->sample != temp_operation->ins->summands->sample ) {
+        printf(" >> failed! -- operation representing delay_bus->ins->ins, missing correct summand from dsp_main_ins\n");
+        exit(1);
       }
-
-    if(temp_operation->ins != NULL)
-      if(temp_operation->ins->summands != NULL)
-	if(temp_operation->ins->summands->next != NULL)
-	printf("temp_operation->ins->summands->next->dsp_id: %s\n", temp_operation->ins->summands->next->dsp_id);
-
-        if(temp_operation->ins != NULL)
-      if(temp_operation->ins->summands != NULL)
-	if(temp_operation->ins->summands->next != NULL)
-          	if(temp_operation->ins->summands->next->next != NULL)
-                  printf("temp_operation->ins->summands->next->next->dsp_id: %s\n", temp_operation->ins->summands->next->next->dsp_id);
-
+    } else if( strstr(delay_bus_port_out_path, temp_operation->dsp_id) ) {
+      comparison_operation = dsp_global_operation_head_processing;
+      comparison_operation_module = dsp_global_operation_head_processing->next->next;
+      if( temp_operation->ins->summands->sample != comparison_operation->outs->sample ) {
+        printf(" >> failed! -- operation representing delay_bus->outs->ins, missing correct summand from delay_bus->ins->outs");
+        exit(1);
+      } 
+      if( temp_operation->ins->summands->next->sample != comparison_operation_module->outs->sample ) {
+        printf(" >> failed! -- operation representing delay_bus->outs->ins, missing correct summand from delay_bus->dsp_module_head->outs\n");
+        exit(1);
+      } 
+    } else if( strstr(left_bus_port_in_path, temp_operation->dsp_id) ) {
+      comparison_operation = dsp_global_operation_head_processing->next;
+      if( temp_operation->ins->summands->sample != comparison_operation->outs->sample ) {
+        printf(" >> failed! -- operation representing left_bus->ins->ins, missing correct summand from delay_bus_port->outs->out");
+        exit(1);
+      }
+    } else if( strstr(block_processor_port_in_path, temp_operation->dsp_id) ) {
+      struct dsp_sample *delay_bus_port_in_sample_out = dsp_global_operation_head_processing->outs->sample;
+      comparison_operation = dsp_global_operation_head_processing;
+      if( temp_operation->module == NULL ) {
+        printf(" >> failed! -- operation representing block processor dsp module, missing dsp module\n");
+        exit(1);
+      }
+      if( strcmp(temp_operation->ins->dsp_id, delay_bus->dsp_module_head->ins->id) != 0 ) {
+        printf(" >> failed! -- operation representing block processor dsp module, missing dsp_port_in\n");
+        exit(1);
+      }
+      if( strcmp(temp_operation->outs->dsp_id, delay_bus->dsp_module_head->outs->id) != 0 ) {
+        printf(" >> failed! -- operation representing block processor dsp module, missing dsp_port_out\n");
+        exit(1);
+      }
+      if(temp_operation->ins->summands->sample != comparison_operation->outs->sample) {
+        printf(" >> failed! -- operation representing block processor dsp module, missing correct summand\n");
+        exit(1);
+      }
+    }
     temp_operation = temp_operation->next;
   }
-
-  printf("\nNEED TO TEST WHETHER dsp_operation_sample POINTER ASSIGNMENTS ARE CORRECT HERE\n");
-
-  /*
-  if( left_bus->ins->out->value != (float)0.12345 ) {
-    fprintf(stderr, " >> failed!\n");
-    return;
-  }
-  */
-
-  printf("delay_bus->id: %s\n", delay_bus->id);
-
   fprintf(stderr, " >> success!\n");
 }
-
-test_dsp_optimize_connections() {
-  fprintf(stderr, "  >> starting test_dsp_optimize_connections()\n");
-
-  char *main_path, *delay_path_temp, *delay_path, *delay_bus_port_in_path_temp, *delay_bus_port_in_path, *delay_bus_port_out_path, *left_path_temp, *left_path, *left_bus_port_in_path_temp, *left_bus_port_in_path, *aux_path_temp, *aux_path, *block_processor_temp_path, *block_processor_path, *block_processor_temp_port_in_path, *block_processor_port_in_path, *block_processor_temp_port_out_path, *block_processor_port_out_path;
-  struct dsp_bus *main_bus, *delay_bus, *left_bus, *aux_bus;
-  char *main_id, *delay_id, *aux_id, *left_id;
-
-  struct dsp_translation_connection *temp_translation_conn;
-
-  /* grab created busses */
-  main_bus = dsp_global_bus_head;
-  main_id = main_bus->id;
-  main_path = strconcat("/", main_id);
-  delay_bus = main_bus->down;
-  delay_id = delay_bus->id;
-  delay_path_temp = strconcat(main_path, "/");
-  delay_path = strconcat(delay_path_temp, delay_id);
-  delay_bus_port_in_path_temp = strconcat(delay_path, ":");
-  delay_bus_port_in_path = strconcat(delay_bus_port_in_path_temp, delay_bus->ins->id);
-  delay_bus_port_out_path = strconcat(delay_bus_port_in_path_temp, delay_bus->outs->id);
-  aux_bus = main_bus->down->next;
-  aux_id = aux_bus->id;
-  aux_path = strconcat(delay_path_temp, aux_id);
-  left_bus = delay_bus->down;
-  left_id = left_bus->id;
-  left_path_temp = strconcat(delay_path, "/");
-  left_path = strconcat(left_path_temp, left_id);
-  left_bus_port_in_path_temp = strconcat(left_path, ":");
-  left_bus_port_in_path = strconcat(left_bus_port_in_path_temp, left_bus->ins->id);
-  left_bus = dsp_parse_bus_path(left_path);
-
-  block_processor_temp_path = strconcat(delay_path, "?");
-  block_processor_path = strconcat(block_processor_temp_path, delay_bus->dsp_module_head->id);
-  block_processor_temp_port_in_path = strconcat(block_processor_path, "<");
-  block_processor_port_in_path = strconcat(block_processor_temp_port_in_path, delay_bus->dsp_module_head->ins->id);
-
-  temp_translation_conn = dsp_global_translation_connection_graph_processing;
-  while( temp_translation_conn != NULL ) {
-    printf("temp_translation_conn->operation_out->dsp_id: %s\n", temp_translation_conn->operation_out->dsp_id);
-    printf("temp_translation_conn->operation_in->dsp_id: %s\n", temp_translation_conn->operation_in->dsp_id);
-
-    temp_translation_conn = temp_translation_conn->next;
-  }
-
-  fprintf(stderr, " >> success!\n");
-}
-
 
 void
 test_dsp_sum_inputs() {
@@ -1261,7 +1117,7 @@ test_dsp_sum_inputs() {
   struct dsp_bus *main_bus, *delay_bus, *left_bus;
   char *main_id, *delay_id, *left_id, *module_id;
 
-  /* grab5B created busses */
+  /* grab created busses */
   main_bus = dsp_global_bus_head;
   main_id = main_bus->id;
   main_path = strconcat("/", main_id);
@@ -1558,9 +1414,7 @@ main(void) {
   test_dsp_build_mains();
   test_dsp_feed_outputs();
   test_dsp_feed_mains();
-  test_dsp_optimize_connections_bus();
-  test_dsp_optimize_modules();
-  test_dsp_optimize_connections();
+  test_dsp_optimization_simple();
   // test_dsp_sum_inputs();
   // test_dsp_build_optimized_graph();
 
