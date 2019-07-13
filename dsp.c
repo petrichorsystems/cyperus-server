@@ -671,14 +671,6 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   } else
     temp_op_in_path = current_path;
 
-
-  printf("connection->id_out: %s\nconnection->id_in: %s\n", connection->id_out, connection->id_in);
-  printf("is_module_out: %d\nis_bus_port_in: %d\n", is_module_out, is_bus_port_in);
-  printf("temp_result[0]: %s\n", temp_result[0]);
-  printf( "ststr(): %d\n", strstr(":", temp_result[0]));
-  printf("matched_op_out->dsp_id: %s\n", matched_op_out->dsp_id);
-  printf("found_sample_out: %s\n", found_sample_out->dsp_id);
-  
   if( dsp_global_operation_head_processing == NULL ) {
     /* never hits this */
     printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
@@ -705,11 +697,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       }
       temp_op_in = temp_op_in->next;
     }
-
-    if( sample_in == NULL ) {
-      printf("SAMPLE_IN IS NULL\n");
-
-      
+    if( sample_in == NULL ) { 
       if( is_bus_port_in ) {
 	sample_in = dsp_operation_sample_init("<bus port in>", 0.0, 1);
       }
@@ -758,17 +746,12 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 	dsp_operation_insert_tail(dsp_global_operation_head_processing,
 				  temp_op);
     }
-
-    printf("sample_in->dsp_id: %s\n", sample_in->dsp_id);
-  
     new_summand = dsp_operation_sample_init(found_sample_out->dsp_id, 0.0, 0);
     new_summand->sample = found_sample_out->sample;
     if(sample_in->summands == NULL)
       sample_in->summands = new_summand;
     else
       dsp_operation_sample_insert_tail(sample_in->summands, new_summand);
-
-      printf(" ----- \n");
   
   }
 } /* dsp_optimize_connections_input */
