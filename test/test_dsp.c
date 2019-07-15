@@ -1128,7 +1128,6 @@ test_dsp_optimization_simple() {
     temp_operation = temp_operation->next;
   }
 
-  exit(0);
   
   temp_operation = dsp_global_operation_head_processing;
   while(temp_operation != NULL) {
@@ -1139,7 +1138,7 @@ test_dsp_optimization_simple() {
       }
     } else if( strstr(delay_bus_port_out_path, temp_operation->dsp_id) ) {
       comparison_operation = dsp_global_operation_head_processing;
-      comparison_operation_module = dsp_global_operation_head_processing->next->next;
+      comparison_operation_module = dsp_global_operation_head_processing->next;
       if( temp_operation->ins->summands->sample != comparison_operation->outs->sample ) {
         printf(" >> failed! -- operation representing delay_bus->outs->ins, missing correct summand from delay_bus->ins->outs");
         exit(1);
@@ -1149,9 +1148,9 @@ test_dsp_optimization_simple() {
         exit(1);
       }
     } else if( strstr(left_bus_port_in_path, temp_operation->dsp_id) ) {
-      comparison_operation = dsp_global_operation_head_processing->next;
+      comparison_operation = dsp_global_operation_head_processing->next->next;
       if( temp_operation->ins->summands->sample != comparison_operation->outs->sample ) {
-        printf(" >> failed! -- operation representing left_bus->ins->ins, missing correct summand from delay_bus_port->outs->out");
+        printf(" >> failed! -- operation representing left_bus->ins->ins, missing correct summand from delay_bus_port->outs->out\n");
         exit(1);
       }
     } else if( strstr(block_processor_port_in_path, temp_operation->dsp_id) ) {
@@ -1183,6 +1182,14 @@ test_dsp_optimization_simple() {
     temp_operation = temp_operation->next;
   }
   fprintf(stderr, " >> success!\n");
+}
+
+void
+test_dsp_optimize_operations_graph() {
+  fprintf(stderr, "  >> starting test_dsp_optimize_operations_graph()\n");
+  dsp_optimize_operations_graph(dsp_global_operation_head_processing);
+  
+  
 }
 
 void
@@ -1497,6 +1504,7 @@ main(void) {
   test_dsp_feed_outputs();
   test_dsp_feed_mains();
   test_dsp_optimization_simple();
+  test_dsp_optimize_operations_graph();
   // test_dsp_sum_inputs();
   // test_dsp_build_optimized_graph();
 

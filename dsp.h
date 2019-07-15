@@ -70,6 +70,8 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
 void
 dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection);
 
+void
+dsp_optimize_operations_graph();
 
 void
 dsp_mains_allocate();
