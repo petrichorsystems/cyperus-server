@@ -1085,13 +1085,51 @@ test_dsp_optimization_simple() {
   printf("dsp_optimized_main_outs->ins->id: %s\n", dsp_optimized_main_outs->ins->id);
 
   dsp_optimize_connections_bus(delay_path, delay_bus->ins);
+  printf("optimized 0.\n");
   dsp_optimize_connections_module(delay_path,
                                   delay_bus->dsp_module_head->id,
                                   delay_bus->dsp_module_head->outs);
+  printf("optimized 1.\n");
   dsp_optimize_connections_bus(delay_path, delay_bus->outs);
+  printf("optimized 2.\n");
   dsp_optimize_connections_bus(left_path, left_bus->ins);
+  printf("optimized 3.\n");
   dsp_optimize_connections_bus(left_path, left_bus->outs);
 
+  temp_operation = dsp_global_operation_head_processing;
+  while(temp_operation != NULL) {
+    printf("START OPERATION PARSE\n");
+
+    printf("temp_operation->dsp_id: %s\n", temp_operation->dsp_id);
+    printf("temp_operation->ins->dsp_id: %s\n", temp_operation->ins->dsp_id);
+    printf("temp_operation->ins: %d\n", temp_operation->ins);
+
+    if(temp_operation->module != NULL) {
+      printf("temp_operation->module->name: %s\n", temp_operation->module->name);
+      printf("temp_operation->module->id: %s\n", temp_operation->module->id);
+    }
+
+    if(temp_operation->outs != NULL) {
+      printf("temp_operation->outs->dsp_id: %s\n", temp_operation->outs->dsp_id);
+      printf("temp_operation->outs: %d\n", temp_operation->outs);
+    }
+
+    if(temp_operation->ins != NULL)
+      if(temp_operation->ins->summands != NULL) {
+        printf("temp_operation->ins->summands->dsp_id: %s\n", temp_operation->ins->summands->dsp_id);
+        printf("temp_operation->ins->summands: %d\n", temp_operation->ins->summands);
+      }
+
+    if(temp_operation->ins != NULL)
+      if(temp_operation->ins->summands != NULL)
+        if(temp_operation->ins->summands->next != NULL)
+        printf("temp_operation->ins->summands->next->dsp_id: %s\n", temp_operation->ins->summands->next->dsp_id);
+
+    temp_operation = temp_operation->next;
+  }
+
+  exit(0);
+  
   temp_operation = dsp_global_operation_head_processing;
   while(temp_operation != NULL) {
     if( strstr(delay_bus_port_in_path, temp_operation->dsp_id) ) {

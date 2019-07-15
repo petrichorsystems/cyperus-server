@@ -466,6 +466,19 @@ void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struc
   new_operation->prev = existing_operation->prev;
   new_operation->next = existing_operation;
   existing_operation->prev = new_operation;
+  if( existing_operation == dsp_global_operation_head_processing )
+    dsp_global_operation_head_processing = new_operation;
+}
+
+void dsp_operation_insert_ahead(struct dsp_operation *existing_operation, struct dsp_operation *new_operation) {
+  if( existing_operation->next == NULL )
+    existing_operation->next = new_operation;
+  else {
+    new_operation->next = existing_operation->next;
+    existing_operation->next->prev = new_operation;
+    existing_operation->next = new_operation;
+    new_operation->prev = existing_operation;
+  }
 }
 
 struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_connection *connection,
