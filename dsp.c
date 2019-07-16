@@ -846,32 +846,6 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
 } /* dsp_optimize_connections_bus */
 
 void
-dsp_optimize_operations_graph() {
-  struct dsp_operation *temp_op = NULL;
-  struct dsp_operation_sample *temp_sample = NULL;
-  struct dsp_operation_sample *temp_summand = NULL;
-  int count_inputs, count_summands;
-  
-  temp_op = dsp_global_operation_head_processing;
-  while(temp_op != NULL) {
-    if( temp_op->module == NULL ) {
-      if( temp_op->ins != NULL ) {
-        if( temp_op->ins->next == NULL ) {
-          if( temp_op->ins->summands != NULL ) {
-            if( temp_op->ins->summands->next == NULL ) {
-              printf(" -- redundant operation! -- temp_op->dsp_id: %s\n", temp_op->dsp_id);
-              
-            }
-          }
-        }
-      }
-    }
-    temp_op = temp_op->next;
-  }
-  
-} /* dsp_optimize_operations_graph */
-
-void
 dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int pos) {
   struct dsp_module *temp_module;
   struct dsp_bus *temp_bus = head_bus;

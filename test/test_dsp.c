@@ -1185,14 +1185,6 @@ test_dsp_optimization_simple() {
 }
 
 void
-test_dsp_optimize_operations_graph() {
-  fprintf(stderr, "  >> starting test_dsp_optimize_operations_graph()\n");
-  dsp_optimize_operations_graph(dsp_global_operation_head_processing);
-  
-  
-}
-
-void
 test_dsp_sum_inputs() {
   fprintf(stderr, "  >> starting test_dsp_sum_inputs()\n");
 
@@ -1504,7 +1496,6 @@ main(void) {
   test_dsp_feed_outputs();
   test_dsp_feed_mains();
   test_dsp_optimization_simple();
-  test_dsp_optimize_operations_graph();
   // test_dsp_sum_inputs();
   // test_dsp_build_optimized_graph();
 
