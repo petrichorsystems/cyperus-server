@@ -103,11 +103,8 @@ dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct 
 	  strcat(current_path, temp_out->id);
 	}
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
-          printf("aobut to call dsp_optimize_connections_input()\n");
 	  dsp_optimize_connections_input(current_path,
 					 temp_connection);
-          printf("called dsp_optimize_connections_input()\n");
-	  
 	}
 	temp_connection = temp_connection->next;
 	free(current_path);
