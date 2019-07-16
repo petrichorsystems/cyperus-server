@@ -871,17 +871,19 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path, int jack_sr, int
     dsp_optimize_connections_bus(current_path, temp_bus->ins);
 
     /* handle dsp modules */
-    /* temp_module = temp_bus->dsp_module_head;
+    temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
-      temp_module->dsp_function(current_path, temp_module, jack_sr, pos);
+      dsp_optimize_connections_module(current_path, temp_module->id, temp_module->outs);
       temp_module = temp_module->next;
-    } */
+    }
 
     /* process bus outputs */
     dsp_optimize_connections_bus(current_path, temp_bus->outs);
 
     dsp_optimize_graph(temp_bus->down, current_path, jack_sr, pos);
+
     temp_bus = temp_bus->next;
+
     printf("\n\nNEXT\n\n");
     if(current_path)
       free(current_path);
@@ -1100,4 +1102,3 @@ void
   free(dsp_main_outs);
 
 } /* dsp_thread */
-
