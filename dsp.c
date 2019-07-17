@@ -189,7 +189,7 @@ dsp_parse_path(char* result[], char *path) {
   for(i=0; i < id_length; i++)
     parsed_id[i] = temp_string[strlen(path) - id_length + i];
   parsed_id[i++] = '\0';
-  
+
   if( strcmp(result[0], "/") )
     result[1] = parsed_path;
   else
@@ -207,7 +207,7 @@ dsp_parse_bus_path(char *target_path) {
   char *last_bus_id;
   struct dsp_bus *temp_bus, *target_bus, *temp_bus_head, *deep_bus;
   temp_bus = dsp_global_bus_head;
-  char *p = target_path; 
+  char *p = target_path;
   char *path_index[256];
   int bus_count = 0;
   int path_count = 0;
@@ -248,7 +248,7 @@ dsp_parse_bus_path(char *target_path) {
 	      if( (strcmp(temp_bus->id, last_bus_id) == 0) &&
 		  (bus_count == path_count) ) {
 		return temp_bus;
-	      } else 
+	      } else
 		if(temp_bus->down != NULL) {
 		  temp_bus = temp_bus->down;
 		  break;
@@ -256,7 +256,7 @@ dsp_parse_bus_path(char *target_path) {
 		  printf("ain't no bus existin': %s!\n", temp_bus->id);
 		  return NULL;
 		}
-	    } 
+	    }
 	    temp_bus = temp_bus->next;
 	  }
 	  free(output_token);
@@ -284,7 +284,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
   char *p;
 
   int multi_port = 0;
-  
+
   temp_bus_port = head_bus_port;
   strcpy(target_bus_ports, bus_ports);
 
@@ -340,20 +340,20 @@ void
 dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *outs) {
   struct dsp_bus *temp_bus, *target_bus;
   struct dsp_bus_port *temp_bus_port;
-  
+
   /* create bus */
   if(ins != NULL) {
     temp_bus_port = new_bus->ins;
     temp_bus_port = dsp_build_bus_ports(temp_bus_port, ins, 0);
     new_bus->ins = temp_bus_port;
   }
-  
+
   if(outs != NULL) {
     temp_bus_port = new_bus->outs;
     temp_bus_port = dsp_build_bus_ports(temp_bus_port, outs, 1); /* output port */
     new_bus->outs = temp_bus_port;
   }
-  
+
   /* insert head bus, if that's what we're doing */
   if( !strcmp(target_bus_path, "/") || !strcmp(target_bus_path, "")) {
     if( dsp_global_bus_head != NULL )
@@ -423,7 +423,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
   struct dsp_bus_port *target_bus_port;
-  
+
   /* parsing id_out (connection output) */
   dsp_parse_path(temp_result, id_out);
   if( strcmp(temp_result[0], "{") == 0) {
@@ -447,7 +447,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   if( strcmp(temp_result[0], ":") == 0) {
     bus_port_path = temp_result[1];
     bus_port_id = temp_result[2];
- 
+
     dsp_parse_path(temp_result, bus_port_path);
     bus_path = temp_result[1];
 
@@ -469,7 +469,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   if( strcmp(temp_result[0], "}") == 0) {
     port_in = dsp_find_port_out(dsp_main_outs, temp_result[2]);
   }
-  
+
   if( strcmp(temp_result[0], "<") == 0 ) {
 
     module_path = temp_result[1];
@@ -477,14 +477,14 @@ dsp_add_connection(char *id_out, char *id_in) {
     dsp_parse_path(temp_result, module_path);
     bus_path = temp_result[1];
     module_id = temp_result[2];
-    target_bus = dsp_parse_bus_path(bus_path);    
+    target_bus = dsp_parse_bus_path(bus_path);
     target_module = dsp_find_module(target_bus->dsp_module_head,
 				    module_id);
     port_in = dsp_find_port_in(target_module->ins, port_in_id);
   }
 
   if( strcmp(temp_result[0], ":") == 0) {
-    
+
     bus_port_path = temp_result[1];
     bus_port_id = temp_result[2];
 
@@ -555,13 +555,13 @@ param_to_module_name(dsp_parameter module) {
 
 char*
 dsp_list_modules() {
-  
+
 } /* dsp_list_modules */
 
 void
 dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection) {
   /* is the below ever actually the case? */
-  
+
   /* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
      versus dsp_global_operation_head_processing is not populated? do we care? */
 
@@ -571,7 +571,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 
   struct dsp_operation *matched_op_out = NULL;
   struct dsp_operation *matched_op_in = NULL;
-  
+
   struct dsp_operation *temp_translation_op = NULL;
 
   struct dsp_operation_sample *temp_sample_out = NULL;
@@ -580,7 +580,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   struct dsp_operation_sample *sample_in = NULL;
 
   struct dsp_operation_sample *new_summand = NULL;
-  
+
   struct dsp_translation_connection *temp_translation_conn = NULL;
 
   char *temp_result[3];
@@ -596,7 +596,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   int is_bus_port_in = 0;
   int is_module_in = 0;
   int is_main_out_in = 0;
-  
+
   dsp_parse_path(temp_result, connection->id_out);
   if( strstr(":", temp_result[0]) ) {
     temp_op_out_path = current_path;
@@ -609,15 +609,15 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     temp_op_out_path = temp_result[1];
   else
     temp_op_out_path = current_path;
-  
+
   if( dsp_global_operation_head_processing == NULL ) {
     /* never hits this */
     printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
   } else {
     /* grab 'out' op and sample address */
     temp_op_out = dsp_global_operation_head_processing;
-    
-    while(temp_op_out != NULL) {      
+
+    while(temp_op_out != NULL) {
       if( strcmp(temp_op_out->dsp_id, temp_op_out_path) == 0 ) {
 	matched_op_out = temp_op_out;
 	temp_sample_out = temp_op_out->outs;
@@ -645,7 +645,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       } else {
 	found_sample_out = dsp_operation_sample_init(temp_result[2], 0.0, 1);
       }
-      
+
       if( matched_op_out->outs == NULL ) {
 	matched_op_out->outs = found_sample_out;
       } else {
@@ -653,7 +653,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       }
     }
   }
-  
+
   if( found_sample_out == NULL ) {
     printf("no operations for this path: %s found\n", current_path);
     return;
@@ -709,15 +709,15 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       }
       temp_op_in = temp_op_in->next;
     }
-    
-    if( sample_in == NULL ) { 
+
+    if( sample_in == NULL ) {
       if( is_bus_port_in ) {
 	sample_in = dsp_operation_sample_init("<bus port port in>", 0.0, 1);
       }
       else if( is_module_in ) {
 	/* sample_in = dsp_operation_sample_init(temp_result[2], 0.0, 1); */
       } else if( is_main_out_in ) {
-        
+
       } else {
 	printf("found unknown dsp object type!! (?) exiting..\n");
 	exit(1);
@@ -747,7 +747,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       } else {
 	temp_op = temp_op_in;
       }
-      
+
       if(temp_op->ins == NULL)
 	temp_op->ins = sample_in;
       else
@@ -756,7 +756,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       if(dsp_global_operation_head_processing == NULL)
 	dsp_global_operation_head_processing = temp_op;
       else {
-        if( is_module_in ) {          
+        if( is_module_in ) {
           dsp_operation_insert_ahead(matched_op_out, temp_op);
 
           temp_op_in = dsp_global_operation_head_processing;
@@ -764,7 +764,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
           while(temp_op_in != NULL) {
             temp_op_in = temp_op_in->next;
           }
-          
+
         } else {
           dsp_operation_insert_tail(dsp_global_operation_head_processing,
                                     temp_op);
@@ -834,7 +834,7 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
   struct dsp_bus *temp_bus = head_bus;
   char *current_path;
   int parent_path_size = 0;
-  
+
   while(temp_bus != NULL) {
     /* build current path */
 
@@ -852,17 +852,17 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
 
     /* process bus inputs */
     dsp_optimize_connections_bus(current_path, temp_bus->ins);
-    
+
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
       dsp_optimize_connections_module(current_path, temp_module->id, temp_module->outs);
       temp_module = temp_module->next;
     }
-    
+
     /* process bus outputs */
     dsp_optimize_connections_bus(current_path, temp_bus->outs);
-    
+
     dsp_optimize_graph(temp_bus->down, current_path);
 
     temp_bus = temp_bus->next;
@@ -909,7 +909,7 @@ dsp_build_mains(int channels_in, int channels_out) {
       }
     }
 	
-    temp_op = dsp_operation_init(formal_main_name);      
+    temp_op = dsp_operation_init(formal_main_name);
     temp_sample = dsp_operation_sample_init("<main port in>", (float)0.0, 1);
 
     if(temp_op->outs == NULL)
@@ -948,12 +948,12 @@ dsp_build_mains(int channels_in, int channels_out) {
     }
     temp_op = dsp_operation_init(formal_main_name);
     temp_sample = dsp_operation_sample_init("<main port out>", (float)0.0, 1);
-    
+
     if( temp_op->ins == NULL )
       temp_op->ins = temp_sample;
     else
       dsp_operation_sample_insert_tail(temp_op->ins, temp_sample);
-    
+
     if( dsp_optimized_main_outs == NULL )
       dsp_optimized_main_outs = temp_op;
     else
@@ -978,7 +978,7 @@ void
   dsp_build_mains(jackcli_channels_in, jackcli_channels_out);
 
   dsp_feed_main_inputs(dsp_main_ins);
-  
+
   temp_bus = dsp_global_bus_head;
   while( temp_bus != NULL ) {
     dsp_optimize_graph(temp_bus, current_path);
@@ -988,23 +988,22 @@ void
 
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
-  struct dsp_operation *temp_op = head_op;
+  struct dsp_operation *temp_op = NULL;
+  struct dsp_operation_sample *temp_op_sample = NULL;
+  struct dsp_sample *temp_sample = NULL;
+  float temp_val = (float)0;
 
+  temp_op = dsp_global_operation_head_processing;
   while(temp_op != NULL) {
-
-    /* iterate and sum in-samples here */
-    
-    /* handle dsp modules */
-    /* temp_module = temp_op->dsp_module_head;
-    while(temp_module != NULL) {
-      temp_module->dsp_function(current_path, temp_module, jack_sr, pos);
-      temp_module = temp_module->next;
-    } */
-
-    /* assign out-samples here */
-    
+    if( temp_op->module == NULL ) {
+      temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
+    } else {
+      /* need to pass in's to the temp_op->module,
+         return/assign outs after */
+    }
     temp_op = temp_op->next;
   }
+
   return;
 } /* dsp_process */
 
@@ -1053,9 +1052,9 @@ void
       }
     }
   }
-  
+
   /* deallocate main inputs/outputs */
-  
+
   /* NEED TO DO THIS BETTER (ie. iterate over outputs/inputs structs)*/
   free(dsp_main_ins);
   free(dsp_main_outs);

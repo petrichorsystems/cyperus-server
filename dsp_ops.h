@@ -24,6 +24,7 @@ Copyright 2018 murray foster */
 #define DSP_OPS_H
 
 float dsp_sum_input(struct dsp_port_in *in);
+float dsp_sum_summands(struct dsp_operation_sample *summands);
 
 void dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
 
@@ -32,7 +33,7 @@ void dsp_optimize_connections_module(char *current_bus_path, char *module_id, st
 void dsp_feed_main_inputs(struct dsp_port_out *outs);
 
 void dsp_create_block_processor(struct dsp_bus *target_bus);
-void dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos);
+void dsp_block_processor(char *bus_path, struct dsp_operation *block_processor, int jack_samplerate, int pos);
 struct dsp_operation *dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor);
 
 int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);

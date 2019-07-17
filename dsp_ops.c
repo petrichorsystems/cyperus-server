@@ -29,6 +29,22 @@ Copyright 2018 murray foster */
 dsp_parameter dsp_voice_parameters[0];
 
 float
+dsp_sum_summands(struct dsp_operation_sample *summands) {
+  struct dsp_operation_sample *temp_summand = summands;
+  float outsample = 0.0;
+
+  /* TODO: Properly sum inputs? (be careful, what if not audio) */
+
+  while(temp_summand != NULL) {
+    outsample += summands->sample->value;
+    temp_summand = temp_summand->next;
+  }
+
+  return outsample;
+} /* dsp_sum_input */
+
+
+float
 dsp_sum_input(struct dsp_port_in *in) {
 
   /* TODO: Properly sum inputs? (be careful, what if not audio) */
@@ -39,6 +55,7 @@ dsp_sum_input(struct dsp_port_in *in) {
   }
   return outsample;
 } /* dsp_sum_input */
+
 
 void
 dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *outs) {
@@ -291,7 +308,7 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
 } /* dsp_create_block_processor */
 
 void
-dsp_block_processor(char *bus_path, struct dsp_module *block_processor, int jack_samplerate, int pos) {
+dsp_block_processor(char *bus_path, struct dsp_operation *block_processor, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;
   dsp_parameter dsp_param = block_processor->dsp_param;
