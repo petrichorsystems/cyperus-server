@@ -136,7 +136,7 @@ struct dsp_module {
   const char *name;
   struct dsp_module *next;
   struct dsp_module *prev;
-  void (*dsp_function) (char*, struct dsp_module*, int, int);
+  void (*dsp_function) (struct dsp_operation*, int, int);
   struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*);
   dsp_parameter dsp_param;
   struct dsp_port_in *ins;

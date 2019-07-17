@@ -308,20 +308,20 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
 } /* dsp_create_block_processor */
 
 void
-dsp_block_processor(char *bus_path, struct dsp_operation *block_processor, int jack_samplerate, int pos) {
+dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;
-  dsp_parameter dsp_param = block_processor->dsp_param;
+  dsp_parameter dsp_param = block_processor->module->dsp_param;
 
   /* sum inputs */
-  insample = dsp_sum_input(block_processor->ins);
+  insample = dsp_sum_input(block_processor->module->ins);
   /* process */
-  block_processor->dsp_param.block_processor.cyperus_params->in = insample;
-  outsample = cyperus_block_processor(block_processor->dsp_param.block_processor.cyperus_params,
+  block_processor->module->dsp_param.block_processor.cyperus_params->in = insample;
+  outsample = cyperus_block_processor(block_processor->module->dsp_param.block_processor.cyperus_params,
 				      jack_samplerate, pos);
   /* drive outputs */
-   block_processor->outs->value = outsample;
-   dsp_feed_outputs(bus_path, block_processor->id, block_processor->outs);
+   block_processor->module->outs->value = outsample;
+   /* dsp_feed_outputs(bus_path, block_processor->module-> id, block_processor->outs); */
    return;
 } /* dsp_block_processor */
 

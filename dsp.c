@@ -520,6 +520,14 @@ dsp_add_connection(char *id_out, char *id_in) {
   else
     dsp_connection_insert_tail(dsp_global_connection_graph,
 			       new_connection);
+
+  /* TODO: check that the current processing graph isn't the same as this new one,
+           replace the actual processing graph if it's not (on the last sample cycle),
+  */
+
+  dsp_global_operation_head_processing = NULL;
+  dsp_build_optimized_graph(NULL);
+  
   return;
 } /* dsp_add_connection */
 
@@ -655,7 +663,8 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   }
 
   if( found_sample_out == NULL ) {
-    printf("no operations for this path: %s found\n", current_path);
+    /* TODO: debug message */
+    /* printf("no operations for this path: %s found\n", current_path); */
     return;
   }
 
@@ -681,7 +690,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   }
 
   if( dsp_global_operation_head_processing == NULL ) {
-    /* never hits this */
+    /* TODO: debug message */
     printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
     exit(1);
   } else {
@@ -989,21 +998,15 @@ void
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   struct dsp_operation *temp_op = NULL;
-  struct dsp_operation_sample *temp_op_sample = NULL;
-  struct dsp_sample *temp_sample = NULL;
-  float temp_val = (float)0;
-
   temp_op = dsp_global_operation_head_processing;
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
       temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
     } else {
-      /* need to pass in's to the temp_op->module,
-         return/assign outs after */
+      temp_op->module->dsp_function(temp_op, jack_sr, pos);
     }
     temp_op = temp_op->next;
   }
-
   return;
 } /* dsp_process */
 
