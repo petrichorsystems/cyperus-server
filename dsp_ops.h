@@ -30,7 +30,7 @@ void dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_o
 
 void dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
 
-void dsp_feed_main_inputs(struct dsp_port_out *outs);
+void dsp_optimize_connections_main_inputs(struct dsp_port_out *outs);
 
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos);

@@ -183,6 +183,8 @@ int main(int argc, char *argv[])
   printf("osc send port: %s\n", osc_port_out);
   printf("filepath: %s\n\n\n", file_path);
 
+  dsp_build_mains(input, output);
+  
   pthread_t dsp_thread_id;
   pthread_create(&dsp_thread_id, NULL, dsp_thread, NULL);
   pthread_detach(dsp_thread_id);

@@ -132,7 +132,7 @@ dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct 
 } /* dsp_optimize_connections_module */
 
 void
-dsp_feed_main_inputs(struct dsp_port_out *outs) {
+dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;

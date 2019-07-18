@@ -993,7 +993,7 @@ test_dsp_feed_mains() {
 
   dsp_main_ins->value = insample;
 
-  dsp_feed_main_inputs(dsp_main_ins);
+  dsp_optimize_connections_main_inputs(dsp_main_ins);
 
   /* TEST OPTIMIZATION LOGIC */
   struct dsp_operation *temp_operation;
@@ -1454,7 +1454,7 @@ test_dsp_build_process_graph() {
 
   /* add sample data to main inputs and recurse dsp graph */
   dsp_main_ins->value = 0.666;
-  dsp_feed_main_inputs(dsp_main_ins);
+  dsp_optimize_connections_main_inputs(dsp_main_ins);
   dsp_build_optimized_graph(NULL);
 
   /* dequeue sample from main output and verify */
