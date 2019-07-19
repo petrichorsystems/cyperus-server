@@ -411,6 +411,7 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 
   dsp_add_connection(path_out, path_in);
   
+
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/connection", "ssi", path_out, path_in, 0);
   free(lo_addr_send);

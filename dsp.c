@@ -36,6 +36,9 @@ struct dsp_port_in *dsp_main_outs;
 struct dsp_operation *dsp_optimized_main_ins;
 struct dsp_operation *dsp_optimized_main_outs;
 
+int global_new_operation_graph = 0;
+struct dsp_operation global_dsp_operation_head = NULL;
+
 struct dsp_bus_port
 *dsp_find_bus_port(struct dsp_bus_port *target_bus_port, char *id) {
   struct dsp_bus_port *temp_bus_port;
@@ -1017,11 +1020,11 @@ void
 
   struct dsp_operation *temp_op;
   
-  struct dsp_operation_sample *temp_main_in = NULL;
-  struct dsp_operation_sample *temp_main_out = NULL;
+  struct dsp_operation *temp_main_in = NULL;
+  struct dsp_operation *temp_main_out = NULL;
 
   /* dsp_mains_allocate(jackcli_channels_in, jackcli_channels_out, jackcli_fifo_size); */
-
+  
   while(1) {
     for(pos=0; pos<jackcli_samplerate; pos++) {
       outsample = 0.0;
@@ -1030,11 +1033,10 @@ void
       temp_main_in = dsp_optimized_main_ins;
       i=0;
       while(temp_main_in != NULL) {
-	temp_main_in->sample->value = rtqueue_deq(jackcli_fifo_ins[i]);
+	temp_main_in->outs->sample->value = rtqueue_deq(jackcli_fifo_ins[i]);
 	temp_main_in = temp_main_in->next;
 	i += 1;
       }
-
       temp_op = dsp_global_operation_head_processing;
       while( temp_op != NULL ) {
 	dsp_process(temp_op, jackcli_samplerate, pos);
@@ -1045,10 +1047,13 @@ void
       i=0;
       while(temp_main_out != NULL) {
 	if(!rtqueue_isfull(jackcli_fifo_outs[i]))
-	  rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_summands(temp_main_out->summands));
+	  rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_summands(temp_main_out->ins->summands));
 	temp_main_out = temp_main_out->next;
 	i += 1;
       }
+
+      /* reassign global operation graph head if we need to */
+      
     }
   }
 

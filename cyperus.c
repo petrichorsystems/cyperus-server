@@ -193,9 +193,9 @@ int main(int argc, char *argv[])
   
   printf("press <ENTER> to quit\n\n");
   
-  while(!exit_key) {
+  while(1) {
     exit_key = getchar();
-    usleep(10000);
+    usleep(100000);
   }
   
   jackcli_teardown();
