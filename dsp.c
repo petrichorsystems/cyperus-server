@@ -36,8 +36,7 @@ struct dsp_port_in *dsp_main_outs;
 struct dsp_operation *dsp_optimized_main_ins;
 struct dsp_operation *dsp_optimized_main_outs;
 
-int global_new_operation_graph = 0;
-struct dsp_operation global_dsp_operation_head = NULL;
+int dsp_global_new_operation_graph = 0;
 
 struct dsp_bus_port
 *dsp_find_bus_port(struct dsp_bus_port *target_bus_port, char *id) {
@@ -269,7 +268,6 @@ dsp_parse_bus_path(char *target_path) {
     }
   return NULL;
 } /* dsp_parse_bus_path */
-
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
@@ -528,7 +526,6 @@ dsp_add_connection(char *id_out, char *id_in) {
            replace the actual processing graph if it's not (on the last sample cycle),
   */
 
-  dsp_global_operation_head_processing = NULL;
   dsp_build_optimized_graph(NULL);
   
   return;
@@ -985,7 +982,8 @@ void
 
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_port_in *temp_port_in = NULL;
-
+  
+  dsp_global_operation_head_processing = NULL;
   dsp_optimize_connections_main_inputs(dsp_main_ins);
 
   temp_bus = dsp_global_bus_head;
@@ -993,6 +991,9 @@ void
     dsp_optimize_graph(temp_bus, current_path);
     temp_bus = temp_bus->next;
   }
+
+  dsp_global_new_operation_graph = 1;
+
 } /* dsp_build_optimized_graph */
 
 void
@@ -1024,6 +1025,8 @@ void
   struct dsp_operation *temp_main_out = NULL;
 
   /* dsp_mains_allocate(jackcli_channels_in, jackcli_channels_out, jackcli_fifo_size); */
+
+  dsp_global_operation_head = NULL;
   
   while(1) {
     for(pos=0; pos<jackcli_samplerate; pos++) {
@@ -1037,7 +1040,8 @@ void
 	temp_main_in = temp_main_in->next;
 	i += 1;
       }
-      temp_op = dsp_global_operation_head_processing;
+
+      temp_op = dsp_global_operation_head;
       while( temp_op != NULL ) {
 	dsp_process(temp_op, jackcli_samplerate, pos);
 	temp_op = temp_op->next;
@@ -1052,11 +1056,13 @@ void
 	i += 1;
       }
 
-      /* reassign global operation graph head if we need to */
-      
+      if( dsp_global_new_operation_graph ) {
+        dsp_global_operation_head = dsp_global_operation_head_processing;
+        dsp_global_new_operation_graph = 0;
+      }   
     }
   }
-
+  
   /* deallocate main inputs/outputs */
   /* NEED TO DO THIS BETTER (ie. iterate over outputs/inputs structs)*/
   free(dsp_optimized_main_ins);

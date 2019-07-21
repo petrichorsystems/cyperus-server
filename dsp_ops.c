@@ -145,6 +145,8 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   struct dsp_translation_connection *temp_translation_connection = NULL;
 
   char *temp_result[3];
+
+  printf("dsp_optimize_connections_main_inputs()\n");
   
   temp_out = outs;
   if( dsp_global_connection_graph != NULL ) {
@@ -277,6 +279,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
       }
       temp_out = temp_out->next;
     }
+    
   }
 } /* dsp_feed_main_inputs */
 
@@ -309,12 +312,13 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
 
 void
 dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos) {
+  printf("block_processor\n");
   float insample = 0.0;
   float outsample = 0.0;
   dsp_parameter dsp_param = block_processor->module->dsp_param;
-
+  
   /* sum inputs */
-  insample = dsp_sum_input(block_processor->module->ins);
+  insample = dsp_sum_summands(block_processor->module->ins);
   /* process */
   block_processor->module->dsp_param.block_processor.cyperus_params->in = insample;
   outsample = cyperus_block_processor(block_processor->module->dsp_param.block_processor.cyperus_params,
