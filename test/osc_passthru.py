@@ -3,6 +3,7 @@
 import liblo
 from liblo import *
 import queue, sys, time
+import time
 
 responses = queue.Queue()
 
@@ -36,15 +37,25 @@ class OscServer(ServerThread):
         print("received '/cyperus/list/bus_port'")
         responses.put(args)
 
-
     @make_method('/cyperus/add/connection', 'ssi')
     def osc_add_connection(self, path, args):
         print("received '/cyperus/add/connection'")
+        responses.put(args)
+
+    @make_method('/cyperus/add/module/block_processor', 's')
+    def osc_add_module_block_processor(self, path, args):
+        print("received '/cyperus/add/module/block_processor'")
+        responses.put(args)
+
+    @make_method('/cyperus/list/module_port', 'ss')
+    def osc_list_module_port(self, path, args):
+        print("received '/cyperus/list/module_port'")
         responses.put(args)
         
     @make_method(None, None)
     def fallback(self, path, args):
         print("fallback, received '{}'".format(path))
+        print("fallback, args '{}'".format(args))
         
 def test_single_channel_single_bus_sine_follower_delay(dest):
     mains = {'in': [],
@@ -52,15 +63,9 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
     bus_main0_uuid = None
     bus_ports  = {'in': [],
                   'out': []}
-    delay_module_uuid = None
-    delay_module_ports = {'in': [],
+    block_processor_module_uuid = None
+    block_processor_module_ports = {'in': [],
                           'out': []}
-    sine_module_uuid = None
-    sine_module_ports = {'in': [],
-                         'out': []}
-    follower_module_uuid = None
-    follower_module_ports = {'in': [],
-                         'out': []}
     
     liblo.send(dest, "/cyperus/list/main")
     response = responses.get()
@@ -80,10 +85,14 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
     liblo.send(dest, "/cyperus/add/bus", "/", "main0", "in", "out")
     liblo.send(dest, "/cyperus/list/bus", "/", 1)
     response = responses.get()
+    print('response list bus', response)
     bus_main0_uuid = response[3].split('|')[0]
 
+    print('bus_main0_uuid', bus_main0_uuid)
+    
     liblo.send(dest, "/cyperus/list/bus_port", "/{}".format(bus_main0_uuid))
     response = responses.get()
+
     raw_bus_ports = response[1].split('\n')
     print(raw_bus_ports)
     outs = False
@@ -99,7 +108,34 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
 
     print('bus_ports', bus_ports)
     print('mains', mains)
-            
+
+    print(bus_main0_uuid)
+    print(bus_main0_uuid)
+    
+    liblo.send(dest, "/cyperus/add/module/block_processor", "/{}".format(bus_main0_uuid))
+    response = responses.get()
+    block_processor_module_uuid = response[0]
+
+    
+    liblo.send(dest, "/cyperus/list/module_port", "/{}?{}".format(bus_main0_uuid,
+                                                                  block_processor_module_uuid))
+    response = responses.get()
+    print('bloc_processor response: {}'.format(response))
+    raw_block_processor_module_ports = response[1].split('\n')
+    print(raw_block_processor_module_ports)
+    outs = False
+    for elem in filter(None, raw_block_processor_module_ports):
+        if 'out:' in elem:
+            outs = True
+        elif 'in:' in elem:
+            pass
+        elif outs:
+            block_processor_module_ports['out'].append(elem)
+        else:
+            block_processor_module_ports['in'].append(elem)
+    print('block_processor_module_ports', block_processor_module_ports)
+
+
     liblo.send(dest,
                "/cyperus/add/connection",
                mains['in'][0],
@@ -107,11 +143,22 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
                                bus_ports['in'][0].split('|')[0]))
     response = responses.get()
 
-            
+
     liblo.send(dest,
                "/cyperus/add/connection",
                "/{}:{}".format(bus_main0_uuid,
                                bus_ports['in'][0].split('|')[0]),
+               "/{}?{}<{}".format(bus_main0_uuid,
+                                  block_processor_module_uuid,
+                                  block_processor_module_ports['in'][0]))
+    response = responses.get()
+
+    
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               "/{}?{}>{}".format(bus_main0_uuid,
+                                  block_processor_module_uuid,
+                                  block_processor_module_ports['out'][0]),
                "/{}:{}".format(bus_main0_uuid,
                                bus_ports['out'][0].split('|')[0]))
     response = responses.get()
@@ -124,8 +171,6 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
                mains['out'][0])
 
     response = responses.get()
-
-    
 
 
 if __name__ == '__main__':

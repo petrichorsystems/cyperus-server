@@ -410,7 +410,9 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/connection", "ssi", path_out, path_in, 0);
-  free(lo_addr_send);
+  lo_address_free(lo_addr_send);
+
+  printf("done osc_add_connection_handler()\n");
   
   return 0;
 } /* osc_add_connection_handler */
@@ -448,40 +450,29 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   struct dsp_port_in *temp_port_in;
   struct dsp_port_out *temp_port_out;
 
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  
   path_str = argv[0];
 
-  printf("path_str: %s\n", path_str);
-  
   bus_path = malloc(sizeof(char) * (strlen(path_str) - 37));
   for(count=0; count<strlen(path_str)-37; count++)
     bus_path[count] = path_str[count];
 
   module_id = malloc(sizeof(char) * 37);
-  for(count=strlen(path_str)-38; count<strlen(path_str); count++) {
+  printf("strlen(path_str): %d\n", strlen(path_str));
+  for(count=strlen(path_str)-36; count<strlen(path_str); count++) {
     module_id[count - 38] = path_str[count];
   }
+  printf("\n");
   module_id[36] = '\0';
+
   
   temp_bus = dsp_parse_bus_path(bus_path);
-
-  printf("after parse_bus_path\n");
-  printf("temp_bus->name: %s\n", temp_bus->name);
-  printf("temp_bus->dsp_module_head: %s\n", temp_bus->dsp_module_head);
-  printf("module_id: %s\n", module_id);
-  
   temp_module = dsp_find_module(temp_bus->dsp_module_head, module_id);
-
-  printf("after find\n");
   
   result_str_size = 4;
   result_str = malloc(sizeof(char) * (result_str_size + 1));
   strcpy(result_str, "in:\n");
   
-  /* process main inputs */
   temp_port_in = temp_module->ins;
-
   while(temp_port_in != NULL) {
     result_str_size += strlen(temp_port_in->id) + 1 + strlen(temp_port_in->name) + 2;
     result_str = realloc(result_str, sizeof(char) * result_str_size);
@@ -495,7 +486,7 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   result_str_size += 4;
   result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
   strcat(result_str, "out:\n");
-  /* process main outputs */
+
   temp_port_out = temp_module->outs;
   while(temp_port_out != NULL) {
     result_str_size += strlen(temp_port_out->id) + 1 + strlen(temp_port_out->name) + 2;
@@ -506,10 +497,13 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
     strcat(result_str, "\n");
     temp_port_out = temp_port_out->next;
   }
-  printf("send_host_out: %s, send_port_out: %s\n", send_host_out, send_port_out);
+
+  
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/list/module_port", "ss", path_str, result_str);
-  free(lo_addr_send);
+  lo_address_free(lo_addr_send);
   free(result_str);
+  
   return 0;
   
 } /* osc_list_module_port_handler */

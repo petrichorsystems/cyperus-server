@@ -36,7 +36,7 @@ dsp_sum_summands(struct dsp_operation_sample *summands) {
   /* TODO: Properly sum inputs? (be careful, what if not audio) */
 
   while(temp_summand != NULL) {
-    outsample += summands->sample->value;
+    outsample += temp_summand->sample->value;
     temp_summand = temp_summand->next;
   }
 
@@ -145,8 +145,6 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   struct dsp_translation_connection *temp_translation_connection = NULL;
 
   char *temp_result[3];
-
-  printf("dsp_optimize_connections_main_inputs()\n");
   
   temp_out = outs;
   if( dsp_global_connection_graph != NULL ) {
@@ -279,9 +277,9 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
       }
       temp_out = temp_out->next;
     }
-    
+
   }
-} /* dsp_feed_main_inputs */
+} /* dsp_optimize_connections_main_inputs */
 
 void
 dsp_create_block_processor(struct dsp_bus *target_bus) {

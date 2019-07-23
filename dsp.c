@@ -525,9 +525,9 @@ dsp_add_connection(char *id_out, char *id_in) {
   /* TODO: check that the current processing graph isn't the same as this new one,
            replace the actual processing graph if it's not (on the last sample cycle),
   */
-
-  dsp_build_optimized_graph(NULL);
   
+  dsp_build_optimized_graph(NULL);
+
   return;
 } /* dsp_add_connection */
 
@@ -568,6 +568,7 @@ dsp_list_modules() {
 
 void
 dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection) {
+  printf("start optimize_connections_input\n");
   /* is the below ever actually the case? */
 
   /* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
@@ -787,6 +788,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     else
       dsp_operation_sample_insert_tail(sample_in->summands, new_summand);
   }
+    printf("stop optimize_connections_input\n");
 } /* dsp_optimize_connections_input */
 
 void
@@ -982,8 +984,9 @@ void
 
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_port_in *temp_port_in = NULL;
-  
+
   dsp_global_operation_head_processing = NULL;
+  
   dsp_optimize_connections_main_inputs(dsp_main_ins);
 
   temp_bus = dsp_global_bus_head;
@@ -992,22 +995,35 @@ void
     temp_bus = temp_bus->next;
   }
 
+  printf("assigning flag\n");
   dsp_global_new_operation_graph = 1;
+  printf("assigned flag\n");
 
 } /* dsp_build_optimized_graph */
 
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   struct dsp_operation *temp_op = NULL;
-  temp_op = dsp_global_operation_head_processing;
+  temp_op = head_op;
+  printf("before process\n");
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
-      temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
+      printf("temp_op->module == NULL\n");
+      printf("temp_op->dsp_id: %s\n", temp_op->dsp_id);
+      printf("temp_op->ins->dsp_id: %s\n", temp_op->ins->dsp_id);
+      printf("temp_op->ins->dsp_id: %f\n", dsp_sum_summands(temp_op->ins->summands));
+
+      /* temp_op->outs->sample assignment is giving us a segfault */
+
     } else {
+      printf("before func\n");
       temp_op->module->dsp_function(temp_op, jack_sr, pos);
+      printf("after func\n");
     }
+    printf("next op\n");
     temp_op = temp_op->next;
   }
+  printf("after process\n");
   return;
 } /* dsp_process */
 
@@ -1030,6 +1046,7 @@ void
   
   while(1) {
     for(pos=0; pos<jackcli_samplerate; pos++) {
+ 
       outsample = 0.0;
 
       /* process main inputs */
@@ -1046,8 +1063,9 @@ void
 	dsp_process(temp_op, jackcli_samplerate, pos);
 	temp_op = temp_op->next;
       }
-
+      
       temp_main_out = dsp_optimized_main_outs;
+
       i=0;
       while(temp_main_out != NULL) {
 	if(!rtqueue_isfull(jackcli_fifo_outs[i]))
@@ -1055,11 +1073,14 @@ void
 	temp_main_out = temp_main_out->next;
 	i += 1;
       }
-
+      
       if( dsp_global_new_operation_graph ) {
+        printf("assinging new graph\n");
         dsp_global_operation_head = dsp_global_operation_head_processing;
         dsp_global_new_operation_graph = 0;
-      }   
+        printf("assigned new graph\n");
+      }
+      
     }
   }
   
