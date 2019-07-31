@@ -63,7 +63,7 @@ dsp_add_module(struct dsp_bus *target_bus,
 void
 dsp_add_bus(char *target_path, struct dsp_bus *new_bus, char *ins, char *outs);
 
-void
+int
 dsp_add_connection(char *id_out, char *id_in);
 
 struct dsp_bus*

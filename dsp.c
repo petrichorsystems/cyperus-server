@@ -411,7 +411,7 @@ dsp_bypass_module(struct dsp_module *module, int bypass) {
   return;
 } /* dsp_bypass */
 
-void
+int
 dsp_add_connection(char *id_out, char *id_in) {
   struct dsp_connection *new_connection;
   struct dsp_port_out *port_out = NULL;
@@ -508,7 +508,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   if( (port_out == NULL) ||
       (port_in == NULL) ) {
     printf("failed to add connection!\n");
-    return;
+    return 1;
   }
 
   /* instantiate and add to global connection graph */
@@ -528,7 +528,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   
   dsp_build_optimized_graph(NULL);
 
-  return;
+  return 0;
 } /* dsp_add_connection */
 
 char*
@@ -1007,12 +1007,12 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   temp_op = head_op;
   printf("before process\n");
   while(temp_op != NULL) {
-    if( temp_op->module == NULL ) {
-      printf("temp_op->module == NULL\n");
-      printf("temp_op->dsp_id: %s\n", temp_op->dsp_id);
-      printf("temp_op->ins->dsp_id: %s\n", temp_op->ins->dsp_id);
-      printf("temp_op->ins->dsp_id: %f\n", dsp_sum_summands(temp_op->ins->summands));
 
+    printf("temp_op->dsp_id: %s\n", temp_op->dsp_id);
+    printf("temp_op->ins->dsp_id: %s\n", temp_op->ins->dsp_id);
+    printf("temp_op->ins->dsp_id: %f\n", dsp_sum_summands(temp_op->ins->summands));
+
+    if( temp_op->module == NULL ) {
       /* temp_op->outs->sample assignment is giving us a segfault */
 
     } else {
@@ -1078,6 +1078,7 @@ void
         printf("assinging new graph\n");
         dsp_global_operation_head = dsp_global_operation_head_processing;
         dsp_global_new_operation_graph = 0;
+        dsp_global_operation_head_processing = NULL;
         printf("assigned new graph\n");
       }
       

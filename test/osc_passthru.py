@@ -40,6 +40,8 @@ class OscServer(ServerThread):
     @make_method('/cyperus/add/connection', 'ssi')
     def osc_add_connection(self, path, args):
         print("received '/cyperus/add/connection'")
+        print('path', path)
+        print('args', args)
         responses.put(args)
 
     @make_method('/cyperus/add/module/block_processor', 's')
@@ -150,7 +152,7 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
                                bus_ports['in'][0].split('|')[0]),
                "/{}?{}<{}".format(bus_main0_uuid,
                                   block_processor_module_uuid,
-                                  block_processor_module_ports['in'][0]))
+                                  block_processor_module_ports['in'][0].split('|')[0]))
     response = responses.get()
 
     
@@ -158,7 +160,7 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
                "/cyperus/add/connection",
                "/{}?{}>{}".format(bus_main0_uuid,
                                   block_processor_module_uuid,
-                                  block_processor_module_ports['out'][0]),
+                                  block_processor_module_ports['out'][0].split('|')[0]),
                "/{}:{}".format(bus_main0_uuid,
                                bus_ports['out'][0].split('|')[0]))
     response = responses.get()
