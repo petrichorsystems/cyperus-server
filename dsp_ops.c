@@ -314,16 +314,27 @@ dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, 
   float insample = 0.0;
   float outsample = 0.0;
   dsp_parameter dsp_param = block_processor->module->dsp_param;
+
+  printf("post param assignment\n");
   
   /* sum inputs */
-  insample = dsp_sum_summands(block_processor->module->ins);
+  insample = dsp_sum_summands(block_processor->ins->summands);
+  
+  printf("post sum\n");
+  
   /* process */
   block_processor->module->dsp_param.block_processor.cyperus_params->in = insample;
   outsample = cyperus_block_processor(block_processor->module->dsp_param.block_processor.cyperus_params,
 				      jack_samplerate, pos);
+
+  printf("post process\n");
+  
   /* drive outputs */
    block_processor->module->outs->value = outsample;
    /* dsp_feed_outputs(bus_path, block_processor->module-> id, block_processor->outs); */
+
+   printf("post drive\n");
+   
    return;
 } /* dsp_block_processor */
 
