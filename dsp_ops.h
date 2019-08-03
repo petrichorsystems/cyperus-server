@@ -32,14 +32,14 @@ void dsp_optimize_connections_module(char *current_bus_path, char *module_id, st
 
 void dsp_optimize_connections_main_inputs(struct dsp_port_out *outs);
 
+struct dsp_operation *dsp_optimize_module(char *bus_path, struct dsp_module *module);
+
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos);
-struct dsp_operation *dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor);
 
 int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);
 void dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos);
-void dsp_optimize_delay(char *bus_path, struct dsp_module *delay);
 
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase);
 void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);

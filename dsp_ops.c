@@ -301,7 +301,7 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
   dsp_add_module(target_bus,
 		 "block_processor",
 		 dsp_block_processor,
-		 dsp_optimize_block_processor,
+		 dsp_optimize_module,
 		 block_processor_param,
 		 ins,
 		 outs);
@@ -310,61 +310,64 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
 
 void
 dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos) {
-  printf("block_processor\n");
   float insample = 0.0;
   float outsample = 0.0;
   dsp_parameter dsp_param = block_processor->module->dsp_param;
 
-  printf("post param assignment\n");
-  
   /* sum inputs */
   insample = dsp_sum_summands(block_processor->ins->summands);
-  
-  printf("post sum\n");
   
   /* process */
   block_processor->module->dsp_param.block_processor.cyperus_params->in = insample;
   outsample = cyperus_block_processor(block_processor->module->dsp_param.block_processor.cyperus_params,
 				      jack_samplerate, pos);
-
-  printf("post process\n");
   
   /* drive outputs */
-   block_processor->module->outs->value = outsample;
+   block_processor->outs->sample->value = outsample;
    /* dsp_feed_outputs(bus_path, block_processor->module-> id, block_processor->outs); */
 
-   printf("post drive\n");
-   
    return;
 } /* dsp_block_processor */
 
 struct dsp_operation
-*dsp_optimize_block_processor(char *bus_path, struct dsp_module *block_processor) {
-  dsp_parameter dsp_param = block_processor->dsp_param;
+*dsp_optimize_module(char *bus_path, struct dsp_module *module) {
+  dsp_parameter dsp_param = module->dsp_param;
 
   struct dsp_port_in *temp_port_in = NULL;
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_operation_sample *temp_sample = NULL;
   struct dsp_operation *new_op = NULL;
   
-  char *full_module_path = malloc(sizeof(char) * (strlen(bus_path) + strlen(block_processor->id) + 2));
-  snprintf(full_module_path, strlen(bus_path)+strlen(block_processor->id)+2, "%s?%s", bus_path, block_processor->id);
+  char *full_module_path = malloc(sizeof(char) * (strlen(bus_path) + strlen(module->id) + 2));
+  snprintf(full_module_path, strlen(bus_path)+strlen(module->id)+2, "%s?%s", bus_path, module->id);
   new_op = dsp_operation_init(full_module_path);
   
-  temp_port_in = block_processor->ins;
-  temp_sample = dsp_operation_sample_init(temp_port_in->id, 0.0, 1);
+  temp_port_in = module->ins;
 
-  new_op->ins = temp_sample;
-  
-  temp_port_out = block_processor->outs;
-  temp_sample = dsp_operation_sample_init(temp_port_out->id, 0.0, 1);
+  while(temp_port_in != NULL) {
+    temp_sample = dsp_operation_sample_init(temp_port_in->id, 0.0, 1);
+    if(new_op->ins == NULL)
+      new_op->ins = temp_sample;
+    else
+      dsp_operation_sample_insert_head(new_op->ins, temp_sample);
+    temp_port_in = temp_port_in->next;
+  }
 
-  new_op->outs = temp_sample;
+  temp_port_out = module->outs;
+  while(temp_port_out != NULL) {
+    temp_sample = dsp_operation_sample_init(temp_port_out->id, 0.0, 1);
+    if(new_op->outs == NULL)
+      new_op->outs = temp_sample;
+    else
+      dsp_operation_sample_insert_head(new_op->outs, temp_sample);
 
-  new_op->module = block_processor;
+    temp_port_out = temp_port_out->next;
+  }
+
+  new_op->module = module;
   
   return new_op;
-} /* dsp_optimize_block_processor */
+} /* dsp_optimize_module */
 
 int
 dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback) {
@@ -389,7 +392,7 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
   dsp_add_module(target_bus,
 		 "delay",
 		 dsp_delay,
-		 dsp_optimize_delay,
+		 dsp_optimize_module,
 		 delay_param,
 		 ins,
 		 outs);
@@ -397,12 +400,7 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
 } /* dsp_create_delay*/
 
 void
-dsp_optimize_delay(char *bus_path, struct dsp_module *delay) {
-
-} /* dsp_optimize_delay */
-
-void
-dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos) {
+dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos) {
   float insample = 0.0;
   float time_param = 0.0; 
   float outsample = 0.0;

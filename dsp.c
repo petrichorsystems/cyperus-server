@@ -1005,25 +1005,15 @@ void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
-  printf("before process\n");
   while(temp_op != NULL) {
-
-    printf("temp_op->dsp_id: %s\n", temp_op->dsp_id);
-    printf("temp_op->ins->dsp_id: %s\n", temp_op->ins->dsp_id);
-    printf("temp_op->ins->dsp_id: %f\n", dsp_sum_summands(temp_op->ins->summands));
-
     if( temp_op->module == NULL ) {
       /* temp_op->outs->sample assignment is giving us a segfault */
-
+      temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
     } else {
-      printf("before func\n");
       temp_op->module->dsp_function(temp_op, jack_sr, pos);
-      printf("after func\n");
     }
-    printf("next op\n");
     temp_op = temp_op->next;
   }
-  printf("after process\n");
   return;
 } /* dsp_process */
 
