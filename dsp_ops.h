@@ -39,8 +39,7 @@ void dsp_block_processor(struct dsp_operation *block_processor, int jack_sampler
 
 int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);
-void dsp_delay(char *bus_path, struct dsp_module *delay, int jack_samplerate, int pos);
-
+void dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos);
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase);
 void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);
 void dsp_sine(char *bus_path, struct dsp_module *sine, dsp_parameter sine_param, int jack_samplerate, int pos);

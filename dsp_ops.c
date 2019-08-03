@@ -324,7 +324,6 @@ dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, 
   
   /* drive outputs */
    block_processor->outs->sample->value = outsample;
-   /* dsp_feed_outputs(bus_path, block_processor->module-> id, block_processor->outs); */
 
    return;
 } /* dsp_block_processor */
@@ -343,7 +342,6 @@ struct dsp_operation
   new_op = dsp_operation_init(full_module_path);
   
   temp_port_in = module->ins;
-
   while(temp_port_in != NULL) {
     temp_sample = dsp_operation_sample_init(temp_port_in->id, 0.0, 1);
     if(new_op->ins == NULL)
@@ -397,34 +395,33 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
 		 ins,
 		 outs);
   return 0;
-} /* dsp_create_delay*/
+} /* dsp_create_delay */
 
 void
 dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos) {
   float insample = 0.0;
-  float time_param = 0.0; 
   float outsample = 0.0;
-  dsp_parameter dsp_param = delay->dsp_param;
+  dsp_parameter dsp_param = delay->module->dsp_param;
 
-  /* sum audio inputs */
-  insample = dsp_sum_input(delay->ins);
+  /* sum audio */
+  insample = dsp_sum_summands(delay->ins->summands);
+  delay->module->dsp_param.delay.cyperus_params->in = insample;
 
-  delay->dsp_param.delay.cyperus_params->in = insample;
-  delay->dsp_param.delay.cyperus_params->delay_amt = dsp_param.delay.amt;
+  /* set initial delay amount */
 
-  if(!rtqueue_isempty(delay->ins->next->values))
-    dsp_param.delay.time = dsp_sum_input(delay->ins->next) * jack_samplerate;
+  /* set delay time if we have incoming data for that input */
+  //if( delay->ins->next->summands != NULL )
+  //  dsp_param.delay.time = dsp_sum_summands(delay->ins->next->summands) * jack_samplerate;
 
-  delay->dsp_param.delay.cyperus_params->delay_time = dsp_param.delay.time;
+  delay->module->dsp_param.delay.cyperus_params->delay_amt = dsp_param.delay.amt;
+  delay->module->dsp_param.delay.cyperus_params->delay_time = dsp_param.delay.time;
+  delay->module->dsp_param.delay.cyperus_params->fb = dsp_param.delay.feedback;
 
-  delay->dsp_param.delay.cyperus_params->fb = dsp_param.delay.feedback;
-
-  outsample = cyperus_delay(delay->dsp_param.delay.cyperus_params,
+  outsample = cyperus_delay(delay->module->dsp_param.delay.cyperus_params,
 			    jack_samplerate, pos);
 
   /* drive audio outputs */
-  delay->outs->value = outsample;
-  dsp_feed_outputs(bus_path, delay->id, delay->outs);
+  delay->outs->sample->value = outsample;
 
   return;
 } /* dsp_delay */
