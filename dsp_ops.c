@@ -406,7 +406,7 @@ dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos) {
   /* sum audio */
   insample = dsp_sum_summands(delay->ins->summands);
   delay->module->dsp_param.delay.cyperus_params->in = insample;
-
+  
   /* set initial delay amount */
 
   /* set delay time if we have incoming data for that input */
@@ -417,6 +417,8 @@ dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos) {
   delay->module->dsp_param.delay.cyperus_params->delay_time = dsp_param.delay.time;
   delay->module->dsp_param.delay.cyperus_params->fb = dsp_param.delay.feedback;
 
+  printf("param time: %f\n", dsp_param.delay.time);
+  printf("module param time: %f\n", delay->module->dsp_param.delay.cyperus_params->delay_time);
   outsample = cyperus_delay(delay->module->dsp_param.delay.cyperus_params,
 			    jack_samplerate, pos);
 
@@ -429,16 +431,24 @@ dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos) {
 
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback) {
   int i = 0;
+
+  printf("about to assign delay->dsp_param\n");
   dsp_parameter dsp_param = delay->dsp_param;
   
+  printf("about to assign amt\n");
   dsp_param.delay.amt = amt;
+  printf("about to assign time\n");
   dsp_param.delay.time = time * jackcli_samplerate;
+  printf("about to assign feedback\n");
   dsp_param.delay.feedback = feedback;
   
   /*
     dsp_voice_parameters[module_no].delay.cyperus_params[0].pos = 0;
     dsp_voice_parameters[module_no].delay.cyperus_params[0].delay_pos = 0;
   */
+
+  printf("returning\n");
+  
 } /* dsp_edit_delay */
 
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase) {

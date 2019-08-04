@@ -72,6 +72,7 @@ struct dsp_module
 	if( strcmp(temp_module->id, id) == 0) {
 	  target_module = temp_module;
 	  match_found = 1;
+          printf("found match!!\n");
 	  break;
 	}
 	temp_module = temp_module->next;

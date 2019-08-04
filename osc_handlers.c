@@ -585,27 +585,30 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
   float time;
   float feedback;
   int count;
-  printf("path: <%s>\n", path);
 
+  printf("path: <%s>\n", path);
+  
   module_path = argv[0];
   amt=argv[1]->f;
   time=argv[2]->f;
   feedback=argv[3]->f;
 
-  /* split up path */
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  for(count=0; count < (strlen(module_path) - 38); count++)
-    bus_path[count] = module_path[count];
-
-  module_path = malloc(sizeof(char) * 37);
-  for(count=strlen(module_path) - 37; count < strlen(module_path) + 1; count++) {
-    module_id[count - strlen(module_path) - 37] = module_path[count];
-  }
+  printf("module_path: %s\n", module_path);
   
-  target_bus = dsp_parse_bus_path(bus_path);
+  /* split up path */
+
+  
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  strncpy(bus_path, module_path, strlen(module_path) - 37);
+
+  module_id = malloc(sizeof(char) * 37);  
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
+
+  target_bus = dsp_parse_bus_path(bus_path);  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
 
   dsp_edit_delay(target_module, amt, time, feedback);
+
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/delay","sfff", module_id, amt, time, feedback);
   free(lo_addr_send);

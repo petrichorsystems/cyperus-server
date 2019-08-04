@@ -49,7 +49,11 @@ class OscServer(ServerThread):
         print("received '/cyperus/add/module/delay'")
         responses.put(args)
 
-        
+    @make_method('/cyperus/edit/module/delay', 'sfff')
+    def osc_edit_module_delay(self, path, args):
+        print("received '/cyperus/edit/module/delay'")
+        responses.put(args)
+
     @make_method('/cyperus/list/module_port', 'ss')
     def osc_list_module_port(self, path, args):
         print("received '/cyperus/list/module_port'")
@@ -165,7 +169,6 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
                                bus_ports['out'][0].split('|')[0]))
     response = responses.get()
 
-
     liblo.send(dest,
                "/cyperus/add/connection",
                "/{}:{}".format(bus_main0_uuid,
@@ -174,6 +177,15 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
 
     response = responses.get()
 
+    time.sleep(5)
+    
+    liblo.send(dest, "/cyperus/edit/module/delay", "/{}?{}".format(bus_main0_uuid, delay_module_uuid), 1.0, 0.25, 0.8)
+    response = responses.get()
+
+    time.sleep(5)
+    
+    liblo.send(dest, "/cyperus/edit/module/delay", "/{}?{}".format(bus_main0_uuid, delay_module_uuid), 1.0, 0.5, 0.8)
+    response = responses.get()
 
 if __name__ == '__main__':
     #outgoing connection
