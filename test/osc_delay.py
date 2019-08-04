@@ -184,7 +184,7 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
 
     time.sleep(5)
     
-    liblo.send(dest, "/cyperus/edit/module/delay", "/{}?{}".format(bus_main0_uuid, delay_module_uuid), 1.0, 0.5, 0.8)
+    liblo.send(dest, "/cyperus/edit/module/delay", "/{}?{}".format(bus_main0_uuid, delay_module_uuid), 1.0, 2.0, 0.8)
     response = responses.get()
 
 if __name__ == '__main__':
