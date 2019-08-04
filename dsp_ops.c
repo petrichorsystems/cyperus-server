@@ -417,8 +417,6 @@ dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos) {
   delay->module->dsp_param.delay.cyperus_params->delay_time = dsp_param.delay.time;
   delay->module->dsp_param.delay.cyperus_params->fb = dsp_param.delay.feedback;
 
-  printf("param time: %f\n", dsp_param.delay.time);
-  printf("module param time: %f\n", delay->module->dsp_param.delay.cyperus_params->delay_time);
   outsample = cyperus_delay(delay->module->dsp_param.delay.cyperus_params,
 			    jack_samplerate, pos);
 
@@ -436,11 +434,14 @@ void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedb
   dsp_parameter dsp_param = delay->dsp_param;
   
   printf("about to assign amt\n");
-  dsp_param.delay.amt = amt;
+  delay->dsp_param.delay.amt = amt;
+  printf("assigned delay->dsp_param.delay.amt: %f\n", delay->dsp_param.delay.amt);
   printf("about to assign time\n");
-  dsp_param.delay.time = time * jackcli_samplerate;
+  delay->dsp_param.delay.time = time * jackcli_samplerate;
+  printf("assigned delay->dsp_param.delay.time: %f\n", delay->dsp_param.delay.time);
   printf("about to assign feedback\n");
-  dsp_param.delay.feedback = feedback;
+  delay->dsp_param.delay.feedback = feedback;
+  printf("assigned delay->dsp_param.delay.feedback: %f\n", delay->dsp_param.delay.feedback);
   
   /*
     dsp_voice_parameters[module_no].delay.cyperus_params[0].pos = 0;
