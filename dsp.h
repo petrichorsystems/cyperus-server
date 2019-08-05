@@ -49,9 +49,6 @@ dsp_remove_module(struct dsp_module *module, int remove);
 void
 dsp_bypass_module(struct dsp_module *module, int bypass);
 
-char
-*dsp_list_modules();
-
 void
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,

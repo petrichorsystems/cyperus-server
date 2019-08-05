@@ -53,6 +53,11 @@ class OscServer(ServerThread):
     def osc_list_module_port(self, path, args):
         print("received '/cyperus/list/module_port'")
         responses.put(args)
+
+    @make_method('/cyperus/list/module', 's')
+    def osc_list_module(self, path, args):
+        print("received '/cyperus/list/module'")
+        responses.put(args)
         
     @make_method(None, None)
     def fallback(self, path, args):
@@ -118,6 +123,13 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
     response = responses.get()
     block_processor_module_uuid = response[0]
 
+    liblo.send(dest, "/cyperus/add/module/block_processor", "/{}".format(bus_main0_uuid))
+    response = responses.get()
+
+    liblo.send(dest, "/cyperus/list/module", "/{}".format(bus_main0_uuid))
+    response = responses.get()
+
+    print('list/module response: ', response)
     
     liblo.send(dest, "/cyperus/list/module_port", "/{}?{}".format(bus_main0_uuid,
                                                                   block_processor_module_uuid))

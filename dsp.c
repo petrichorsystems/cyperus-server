@@ -562,11 +562,6 @@ param_to_module_name(dsp_parameter module) {
   }
 } /* param_to_module_name */
 
-char*
-dsp_list_modules() {
-
-} /* dsp_list_modules */
-
 void
 dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection) {
   printf("start optimize_connections_input\n");
