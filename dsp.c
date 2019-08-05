@@ -554,11 +554,6 @@ param_to_module_name(dsp_parameter module) {
   }
 } /* param_to_module_name */
 
-char*
-dsp_list_modules() {
-  
-} /* dsp_list_modules */
-
 void
 dsp_feed_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
   struct dsp_bus_port *temp_port = ports;

@@ -420,21 +420,41 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,
 			     int argc, void *data, void *user_data)
 {
-  int voice_no;
-  char *module_list;
-  char return_string[100];
-  
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *target_module = NULL;
+  char *path_str = NULL;
+  char *module_list = NULL;
+  char *result_str = NULL;
   printf("path: <%s>\n", path);
-  voice_no=argv[0]->i;
 
-  module_list = dsp_list_modules(voice_no);
+  path_str = argv[0];
   
-  printf("listing modules for voice #%d..\n",voice_no);
+  target_bus = dsp_parse_bus_path(path_str);
+  target_module = target_bus->dsp_module_head;
 
+  if(target_module) {
+    result_str = malloc(sizeof(char) * 38);
+    strcpy(result_str, target_module->id);
+    strcat(result_str, "\n");
+    target_module = target_module->next;
+    while(target_module != NULL) {
+      printf("'in while' -- target_module->id: %s\n", target_module->id);
+      realloc(result_str, sizeof(char) * (strlen(result_str) + strlen(target_module->id) + 2));
+      strcat(result_str, target_module->id);
+      if( target_module->next != NULL )
+        strcat(result_str, "\n");
+      target_module = target_module->next;
+    }
+  } else {
+    result_str = "";
+  }
+
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list","s",module_list);
+  lo_send(lo_addr_send,"/cyperus/list/module","s", result_str);
   free(lo_addr_send);
-  free(module_list);
+  if( !strcmp(result_str, "") )
+    free(result_str);
   return 0;
   
 } /* osc_list_modules_handler */
