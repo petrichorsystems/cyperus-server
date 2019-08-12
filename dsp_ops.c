@@ -148,9 +148,10 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   
   temp_out = outs;
   if( dsp_global_connection_graph != NULL ) {
-    temp_connection = dsp_global_connection_graph;
     while(temp_out != NULL) {
+      printf("temp_out: %s\n", temp_out->id);
       temp_outsample = temp_out->value;
+      temp_connection = dsp_global_connection_graph;
       while(temp_connection != NULL) {
 	/* compare each main connection 'out' with this one, enqueue each fifo with data
 	   that matches the 'out' port path */
@@ -160,7 +161,11 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  strcpy(current_path, "/mains{");
 	  strcat(current_path, temp_out->id);
 	}
+        printf("current_path:            %s\n", current_path);
+        printf("temp_connection->id_out: %s\n", temp_connection->id_out);
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
+          printf("MAIN: current_path: %s\n", current_path);
+          printf("MAIN: \ttemp_connection->id_out: %s\n\n", temp_connection->id_out);
 	  /* commented out data movement logic */
 	  /* rtqueue_enq(temp_connection->in_values, temp_outsample); */
 
@@ -170,6 +175,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	     the below logic? */
 
 	  /* find existing 'out' operation (main in) */
+          printf("hmm\n");
 	  temp_op_out = dsp_optimized_main_ins;
 	  while( temp_op_out != NULL ) {
 	    if( strcmp(temp_op_out->dsp_id, temp_connection->id_out) == 0 ){
@@ -179,13 +185,15 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	    temp_op_out->next = temp_op_out;
 	  }
 
+          printf("is null?\n");
+          
 	  /* let program know there's something majorly wrong,
 	     exit */
 	  if(temp_sample_out == NULL) {
 	    printf("no operation describing main input!!: %s\n", temp_connection->id_out);
 	    printf("BAILING\n"); 
 	  }
-
+          
 	  /* look for 'in' operation */
 	  temp_op_in = dsp_global_operation_head_processing;
 
@@ -223,6 +231,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	    temp_op_in = temp_op_in->next;
 	  }
 
+          
 	  if( sample_in == NULL ) {
 	    if( is_bus_port ) {
 	      sample_in = dsp_operation_sample_init("<bus port in>", 0.0, 1);
@@ -277,7 +286,6 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
       }
       temp_out = temp_out->next;
     }
-
   }
 } /* dsp_optimize_connections_main_inputs */
 

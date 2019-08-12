@@ -618,6 +618,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   if( dsp_global_operation_head_processing == NULL ) {
     /* never hits this */
     printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
+    return;
   } else {
     /* grab 'out' op and sample address */
     temp_op_out = dsp_global_operation_head_processing;
@@ -689,7 +690,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   if( dsp_global_operation_head_processing == NULL ) {
     /* TODO: debug message */
     printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
-    exit(1);
+    return;
   } else {
     /* grab 'in' op and sample address */
     if( is_main_out_in )
@@ -982,7 +983,7 @@ void
   struct dsp_port_in *temp_port_in = NULL;
 
   dsp_global_operation_head_processing = NULL;
-  
+
   dsp_optimize_connections_main_inputs(dsp_main_ins);
 
   temp_bus = dsp_global_bus_head;
