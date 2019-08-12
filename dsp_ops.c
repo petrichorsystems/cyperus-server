@@ -161,11 +161,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  strcpy(current_path, "/mains{");
 	  strcat(current_path, temp_out->id);
 	}
-        printf("current_path:            %s\n", current_path);
-        printf("temp_connection->id_out: %s\n", temp_connection->id_out);
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
-          printf("MAIN: current_path: %s\n", current_path);
-          printf("MAIN: \ttemp_connection->id_out: %s\n\n", temp_connection->id_out);
 	  /* commented out data movement logic */
 	  /* rtqueue_enq(temp_connection->in_values, temp_outsample); */
 
@@ -175,14 +171,18 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	     the below logic? */
 
 	  /* find existing 'out' operation (main in) */
-          printf("hmm\n");
 	  temp_op_out = dsp_optimized_main_ins;
 	  while( temp_op_out != NULL ) {
+
+            printf("temp_op_out->dsp_id: %s\n", temp_op_out->dsp_id);
+            printf("temp_connection->id_out: %s\n", temp_connection->id_out);
+            
 	    if( strcmp(temp_op_out->dsp_id, temp_connection->id_out) == 0 ){
+              printf("MATCH!\n");
 	      temp_sample_out = temp_op_out->outs;
 	      break;
 	    }
-	    temp_op_out->next = temp_op_out;
+	    temp_op_out = temp_op_out->next;
 	  }
 
           printf("is null?\n");
