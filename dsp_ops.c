@@ -231,8 +231,8 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
           
 	  if( sample_in == NULL ) {
 	    if( is_bus_port ) {
-              sample_out = dsp_operation_sample_init("<bus port out>", 0.0, 1);
-	      sample_in = dsp_operation_sample_init("<bus port in>", 0.0, 1);
+              sample_out = dsp_operation_sample_init("<bus port port out>", 0.0, 1);
+	      sample_in = dsp_operation_sample_init("<bus port port in>", 0.0, 1);
               sample_out->sample = sample_in->sample;
 	      temp_op_in = dsp_operation_init(temp_connection->id_in);
               temp_op_in->outs = sample_out;
