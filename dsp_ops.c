@@ -173,19 +173,13 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  /* find existing 'out' operation (main in) */
 	  temp_op_out = dsp_optimized_main_ins;
 	  while( temp_op_out != NULL ) {
-
-            printf("temp_op_out->dsp_id: %s\n", temp_op_out->dsp_id);
-            printf("temp_connection->id_out: %s\n", temp_connection->id_out);
             
 	    if( strcmp(temp_op_out->dsp_id, temp_connection->id_out) == 0 ){
-              printf("MATCH!\n");
 	      temp_sample_out = temp_op_out->outs;
 	      break;
 	    }
 	    temp_op_out = temp_op_out->next;
 	  }
-
-          printf("is null?\n");
           
 	  /* let program know there's something majorly wrong,
 	     exit */

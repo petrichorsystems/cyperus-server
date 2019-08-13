@@ -473,7 +473,6 @@ dsp_add_connection(char *id_out, char *id_in) {
   }
 
   if( strcmp(temp_result[0], "<") == 0 ) {
-
     module_path = temp_result[1];
     port_in_id = temp_result[2];
     dsp_parse_path(temp_result, module_path);
@@ -620,6 +619,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     printf("Inconsistent graph state! (forgot to call dsp_build_mains()?)\n");
     return;
   } else {
+    
     /* grab 'out' op and sample address */
     temp_op_out = dsp_global_operation_head_processing;
 
@@ -765,13 +765,6 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       else {
         if( is_module_in ) {
           dsp_operation_insert_ahead(matched_op_out, temp_op);
-
-          temp_op_in = dsp_global_operation_head_processing;
-
-          while(temp_op_in != NULL) {
-            temp_op_in = temp_op_in->next;
-          }
-
         } else {
           dsp_operation_insert_tail(dsp_global_operation_head_processing,
                                     temp_op);
@@ -821,9 +814,11 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
     while(temp_connection != NULL) {
       /* compare each connection 'out' with this one, enqueue each fifo with data
 	 that matches the 'out' port path */
+      
       if(strcmp(current_path, temp_connection->id_out) == 0) {
 	/* commented out data movement logic */
 	/* rtqueue_enq(temp_connection->in_values, temp_sample_in); */
+        
 	dsp_optimize_connections_input(current_path,
 				       temp_connection);
       }
@@ -833,6 +828,7 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
       free(current_path);
     temp_port = temp_port->next;
     temp_port_idx++;
+
   }
 } /* dsp_optimize_connections_bus */
 
@@ -844,6 +840,7 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
   int parent_path_size = 0;
 
   while(temp_bus != NULL) {
+    
     /* build current path */
 
     /* handle root path "/" (avoid adding extra path separator if it's root) */
@@ -867,7 +864,7 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
       dsp_optimize_connections_module(current_path, temp_module->id, temp_module->outs);
       temp_module = temp_module->next;
     }
-
+    
     /* process bus outputs */
     dsp_optimize_connections_bus(current_path, temp_bus->outs);
 
@@ -985,7 +982,7 @@ void
   dsp_global_operation_head_processing = NULL;
 
   dsp_optimize_connections_main_inputs(dsp_main_ins);
-
+  
   temp_bus = dsp_global_bus_head;
   while( temp_bus != NULL ) {
     dsp_optimize_graph(temp_bus, current_path);
@@ -1046,11 +1043,7 @@ void
 	i += 1;
       }
 
-      temp_op = dsp_global_operation_head;
-      while( temp_op != NULL ) {
-	dsp_process(temp_op, jackcli_samplerate, pos);
-	temp_op = temp_op->next;
-      }
+      dsp_process(dsp_global_operation_head, jackcli_samplerate, pos);
       
       temp_main_out = dsp_optimized_main_outs;
 
