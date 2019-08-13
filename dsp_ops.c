@@ -139,7 +139,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   char *current_path, *temp_op_in_path;
 
   struct dsp_operation *temp_op_out, *temp_op_in = NULL;
-  struct dsp_operation_sample *temp_sample, *temp_sample_out, *temp_sample_in, *sample_in = NULL;
+  struct dsp_operation_sample *temp_sample, *temp_sample_out, *temp_sample_in, *sample_in, *sample_out = NULL;
   struct dsp_operation_sample *new_summand = NULL;
   
   struct dsp_translation_connection *temp_translation_connection = NULL;
@@ -231,18 +231,26 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
           
 	  if( sample_in == NULL ) {
 	    if( is_bus_port ) {
+              sample_out = dsp_operation_sample_init("<bus port out>", 0.0, 1);
 	      sample_in = dsp_operation_sample_init("<bus port in>", 0.0, 1);
+              sample_out->sample = sample_in->sample;
 	      temp_op_in = dsp_operation_init(temp_connection->id_in);
+              temp_op_in->outs = sample_out;
 	    } else {
 	      sample_in = dsp_operation_sample_init(temp_result[2], 0.0, 1);
 	      temp_op_in = dsp_operation_init(temp_result[1]);
+
+              printf("dsp_ops.c: dsp_optimize_connections_main_inputs(): ATTENTION: connection made from main input directly to module. do we allow this? exiting..\n");
+              exit(1);
+              
 	    }
 
 	    if(temp_op_in->ins == NULL)
 	      temp_op_in->ins = sample_in;
 	    else
 	      dsp_operation_sample_insert_tail(temp_op_in->ins, sample_in);
-	    
+
+            
 	    if( dsp_global_operation_head_processing == NULL ) {
 	      dsp_global_operation_head_processing = temp_op_in;
 	    } else {

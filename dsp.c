@@ -72,7 +72,6 @@ struct dsp_module
 	if( strcmp(temp_module->id, id) == 0) {
 	  target_module = temp_module;
 	  match_found = 1;
-          printf("found match!!\n");
 	  break;
 	}
 	temp_module = temp_module->next;
@@ -563,7 +562,6 @@ param_to_module_name(dsp_parameter module) {
 
 void
 dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection) {
-  printf("start optimize_connections_input\n");
   /* is the below ever actually the case? */
 
   /* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
@@ -778,7 +776,6 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     else
       dsp_operation_sample_insert_tail(sample_in->summands, new_summand);
   }
-    printf("stop optimize_connections_input\n");
 } /* dsp_optimize_connections_input */
 
 void
@@ -1001,7 +998,6 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   temp_op = head_op;
   
   while(temp_op != NULL) {
-    printf("temp_op: %s\n", temp_op->dsp_id);
     if( temp_op->module == NULL ) {
       temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
     } else {
@@ -1009,7 +1005,6 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
     }
     temp_op = temp_op->next;
   }
-  printf("\n");
   return;
 } /* dsp_process */
 
@@ -1057,7 +1052,7 @@ void
       }
       
       if( dsp_global_new_operation_graph ) {
-        printf("assinging new graph\n");
+        printf("assigning new graph\n");
         dsp_global_operation_head = dsp_global_operation_head_processing;
         dsp_global_new_operation_graph = 0;
         dsp_global_operation_head_processing = NULL;
