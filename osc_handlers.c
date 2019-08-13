@@ -440,7 +440,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
     target_module = target_module->next;
     while(target_module != NULL) {
       printf("'in while' -- target_module->id: %s\n", target_module->id);
-      realloc(result_str, sizeof(char) * (strlen(result_str) + strlen(target_module->id) + 2));
+      result_str = realloc(result_str, sizeof(char) * (strlen(result_str) + strlen(target_module->id) + 2));
       strcat(result_str, target_module->id);
       if( target_module->next != NULL )
         strcat(result_str, "\n");
