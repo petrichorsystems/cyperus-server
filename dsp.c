@@ -1001,6 +1001,7 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   temp_op = head_op;
   
   while(temp_op != NULL) {
+    printf("temp_op: %s\n", temp_op->dsp_id);
     if( temp_op->module == NULL ) {
       temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
     } else {
@@ -1008,7 +1009,7 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
     }
     temp_op = temp_op->next;
   }
-  
+  printf("\n");
   return;
 } /* dsp_process */
 

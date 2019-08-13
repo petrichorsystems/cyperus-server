@@ -149,7 +149,6 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   temp_out = outs;
   if( dsp_global_connection_graph != NULL ) {
     while(temp_out != NULL) {
-      printf("temp_out: %s\n", temp_out->id);
       temp_outsample = temp_out->value;
       temp_connection = dsp_global_connection_graph;
       while(temp_connection != NULL) {
@@ -170,11 +169,14 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  /* are we assuming all connections are made to a bus in
 	     the below logic? */
 
+          temp_op_out = NULL;
+          
 	  /* find existing 'out' operation (main in) */
 	  temp_op_out = dsp_optimized_main_ins;
 	  while( temp_op_out != NULL ) {
             
 	    if( strcmp(temp_op_out->dsp_id, temp_connection->id_out) == 0 ){
+
 	      temp_sample_out = temp_op_out->outs;
 	      break;
 	    }
@@ -201,14 +203,15 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  else if( strstr("<", temp_result[0]) )
 	    temp_op_in_path = temp_result[1];
 	  else if( strstr(">", temp_result[0]) ) {
-	    temp_op_in_path = temp_result[1];
 	    printf("temp_connection->id_in: '%s', contains output! aborting..\n");
 	    exit(1);
 	  } else
 	    temp_op_in_path = current_path;
 
+          sample_in = NULL;
 	  while( temp_op_in != NULL ) {
 	    if( strcmp(temp_op_in->dsp_id, temp_op_in_path) == 0 ) {
+                
 	      temp_sample_in = temp_op_in->ins;
 	      if( is_bus_port == 0) {
 		while( temp_sample_in != NULL ) {
@@ -281,6 +284,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
       temp_out = temp_out->next;
     }
   }
+
 } /* dsp_optimize_connections_main_inputs */
 
 void
