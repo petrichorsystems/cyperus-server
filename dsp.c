@@ -1057,6 +1057,13 @@ void
         dsp_global_new_operation_graph = 0;
         dsp_global_operation_head_processing = NULL;
         printf("assigned new graph\n");
+        printf("operations in new graph: \n");
+        temp_op = dsp_global_operation_head;
+        while(temp_op != NULL) {
+          printf("temp_op->dsp_id: %s, temp_op->outs->dsp_id: %s\n", temp_op->dsp_id,
+                 temp_op->outs->dsp_id);
+          temp_op = temp_op->next;
+        }
       }
       
     }
