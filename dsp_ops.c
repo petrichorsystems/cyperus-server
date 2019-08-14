@@ -487,7 +487,7 @@ int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float pha
   dsp_add_module(target_bus,
 		 "sine",
 		 dsp_sine,
-		 dsp_optimize_sine,
+		 dsp_optimize_module,
 		 sine_param,
 		 ins,
 		 outs);
@@ -506,28 +506,22 @@ dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase) {
 } /* dsp_edit_sine */
 
 void
-dsp_sine(char *bus_path, struct dsp_module *sine, dsp_parameter sine_param, int jack_samplerate, int pos) {
+dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos) {
   float outsample = 0.0;
-  dsp_parameter dsp_param = sine->dsp_param;
+  dsp_parameter dsp_param = sine->module->dsp_param;
 
-  sine->dsp_param.sine.cyperus_params->freq = dsp_param.sine.freq;
-  sine->dsp_param.sine.cyperus_params->amp = dsp_param.sine.amp;
-  sine->dsp_param.sine.cyperus_params->phase = dsp_param.sine.phase;
+  sine->module->dsp_param.sine.cyperus_params->freq = dsp_param.sine.freq;
+  sine->module->dsp_param.sine.cyperus_params->amp = dsp_param.sine.amp;
+  sine->module->dsp_param.sine.cyperus_params->phase = dsp_param.sine.phase;
   
-  outsample = cyperus_sine(sine->dsp_param.sine.cyperus_params,
+  outsample = cyperus_sine(sine->module->dsp_param.sine.cyperus_params,
 			   jack_samplerate, pos);
 
   /* drive audio outputs */
-  sine->outs->value = outsample;
-  dsp_feed_outputs(bus_path, sine->id, sine->outs);
+  sine->module->outs->value = outsample;
   
   return;
 } /* dsp_sine */
-
-void
-dsp_optimize_sine(char *bus_path, struct dsp_module *sine) {
-
-} /* dsp_optimize_sine */
 
 
 int

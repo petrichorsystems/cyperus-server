@@ -25,24 +25,19 @@ Copyright 2018 murray foster */
 
 float dsp_sum_input(struct dsp_port_in *in);
 float dsp_sum_summands(struct dsp_operation_sample *summands);
-
 void dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
-
 void dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
-
 void dsp_optimize_connections_main_inputs(struct dsp_port_out *outs);
-
 struct dsp_operation *dsp_optimize_module(char *bus_path, struct dsp_module *module);
 
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos);
-
 int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);
 void dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos);
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase);
 void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);
-void dsp_sine(char *bus_path, struct dsp_module *sine, dsp_parameter sine_param, int jack_samplerate, int pos);
+void dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos);
 void dsp_optimize_sine(char *bus_path, struct dsp_module *sine);
 
 int dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale);
