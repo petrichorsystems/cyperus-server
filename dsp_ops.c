@@ -619,7 +619,7 @@ dsp_edit_butterworth_biquad_lowpass(struct dsp_module *butterworth_biquad_lowpas
   return;
 } /* dsp_edit_butterworth_biquad_lowpass */
 
-float
+void
 dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;
@@ -627,16 +627,19 @@ dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass,
 
   insample = dsp_sum_summands(butterworth_biquad_lowpass->ins->summands);
 
-  butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->in = insample;
+  printf("insample: %f\n", insample);
   
+  butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->in = insample;
   butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->freq = dsp_param.butterworth_biquad_lowpass.freq;
   butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->res = dsp_param.butterworth_biquad_lowpass.res;
-
-
   
   outsample = cyperus_butterworth_biquad_lowpass(butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params, jack_samplerate, pos);
   
-  return outsample;
+  butterworth_biquad_lowpass->outs->sample->value = outsample;
+
+  printf("outsample: %f\n", outsample);
+  
+  return;
 } /* dsp_butterworth_biquad_lowpass */
 
 

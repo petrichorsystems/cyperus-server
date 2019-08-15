@@ -43,7 +43,7 @@ void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float atta
 void dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos);
 int dsp_create_butterworth_biquad_lowpass(struct dsp_bus *target_bus, float freq, float res);
 void dsp_edit_butterworth_biquad_lowpass(struct dsp_module *butterworth_biquad_lowpass, float freq, float res);
-float dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass, int jack_samplerate, int pos);
+void dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass, int jack_samplerate, int pos);
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 
