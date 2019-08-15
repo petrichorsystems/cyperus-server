@@ -59,10 +59,6 @@ void dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_low
 int dsp_create_pinknoise();
 float dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos);
 
-int dsp_create_vocoder(float freq, float amp);
-int dsp_edit_vocoder(int module_no, float freq, float amp);
-float dsp_vocoder(dsp_parameter vocoder_param, int jack_samplerate, int pos);
-
 int dsp_create_pitch_shift(float amp, float shift, float mix);
 int dsp_edit_pitch_shift(int module_no, float amp, float shift, float mix);
 float dsp_pitch_shift(dsp_parameter pitch_shift_param, int jack_samplerate, int pos);

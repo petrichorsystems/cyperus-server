@@ -108,8 +108,5 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, "/cyperus/add/pitch_shift", "fff", osc_add_pitch_shift_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/pitch_shift", "ifff", osc_edit_pitch_shift_handler, NULL);
 
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/vocoder", "ff", osc_add_vocoder_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/vocoder", "iff", osc_edit_vocoder_handler, NULL);
-  
   lo_server_thread_start(lo_thread);
 }

@@ -208,11 +208,6 @@ float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
   return outsample * delay->delay_amt;
 }
 
-float cyperus_vocoder(struct cyperus_parameters *vocoder, int jack_sr, int pos) {
-
-  
-}
-
 void smbPitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata)
 /*
 	Routine smbPitchShift(). See top of file for explanation

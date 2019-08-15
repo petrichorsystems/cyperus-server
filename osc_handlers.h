@@ -97,11 +97,5 @@ int osc_add_pitch_shift_handler(const char *path, const char *types, lo_arg ** a
 int
 osc_edit_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
 			     int argc, void *data, void *user_data);
-int
-osc_add_vocoder_handler(const char *path, const char *types, lo_arg ** argv,
-			int argc, void *data, void *user_data);
-int
-osc_edit_vocoder_handler(const char *path, const char *types, lo_arg ** argv,
-			 int argc, void *data, void *user_data);
 
 #endif
