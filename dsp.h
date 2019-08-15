@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Copyright 2015 murray foster */
 
 #include "dsp_types.h"
-#include "libcyperus.h"
+#include "dsp_math.h"
 
 #ifndef DSP_H
 #define DSP_H

@@ -23,7 +23,7 @@ Copyright 2018 murray foster */
 
 #include "cyperus.h"
 #include "rtqueue.h"
-#include "libcyperus.h"
+#include "dsp_math.h"
 #include "dsp.h"
 
 char* dsp_generate_object_id() {

@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Copyright 2018 murray foster */
 
 #include "rtqueue.h"
-#include "libcyperus.h"
+#include "dsp_math.h"
 #include "dsp.h"
 
 #ifndef DSP_OPS_H

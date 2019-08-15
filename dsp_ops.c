@@ -22,7 +22,7 @@ Copyright 2018 murray foster */
 
 #include "jackcli.h"
 #include "cyperus.h"
-#include "libcyperus.h"
+#include "dsp_math.h"
 #include "dsp.h"
 #include "dsp_ops.h"
 

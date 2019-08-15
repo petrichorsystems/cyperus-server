@@ -22,7 +22,7 @@ Copyright 2015 murray foster */
 
 #include "cyperus.h"
 #include "rtqueue.h"
-#include "libcyperus.h"
+#include "dsp_math.h"
 #include "dsp.h"
 #include "dsp_types.h"
 #include "dsp_ops.h"
