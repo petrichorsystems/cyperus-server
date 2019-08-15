@@ -30,26 +30,31 @@ void dsp_optimize_connections_module(char *current_bus_path, char *module_id, st
 void dsp_optimize_connections_main_inputs(struct dsp_port_out *outs);
 struct dsp_operation *dsp_optimize_module(char *bus_path, struct dsp_module *module);
 
+
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos);
+
 int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);
 void dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos);
+
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase);
 void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);
 void dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos);
+
+int dsp_create_square(struct dsp_bus *target_bus, float freq, float amp);
+void dsp_edit_square(struct dsp_module *square, float freq, float amp);
+void dsp_square(struct dsp_operation *square, int jack_samplerate, int pos);
+
 int dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale);
 void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale);
 void dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos);
+
 int dsp_create_butterworth_biquad_lowpass(struct dsp_bus *target_bus, float freq, float res);
 void dsp_edit_butterworth_biquad_lowpass(struct dsp_module *butterworth_biquad_lowpass, float freq, float res);
 void dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass, int jack_samplerate, int pos);
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
-
-int dsp_create_square(float freq, float amp);
-int dsp_edit_square(int module_no, float freq, float amp);
-float dsp_square(dsp_parameter square_param, int jack_samplerate, int pos);
  
 int dsp_create_pinknoise();
 float dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos);
