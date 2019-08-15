@@ -544,7 +544,7 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float dec
   dsp_add_module(target_bus,
 		 "envelope_follower",
 		 dsp_envelope_follower,
-		 dsp_optimize_envelope_follower,
+		 dsp_optimize_module,
 		 envelope_follower_param,
 		 ins,
 		 outs);
@@ -552,28 +552,28 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float dec
 } /* dsp_create_envelope_follower */
 
 void
-dsp_envelope_follower(char *bus_path, struct dsp_module *envelope_follower, int jack_samplerate, int pos) {
+dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos) {
 
   float insample = 0.0;
   float outsample = 0.0;
-  dsp_parameter dsp_param = envelope_follower->dsp_param;
+  dsp_parameter dsp_param = envelope_follower->module->dsp_param;
 
   
   /* sum audio inputs */
-  insample = dsp_sum_input(envelope_follower->ins);
+  insample = dsp_sum_summands(envelope_follower->ins->summands);
+  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->in = insample;
   
-  envelope_follower->dsp_param.envelope_follower.cyperus_params->in = insample;
-  envelope_follower->dsp_param.envelope_follower.cyperus_params->attack = dsp_param.envelope_follower.attack;
-  envelope_follower->dsp_param.envelope_follower.cyperus_params->decay = dsp_param.envelope_follower.decay;
-  envelope_follower->dsp_param.envelope_follower.cyperus_params->scale = dsp_param.envelope_follower.scale;
+  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->in = insample;
+  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->attack = dsp_param.envelope_follower.attack;
+  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->decay = dsp_param.envelope_follower.decay;
+  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->scale = dsp_param.envelope_follower.scale;
 
-  outsample = cyperus_envelope_follower(envelope_follower->dsp_param.envelope_follower.cyperus_params,
+  outsample = cyperus_envelope_follower(envelope_follower->module->dsp_param.envelope_follower.cyperus_params,
 			    jack_samplerate, pos);
 
   
   /* drive audio outputs */
-  envelope_follower->outs->value = outsample;
-  dsp_feed_outputs(bus_path, envelope_follower->id, envelope_follower->outs);
+  envelope_follower->outs->sample->value = outsample;
 
   return;
 } /* dsp_envelope_follower */
