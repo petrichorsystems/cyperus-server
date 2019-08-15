@@ -498,10 +498,11 @@ int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float pha
 void
 dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase) {
   dsp_parameter dsp_param = sine->dsp_param;
-
-  dsp_param.sine.freq = freq;
-  dsp_param.sine.amp = amp;
-  dsp_param.sine.phase = phase;
+  
+  sine->dsp_param.sine.freq = freq;
+  sine->dsp_param.sine.amp = amp;
+  sine->dsp_param.sine.phase = phase;
+  
   return;
 } /* dsp_edit_sine */
 
@@ -518,7 +519,7 @@ dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos) {
 			   jack_samplerate, pos);
 
   /* drive audio outputs */
-  sine->module->outs->value = outsample;
+  sine->outs->sample->value = outsample;
   
   return;
 } /* dsp_sine */
