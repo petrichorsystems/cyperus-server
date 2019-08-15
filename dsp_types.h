@@ -53,7 +53,7 @@ typedef struct dsp_module_parameter {
     } pinknoise;
     struct {
       char *name;
-      float cutoff;
+      float freq;
       float res;
       struct cyperus_parameters *cyperus_params;
     } butterworth_biquad_lowpass;

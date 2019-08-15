@@ -497,8 +497,6 @@ int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float pha
 
 void
 dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase) {
-  dsp_parameter dsp_param = sine->dsp_param;
-  
   sine->dsp_param.sine.freq = freq;
   sine->dsp_param.sine.amp = amp;
   sine->dsp_param.sine.phase = phase;
@@ -563,7 +561,6 @@ dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplera
   insample = dsp_sum_summands(envelope_follower->ins->summands);
   envelope_follower->module->dsp_param.envelope_follower.cyperus_params->in = insample;
   
-  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->in = insample;
   envelope_follower->module->dsp_param.envelope_follower.cyperus_params->attack = dsp_param.envelope_follower.attack;
   envelope_follower->module->dsp_param.envelope_follower.cyperus_params->decay = dsp_param.envelope_follower.decay;
   envelope_follower->module->dsp_param.envelope_follower.cyperus_params->scale = dsp_param.envelope_follower.scale;
@@ -578,11 +575,6 @@ dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplera
   return;
 } /* dsp_envelope_follower */
 
-void
-dsp_optimize_envelope_follower(char *bus_path, struct dsp_module *envelope_follower) {
-
-} /* dsp_optimize_envelope_follower */
-
 void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale) {
   int i = 0;
   dsp_parameter dsp_param = envelope_follower->dsp_param;
@@ -592,6 +584,60 @@ void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float atta
   dsp_param.envelope_follower.scale = scale;
   
 } /* dsp_edit_envelope_follower */
+
+int
+dsp_create_butterworth_biquad_lowpass(struct dsp_bus *target_bus, float freq, float res) {
+  dsp_parameter filtr_param;
+  struct dsp_port_in *ins;
+  struct dsp_port_out *outs;
+  
+  filtr_param.type = DSP_BUTTERWORTH_BIQUAD_LOWPASS_PARAMETER_ID;
+  filtr_param.pos = 0;
+  filtr_param.butterworth_biquad_lowpass.name = "butterworth_biquad_lowpass";
+  filtr_param.butterworth_biquad_lowpass.cyperus_params = malloc(sizeof(struct cyperus_parameters));
+  filtr_param.butterworth_biquad_lowpass.freq = freq;
+  filtr_param.butterworth_biquad_lowpass.res = res;
+
+
+  ins = dsp_port_in_init("in", 512);
+  outs = dsp_port_out_init("out", 1);
+  dsp_add_module(target_bus,
+                 "butterworth biquad lowpass filter",
+                 dsp_butterworth_biquad_lowpass,
+                 dsp_optimize_module,
+                 filtr_param,
+                 ins,
+                 outs);
+
+  return 0;
+} /* dsp_create_butterworth_biquad_lowpass */
+
+void
+dsp_edit_butterworth_biquad_lowpass(struct dsp_module *butterworth_biquad_lowpass, float freq, float res) {
+  butterworth_biquad_lowpass->dsp_param.butterworth_biquad_lowpass.cyperus_params->freq = freq;
+  butterworth_biquad_lowpass->dsp_param.butterworth_biquad_lowpass.cyperus_params->res = res;
+  return;
+} /* dsp_edit_butterworth_biquad_lowpass */
+
+float
+dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass, int jack_samplerate, int pos) {
+  float insample = 0.0;
+  float outsample = 0.0;
+  dsp_parameter dsp_param = butterworth_biquad_lowpass->module->dsp_param;
+
+  insample = dsp_sum_summands(butterworth_biquad_lowpass->ins->summands);
+
+  butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->in = insample;
+  
+  butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->freq = dsp_param.butterworth_biquad_lowpass.freq;
+  butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->res = dsp_param.butterworth_biquad_lowpass.res;
+
+
+  
+  outsample = cyperus_butterworth_biquad_lowpass(butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params, jack_samplerate, pos);
+  
+  return outsample;
+} /* dsp_butterworth_biquad_lowpass */
 
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
@@ -648,39 +694,6 @@ dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos) {
   return outsample;
 } /* dsp_pinknoise */
 
-
-int
-dsp_create_butterworth_biquad_lowpass(float cutoff, float res) {
-  dsp_parameter filtr_param;
-  filtr_param.type = DSP_BUTTERWORTH_BIQUAD_LOWPASS_PARAMETER_ID;
-  filtr_param.pos = 0;
-  filtr_param.butterworth_biquad_lowpass.name = "butterworth_biquad_lowpass";
-  filtr_param.butterworth_biquad_lowpass.cyperus_params = malloc(sizeof(struct cyperus_parameters));
-  filtr_param.butterworth_biquad_lowpass.cutoff = cutoff;
-  filtr_param.butterworth_biquad_lowpass.res = res;
-  //dsp_add_module(dsp_butterworth_biquad_lowpass,filtr_param);
-  return 0;
-} /* dsp_create_butterworth_biquad_lowpass */
-
-int
-dsp_edit_butterworth_biquad_lowpass(int module_no, float cutoff, float res) {
-  dsp_voice_parameters[module_no].butterworth_biquad_lowpass.cutoff = cutoff;
-  dsp_voice_parameters[module_no].butterworth_biquad_lowpass.res = res;
-  return 0;
-} /* dsp_edit_butterworth_biquad_lowpass */
-
-float
-dsp_butterworth_biquad_lowpass(dsp_parameter filter_param, int jack_samplerate, int pos) {
-  float outsample = 0.0;
-  
-  filter_param.butterworth_biquad_lowpass.cyperus_params[0].in = filter_param.in;
-  filter_param.butterworth_biquad_lowpass.cyperus_params[0].freq = filter_param.butterworth_biquad_lowpass.cutoff;
-  filter_param.butterworth_biquad_lowpass.cyperus_params[0].res = filter_param.butterworth_biquad_lowpass.res;
-
-  outsample = cyperus_butterworth_biquad_lowpass(&(filter_param.butterworth_biquad_lowpass.cyperus_params[0]),jack_samplerate,pos);
-  
-  return outsample;
-} /* dsp_butterworth_biquad_lowpass */
 
 int
 dsp_create_vocoder(float freq, float amp) {
