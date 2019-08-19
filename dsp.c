@@ -750,21 +750,28 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       else
 	dsp_operation_sample_insert_tail(temp_op->outs, sample_out);
 
+
       if(dsp_global_operation_head_processing == NULL)
 	dsp_global_operation_head_processing = temp_op;
       else {
-        if( is_module_out ) {
-          dsp_operation_insert_ahead(matched_op_out, temp_op);
-        } else {
+
           dsp_operation_insert_tail(dsp_global_operation_head_processing,
                                     temp_op);
-        }
       }
     }
 
+    matched_op_out = temp_op;
+    temp_op = NULL;
+    temp_op_out = NULL;
+    
   } else {
     sample_out = found_sample_out;
   }
+
+
+  printf("matched_op_out->dsp_id: %s\n", matched_op_out->dsp_id);
+  if(matched_op_out->module != NULL)
+    printf("matched_op_out->module->name: %s\n", matched_op_out->module->name); 
   
   /* INPUT PROCESSING */
 
@@ -801,6 +808,15 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 	temp_sample_in = temp_op_in->ins;
 	if( is_bus_port_in == 0 && is_module_in) {
 	  while(temp_sample_in != NULL) {
+            printf("fuck 0\n");
+
+            printf("temp_op_in->dsp_id: %s\n", temp_op_in->dsp_id);
+            printf("temp_op_in->module->name: %s\n", temp_op_in->module->name);
+            printf("connection->id_out: %s\n", connection->id_out);
+            printf("connection->id_in: %s\n", connection->id_in);
+            printf("result[2]: %s\n", temp_result[2]);
+            printf("temp_sample_in->dsp_id: %s\n", temp_sample_in->dsp_id);            
+            
 	    if( strcmp(temp_sample_in->dsp_id, temp_result[2]) == 0 ) {
 	      sample_in = temp_sample_in;
 	      break;
@@ -863,6 +879,10 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       else {
         if( is_module_in ) {
           dsp_operation_insert_ahead(matched_op_out, temp_op);
+          printf("INSERTED AHEAD\n");
+          printf("connection->id_out: %s\n", connection->id_out);
+          printf("connection->id_in: %s\n", connection->id_in);
+          printf("\n");
         } else {
           dsp_operation_insert_tail(dsp_global_operation_head_processing,
                                     temp_op);

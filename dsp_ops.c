@@ -354,6 +354,8 @@ struct dsp_operation
   char *full_module_path = malloc(sizeof(char) * (strlen(bus_path) + strlen(module->id) + 2));
   snprintf(full_module_path, strlen(bus_path)+strlen(module->id)+2, "%s?%s", bus_path, module->id);
   new_op = dsp_operation_init(full_module_path);
+
+  printf("module->name: %s\n", module->name);
   
   temp_port_in = module->ins;
   while(temp_port_in != NULL) {
@@ -361,7 +363,7 @@ struct dsp_operation
     if(new_op->ins == NULL)
       new_op->ins = temp_sample;
     else
-      dsp_operation_sample_insert_head(new_op->ins, temp_sample);
+      dsp_operation_sample_insert_tail(new_op->ins, temp_sample);
     temp_port_in = temp_port_in->next;
   }
 
@@ -371,7 +373,7 @@ struct dsp_operation
     if(new_op->outs == NULL)
       new_op->outs = temp_sample;
     else
-      dsp_operation_sample_insert_head(new_op->outs, temp_sample);
+      dsp_operation_sample_insert_tail(new_op->outs, temp_sample);
 
     temp_port_out = temp_port_out->next;
   }
@@ -424,8 +426,8 @@ dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos) {
   /* set initial delay amount */
 
   /* set delay time if we have incoming data for that input */
-  //if( delay->ins->next->summands != NULL )
-  //  dsp_param.delay.time = dsp_sum_summands(delay->ins->next->summands) * jack_samplerate;
+  if( delay->ins->next->summands != NULL )
+    dsp_param.delay.time = dsp_sum_summands(delay->ins->next->summands) * jack_samplerate;
 
   delay->module->dsp_param.delay.cyperus_params->delay_amt = dsp_param.delay.amt;
   delay->module->dsp_param.delay.cyperus_params->delay_time = dsp_param.delay.time;
@@ -515,7 +517,7 @@ dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos) {
   
   outsample = cyperus_sine(sine->module->dsp_param.sine.cyperus_params,
 			   jack_samplerate, pos);
-
+  
   /* drive audio outputs */
   sine->outs->sample->value = outsample;
   
@@ -618,7 +620,6 @@ dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplera
 
   outsample = cyperus_envelope_follower(envelope_follower->module->dsp_param.envelope_follower.cyperus_params,
 			    jack_samplerate, pos);
-
   
   /* drive audio outputs */
   envelope_follower->outs->sample->value = outsample;
