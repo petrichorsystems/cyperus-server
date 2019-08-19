@@ -355,8 +355,6 @@ struct dsp_operation
   snprintf(full_module_path, strlen(bus_path)+strlen(module->id)+2, "%s?%s", bus_path, module->id);
   new_op = dsp_operation_init(full_module_path);
 
-  printf("module->name: %s\n", module->name);
-  
   temp_port_in = module->ins;
   while(temp_port_in != NULL) {
     temp_sample = dsp_operation_sample_init(temp_port_in->id, 0.0, 1);
@@ -446,7 +444,6 @@ dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos) {
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback) {
   int i = 0;
 
-  printf("about to assign delay->dsp_param\n");
   dsp_parameter dsp_param = delay->dsp_param;
   
   printf("about to assign amt\n");
@@ -679,8 +676,6 @@ dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass,
 
   insample = dsp_sum_summands(butterworth_biquad_lowpass->ins->summands);
 
-  printf("insample: %f\n", insample);
-  
   butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->in = insample;
   butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->freq = dsp_param.butterworth_biquad_lowpass.freq;
   butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params->res = dsp_param.butterworth_biquad_lowpass.res;
@@ -688,8 +683,6 @@ dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass,
   outsample = cyperus_butterworth_biquad_lowpass(butterworth_biquad_lowpass->module->dsp_param.butterworth_biquad_lowpass.cyperus_params, jack_samplerate, pos);
   
   butterworth_biquad_lowpass->outs->sample->value = outsample;
-
-  printf("outsample: %f\n", outsample);
   
   return;
 } /* dsp_butterworth_biquad_lowpass */
