@@ -104,6 +104,4 @@ float cyperus_moog_vcf(struct cyperus_parameters *filtr, int jack_sr, int pos);
 
 float cyperus_delay(struct cyperus_parameters *effect, int jack_sr, int pos);
 
-float cyperus_vocoder(struct cyperus_parameters *vocoder, int jack_sr, int pos);
-
 float cyperus_pitch_shift(struct cyperus_parameters *pitch_shift, int jack_sr, int pos);

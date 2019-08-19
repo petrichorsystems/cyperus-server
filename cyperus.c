@@ -61,6 +61,18 @@ void print_header(void) {
 
 int main(int argc, char *argv[])
 {
+  dsp_global_bus_head = NULL;
+  dsp_global_connection_graph = NULL;
+  
+  dsp_global_translation_graph = NULL;
+  dsp_global_operation_head = NULL;
+
+  dsp_optimized_main_ins = NULL;
+  dsp_optimized_main_outs = NULL;
+
+  dsp_global_translation_connection_graph_processing = NULL;
+  dsp_global_operation_head_processing = NULL;
+ 
   int c = 0;
   int input = 8;
   int output = 8;
@@ -171,6 +183,8 @@ int main(int argc, char *argv[])
   printf("osc send port: %s\n", osc_port_out);
   printf("filepath: %s\n\n\n", file_path);
 
+  dsp_build_mains(input, output);
+  
   pthread_t dsp_thread_id;
   pthread_create(&dsp_thread_id, NULL, dsp_thread, NULL);
   pthread_detach(dsp_thread_id);
@@ -179,9 +193,8 @@ int main(int argc, char *argv[])
   
   printf("press <ENTER> to quit\n\n");
   
-  while(!exit_key) {
-    exit_key = getchar();
-    usleep(10000);
+  while(1) {
+    usleep(500000);
   }
   
   jackcli_teardown();

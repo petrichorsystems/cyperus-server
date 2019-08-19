@@ -23,7 +23,7 @@ Copyright 2018 murray foster */
 
 #include "cyperus.h"
 #include "rtqueue.h"
-#include "libcyperus.h"
+#include "dsp_math.h"
 #include "dsp.h"
 
 char* dsp_generate_object_id() {
@@ -104,7 +104,7 @@ struct dsp_port_out* dsp_port_out_init(const char *port_name, int audio) {
   new_port->id = dsp_generate_object_id();
   new_port->remove = 0;
   new_port->audio = audio;
-  new_port->value = 0.0; /* should we init this at 0? */
+  new_port->value = (float)0; /* should we init this at 0? */
   return new_port;
 }
 
@@ -213,7 +213,7 @@ void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*
 void dsp_connection_terminate(struct dsp_connection *connection) {
   connection->id_out = NULL;
   connection->id_in = NULL;
-  connection->out_value = 0.00;
+  connection->out_value = (float)0;
   connection->in_values = NULL;
   free(connection->id);
   connection->id = NULL;
@@ -223,6 +223,7 @@ void dsp_connection_terminate(struct dsp_connection *connection) {
 
 struct dsp_module* dsp_module_init(const char *module_name,
 				   void (*dsp_function) (char*, struct dsp_module*, int, int),
+				   struct dsp_operation (*dsp_optimize) (char*, struct dsp_module*),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,
 				   struct dsp_port_out *outs) {
@@ -233,6 +234,7 @@ struct dsp_module* dsp_module_init(const char *module_name,
   strcpy(new_module->name, module_name);
   new_module->id = dsp_generate_object_id();
   new_module->dsp_function = dsp_function;
+  new_module->dsp_optimize = dsp_optimize;
   new_module->dsp_param = dsp_param;
   new_module->remove = 0;
   new_module->bypass = 0;
@@ -418,4 +420,157 @@ void dsp_bus_list_reverse(struct dsp_bus *head_bus) {
     printf("%s", temp_bus->name);
     temp_bus = temp_bus->prev;
   } 
+}
+
+struct dsp_operation* dsp_operation_init(char *dsp_id) {
+  struct dsp_operation *new_operation = (struct dsp_operation*)malloc(sizeof(struct dsp_operation));
+  new_operation->id = dsp_generate_object_id();
+  new_operation->dsp_id = malloc(sizeof(char) * strlen(dsp_id) + 1);
+  strcpy(new_operation->dsp_id, dsp_id);
+  new_operation->prev = NULL;
+  new_operation->next = NULL;
+  new_operation->ins = NULL;
+  new_operation->outs = NULL;
+  new_operation->module = NULL;
+  return new_operation;
+}
+
+void dsp_operation_insert_head(struct dsp_operation *head_operation, struct dsp_operation *new_operation) {
+  if(head_operation == NULL) {
+    head_operation = new_operation;
+    return;
+  }
+
+  head_operation->prev = new_operation;
+  new_operation->next = head_operation;
+  head_operation = new_operation;
+}
+
+void dsp_operation_insert_tail(struct dsp_operation *head_operation, struct dsp_operation *new_operation) {
+  struct dsp_operation *temp_operation = head_operation;
+
+  if(temp_operation == NULL) {
+    head_operation = new_operation;
+    return;
+  }
+
+  while(temp_operation->next != NULL)
+    {
+      temp_operation = temp_operation->next;
+    }
+  temp_operation->next = new_operation;
+  new_operation->prev = temp_operation;
+}
+
+void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struct dsp_operation *new_operation) {
+  new_operation->prev = existing_operation->prev;
+  new_operation->next = existing_operation;
+  existing_operation->prev = new_operation;
+  if( existing_operation == dsp_global_operation_head_processing )
+    dsp_global_operation_head_processing = new_operation;
+}
+
+void dsp_operation_insert_ahead(struct dsp_operation *existing_operation, struct dsp_operation *new_operation) {
+  if( existing_operation->next == NULL )
+    existing_operation->next = new_operation;
+  else {
+    new_operation->next = existing_operation->next;
+    existing_operation->next->prev = new_operation;
+    existing_operation->next = new_operation;
+    new_operation->prev = existing_operation;
+  }
+}
+
+struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_connection *connection,
+								   char *id_out,
+								   char *id_in,
+								   struct dsp_operation *op_out,
+								   struct dsp_operation *op_in,
+								   struct dsp_operation_sample *sample_out,
+								   struct dsp_operation_sample *sample_in) {
+  struct dsp_translation_connection *new_translation_conn = (struct dsp_translation_connection*)malloc(sizeof(struct dsp_translation_connection));
+  new_translation_conn->prev = NULL;
+  new_translation_conn->next = NULL;
+  new_translation_conn->id_out = NULL;
+  new_translation_conn->id_in = NULL;
+  new_translation_conn->operation_out = NULL;
+  new_translation_conn->operation_in = NULL;
+  new_translation_conn->sample_out = NULL;
+  new_translation_conn->sample_in = NULL;
+
+  new_translation_conn->connection = connection;
+  
+  new_translation_conn->id_out = malloc(sizeof(char) * strlen(id_out) + 1);
+  strcpy(new_translation_conn->id_out, id_out);
+  
+  new_translation_conn->id_in = malloc(sizeof(char) * strlen(id_in) + 1);
+  strcpy(new_translation_conn->id_in, id_in);
+
+  new_translation_conn->operation_out = op_out;
+  new_translation_conn->operation_in = op_in;
+
+  new_translation_conn->sample_out = sample_out;
+  new_translation_conn->sample_in = sample_in;
+
+  return new_translation_conn;
+}
+
+void dsp_translation_connection_insert_tail(struct dsp_translation_connection *head_translation_conn, struct dsp_translation_connection *new_translation_conn) {
+  struct dsp_translation_connection *temp_translation_conn = head_translation_conn;
+  if(temp_translation_conn == NULL) {
+    head_translation_conn = new_translation_conn;
+    return;
+  }
+  while(temp_translation_conn->next != NULL)
+    {
+      temp_translation_conn = temp_translation_conn->next;
+    }
+  temp_translation_conn->next = new_translation_conn;
+  new_translation_conn->prev = temp_translation_conn;
+}
+
+struct dsp_sample* dsp_sample_init(float value) {
+  struct dsp_sample *new_sample = (struct dsp_sample*)malloc(sizeof(struct dsp_sample));
+  new_sample->id = dsp_generate_object_id();
+  new_sample->value = value;
+  return new_sample;
+}
+
+struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, float value, int init_sample) {
+  struct dsp_operation_sample *new_operation_sample = (struct dsp_operation_sample*)malloc(sizeof(struct dsp_operation_sample));
+  new_operation_sample->id = dsp_generate_object_id();
+  new_operation_sample->dsp_id = malloc(sizeof(char) * strlen(dsp_id) + 1);
+  strcpy(new_operation_sample->dsp_id, dsp_id);
+  new_operation_sample->prev = NULL;
+  new_operation_sample->next = NULL;
+  new_operation_sample->summands = NULL;
+
+  if( init_sample )
+    new_operation_sample->sample = dsp_sample_init(value);
+  
+  return new_operation_sample;
+}
+
+void dsp_operation_sample_insert_head(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample) {
+  if(head_sample == NULL) {
+    head_sample = new_sample;
+    return;
+  }
+  head_sample->prev = new_sample;
+  new_sample->next = head_sample;
+  head_sample = new_sample;
+}
+
+void dsp_operation_sample_insert_tail(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample) {
+  struct dsp_operation_sample *temp_sample = head_sample;
+  if(temp_sample == NULL) {
+    head_sample = new_sample;
+    return;
+  }
+  while(temp_sample->next != NULL)
+    {
+      temp_sample = temp_sample->next;
+    }
+  temp_sample->next = new_sample;
+  new_sample->prev = temp_sample;
 }

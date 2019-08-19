@@ -23,7 +23,7 @@ Copyright 2015 murray foster */
 #include <time.h>
 #include <fftw3.h>
 
-#include "libcyperus.h"
+#include "dsp_math.h"
 #include "rtqueue.h"
 
 
@@ -206,11 +206,6 @@ float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
   delay->pos += 1;
 
   return outsample * delay->delay_amt;
-}
-
-float cyperus_vocoder(struct cyperus_parameters *vocoder, int jack_sr, int pos) {
-
-  
 }
 
 void smbPitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata)
