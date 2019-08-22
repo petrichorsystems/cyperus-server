@@ -87,15 +87,15 @@ int osc_edit_module_butterworth_biquad_lowpass_handler(const char *path, const c
                                                        int argc, void *data, void *user_data);
 
 
+int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
+                                       int argc, void *data, void *user_data);
+int
+osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
+                                    int argc, void *data, void *user_data);
+
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 
 int osc_add_pinknoise_handler(const char *path, const char *types, lo_arg ** argv,
 			      int argc, void *data, void *user_data);
-
-int osc_add_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
-				int argc, void *data, void *user_data);
-int
-osc_edit_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
-			     int argc, void *data, void *user_data);
 
 #endif

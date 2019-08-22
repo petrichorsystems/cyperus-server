@@ -687,6 +687,69 @@ dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass,
   return;
 } /* dsp_butterworth_biquad_lowpass */
 
+int
+dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, float mix) {
+  dsp_parameter pitch_shift_param;
+  struct dsp_port_in *ins;
+  struct dsp_port_out *outs;
+  pitch_shift_param.type = DSP_PITCH_SHIFT_PARAMETER_ID;
+  pitch_shift_param.pos = 0;
+  pitch_shift_param.pitch_shift.name = "pitch shift";
+  pitch_shift_param.pitch_shift.cyperus_params = malloc(sizeof(struct cyperus_parameters));
+
+  pitch_shift_param.pitch_shift.cyperus_params[0].block_fifo = *rtqueue_init(jackcli_samplerate*4);
+  pitch_shift_param.pitch_shift.cyperus_params[0].signal_buffer = (float *)calloc(4096, sizeof(float));  
+  pitch_shift_param.pitch_shift.cyperus_params[0].pos = 0;
+
+  pitch_shift_param.pitch_shift.amp = amp;
+  pitch_shift_param.pitch_shift.shift = shift;
+  pitch_shift_param.pitch_shift.mix = mix;
+
+  ins = dsp_port_in_init("in", 512);
+  outs = dsp_port_out_init("out", 1);
+  dsp_add_module(target_bus,
+                 "pitch shift",
+                 dsp_pitch_shift,
+                 dsp_optimize_module,
+                 pitch_shift_param,
+                 ins,
+                 outs);
+  return 0;
+} /* dsp_create_pitch_shift */
+
+int
+dsp_edit_pitch_shift(struct dsp_module *pitch_shift, float amp, float shift, float mix) {
+  int i = 0;
+
+  dsp_parameter dsp_param = pitch_shift->dsp_param;
+  
+  pitch_shift->dsp_param.pitch_shift.amp = amp;
+  pitch_shift->dsp_param.pitch_shift.shift = shift;
+  pitch_shift->dsp_param.pitch_shift.mix = mix;
+  
+  return 0;
+} /* dsp_edit_pitch_shift */
+
+float
+dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos) {
+  float insample = 0.0;
+  float outsample = 0.0;
+  dsp_parameter dsp_param = pitch_shift->module->dsp_param;
+
+  /* sum audio */
+  insample = dsp_sum_summands(pitch_shift->ins->summands);
+  pitch_shift->module->dsp_param.pitch_shift.cyperus_params->in = insample;
+  
+  pitch_shift->module->dsp_param.pitch_shift.cyperus_params[0].amp = dsp_param.pitch_shift.amp;
+  pitch_shift->module->dsp_param.pitch_shift.cyperus_params[0].shift = dsp_param.pitch_shift.shift;
+  pitch_shift->module->dsp_param.pitch_shift.cyperus_params[0].mix = dsp_param.pitch_shift.mix;
+
+  outsample = cyperus_pitch_shift(pitch_shift->module->dsp_param.pitch_shift.cyperus_params,
+                                  jack_samplerate, pos);
+
+  return outsample;
+} /* dsp_pitch_shift */
+
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 
@@ -709,48 +772,3 @@ dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos) {
   
   return outsample;
 } /* dsp_pinknoise */
-
-
-int
-dsp_create_pitch_shift(float amp, float shift, float mix) {
-  dsp_parameter pitch_shift_param;
-  pitch_shift_param.type = DSP_PITCH_SHIFT_PARAMETER_ID;
-  pitch_shift_param.pos = 0;
-  pitch_shift_param.pitch_shift.name = "pitch shift";
-  pitch_shift_param.pitch_shift.cyperus_params = malloc(sizeof(struct cyperus_parameters));
-
-  pitch_shift_param.pitch_shift.cyperus_params[0].block_fifo = *rtqueue_init(jackcli_samplerate*4);
-  pitch_shift_param.pitch_shift.cyperus_params[0].signal_buffer = (float *)calloc(4096, sizeof(float));  
-  pitch_shift_param.pitch_shift.cyperus_params[0].pos = 0;
-
-  pitch_shift_param.pitch_shift.amp = amp;
-  pitch_shift_param.pitch_shift.shift = shift;
-  pitch_shift_param.pitch_shift.mix = mix;
-
-  //dsp_add_module(dsp_pitch_shift,pitch_shift_param);
-  return 0;
-} /* dsp_create_pitch_shift */
-
-int
-dsp_edit_pitch_shift(int module_no, float amp, float shift, float mix) {
-  int i = 0;
-  
-  dsp_voice_parameters[module_no].pitch_shift.amp = amp;
-  dsp_voice_parameters[module_no].pitch_shift.shift = shift;
-  dsp_voice_parameters[module_no].pitch_shift.mix = mix;
-  
-  return 0;
-} /* dsp_edit_pitch_shift */
-
-float
-dsp_pitch_shift(dsp_parameter pitch_shift_param, int jack_samplerate, int pos) {
-  float outsample = 0.0;
-  pitch_shift_param.pitch_shift.cyperus_params[0].in = pitch_shift_param.in;
-  pitch_shift_param.pitch_shift.cyperus_params[0].amp = pitch_shift_param.pitch_shift.amp;
-  pitch_shift_param.pitch_shift.cyperus_params[0].shift = pitch_shift_param.pitch_shift.shift;
-  pitch_shift_param.pitch_shift.cyperus_params[0].mix = pitch_shift_param.pitch_shift.mix;
-  
-  outsample = cyperus_pitch_shift(&(pitch_shift_param.pitch_shift.cyperus_params[0]), jack_samplerate, pos);
-
-  return outsample;
-} /* dsp_pitch_shift */

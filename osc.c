@@ -93,7 +93,9 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/butterworth_biquad_lowpass", "sff", osc_add_module_butterworth_biquad_lowpass_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/butterworth_biquad_lowpass", "sff", osc_edit_module_butterworth_biquad_lowpass_handler, NULL);
-  
+
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/pitch_shift", "sfff", osc_add_module_pitch_shift_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/pitch_shift", "sfff", osc_edit_module_pitch_shift_handler, NULL);
   
   lo_server_thread_add_method(lo_thread, "/cyperus/list/module_port", "s", osc_list_module_port_handler, NULL);
 
@@ -104,9 +106,6 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, "/cyperus/remove", "i", osc_remove_module_handler, NULL);
   
   lo_server_thread_add_method(lo_thread, "/cyperus/add/pinknoise", NULL, osc_add_pinknoise_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/pitch_shift", "fff", osc_add_pitch_shift_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/pitch_shift", "ifff", osc_edit_pitch_shift_handler, NULL);
 
   lo_server_thread_start(lo_thread);
 }

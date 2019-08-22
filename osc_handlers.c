@@ -947,7 +947,89 @@ int osc_edit_module_butterworth_biquad_lowpass_handler(const char *path, const c
 } /* osc_edit_module_butterworth_biquad_lowpass_handler */
 
 
+int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
+				int argc, void *data, void *user_data)
+{
+  char *bus_path, *module_id = NULL;
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
 
+  float amt;
+  float shift;
+  float mix;
+  
+  printf("path: <%s>\n", path);
+  
+  bus_path = argv[0];
+  amt=argv[1]->f;
+  shift=argv[2]->f;
+  mix=argv[3]->f;
+  
+  printf("creating pitch shift with amount %f, shift %f, and mix %f..\n",amt,shift,mix);
+  
+  target_bus = dsp_parse_bus_path(bus_path); 
+  dsp_create_pitch_shift(target_bus, amt, shift, mix);
+
+  temp_module = target_bus->dsp_module_head;
+  while(temp_module != NULL) {
+    target_module = temp_module;
+    temp_module = temp_module->next;
+  }
+  module_id = malloc(sizeof(char) * 37);
+  strcpy(module_id, target_module->id);
+
+  printf("add_module_pitch_shift_handler, module_id: %s\n", module_id);
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","sfff", module_id, amt, shift, mix);
+  free(lo_addr_send);
+  
+  return 0;
+} /* osc_add_module_pitch_shift_handler */
+
+int
+osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
+		     int argc, void *data, void *user_data)
+{
+  char *module_path, *module_id;
+  char *bus_path;
+  struct dsp_bus *target_bus;
+  struct dsp_module *target_module;
+
+  float amt;
+  float shift;
+  float mix;
+
+  int count;
+  
+  printf("path: <%s>\n", path);
+  
+  module_path = argv[0];
+  amt=argv[1]->f;
+  shift=argv[2]->f;
+  mix=argv[3]->f;
+
+  printf("module_path: %s\n", module_path);
+  
+  /* split up path */
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  strncpy(bus_path, module_path, strlen(module_path) - 37);
+
+  module_id = malloc(sizeof(char) * 37);  
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
+
+  target_bus = dsp_parse_bus_path(bus_path);  
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+    
+  printf("module_id %s, editing pitch_shift of amount %f, shift %f of 1octave, mix %f..\n",module_id,amt,shift,mix);
+
+  dsp_edit_pitch_shift(target_module, amt, shift, mix);
+
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","sfff", module_id, amt, shift, mix);
+  free(lo_addr_send);
+  
+  return 0;
+} /* osc_edit_pitch_shift_handler */
 
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
@@ -965,46 +1047,4 @@ int osc_add_pinknoise_handler(const char *path, const char *types, lo_arg ** arg
   
   return 0;
 } /* osc_add_pinknoise_handler */
-
-
-int osc_add_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
-				int argc, void *data, void *user_data)
-{
-  float amt;
-  float shift;
-  float mix;
-  
-  printf("path: <%s>\n", path);
-  amt=argv[0]->f;
-  shift=argv[1]->f;
-  mix=argv[2]->f;
-  
-  printf("creating pitch shift with amount %f, shift %f, and mix %f..\n",amt,shift,mix);
-  
-  dsp_create_pitch_shift(amt,shift,mix);
-  
-  return 0;
-} /* osc_add_pitch_shift_handler */
-
-int
-osc_edit_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  int module_no;
-  float amt;
-  float shift;
-  float mix;
-  
-  printf("path: <%s>\n", path);
-  module_no=argv[0]->i;
-  amt=argv[1]->f;
-  shift=argv[2]->f;
-  mix=argv[3]->f;
-  
-  printf("module_no %d, editing delay of amount %f, shift %f of 1octave, mix %f..\n",module_no,amt,shift,mix);
-  
-  dsp_edit_pitch_shift(module_no,amt,shift,mix);
-  
-  return 0;
-} /* osc_edit_pitch_shift_handler */
 

@@ -54,13 +54,13 @@ int dsp_create_butterworth_biquad_lowpass(struct dsp_bus *target_bus, float freq
 void dsp_edit_butterworth_biquad_lowpass(struct dsp_module *butterworth_biquad_lowpass, float freq, float res);
 void dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass, int jack_samplerate, int pos);
 
+int dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, float mix);
+int dsp_edit_pitch_shift(struct dsp_module *pitch_shift, float amp, float shift, float mix);
+float dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos);
+
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
  
 int dsp_create_pinknoise();
 float dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos);
-
-int dsp_create_pitch_shift(float amp, float shift, float mix);
-int dsp_edit_pitch_shift(int module_no, float amp, float shift, float mix);
-float dsp_pitch_shift(dsp_parameter pitch_shift_param, int jack_samplerate, int pos);
 
 #endif

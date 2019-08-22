@@ -112,7 +112,7 @@ float cyperus_karlsen_lowpass(struct cyperus_parameters *filtr, int jack_sr, int
   /* by Ove Karlsen, 24dB 4-pole lowpass */
 
   /* need to scale the input cutoff to stable parameters frequencies */
-  /* sweet spot for parameters->freq is up to0-0.7/8, in radians of a circle */
+  /* sweet spot for parameters->freq is up to 0-0.7/8, in radians of a circle */
   
   float sampleout = 0.0;
   filtr->tempval = filtr->lastoutval3; if (filtr->tempval > 1) {filtr->tempval = 1;}
