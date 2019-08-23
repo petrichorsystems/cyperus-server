@@ -58,6 +58,10 @@ int dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, f
 int dsp_edit_pitch_shift(struct dsp_module *pitch_shift, float amp, float shift, float mix);
 float dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos);
 
+int dsp_create_apple_biquad_lowpass(struct dsp_bus *target_bus, float amp, float freq, float res);
+int dsp_edit_apple_biquad_lowpass(struct dsp_module *apple_biquad_lowpass, float amp, float freq, float res);
+float dsp_apple_biquad_lowpass(struct dsp_operation *apple_biquad_lowpass, int jack_samplerate, int pos);
+
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
  
 int dsp_create_pinknoise();

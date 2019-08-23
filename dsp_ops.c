@@ -751,6 +751,69 @@ dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos)
 } /* dsp_pitch_shift */
 
 
+int
+dsp_create_apple_biquad_lowpass(struct dsp_bus *target_bus, float amp, float freq, float res) {
+  dsp_parameter apple_biquad_lowpass_param;
+  struct dsp_port_in *ins;
+  struct dsp_port_out *outs;
+  apple_biquad_lowpass_param.type = DSP_APPLE_BIQUAD_LOWPASS_PARAMETER_ID;
+  apple_biquad_lowpass_param.pos = 0;
+  apple_biquad_lowpass_param.apple_biquad_lowpass.name = "apple biquad lowpass filter";
+  apple_biquad_lowpass_param.apple_biquad_lowpass.cyperus_params = malloc(sizeof(struct cyperus_parameters));
+
+  apple_biquad_lowpass_param.apple_biquad_lowpass.amp = amp;
+  apple_biquad_lowpass_param.apple_biquad_lowpass.freq = freq;
+  apple_biquad_lowpass_param.apple_biquad_lowpass.res = res;
+
+  ins = dsp_port_in_init("in", 512);
+  outs = dsp_port_out_init("out", 1);
+  dsp_add_module(target_bus,
+                 "apple biquad lowpass filter",
+                 dsp_apple_biquad_lowpass,
+                 dsp_optimize_module,
+                 apple_biquad_lowpass_param,
+                 ins,
+                 outs);
+  return 0;
+} /* dsp_create_apple_biquad_lowpass */
+
+int
+dsp_edit_apple_biquad_lowpass(struct dsp_module *apple_biquad_lowpass, float amp, float freq, float res) {
+  int i = 0;
+
+  dsp_parameter dsp_param = apple_biquad_lowpass->dsp_param;
+  
+  apple_biquad_lowpass->dsp_param.apple_biquad_lowpass.amp = amp;
+  apple_biquad_lowpass->dsp_param.apple_biquad_lowpass.freq = freq;
+  apple_biquad_lowpass->dsp_param.apple_biquad_lowpass.res= res;
+  
+  return 0;
+} /* dsp_edit_apple_biquad_lowpass */
+
+float
+dsp_apple_biquad_lowpass(struct dsp_operation *apple_biquad_lowpass, int jack_samplerate, int pos) {
+  float insample = 0.0;
+  float outsample = 0.0;
+  dsp_parameter dsp_param = apple_biquad_lowpass->module->dsp_param;
+
+  /* sum audio */
+  insample = dsp_sum_summands(apple_biquad_lowpass->ins->summands);
+  apple_biquad_lowpass->module->dsp_param.apple_biquad_lowpass.cyperus_params->in = insample;
+  
+  apple_biquad_lowpass->module->dsp_param.apple_biquad_lowpass.cyperus_params[0].amp = dsp_param.apple_biquad_lowpass.amp;
+  apple_biquad_lowpass->module->dsp_param.apple_biquad_lowpass.cyperus_params[0].freq = dsp_param.apple_biquad_lowpass.freq;
+  apple_biquad_lowpass->module->dsp_param.apple_biquad_lowpass.cyperus_params[0].res = dsp_param.apple_biquad_lowpass.res;
+
+  outsample = cyperus_apple_biquad_lowpass(apple_biquad_lowpass->module->dsp_param.apple_biquad_lowpass.cyperus_params,
+                                  jack_samplerate, pos);
+
+  return outsample;
+} /* dsp_apple_biquad_lowpass */
+
+
+
+
+
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 
 int

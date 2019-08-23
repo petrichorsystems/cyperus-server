@@ -171,6 +171,51 @@ float cyperus_butterworth_biquad_hipass(struct cyperus_parameters *filtr, int ja
   return outsample;
 }
 
+float cyperus_apple_biquad_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
+  /* moc.liamg@321tiloen 
+     Simple Biquad LP filter from the AU tutorial at apple.com
+
+     cutoff_slider range 20-20000hz
+     res_slider range -25/25db
+     srate - sample rate
+  */
+  float outsample = 0.0;
+  
+  filter->state0 = 0.0;
+  filter->state1 = 0.0;
+  filter->state2 = 0.0;
+  filter->state3 = 0.0;
+
+  float pi = 22.0/7;
+
+  //coefficients
+  float cutoff = filter->freq;
+  float res = filter->res;
+
+  cutoff = 2 * filter->freq / jack_sr;
+  res = pow(10, 0.05 * -filter->res);
+  float k = 0.5 * res * sin(pi * cutoff);
+  float c1 = 0.5 * (1 - k) / (1 + k);
+  float c2 = (0.5 + c1) * cos(pi * cutoff);
+  float c3 = (0.5 + c1 - c2) * 0.25;
+
+  float mA0 = 2 * c3;
+  float mA1 = 2 * 2 * c3;
+  float mA2 = 2 * c3;
+  float mB1 = 2 * -c2;
+  float mB2 = 2 * c1;
+
+  //loop
+  outsample = mA0*filter->in + mA1*filter->state0 + mA2*filter->state1 - mB1*filter->state2 - mB2*filter->state3;
+
+  filter->state1 = filter->state0;
+  filter->state0 = filter->in;
+  filter->state3 = filter->state2;
+  filter->state2 = outsample;
+
+  return outsample * filter->amp;
+} /* cyperus_apple_biquad_lowpass */
+
 float cyperus_moog_vcf(struct cyperus_parameters *filtr, int jack_sr, int pos) {
   /* by Stilson/Smith CCRMA paper, Timo Tossavainen */
 

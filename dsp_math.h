@@ -70,10 +70,19 @@ struct cyperus_parameters {
   float *signal_buffer_out;
   
   float in;
+
   float state0;
   float state1;
   float state2;
+  float state3;
+  float state4;
+  float state5;
+  float state6;
+  float state7;
+  float state8;
+  
   float tempval;
+
   float lastinval;
   float lastinval1;
   float lastinval2;
@@ -105,3 +114,5 @@ float cyperus_moog_vcf(struct cyperus_parameters *filtr, int jack_sr, int pos);
 float cyperus_delay(struct cyperus_parameters *effect, int jack_sr, int pos);
 
 float cyperus_pitch_shift(struct cyperus_parameters *pitch_shift, int jack_sr, int pos);
+
+float cyperus_apple_biquad_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos);

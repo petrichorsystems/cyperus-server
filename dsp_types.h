@@ -84,6 +84,13 @@ typedef struct dsp_module_parameter {
       float scale;
       struct cyperus_parameters *cyperus_params;
     } envelope_follower;
+    struct {
+      char *name;
+      float amp; /* range 0.0/1.0 */
+      float freq; /* range 20/20000hz */
+      float res; /* range -25/25db */
+      struct cyperus_parameters *cyperus_params;
+    } apple_biquad_lowpass;
   };
 }dsp_parameter;
 
@@ -98,7 +105,8 @@ typedef enum dsp_parameter_identifiers{
   DSP_VOCODER_PARAMETER_ID=9,
   DSP_BLOCK_PROCESSOR_PARAMETER_ID=10,
   DSP_PITCH_SHIFT_PARAMETER_ID=11,
-  DSP_ENVELOPE_FOLLOWER_PARAMETER_ID=12
+  DSP_ENVELOPE_FOLLOWER_PARAMETER_ID=12,
+  DSP_APPLE_BIQUAD_LOWPASS_PARAMETER_ID=13
 }dsp_param_identifiers;
 
 struct dsp_port_in {

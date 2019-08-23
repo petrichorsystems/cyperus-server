@@ -1032,6 +1032,92 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
 } /* osc_edit_pitch_shift_handler */
 
 
+
+int osc_add_module_apple_biquad_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
+				int argc, void *data, void *user_data)
+{
+  char *bus_path, *module_id = NULL;
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
+
+  float amt;
+  float freq;
+  float res;
+  
+  printf("path: <%s>\n", path);
+  
+  bus_path = argv[0];
+  amt=argv[1]->f;
+  freq=argv[2]->f;
+  res=argv[3]->f;
+  
+  printf("creating pitch freq with amount %f, freq %f, and res %f..\n",amt,freq,res);
+  
+  target_bus = dsp_parse_bus_path(bus_path); 
+  dsp_create_apple_biquad_lowpass(target_bus, amt, freq, res);
+
+  temp_module = target_bus->dsp_module_head;
+  while(temp_module != NULL) {
+    target_module = temp_module;
+    temp_module = temp_module->next;
+  }
+  module_id = malloc(sizeof(char) * 37);
+  strcpy(module_id, target_module->id);
+
+  printf("add_module_apple_biquad_lowpass_handler, module_id: %s\n", module_id);
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/add/module/apple_biquad_lowpass","sfff", module_id, amt, freq, res);
+  free(lo_addr_send);
+  
+  return 0;
+} /* osc_add_module_apple_biquad_lowpass_handler */
+
+int
+osc_edit_module_apple_biquad_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
+		     int argc, void *data, void *user_data)
+{
+  char *module_path, *module_id;
+  char *bus_path;
+  struct dsp_bus *target_bus;
+  struct dsp_module *target_module;
+
+  float amt;
+  float freq;
+  float res;
+
+  int count;
+  
+  printf("path: <%s>\n", path);
+  
+  module_path = argv[0];
+  amt=argv[1]->f;
+  freq=argv[2]->f;
+  res=argv[3]->f;
+
+  printf("module_path: %s\n", module_path);
+  
+  /* split up path */
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  strncpy(bus_path, module_path, strlen(module_path) - 37);
+
+  module_id = malloc(sizeof(char) * 37);  
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
+
+  target_bus = dsp_parse_bus_path(bus_path);  
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+    
+  printf("module_id %s, editing apple_biquad_lowpass of amount %f, freq %f of 1octave, res %f..\n",module_id,amt,freq,res);
+
+  dsp_edit_apple_biquad_lowpass(target_module, amt, freq, res);
+
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/add/module/apple_biquad_lowpass","sfff", module_id, amt, freq, res);
+  free(lo_addr_send);
+  
+  return 0;
+} /* osc_edit_apple_biquad_lowpass_handler */
+
+
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
 
 int osc_add_pinknoise_handler(const char *path, const char *types, lo_arg ** argv,
