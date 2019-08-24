@@ -508,9 +508,9 @@ dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos) {
   float outsample = 0.0;
   dsp_parameter dsp_param = sine->module->dsp_param;
 
-  sine->module->dsp_param.sine.cyperus_params->freq = dsp_param.sine.freq;
-  sine->module->dsp_param.sine.cyperus_params->amp = dsp_param.sine.amp;
-  sine->module->dsp_param.sine.cyperus_params->phase = dsp_param.sine.phase;
+  sine->module->dsp_param.sine.cyperus_params->freq = sine->module->dsp_param.sine.freq;
+  sine->module->dsp_param.sine.cyperus_params->amp = sine->module->dsp_param.sine.amp;
+  sine->module->dsp_param.sine.cyperus_params->phase = sine->module->dsp_param.sine.phase;
   
   outsample = cyperus_sine(sine->module->dsp_param.sine.cyperus_params,
 			   jack_samplerate, pos);
