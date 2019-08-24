@@ -50,17 +50,17 @@ int dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float
 void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale);
 void dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos);
 
-int dsp_create_butterworth_biquad_lowpass(struct dsp_bus *target_bus, float freq, float res);
-void dsp_edit_butterworth_biquad_lowpass(struct dsp_module *butterworth_biquad_lowpass, float freq, float res);
-void dsp_butterworth_biquad_lowpass(struct dsp_operation *butterworth_biquad_lowpass, int jack_samplerate, int pos);
+int dsp_create_lowpass(struct dsp_bus *target_bus, float amt, float freq, float res);
+void dsp_edit_lowpass(struct dsp_module *lowpass, float amt, float freq, float res);
+void dsp_lowpass(struct dsp_operation *lowpass, int jack_samplerate, int pos);
 
 int dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, float mix);
 int dsp_edit_pitch_shift(struct dsp_module *pitch_shift, float amp, float shift, float mix);
 float dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos);
 
-int dsp_create_apple_biquad_lowpass(struct dsp_bus *target_bus, float amp, float freq, float res);
-int dsp_edit_apple_biquad_lowpass(struct dsp_module *apple_biquad_lowpass, float amp, float freq, float res);
-float dsp_apple_biquad_lowpass(struct dsp_operation *apple_biquad_lowpass, int jack_samplerate, int pos);
+int dsp_create_karlsen_lowpass(struct dsp_bus *target_bus, float amp, float freq, float res);
+int dsp_edit_karlsen_lowpass(struct dsp_module *karlsen_lowpass, float amp, float freq, float res);
+float dsp_karlsen_lowpass(struct dsp_operation *karlsen_lowpass, int jack_samplerate, int pos);
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
  

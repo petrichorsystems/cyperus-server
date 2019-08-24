@@ -65,7 +65,9 @@ struct dsp_module
   struct dsp_module *target_module;
   struct dsp_module *temp_module;
   int match_found = 0;
+
   temp_module = head_module;
+
   if(id != NULL ) {
     if( strcmp(id, "") != 0 ) {
       while( temp_module != NULL ) {

@@ -33,6 +33,7 @@ struct cyperus_parameters {
   /* generic */
   float freq;
   float amp;
+  float amt;
   float delta;
   float mix;
   float res; /* resonance */
@@ -41,9 +42,12 @@ struct cyperus_parameters {
   float delay_amt; /* delay amount, 0-1 */
   float delay_time; /* init this with
 		       = seconds * sample_rate */
+
   float attack;
   float decay;
   float scale;
+
+  float q;
   
   int pos;
   int delay_pos;
@@ -91,6 +95,18 @@ struct cyperus_parameters {
   float lastoutval1;
   float lastoutval2;
   float lastoutval3;
+
+  float x0;
+  float x1;
+  float x2;
+  float x3;
+  float x4;
+
+  float y0;
+  float y1;
+  float y2;
+  float y3;
+  float y4;
 };
 #endif
 
@@ -116,3 +132,7 @@ float cyperus_delay(struct cyperus_parameters *effect, int jack_sr, int pos);
 float cyperus_pitch_shift(struct cyperus_parameters *pitch_shift, int jack_sr, int pos);
 
 float cyperus_apple_biquad_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos);
+
+void cyperus_lowpass_init(struct cyperus_parameters *filter, int jack_sr);
+float cyperus_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos);
+

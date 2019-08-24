@@ -577,7 +577,7 @@ int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** 
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_delay(target_bus, amt, time, feedback);
-  
+
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
     target_module = temp_module;
@@ -631,7 +631,7 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
   dsp_edit_delay(target_module, amt, time, feedback);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/delay","sfff", module_id, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/edit/module/delay","sfff", module_id, amt, time, feedback);
   free(lo_addr_send);
   
   return 0;
@@ -871,7 +871,7 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
   return 0;
 } /* osc_edit_module_envelope_follower_handler */
 
-int osc_add_module_butterworth_biquad_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_module_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data)
 {
   char *bus_path, *module_id = NULL;
@@ -879,16 +879,18 @@ int osc_add_module_butterworth_biquad_lowpass_handler(const char *path, const ch
   struct dsp_module *temp_module, *target_module = NULL;
 
   float freq;
-  float res;
+  float q;
+  float amp;
   
   printf("path: <%s>\n", path);
 
   bus_path = argv[0];
-  freq=argv[0]->f;
-  res=argv[1]->f;
+  amp=argv[1]->f;
+  freq=argv[2]->f;
+  q=argv[3]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_butterworth_biquad_lowpass(target_bus, freq, res);
+  dsp_create_lowpass(target_bus, amp, freq, q);
 
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -898,53 +900,76 @@ int osc_add_module_butterworth_biquad_lowpass_handler(const char *path, const ch
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
   
-  printf("creating butterworth biquad lowpass filter at freq cutoff %f and resonance %f..\n", freq, res);
+  printf("creating butterworth biquad lowpass filter at freq cutoff %f and qonance %f..\n", freq, q);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/butterworth_biquad_lowpass","sff", module_id, freq, res);
+  lo_send(lo_addr_send,"/cyperus/add/module/lowpass","sfff", module_id, amp, freq, q);
   free(lo_addr_send);
 
   return 0;
-} /* osc_create_module_butterworth_biquad_lowpass_handler */
+} /* osc_create_module_lowpass_handler */
 
-int osc_edit_module_butterworth_biquad_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_edit_module_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
                                                        int argc, void *data, void *user_data)
 {
   char *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
+  float amt;
   float freq;
-  float res;
-  
+  float q;
+  int count;
+
   printf("path: <%s>\n", path);
+  
+  module_path = argv[0];
+  amt=argv[1]->f;
+  freq=argv[2]->f;
+  q=argv[3]->f;
 
-  module_path=argv[0];
-  freq=argv[1]->f;
-  res=argv[2]->f;
-
-  printf("editing butterworth biquad lowpass filter at cutoff freq %f and resonance %f..\n",freq,res);
-
+  printf("module_path: %s\n", module_path);
+  
   /* split up path */
+
+  
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
 
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  
+  module_id = malloc(sizeof(char) * 37);  
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
+
+  printf("bus_path: %s\n", bus_path);
   target_bus = dsp_parse_bus_path(bus_path);
+
+  if(target_bus == NULL) {
+    printf("\n\n\nwhy the fuck is the target_bus null??\n\n\n");
+    lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+    lo_send(lo_addr_send,"/cyperus/edit/module/lowpass","sfff", module_id, amt, freq, q);
+    free(lo_addr_send);
+    return 1;
+  }
+  
+  printf("found bus\n");
+
+  printf("module_id: %s\n", module_id);
+  printf("target_bus: %s\n", target_bus);
+  printf("target_bus->id: %s\n", target_bus->id);
+  printf("target_bus->dsp_module_head: %s\n", target_bus->dsp_module_head);
+  printf("target_bus->dsp_module_head->name: %s\n", target_bus->dsp_module_head->name);
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  printf("found module\n");
   
-  dsp_edit_butterworth_biquad_lowpass(target_module, freq, res);
-
+  dsp_edit_lowpass(target_module, amt, freq, q);
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/butterworth_biquad_lowpass","sff", module_id, freq, res);
+  lo_send(lo_addr_send,"/cyperus/edit/module/lowpass","sfff", module_id, amt, freq, q);
   free(lo_addr_send);
 
   
   return 0;
-} /* osc_edit_module_butterworth_biquad_lowpass_handler */
+} /* osc_edit_module_lowpass_handler */
 
 
 int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
@@ -1033,7 +1058,7 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
 
 
 
-int osc_add_module_apple_biquad_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_module_karlsen_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 				int argc, void *data, void *user_data)
 {
   char *bus_path, *module_id = NULL;
@@ -1054,7 +1079,7 @@ int osc_add_module_apple_biquad_lowpass_handler(const char *path, const char *ty
   printf("creating pitch freq with amount %f, freq %f, and res %f..\n",amt,freq,res);
   
   target_bus = dsp_parse_bus_path(bus_path); 
-  dsp_create_apple_biquad_lowpass(target_bus, amt, freq, res);
+  dsp_create_karlsen_lowpass(target_bus, amt, freq, res);
 
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -1064,16 +1089,16 @@ int osc_add_module_apple_biquad_lowpass_handler(const char *path, const char *ty
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
-  printf("add_module_apple_biquad_lowpass_handler, module_id: %s\n", module_id);
+  printf("add_module_karlsen_lowpass_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/apple_biquad_lowpass","sfff", module_id, amt, freq, res);
+  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","sfff", module_id, amt, freq, res);
   free(lo_addr_send);
   
   return 0;
-} /* osc_add_module_apple_biquad_lowpass_handler */
+} /* osc_add_module_karlsen_lowpass_handler */
 
 int
-osc_edit_module_apple_biquad_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
 {
   char *module_path, *module_id;
@@ -1106,16 +1131,16 @@ osc_edit_module_apple_biquad_lowpass_handler(const char *path, const char *types
   target_bus = dsp_parse_bus_path(bus_path);  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
     
-  printf("module_id %s, editing apple_biquad_lowpass of amount %f, freq %f of 1octave, res %f..\n",module_id,amt,freq,res);
+  printf("module_id %s, editing karlsen_lowpass of amount %f, freq %f of 1octave, res %f..\n",module_id,amt,freq,res);
 
-  dsp_edit_apple_biquad_lowpass(target_module, amt, freq, res);
+  dsp_edit_karlsen_lowpass(target_module, amt, freq, res);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/apple_biquad_lowpass","sfff", module_id, amt, freq, res);
+  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","sfff", module_id, amt, freq, res);
   free(lo_addr_send);
   
   return 0;
-} /* osc_edit_apple_biquad_lowpass_handler */
+} /* osc_edit_karlsen_lowpass_handler */
 
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */

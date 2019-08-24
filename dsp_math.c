@@ -83,7 +83,7 @@ float cyperus_triangle(struct cyperus_parameters *triwav, int jack_sr, int pos) 
   return 2 * triwav->amp / M_PI * asinf( sinf( (2 * M_PI / period) * pos ) );
 }
 
-float cyperus_whitenoise(struct cyperus_parameters *noiz, int jack_sr, int pos) {
+float cyperus_whitenoise(struct cyperus_parameters *noise, int jack_sr, int pos) {
   if( pos == jack_sr )
     srand(time(NULL));
   return (float)rand()/RAND_MAX;
@@ -92,81 +92,128 @@ float cyperus_whitenoise(struct cyperus_parameters *noiz, int jack_sr, int pos) 
 const float A[] = { 0.02109238, 0.07113478, 0.68873558 }; // rescaled by (1+P)/(1-P)
 const float P[] = { 0.3190, 0.7756, 0.9613 };
 
-float cyperus_pinknoise(struct cyperus_parameters *noiz, int jack_sr, int pos) {
+float cyperus_pinknoise(struct cyperus_parameters *noise, int jack_sr, int pos) {
   /* by Evan Buswell */
   
   static const float RMI2 = 2.0 / ((float) RAND_MAX);
   static const float offset = 0.02109238 + 0.07113478 + 0.68873558;
   
   float temp = (float) random();
-  noiz->state0 = P[0] * (noiz->state0 - temp) + temp;
+  noise->state0 = P[0] * (noise->state0 - temp) + temp;
   temp = (float) random();
-  noiz->state1 = P[1] * (noiz->state1 - temp) + temp;
+  noise->state1 = P[1] * (noise->state1 - temp) + temp;
   temp = (float) random();
-  noiz->state2 = P[2] * (noiz->state2 - temp) + temp;
-  return ((A[0] * noiz->state0 + A[1] * noiz->state1 + A[2] * noiz->state2) * RMI2 - offset);
+  noise->state2 = P[2] * (noise->state2 - temp) + temp;
+  return ((A[0] * noise->state0 + A[1] * noise->state1 + A[2] * noise->state2) * RMI2 - offset);
 }
 
+void _lowpass_freq_reset(struct cyperus_parameters *filter, int jack_sr) {
+  float freq;
 
-float cyperus_karlsen_lowpass(struct cyperus_parameters *filtr, int jack_sr, int pos) {
+  if( filter->freq < 0)
+    freq = 0;
+  else
+    freq = filter->freq;
+
+  filter->x0 = freq;
+  filter->x1 = freq * (2 * 3.14159) / jack_sr;
+  if( filter->x1 > 1)
+    filter->x1 = 1;
+  else
+    if( filter->x1 < 0 )
+      filter->x1 = 0;
+
+  filter->x2 = 0.0;
+  
+} /* _lowpass_freq_reset */
+
+void cyperus_lowpass_init(struct cyperus_parameters *filter, int jack_sr) {
+
+  _lowpass_freq_reset(filter, jack_sr);
+  
+} /* cyperus_lowpass_init */
+
+float cyperus_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
+  /* lowpass filter by Evan Buswell */
+
+  float freq;
+
+  if( filter->freq < 0)
+    freq = 0;
+  else
+    freq = filter->freq;
+  filter->x0 = freq;
+  filter->x1 = freq * (2 * 3.14159) / jack_sr;
+  
+  float outsample = 0.0;
+  float last = filter->x2;
+  float coef = filter->x1;
+  float feedback = 1 - coef;
+
+  last = outsample = coef * filter->in + feedback * last;
+  filter->x2 = last;
+  
+  return outsample * filter->amt;
+} /* cyperus_lowpass */
+
+float cyperus_karlsen_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
   /* by Ove Karlsen, 24dB 4-pole lowpass */
 
   /* need to scale the input cutoff to stable parameters frequencies */
   /* sweet spot for parameters->freq is up to 0-0.7/8, in radians of a circle */
   
   float sampleout = 0.0;
-  filtr->tempval = filtr->lastoutval3; if (filtr->tempval > 1) {filtr->tempval = 1;}
-  filtr->in = (-filtr->tempval * filtr->res) + filtr->in;
-  filtr->lastoutval = ((-filtr->lastoutval + filtr->in) * filtr->freq) + filtr->lastoutval;
-  filtr->lastoutval1 = ((-filtr->lastoutval1 + filtr->lastoutval) * filtr->freq) + filtr->lastoutval1;
-  filtr->lastoutval2 = ((-filtr->lastoutval2 + filtr->lastoutval1) * filtr->freq) + filtr->lastoutval2;
-  filtr->lastoutval3 = ((-filtr->lastoutval3 + filtr->lastoutval2) * filtr->freq) + filtr->lastoutval3;
-  sampleout = filtr->lastoutval3;
+  filter->tempval = filter->lastoutval3; if (filter->tempval > 1) {filter->tempval = 1;}
+  filter->in = (-filter->tempval * filter->res) + filter->in;
+  filter->lastoutval = ((-filter->lastoutval + filter->in) * filter->freq) + filter->lastoutval;
+  filter->lastoutval1 = ((-filter->lastoutval1 + filter->lastoutval) * filter->freq) + filter->lastoutval1;
+  filter->lastoutval2 = ((-filter->lastoutval2 + filter->lastoutval1) * filter->freq) + filter->lastoutval2;
+  filter->lastoutval3 = ((-filter->lastoutval3 + filter->lastoutval2) * filter->freq) + filter->lastoutval3;
+  sampleout = filter->lastoutval3;
   
   return sampleout;
 }
 
-float cyperus_butterworth_biquad_lowpass(struct cyperus_parameters *filtr, int jack_sr, int pos) {
+float cyperus_butterworth_biquad_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
   /* by Patrice Tarrabia */
 
   /* need to scale inputs! */
-  /* sweet spot for filtr->freq is 100-300(?)Hz, rez can be from
-       sqrt(2) to ~0.1, filtr->freq 0Hz to samplerate/2  */
+  /* sweet spot for filter->freq is 100-300(?)Hz, rez can be from
+       sqrt(2) to ~0.1, filter->freq 0Hz to samplerate/2  */
   
   float outsample = 0.0;
-  float c = 1.0 / tan(M_PI * filtr->freq / jack_sr);
-  float a1 = 1.0 / (1.0 + filtr->res * c + c * c);
+  float c = 1.0 / tan(M_PI * filter->freq / jack_sr);
+  float a1 = 1.0 / (1.0 + filter->res * c + c * c);
   float a2 = 2 * a1;
   float a3 = a1;
   float b1 = 2.0 * (1.0 - c*c) * a1;
-  float b2 = (1.0 - filtr->res * c + c * c) * a1;
-
-  outsample = a1 * filtr->in + a2 * filtr->lastinval + a3 * filtr->lastinval1 - b1 * filtr->lastoutval - b2 * filtr->lastoutval1;
+  float b2 = (1.0 - filter->res * c + c * c) * a1;
+  outsample = a1 * filter->in + a2 * filter->lastinval + a3 * filter->lastinval1 - b1 * filter->lastoutval - b2 * filter->lastoutval1;
   
-  filtr->lastoutval1 = filtr->lastoutval;
-  filtr->lastoutval = outsample;
-  filtr->lastinval1 = filtr->lastinval;
-  filtr->lastinval = filtr->in;
-
+  filter->lastoutval1 = filter->lastoutval;
+  filter->lastoutval = outsample;
+  filter->lastinval1 = filter->lastinval;
+  filter->lastinval = filter->in;
+  
   return outsample;
 }
 
-float cyperus_butterworth_biquad_hipass(struct cyperus_parameters *filtr, int jack_sr, int pos) {
+float cyperus_butterworth_biquad_hipass(struct cyperus_parameters *filter, int jack_sr, int pos) {
   /* by Patrice Tarrabia */
   float outsample = 0.0;
-  float c = tan(M_PI * filtr->freq / jack_sr);
-  float a1 = 1.0 / (1.0 + filtr->res * c + c * c);
+  float c = tan(M_PI * filter->freq / jack_sr);
+  float a1 = 1.0 / (1.0 + filter->res * c + c * c);
   float a2 = -2*a1;
   float a3 = a1;
   float b1 = 2.0 * ( c * c - 1.0) * a1;
-  float b2 = ( 1.0 - filtr->res * c + c * c) * a1;
+  float b2 = ( 1.0 - filter->res * c + c * c) * a1;
   
-  outsample = a1 * filtr->in + a2 * filtr->lastinval + a3 * filtr->lastinval1 - b1 * filtr->lastoutval - b2 * filtr->lastoutval1;
+  outsample = a1 * filter->in + a2 * filter->lastinval + a3 * filter->lastinval1 - b1 * filter->lastoutval - b2 * filter->lastoutval1;
   
-  filtr->lastoutval1 = filtr->lastoutval;
-  filtr->lastoutval = outsample;
-  filtr->lastinval1 = filtr->lastinval;
-  filtr->lastinval = filtr->in;
+  filter->lastoutval1 = filter->lastoutval;
+  filter->lastoutval = outsample;
+  filter->lastinval1 = filter->lastinval;
+  filter->lastinval = filter->in;
 
   return outsample;
 }
@@ -180,11 +227,6 @@ float cyperus_apple_biquad_lowpass(struct cyperus_parameters *filter, int jack_s
      srate - sample rate
   */
   float outsample = 0.0;
-  
-  filter->state0 = 0.0;
-  filter->state1 = 0.0;
-  filter->state2 = 0.0;
-  filter->state3 = 0.0;
 
   float pi = 22.0/7;
 
@@ -216,23 +258,23 @@ float cyperus_apple_biquad_lowpass(struct cyperus_parameters *filter, int jack_s
   return outsample * filter->amp;
 } /* cyperus_apple_biquad_lowpass */
 
-float cyperus_moog_vcf(struct cyperus_parameters *filtr, int jack_sr, int pos) {
+float cyperus_moog_vcf(struct cyperus_parameters *filter, int jack_sr, int pos) {
   /* by Stilson/Smith CCRMA paper, Timo Tossavainen */
 
-  double f = filtr->freq * 1.16;
-  double fb = filtr->res * (1.0 - 0.15 * f * f);
+  double f = filter->freq * 1.16;
+  double fb = filter->res * (1.0 - 0.15 * f * f);
   
-  filtr->in -= filtr->lastoutval3 * fb;
-  filtr->in *= 0.35013 * (f*f) * (f*f);
-  filtr->lastoutval = filtr->in + 0.3 * filtr->lastinval + (1 - f) * filtr->lastoutval;
-  filtr->lastinval = filtr->in;
-  filtr->lastoutval1 = filtr->lastoutval + 0.3 * filtr->lastinval1 + (1 - f) * filtr->lastoutval1;
-  filtr->lastinval1 = filtr->lastoutval;
-  filtr->lastoutval2 = filtr->lastoutval1 + 0.3 * filtr->lastinval2 + (1 - f) * filtr->lastoutval2;
-  filtr->lastinval2 = filtr->lastoutval1;
-  filtr->lastoutval3 = filtr->lastoutval2 + 0.3 * filtr->lastinval3 + (1 - f) * filtr->lastoutval3;
-  filtr->lastinval3 = filtr->lastoutval2;
-  return filtr->lastoutval3;
+  filter->in -= filter->lastoutval3 * fb;
+  filter->in *= 0.35013 * (f*f) * (f*f);
+  filter->lastoutval = filter->in + 0.3 * filter->lastinval + (1 - f) * filter->lastoutval;
+  filter->lastinval = filter->in;
+  filter->lastoutval1 = filter->lastoutval + 0.3 * filter->lastinval1 + (1 - f) * filter->lastoutval1;
+  filter->lastinval1 = filter->lastoutval;
+  filter->lastoutval2 = filter->lastoutval1 + 0.3 * filter->lastinval2 + (1 - f) * filter->lastoutval2;
+  filter->lastinval2 = filter->lastoutval1;
+  filter->lastoutval3 = filter->lastoutval2 + 0.3 * filter->lastinval3 + (1 - f) * filter->lastoutval3;
+  filter->lastinval3 = filter->lastoutval2;
+  return filter->lastoutval3;
 }
 
 float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
