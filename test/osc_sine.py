@@ -64,7 +64,7 @@ class OscServer(ServerThread):
         print("fallback, received '{}'".format(path))
         print("fallback, args '{}'".format(args))
         
-def test_single_channel_single_bus_sine_follower_delay(dest):
+def test_single_channel_single_bus_sine_follower_sine(dest):
     mains = {'in': [],
              'out': []}
     bus_main0_uuid = None
@@ -119,18 +119,16 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
     print(bus_main0_uuid)
     print(bus_main0_uuid)
 
-    liblo.send(dest, "/cyperus/add/module/sine", "/{}".format(bus_main0_uuid),440.0, 1.0, 0.0)
+    liblo.send(dest, "/cyperus/add/module/sine", "/{}".format(bus_main0_uuid), 440.0, 1.0, 0.0)
     response = responses.get()
     sine_module_uuid = response[0]    
     
     liblo.send(dest, "/cyperus/list/module_port", "/{}?{}".format(bus_main0_uuid,
                                                                   sine_module_uuid))
     response = responses.get()
-    print('response: {}'.format(response))
-
+    print('bloc_processor response: {}'.format(response))
     raw_sine_module_ports = response[1].split('\n')
     print(raw_sine_module_ports)
-
     outs = False
     for elem in filter(None, raw_sine_module_ports):
         if 'out:' in elem:
@@ -142,6 +140,25 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
         else:
             sine_module_ports['in'].append(elem)
     print('sine_module_ports', sine_module_ports)
+
+
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               mains['in'][0],
+               "/{}:{}".format(bus_main0_uuid,
+                               bus_ports['in'][0].split('|')[0]))
+    response = responses.get()
+
+
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               "/{}:{}".format(bus_main0_uuid,
+                               bus_ports['in'][0].split('|')[0]),
+               "/{}?{}<{}".format(bus_main0_uuid,
+                                  sine_module_uuid,
+                                  sine_module_ports['in'][0].split('|')[0]))
+    response = responses.get()
+
     
     liblo.send(dest,
                "/cyperus/add/connection",
@@ -160,15 +177,11 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
 
     response = responses.get()
 
-    time.sleep(5)
-    
-    liblo.send(dest, "/cyperus/edit/module/sine", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), 220.0, 1.0, 0.0)
-    response = responses.get()
-
-    time.sleep(5)
-    
-    liblo.send(dest, "/cyperus/edit/module/sine", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), 110.0, 1.0, 0.0)
-    response = responses.get()
+    for num in range(0, 1000):
+        print("/cyperus/edit/module/sine", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), float(num), 1.0, 0.0)
+        liblo.send(dest, "/cyperus/edit/module/sine", "/{}?{}".format(bus_main0_uuid, sine_module_uuid),  float(num), 1.0, 0.0)
+        response = responses.get()
+        time.sleep(0.1)
 
 if __name__ == '__main__':
     #outgoing connection
@@ -179,6 +192,6 @@ if __name__ == '__main__':
 
     server.start()
 
-    test_single_channel_single_bus_sine_follower_delay(dest)
+    test_single_channel_single_bus_sine_follower_sine(dest)
 
     input("press enter to quit...\n")

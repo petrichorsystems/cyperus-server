@@ -1,4 +1,4 @@
-#N canvas 3832 29 2110 2109 10;
+#N canvas 3840 29 2110 2109 10;
 #X msg 1675 918 connect localhost 97211;
 #X msg 1766 950 disconnect;
 #X obj 1675 1011 netsend -u -b;
@@ -74,6 +74,14 @@ out;
 #X msg 53 752 list /e5edea33-0cd0-4e6b-9149-50683191f57c;
 #X msg 50 956 list /mainsd1a7adc5-af2a-4a91-9a55-e8d8c1f68f98 /e5edea33-0cd0-4e6b-9149-50683191f57c:1f9b5a7d-4d38-40a2-a80e-cfb1640c3bc9
 ;
+#X obj 1058 1428 oscformat cyperus edit module lowpass;
+#X floatatom 1342 1145 5 0 0 0 - - -;
+#X msg 1356 1297 list /0e37156b-a65f-4251-b473-1813c0eb16c6?238daffd-6881-4b87-8e65-0711a0ea22ba
+1 1 1;
+#X msg 1305 1219 set list /0e37156b-a65f-4251-b473-1813c0eb16c6?238daffd-6881-4b87-8e65-0711a0ea22ba
+1 \$1 1;
+#X obj 1286 1327 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
 #X connect 0 0 2 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
@@ -118,3 +126,9 @@ out;
 #X connect 66 0 6 0;
 #X connect 67 0 35 0;
 #X connect 68 0 60 0;
+#X connect 69 0 6 0;
+#X connect 70 0 72 0;
+#X connect 71 0 69 0;
+#X connect 72 0 71 0;
+#X connect 72 0 73 0;
+#X connect 73 0 71 0;

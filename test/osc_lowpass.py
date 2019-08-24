@@ -183,6 +183,7 @@ def test_single_channel_single_bus_sine_follower_lowpass(dest):
     time.sleep(5)
 
     for num in range(0, 1000):
+        print("sending /cyperus/edit/module/lowpass", "/{}?{}".format(bus_main0_uuid, lowpass_module_uuid), 1.0, float(num), 0.8)
         liblo.send(dest, "/cyperus/edit/module/lowpass", "/{}?{}".format(bus_main0_uuid, lowpass_module_uuid), 1.0, float(num), 0.8)
         response = responses.get()
         time.sleep(0.1)

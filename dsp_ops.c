@@ -672,7 +672,6 @@ dsp_create_lowpass(struct dsp_bus *target_bus, float amt, float freq, float q) {
 
   cyperus_lowpass_init(filter_param.lowpass.cyperus_params, jackcli_samplerate);
 
-  
   ins = dsp_port_in_init("in", 512);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,

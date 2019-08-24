@@ -532,36 +532,6 @@ dsp_add_connection(char *id_out, char *id_in) {
   return 0;
 } /* dsp_add_connection */
 
-char*
-param_to_module_name(dsp_parameter module) {
-  switch( module.type ) {
-  case DSP_NULL_PARAMETER_ID:
-    module.null.name = "null";
-    return module.null.name;
-  case DSP_SINE_PARAMETER_ID:
-    return module.sine.name;
-  case DSP_SQUARE_PARAMETER_ID:
-    return module.square.name;
-  case DSP_PINKNOISE_PARAMETER_ID:
-    return module.pinknoise.name;
-  case DSP_BUTTERWORTH_BIQUAD_LOWPASS_PARAMETER_ID:
-    return module.butterworth_biquad_lowpass.name;
-  case DSP_DELAY_PARAMETER_ID:
-    return module.delay.name;
-  case DSP_VOCODER_PARAMETER_ID:
-    return module.vocoder.name;
-  case DSP_BLOCK_PROCESSOR_PARAMETER_ID:
-    return module.block_processor.name;
-  case DSP_PITCH_SHIFT_PARAMETER_ID:
-    return module.pitch_shift.name;
-  case DSP_ENVELOPE_FOLLOWER_PARAMETER_ID:
-    return module.envelope_follower.name;
-  default:
-    module.null.name="null";
-    return module.null.name;
-  }
-} /* param_to_module_name */
-
 void
 dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection) {
   /* is the below ever actually the case? */

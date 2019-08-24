@@ -81,10 +81,10 @@ int osc_edit_module_envelope_follower_handler(const char *path, const char *type
 
 
 int osc_add_module_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                      int argc, void *data, void *user_data);
+                                   int argc, void *data, void *user_data);
 
 int osc_edit_module_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                       int argc, void *data, void *user_data);
+                                    int argc, void *data, void *user_data);
 
 
 int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
