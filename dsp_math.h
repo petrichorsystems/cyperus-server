@@ -136,3 +136,6 @@ float cyperus_apple_biquad_lowpass(struct cyperus_parameters *filter, int jack_s
 void cyperus_lowpass_init(struct cyperus_parameters *filter, int jack_sr);
 float cyperus_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos);
 
+void cyperus_highpass_init(struct cyperus_parameters *filter, int jack_sr);
+float cyperus_highpass(struct cyperus_parameters *filter, int jack_sr, int pos);
+

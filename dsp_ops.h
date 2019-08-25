@@ -50,9 +50,13 @@ int dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float
 void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale);
 void dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos);
 
-int dsp_create_lowpass(struct dsp_bus *target_bus, float amt, float freq, float res);
-void dsp_edit_lowpass(struct dsp_module *lowpass, float amt, float freq, float res);
+int dsp_create_lowpass(struct dsp_bus *target_bus, float amt, float freq, float q);
+void dsp_edit_lowpass(struct dsp_module *lowpass, float amt, float freq, float q);
 void dsp_lowpass(struct dsp_operation *lowpass, int jack_samplerate, int pos);
+
+int dsp_create_highpass(struct dsp_bus *target_bus, float amt, float freq);
+void dsp_edit_highpass(struct dsp_module *highpass, float amt, float freq);
+void dsp_highpass(struct dsp_operation *highpass, int jack_samplerate, int pos);
 
 int dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, float mix);
 int dsp_edit_pitch_shift(struct dsp_module *pitch_shift, float amp, float shift, float mix);

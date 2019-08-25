@@ -107,7 +107,7 @@ float cyperus_pinknoise(struct cyperus_parameters *noise, int jack_sr, int pos) 
   return ((A[0] * noise->state0 + A[1] * noise->state1 + A[2] * noise->state2) * RMI2 - offset);
 }
 
-void _lowpass_freq_reset(struct cyperus_parameters *filter, int jack_sr) {
+void _filter_freq_reset(struct cyperus_parameters *filter, int jack_sr, int low) {
   float freq;
 
   if( filter->freq < 0)
@@ -116,25 +116,37 @@ void _lowpass_freq_reset(struct cyperus_parameters *filter, int jack_sr) {
     freq = filter->freq;
 
   filter->x0 = freq;
-  filter->x1 = freq * (2 * 3.14159) / jack_sr;
-  if( filter->x1 > 1)
-    filter->x1 = 1;
+  if( low )
+    filter->x1 = freq * (2 * 3.14159) / jack_sr;
   else
+    filter->x1 = 1 - freq * (2 * 3.14159) / jack_sr;
+
+  if( low ) {
+    if( filter->x1 > 1)
+      filter->x1 = 1;
+    else
+      if( filter->x1 < 0 )
+        filter->x1 = 0;
+  } else {
     if( filter->x1 < 0 )
       filter->x1 = 0;
-
+    else
+      if( filter->x1 > 1 )
+        filter->x1 = 1;
+    filter->state0 = 0.5 * (1+filter->x1);
+  
+  }
   filter->x2 = 0.0;
   
-} /* _lowpass_freq_reset */
+} /* _filter_freq_reset */
 
 void cyperus_lowpass_init(struct cyperus_parameters *filter, int jack_sr) {
 
-  _lowpass_freq_reset(filter, jack_sr);
+  _filter_freq_reset(filter, jack_sr, 1);
   
 } /* cyperus_lowpass_init */
 
 float cyperus_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
-  /* lowpass filter by Evan Buswell */
 
   float freq;
 
@@ -155,6 +167,43 @@ float cyperus_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
   
   return outsample * filter->amt;
 } /* cyperus_lowpass */
+
+
+void cyperus_highpass_init(struct cyperus_parameters *filter, int jack_sr) {
+
+  _filter_freq_reset(filter, jack_sr, 0);
+  
+} /* cyperus_highpass_init */
+
+float cyperus_highpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
+  float freq;
+
+  if( filter->freq < 0)
+    freq = 0;
+  else
+    freq = filter->freq;
+  
+  filter->x0 = freq;
+  filter->x1 = 1 - freq * (2 * 3.14159) / jack_sr;
+
+  float tempsample = 0.0;
+  float outsample = 0.0;
+  float last = filter->x2;
+  float coef = filter->x1;
+
+  if( coef < 1) {
+    tempsample = filter->in + coef * last;
+    outsample = filter->state0 * (tempsample - last);
+    last = tempsample;
+    filter->x2 = last;
+  } else {
+    outsample = filter->in;
+    filter->x2 = 0;
+  }
+
+  return outsample * filter->amt;
+} /* cyperus_highpass */
+
 
 float cyperus_karlsen_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
   /* by Ove Karlsen, 24dB 4-pole lowpass */

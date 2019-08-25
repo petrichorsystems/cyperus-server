@@ -99,6 +99,12 @@ typedef struct dsp_module_parameter {
       float q;
       struct cyperus_parameters *cyperus_params;
     } lowpass;
+    struct {
+      char *name;
+      float amt;
+      float freq; 
+      struct cyperus_parameters *cyperus_params;
+    } highpass;
   };
 }dsp_parameter;
 
@@ -115,7 +121,8 @@ typedef enum dsp_parameter_identifiers{
   DSP_PITCH_SHIFT_PARAMETER_ID=11,
   DSP_ENVELOPE_FOLLOWER_PARAMETER_ID=12,
   DSP_KARLSEN_LOWPASS_PARAMETER_ID=13,
-  DSP_LOWPASS_PARAMETER_ID=14
+  DSP_LOWPASS_PARAMETER_ID=14,
+  DSP_HIGHPASS_PARAMETER_ID=15
 }dsp_param_identifiers;
 
 struct dsp_port_in {
