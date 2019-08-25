@@ -216,10 +216,6 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
             follower_module_ports['in'].append(elem)
     print('follower_module_ports', follower_module_ports)
 
-
-
-
-
     
     delay_module_port_in0 = "/{}?{}<{}".format(bus_main0_uuid, delay_module_uuid,
                                                delay_module_ports['in'][0].split('|')[0])
@@ -268,16 +264,6 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
     sine_module_out0 = "/{}?{}>{}".format(bus_main0_uuid,
                                            sine_module_uuid,
                                            sine_module_ports['out'][0].split('|')[0])
-
-
-
-
-
-
-
-
-
-
 
 
 
