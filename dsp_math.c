@@ -417,13 +417,12 @@ float cyperus_delay_init(struct cyperus_parameters *delay, int jack_sr, int pos)
   delay->x0 = 0.0;
   delay->x1 = 0.0;
 }
-
-float a = 0.9;
-
 float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
   float delay_time = 0.0;
   float outsample = 0.0;
 
+  float a = 0.95;
+  
   delay_time = delay->x1 + a * (delay->delay_time - delay->x1);
   delay->x0 = delay->delay_time;
   delay->x1 = delay_time;
