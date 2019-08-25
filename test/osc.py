@@ -151,7 +151,7 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
             sine_module_ports['in'].append(elem)
     print('sine_module_ports', sine_module_ports)
 
-    liblo.send(dest, "/cyperus/add/module/delay", "/{}".format(bus_main0_uuid), 1.0, 1.0, 0.8)
+    liblo.send(dest, "/cyperus/add/module/delay", "/{}".format(bus_main0_uuid), 1.0, 1.0, 0.5)
     response = responses.get()
     delay_module_uuid = response[0]
 

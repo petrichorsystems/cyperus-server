@@ -863,6 +863,8 @@ dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos)
   outsample = cyperus_pitch_shift(pitch_shift->module->dsp_param.pitch_shift.cyperus_params,
                                   jack_samplerate, pos);
 
+  pitch_shift->outs->sample->value = outsample;
+
   return outsample;
 } /* dsp_pitch_shift */
 
