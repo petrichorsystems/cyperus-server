@@ -236,6 +236,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
               sample_out->sample = sample_in->sample;
 	      temp_op_in = dsp_operation_init(temp_connection->id_in);
               temp_op_in->outs = sample_out;
+              temp_op_in->ins = sample_in;
 	    } else {
 	      sample_in = dsp_operation_sample_init(temp_result[2], 0.0, 1);
 	      temp_op_in = dsp_operation_init(temp_result[1]);

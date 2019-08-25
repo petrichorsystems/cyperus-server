@@ -1071,10 +1071,13 @@ void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
-  
+
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
-      temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
+      if( temp_op->ins == NULL )
+        temp_op->outs->sample->value = 0.0;
+      else
+        temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
     } else {
       temp_op->module->dsp_function(temp_op, jack_sr, pos);
     }
@@ -1139,6 +1142,7 @@ void
                  temp_op->outs->dsp_id);
           temp_op = temp_op->next;
         }
+        printf("done listing\n");
       }
       
     }

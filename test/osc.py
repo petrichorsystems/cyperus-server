@@ -46,6 +46,17 @@ class OscServer(ServerThread):
         print("received '/cyperus/add/module/delay'")
         responses.put(args)
 
+                
+    @make_method('/cyperus/add/module/bandpass', 'sfff')
+    def osc_add_module_bandpass(self, path, args):
+        print("received '/cyperus/add/module/bandpass'")
+        responses.put(args)
+
+    @make_method('/cyperus/edit/module/bandpass', 'sfff')
+    def osc_edit_module_bandpass(self, path, args):
+        print("received '/cyperus/edit/module/bandpass'")
+        responses.put(args)
+
     @make_method('/cyperus/list/module_port', 'ss')
     def osc_list_module_module_port(self, path, args):
         print("received '/cyperus/list/module_port'")
@@ -80,6 +91,9 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
                          'out': []}
     follower_module_uuid = None
     follower_module_ports = {'in': [],
+                         'out': []}
+    bandpass_module_uuid = None
+    bandpass_module_ports = {'in': [],
                          'out': []}
     
     liblo.send(dest, "/cyperus/list/main")
@@ -158,6 +172,29 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
         else:
             delay_module_ports['in'].append(elem)
     print('delay_module_ports', delay_module_ports)
+
+    liblo.send(dest, "/cyperus/add/module/bandpass", "/{}".format(bus_main0_uuid), 1.0, 100.0, 10.0)
+    response = responses.get()
+    bandpass_module_uuid = response[0]    
+    
+    liblo.send(dest, "/cyperus/list/module_port", "/{}?{}".format(bus_main0_uuid,
+                                                                  bandpass_module_uuid))
+    response = responses.get()
+    print('bloc_processor response: {}'.format(response))
+    raw_bandpass_module_ports = response[1].split('\n')
+    print(raw_bandpass_module_ports)
+    outs = False
+    for elem in filter(None, raw_bandpass_module_ports):
+        if 'out:' in elem:
+            outs = True
+        elif 'in:' in elem:
+            pass
+        elif outs:
+            bandpass_module_ports['out'].append(elem)
+        else:
+            bandpass_module_ports['in'].append(elem)
+    print('bandpass_module_ports', bandpass_module_ports)
+
     
     liblo.send(dest, "/cyperus/add/module/envelope_follower", "/{}".format(bus_main0_uuid), 1.0, 1.0, 1.0)
     response = responses.get()
@@ -179,6 +216,21 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
             follower_module_ports['in'].append(elem)
     print('follower_module_ports', follower_module_ports)
 
+
+
+
+
+    
+    delay_module_port_in0 = "/{}?{}<{}".format(bus_main0_uuid, delay_module_uuid,
+                                               delay_module_ports['in'][0].split('|')[0])
+    delay_module_port_out0 = "/{}?{}>{}".format(bus_main0_uuid, delay_module_uuid,
+                                                delay_module_ports['out'][0].split('|')[0])
+    
+    bandpass_module_port_in0 = "/{}?{}<{}".format(bus_main0_uuid, bandpass_module_uuid,
+                                               bandpass_module_ports['in'][0].split('|')[0])
+    bandpass_module_port_out0 = "/{}?{}>{}".format(bus_main0_uuid, bandpass_module_uuid,
+                                                bandpass_module_ports['out'][0].split('|')[0])
+
     liblo.send(dest,
                "/cyperus/add/connection",
                mains['in'][0],
@@ -186,18 +238,20 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
                                bus_ports['in'][0].split('|')[0]))
     response = responses.get()
 
-    delay_module_port_in0 = "/{}?{}<{}".format(bus_main0_uuid, delay_module_uuid,
-                                               delay_module_ports['in'][0].split('|')[0])
+
     liblo.send(dest,
                "/cyperus/add/connection",
                "/{}:{}".format(bus_main0_uuid,
                                bus_ports['in'][0].split('|')[0]),
-               delay_module_port_in0)
+               bandpass_module_port_in0)
     response = responses.get()
 
-    print('bus_ports', bus_ports)
-    delay_module_port_out0 = "/{}?{}>{}".format(bus_main0_uuid, delay_module_uuid,
-                                                delay_module_ports['out'][0].split('|')[0])
+    
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               bandpass_module_port_out0,
+               delay_module_port_in0)
+    response = responses.get()
 
     liblo.send(dest,
                "/cyperus/add/connection",
@@ -215,6 +269,19 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
                                            sine_module_uuid,
                                            sine_module_ports['out'][0].split('|')[0])
 
+
+
+
+
+
+
+
+
+
+
+
+
+    
     follower_module_in0  = "/{}?{}<{}".format(bus_main0_uuid,
                                               follower_module_uuid,
                                               follower_module_ports['in'][0].split('|')[0])
@@ -233,6 +300,16 @@ def test_single_channel_single_bus_sine_follower_delay(dest):
     liblo.send(dest, "/cyperus/add/connection", follower_module_out0, delay_module_port_in_time)
     response = responses.get()    
 
+    time.sleep(7)
+
+    while(1):
+        for num in range(0, 5000):
+            print("sending /cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(num), 20.0)
+            liblo.send(dest, "/cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(num), 20.0)
+            response = responses.get()
+            time.sleep(0.0025)
+
+    
 if __name__ == '__main__':
     #outgoing connection
     dest = liblo.Address(97211)
