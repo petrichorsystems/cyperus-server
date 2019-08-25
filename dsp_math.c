@@ -217,6 +217,11 @@ void cyperus_bandpass_init(struct cyperus_parameters *filter, int jack_sr) {
 
   float freq = filter->freq;
   float q = filter->q;
+
+  float last = 0.0;
+  float prev = 0.0;
+  float coef1 = 0.0;
+  float coef2 = 0.0;
   
   float r, oneminusr, omega;
   if (freq < 0.001) freq = 10;
@@ -233,6 +238,9 @@ void cyperus_bandpass_init(struct cyperus_parameters *filter, int jack_sr) {
   filter->state2  = 2 * oneminusr * (oneminusr + r * omega);
   /* post("r %f, omega %f, coef1 %f, coef2 %f",
      r, omega, x->x_ctl->c_coef1, x->x_ctl->c_coef2); */
+
+  filter->x3 = 0.0;
+  filter->x4 = 0.0;
   
 } /* cyperus_bandpass_init */
 
@@ -240,33 +248,44 @@ float cyperus_bandpass(struct cyperus_parameters *filter, int jack_sr, int pos) 
   float freq;
   float q;
   float output, outsample;
-  
-   float r, oneminusr, omega;
-  if (freq < 0.001) freq = 10;
-  if (q < 0) q = 0;
-  filter->x0 = freq;
-  filter->x1 = q;
-  omega = freq * (2.0f * 3.14159f) / jack_sr;
-  if (q < 0.001) oneminusr = 1.0f;
-  else oneminusr = omega/q;
-  if (oneminusr > 1.0f) oneminusr = 1.0f;
-  r = 1.0f - oneminusr;
-  filter->state0 = 2.0f * _bandpass_qcos(omega) * r;
-  filter->state1 = - r * r;
-  filter->state2  = 2 * oneminusr * (oneminusr + r * omega);
-  
+
+
+  if( filter->freq != filter->x0 ||
+      filter->q != filter->x1 ) { 
+    float r, oneminusr, omega;
+    
+    freq = filter->freq;
+    q = filter->q;
+   
+    if (freq < 0.001) freq = 10;
+    if (q < 0) q = 0;
+    filter->x0 = freq;
+    filter->x1 = q;
+    omega = freq * (2.0f * 3.14159f) / jack_sr;
+    if (q < 0.001) oneminusr = 1.0f;
+    else oneminusr = omega/q;
+    if (oneminusr > 1.0f) oneminusr = 1.0f;
+    r = 1.0f - oneminusr;
+    filter->state0 = 2.0f * _bandpass_qcos(omega) * r;
+    filter->state1 = - r * r;
+    filter->state2  = 2 * oneminusr * (oneminusr + r * omega);
+
+    filter->freq = freq;
+    filter->q = q;
+  }
   float last = filter->x3;
   float prev = filter->x4;
   float coef1 = filter->state0;;
   float coef2 = filter->state1;
   float gain = filter->state2;
-
+  
   output =  filter->in + coef1 * last + coef2 * prev;
-  outsample = output * filter->amt;
+  outsample = output * filter->amt * gain;
   prev = last;
-  last = outsample;
-
+  last = output;
+  
   filter->x3 = last;
+  filter->x4 = prev;
   
   return outsample;
 } /* cyperus_bandpass */

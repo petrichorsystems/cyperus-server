@@ -119,7 +119,7 @@ def test_single_channel_single_bus_sine_follower_bandpass(dest):
     print(bus_main0_uuid)
     print(bus_main0_uuid)
 
-    liblo.send(dest, "/cyperus/add/module/bandpass", "/{}".format(bus_main0_uuid), 1.0, 440.0, 220.0)
+    liblo.send(dest, "/cyperus/add/module/bandpass", "/{}".format(bus_main0_uuid), 1.0, 100.0, 10.0)
     response = responses.get()
     bandpass_module_uuid = response[0]    
     
@@ -176,18 +176,20 @@ def test_single_channel_single_bus_sine_follower_bandpass(dest):
                mains['out'][0])
 
     response = responses.get()
+
+    time.sleep(7)
     
-    liblo.send(dest, "/cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, 1200.0, 600.0)
-    response = responses.get()
-
-    time.sleep(5)
-
     for num in range(0, 5000):
-        print("sending /cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(5000 - num), 200.0)
-        liblo.send(dest, "/cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(5000 - num), 200.0)
+        print("sending /cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(num), 20.0)
+        liblo.send(dest, "/cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(num), 20.0)
         response = responses.get()
         time.sleep(0.0025)
 
+
+    print("sending /cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, 200.0, 10.0)
+    liblo.send(dest, "/cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, 200.0, 10.0)
+    response = responses.get()
+    
 if __name__ == '__main__':
     #outgoing connection
     dest = liblo.Address(97211)
