@@ -868,6 +868,7 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
   return 0;
 } /* osc_edit_module_envelope_follower_handler */
 
+
 int osc_add_module_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data)
 {
@@ -876,7 +877,6 @@ int osc_add_module_lowpass_handler(const char *path, const char *types, lo_arg *
   struct dsp_module *temp_module, *target_module = NULL;
 
   float freq;
-  float q;
   float amp;
   
   printf("path: <%s>\n", path);
@@ -884,10 +884,9 @@ int osc_add_module_lowpass_handler(const char *path, const char *types, lo_arg *
   bus_path = argv[0];
   amp=argv[1]->f;
   freq=argv[2]->f;
-  q=argv[3]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_lowpass(target_bus, amp, freq, q);
+  dsp_create_lowpass(target_bus, amp, freq);
 
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -896,13 +895,13 @@ int osc_add_module_lowpass_handler(const char *path, const char *types, lo_arg *
   }
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
-  
-  printf("creating butterworth biquad lowpass filter at freq cutoff %f and qonance %f..\n", freq, q);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/lowpass","sfff", module_id, amp, freq, q);
+  lo_send(lo_addr_send,"/cyperus/add/module/lowpass","sff", module_id, amp, freq);
   free(lo_addr_send);
 
+  free(module_id);
+  
   return 0;
 } /* osc_create_module_lowpass_handler */
 
@@ -915,7 +914,6 @@ int osc_edit_module_lowpass_handler(const char *path, const char *types, lo_arg 
   struct dsp_module *target_module = NULL;
   float amt = 0.0;
   float freq = 0.0;
-  float q = 0.0;
   int count = 0;
 
   printf("path: <%s>\n", path);
@@ -923,7 +921,6 @@ int osc_edit_module_lowpass_handler(const char *path, const char *types, lo_arg 
   module_path = argv[0];
   amt=argv[1]->f;
   freq=argv[2]->f;
-  q=argv[3]->f;
 
   printf("module_path: %s\n", module_path);
   
@@ -937,32 +934,22 @@ int osc_edit_module_lowpass_handler(const char *path, const char *types, lo_arg 
   strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
  
   target_bus = dsp_parse_bus_path(bus_path);
-  if(target_bus == NULL) {
-    target_bus = dsp_parse_bus_path(bus_path);
-    printf("\n\n\nwhy the fuck is the target_bus null??\n\n\n");
-    printf("dsp_global_bus_head->id: %s\n", dsp_global_bus_head->id);
-    printf("bus_path: %s\n", bus_path);
-    printf("strlen(bus_path): %d\n", strlen(bus_path));
-    printf("\n");
-    lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-    lo_send(lo_addr_send,"/cyperus/edit/module/lowpass","sfff", module_id, amt, freq, q);
-    free(lo_addr_send);
-    exit(1);
-    return 1;
-  }  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   
-  dsp_edit_lowpass(target_module, amt, freq, q);
+  dsp_edit_lowpass(target_module, amt, freq);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/lowpass","sfff", module_id, amt, freq, q);
+  lo_send(lo_addr_send,"/cyperus/edit/module/lowpass","sff", module_id, amt, freq);
   free(lo_addr_send);
 
-  free(bus_path);
+  
   free(module_id);
+  free(bus_path);
  
   return 0;
 } /* osc_edit_module_lowpass_handler */
+
+
 
 int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data)

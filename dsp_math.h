@@ -47,8 +47,6 @@ struct cyperus_parameters {
   float decay;
   float scale;
 
-  float q;
-  
   int pos;
   int delay_pos;
   float avg;

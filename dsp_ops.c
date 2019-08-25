@@ -645,8 +645,7 @@ void dsp_lowpass(struct dsp_operation *lowpass, int jack_samplerate, int pos) {
   lowpass->module->dsp_param.lowpass.cyperus_params->in = insample;
   lowpass->module->dsp_param.lowpass.cyperus_params->amt = dsp_param.lowpass.amt;
   lowpass->module->dsp_param.lowpass.cyperus_params->freq = dsp_param.lowpass.freq;
-  lowpass->module->dsp_param.lowpass.cyperus_params->q = dsp_param.lowpass.q;
-  
+
   outsample = cyperus_lowpass(lowpass->module->dsp_param.lowpass.cyperus_params, jack_samplerate, pos);
 
   lowpass->outs->sample->value = outsample;
@@ -655,7 +654,7 @@ void dsp_lowpass(struct dsp_operation *lowpass, int jack_samplerate, int pos) {
 } /* dsp_lowpass */
 
 
-int dsp_create_lowpass(struct dsp_bus *target_bus, float amt, float freq, float q) {
+int dsp_create_lowpass(struct dsp_bus *target_bus, float amt, float freq) {
   dsp_parameter filter_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
@@ -666,7 +665,6 @@ int dsp_create_lowpass(struct dsp_bus *target_bus, float amt, float freq, float 
   filter_param.lowpass.cyperus_params = malloc(sizeof(struct cyperus_parameters));
   filter_param.lowpass.amt = amt;
   filter_param.lowpass.freq = freq;
-  filter_param.lowpass.q = q;
 
   cyperus_lowpass_init(filter_param.lowpass.cyperus_params, jackcli_samplerate);
 
@@ -683,7 +681,7 @@ int dsp_create_lowpass(struct dsp_bus *target_bus, float amt, float freq, float 
   return 0;
 } /* dsp_create_lowpass */
 
-void dsp_edit_lowpass(struct dsp_module *lowpass, float amt, float freq, float q) {
+void dsp_edit_lowpass(struct dsp_module *lowpass, float amt, float freq) {
   lowpass->dsp_param.lowpass.amt = amt;
   lowpass->dsp_param.lowpass.freq = freq;
 

@@ -44,12 +44,12 @@ class OscServer(ServerThread):
         print('args', args)
         responses.put(args)
         
-    @make_method('/cyperus/add/module/lowpass', 'sfff')
+    @make_method('/cyperus/add/module/lowpass', 'sff')
     def osc_add_module_lowpass(self, path, args):
         print("received '/cyperus/add/module/lowpass'")
         responses.put(args)
 
-    @make_method('/cyperus/edit/module/lowpass', 'sfff')
+    @make_method('/cyperus/edit/module/lowpass', 'sff')
     def osc_edit_module_lowpass(self, path, args):
         print("received '/cyperus/edit/module/lowpass'")
         responses.put(args)
@@ -119,7 +119,7 @@ def test_single_channel_single_bus_sine_follower_lowpass(dest):
     print(bus_main0_uuid)
     print(bus_main0_uuid)
 
-    liblo.send(dest, "/cyperus/add/module/lowpass", "/{}".format(bus_main0_uuid), 1.0, 440.0, 0.8)
+    liblo.send(dest, "/cyperus/add/module/lowpass", "/{}".format(bus_main0_uuid), 1.0, 440.0)
     response = responses.get()
     lowpass_module_uuid = response[0]    
     
@@ -177,14 +177,14 @@ def test_single_channel_single_bus_sine_follower_lowpass(dest):
 
     response = responses.get()
     
-    liblo.send(dest, "/cyperus/edit/module/lowpass", "/{}?{}".format(bus_main0_uuid, lowpass_module_uuid), 1.0, 1200.0, 0.8)
+    liblo.send(dest, "/cyperus/edit/module/lowpass", "/{}?{}".format(bus_main0_uuid, lowpass_module_uuid), 1.0, 1200.0)
     response = responses.get()
 
     time.sleep(5)
 
     for num in range(0, 1000):
-        print("sending /cyperus/edit/module/lowpass", "/{}?{}".format(bus_main0_uuid, lowpass_module_uuid), 1.0, float(num), 0.8)
-        liblo.send(dest, "/cyperus/edit/module/lowpass", "/{}?{}".format(bus_main0_uuid, lowpass_module_uuid), 1.0, float(num), 0.8)
+        print("sending /cyperus/edit/module/lowpass", "/{}?{}".format(bus_main0_uuid, lowpass_module_uuid), 1.0, float(num))
+        liblo.send(dest, "/cyperus/edit/module/lowpass", "/{}?{}".format(bus_main0_uuid, lowpass_module_uuid), 1.0, float(num))
         response = responses.get()
         time.sleep(0.01)
 

@@ -134,7 +134,6 @@ void _filter_freq_reset(struct cyperus_parameters *filter, int jack_sr, int low)
       if( filter->x1 > 1 )
         filter->x1 = 1;
     filter->state0 = 0.5 * (1+filter->x1);
-  
   }
   filter->x2 = 0.0;
   
