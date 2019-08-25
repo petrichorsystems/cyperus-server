@@ -185,10 +185,18 @@ def test_single_channel_single_bus_sine_follower_bandpass(dest):
         response = responses.get()
         time.sleep(0.0025)
 
+    for num in range(0, 5000):
+        print("sending /cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(num), 20.0)
+        liblo.send(dest, "/cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(num), 20.0)
+        response = responses.get()
+        time.sleep(0.0025)
 
-    print("sending /cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, 200.0, 10.0)
-    liblo.send(dest, "/cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, 200.0, 10.0)
-    response = responses.get()
+    for num in range(0, 5000):
+        print("sending /cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(num), 20.0)
+        liblo.send(dest, "/cyperus/edit/module/bandpass", "/{}?{}".format(bus_main0_uuid, bandpass_module_uuid), 1.0, float(num), 20.0)
+        response = responses.get()
+        time.sleep(0.0025)
+
     
 if __name__ == '__main__':
     #outgoing connection
