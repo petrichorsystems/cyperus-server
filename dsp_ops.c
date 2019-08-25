@@ -398,6 +398,8 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
 
   delay_param.delay.cyperus_params[0].pos = 0;
   delay_param.delay.cyperus_params[0].delay_pos = 0;
+
+  cyperus_delay_init(delay_param.delay.cyperus_params, jackcli_samplerate);
   
   ins = dsp_port_in_init("in", 512);
   ins->next = dsp_port_in_init("param_time", 512);
