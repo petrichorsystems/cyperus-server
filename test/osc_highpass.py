@@ -182,11 +182,11 @@ def test_single_channel_single_bus_sine_follower_highpass(dest):
 
     time.sleep(5)
 
-    for num in range(0, 1000):
-        print("sending /cyperus/edit/module/highpass", "/{}?{}".format(bus_main0_uuid, highpass_module_uuid), 1.0, float(1000 - num))
-        liblo.send(dest, "/cyperus/edit/module/highpass", "/{}?{}".format(bus_main0_uuid, highpass_module_uuid), 1.0, float(1000 - num))
+    for num in range(0, 5000):
+        print("sending /cyperus/edit/module/highpass", "/{}?{}".format(bus_main0_uuid, highpass_module_uuid), 1.0, float(5000 - num))
+        liblo.send(dest, "/cyperus/edit/module/highpass", "/{}?{}".format(bus_main0_uuid, highpass_module_uuid), 1.0, float(5000 - num))
         response = responses.get()
-        time.sleep(0.01)
+        time.sleep(0.0025)
 
 if __name__ == '__main__':
     #outgoing connection
