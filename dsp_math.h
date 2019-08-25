@@ -53,6 +53,8 @@ struct cyperus_parameters {
   float max;
   int vocoder_pos;
 
+  float q;
+  
   /* sine */
   int exp;
   int skip;
@@ -136,4 +138,7 @@ float cyperus_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos);
 
 void cyperus_highpass_init(struct cyperus_parameters *filter, int jack_sr);
 float cyperus_highpass(struct cyperus_parameters *filter, int jack_sr, int pos);
+
+void cyperus_bandpass_init(struct cyperus_parameters *filter, int jack_sr);
+float cyperus_bandpass(struct cyperus_parameters *filter, int jack_sr, int pos);
 

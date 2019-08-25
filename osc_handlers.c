@@ -1031,6 +1031,90 @@ int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg
   return 0;
 } /* osc_edit_module_highpass_handler */
 
+int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
+                                                      int argc, void *data, void *user_data)
+{
+  char *bus_path, *module_id = NULL;
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
+
+  float freq;
+  float amp;
+  float q;
+  
+  printf("path: <%s>\n", path);
+
+  bus_path = argv[0];
+  amp=argv[1]->f;
+  freq=argv[2]->f;
+  q=argv[3]->f;
+
+  target_bus = dsp_parse_bus_path(bus_path);  
+  dsp_create_bandpass(target_bus, amp, freq, q);
+
+  temp_module = target_bus->dsp_module_head;
+  while(temp_module != NULL) {
+    target_module = temp_module;
+    temp_module = temp_module->next;
+  }
+  module_id = malloc(sizeof(char) * 37);
+  strcpy(module_id, target_module->id);
+
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/add/module/bandpass","sfff", module_id, amp, freq, q);
+  free(lo_addr_send);
+
+  free(module_id);
+  
+  return 0;
+} /* osc_create_module_bandpass_handler */
+
+int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
+                                                       int argc, void *data, void *user_data)
+{
+  char *module_path, *module_id = NULL;
+  char *bus_path = NULL;
+  struct dsp_bus *target_bus = NULL;;
+  struct dsp_module *target_module = NULL;
+  float amt = 0.0;
+  float freq = 0.0;
+  float q = 0.0;
+  int count = 0;
+
+  printf("path: <%s>\n", path);
+  
+  module_path = argv[0];
+  amt=argv[1]->f;
+  freq=argv[2]->f;
+  q=argv[3]->f;
+
+  printf("module_path: %s\n", module_path);
+  
+  /* split up path */
+
+  
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  strncpy(bus_path, module_path, strlen(module_path) - 37);
+  
+  module_id = malloc(sizeof(char) * 37);  
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
+ 
+  target_bus = dsp_parse_bus_path(bus_path);
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  
+  dsp_edit_bandpass(target_module, amt, freq, q);
+  
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/edit/module/bandpass","sfff", module_id, amt, freq, q);
+  free(lo_addr_send);
+
+  
+  free(module_id);
+  free(bus_path);
+ 
+  return 0;
+} /* osc_edit_module_bandpass_handler */
+
 
 int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
 				int argc, void *data, void *user_data)

@@ -739,9 +739,65 @@ void dsp_edit_highpass(struct dsp_module *highpass, float amt, float freq) {
   highpass->dsp_param.highpass.amt = amt;
   highpass->dsp_param.highpass.freq = freq;
 
-  printf("returning\n");
   return;
 } /* dsp_edit_highpass */
+
+
+void dsp_bandpass(struct dsp_operation *bandpass, int jack_samplerate, int pos) {
+  float insample = 0.0;
+  float outsample = 0.0;
+  dsp_parameter dsp_param = bandpass->module->dsp_param;
+
+  insample = dsp_sum_summands(bandpass->ins->summands);
+
+  bandpass->module->dsp_param.bandpass.cyperus_params->in = insample;
+  bandpass->module->dsp_param.bandpass.cyperus_params->amt = dsp_param.bandpass.amt;
+  bandpass->module->dsp_param.bandpass.cyperus_params->freq = dsp_param.bandpass.freq;
+  bandpass->module->dsp_param.bandpass.cyperus_params->q = dsp_param.bandpass.q;
+  
+  outsample = cyperus_bandpass(bandpass->module->dsp_param.bandpass.cyperus_params, jack_samplerate, pos);
+
+  bandpass->outs->sample->value = outsample;
+  
+  return;
+} /* dsp_bandpass */
+
+
+int dsp_create_bandpass(struct dsp_bus *target_bus, float amt, float freq, float q) {
+  dsp_parameter filter_param;
+  struct dsp_port_in *ins;
+  struct dsp_port_out *outs;
+  
+  filter_param.type = DSP_BANDPASS_PARAMETER_ID;
+  filter_param.pos = 0;
+  filter_param.bandpass.name = "bandpass filter";
+  filter_param.bandpass.cyperus_params = malloc(sizeof(struct cyperus_parameters));
+  filter_param.bandpass.amt = amt;
+  filter_param.bandpass.freq = freq;
+  filter_param.bandpass.q = q;
+
+  cyperus_bandpass_init(filter_param.bandpass.cyperus_params, jackcli_samplerate);
+
+  ins = dsp_port_in_init("in", 512);
+  outs = dsp_port_out_init("out", 1);
+  dsp_add_module(target_bus,
+                 "bandpass filter",
+                 dsp_bandpass,
+                 dsp_optimize_module,
+                 filter_param,
+                 ins,
+                 outs);
+
+  return 0;
+} /* dsp_create_bandpass */
+
+void dsp_edit_bandpass(struct dsp_module *bandpass, float amt, float freq, float q) {
+  bandpass->dsp_param.bandpass.amt = amt;
+  bandpass->dsp_param.bandpass.freq = freq;
+  bandpass->dsp_param.bandpass.q = q;
+
+  return;
+} /* dsp_edit_bandpass */
 
 
 int

@@ -58,6 +58,10 @@ int dsp_create_highpass(struct dsp_bus *target_bus, float amt, float freq);
 void dsp_edit_highpass(struct dsp_module *highpass, float amt, float freq);
 void dsp_highpass(struct dsp_operation *highpass, int jack_samplerate, int pos);
 
+int dsp_create_bandpass(struct dsp_bus *target_bus, float amt, float freq, float q);
+void dsp_edit_bandpass(struct dsp_module *bandpass, float amt, float freq, float q);
+void dsp_bandpass(struct dsp_operation *bandpass, int jack_samplerate, int pos);
+
 int dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, float mix);
 int dsp_edit_pitch_shift(struct dsp_module *pitch_shift, float amp, float shift, float mix);
 float dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos);

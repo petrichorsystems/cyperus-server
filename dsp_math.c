@@ -203,6 +203,74 @@ float cyperus_highpass(struct cyperus_parameters *filter, int jack_sr, int pos) 
   return outsample * filter->amt;
 } /* cyperus_highpass */
 
+static float _bandpass_qcos(float f)
+{
+    if (f >= -(0.5f*3.14159f) && f <= 0.5f*3.14159f)
+    {
+        float g = f*f;
+        return (((g*g*g * (-1.0f/720.0f) + g*g*(1.0f/24.0f)) - g*0.5) + 1);
+    }
+    else return (0);
+}
+
+void cyperus_bandpass_init(struct cyperus_parameters *filter, int jack_sr) {
+
+  float freq = filter->freq;
+  float q = filter->q;
+  
+  float r, oneminusr, omega;
+  if (freq < 0.001) freq = 10;
+  if (q < 0) q = 0;
+  filter->x0 = freq;
+  filter->x1 = q;
+  omega = freq * (2.0f * 3.14159f) / jack_sr;
+  if (q < 0.001) oneminusr = 1.0f;
+  else oneminusr = omega/q;
+  if (oneminusr > 1.0f) oneminusr = 1.0f;
+  r = 1.0f - oneminusr;
+  filter->state0 = 2.0f * _bandpass_qcos(omega) * r;
+  filter->state1 = - r * r;
+  filter->state2  = 2 * oneminusr * (oneminusr + r * omega);
+  /* post("r %f, omega %f, coef1 %f, coef2 %f",
+     r, omega, x->x_ctl->c_coef1, x->x_ctl->c_coef2); */
+  
+} /* cyperus_bandpass_init */
+
+float cyperus_bandpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
+  float freq;
+  float q;
+  float output, outsample;
+  
+   float r, oneminusr, omega;
+  if (freq < 0.001) freq = 10;
+  if (q < 0) q = 0;
+  filter->x0 = freq;
+  filter->x1 = q;
+  omega = freq * (2.0f * 3.14159f) / jack_sr;
+  if (q < 0.001) oneminusr = 1.0f;
+  else oneminusr = omega/q;
+  if (oneminusr > 1.0f) oneminusr = 1.0f;
+  r = 1.0f - oneminusr;
+  filter->state0 = 2.0f * _bandpass_qcos(omega) * r;
+  filter->state1 = - r * r;
+  filter->state2  = 2 * oneminusr * (oneminusr + r * omega);
+  
+  float last = filter->x3;
+  float prev = filter->x4;
+  float coef1 = filter->state0;;
+  float coef2 = filter->state1;
+  float gain = filter->state2;
+
+  output =  filter->in + coef1 * last + coef2 * prev;
+  outsample = output * filter->amt;
+  prev = last;
+  last = outsample;
+
+  filter->x3 = last;
+  
+  return outsample;
+} /* cyperus_bandpass */
+
 
 float cyperus_karlsen_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
   /* by Ove Karlsen, 24dB 4-pole lowpass */
