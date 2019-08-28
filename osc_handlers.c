@@ -607,15 +607,11 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
   float feedback;
   int count;
 
-  printf("path: <%s>\n", path);
-  
   module_path = argv[0];
   amt=argv[1]->f;
   time=argv[2]->f;
   feedback=argv[3]->f;
 
-  printf("module_path: %s\n", module_path);
-  
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
 
@@ -922,7 +918,6 @@ int osc_edit_module_lowpass_handler(const char *path, const char *types, lo_arg 
   amt=argv[1]->f;
   freq=argv[2]->f;
 
-  printf("module_path: %s\n", module_path);
   
   /* split up path */
 
@@ -1004,7 +999,6 @@ int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg
   amt=argv[1]->f;
   freq=argv[2]->f;
 
-  printf("module_path: %s\n", module_path);
   
   /* split up path */
 
@@ -1088,7 +1082,6 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
   freq=argv[2]->f;
   q=argv[3]->f;
 
-  printf("module_path: %s\n", module_path);
   
   /* split up path */
 
@@ -1177,7 +1170,6 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
   shift=argv[2]->f;
   mix=argv[3]->f;
 
-  printf("module_path: %s\n", module_path);
   
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
@@ -1263,7 +1255,6 @@ osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_
   freq=argv[2]->f;
   res=argv[3]->f;
 
-  printf("module_path: %s\n", module_path);
   
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));

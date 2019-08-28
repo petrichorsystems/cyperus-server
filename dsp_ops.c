@@ -392,12 +392,20 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
   delay_param.delay.name = "delay";
   delay_param.delay.cyperus_params = malloc(sizeof(struct cyperus_parameters));
   delay_param.delay.amt = amt;
-  delay_param.delay.time = time * jackcli_samplerate;
+  delay_param.delay.time = (short)floor(time * jackcli_samplerate);
+
+  if(delay_param.delay.time < 0.0)
+    delay_param.delay.time = 0.0;
+  
   delay_param.delay.feedback = feedback;
-  delay_param.delay.cyperus_params[0].signal_buffer = (float *)calloc(time * jackcli_samplerate * 30, sizeof(float));
+
+  /* max signal buffer size */
+  delay_param.delay.cyperus_params[0].x3  = 30.0;
+  delay_param.delay.cyperus_params[0].signal_buffer = (float *)calloc(time * jackcli_samplerate * delay_param.delay.cyperus_params[0].x3, sizeof(float));
 
   delay_param.delay.cyperus_params[0].pos = 0;
   delay_param.delay.cyperus_params[0].delay_pos = 0;
+  delay_param.delay.cyperus_params[0].x1 = time - delay_param.delay.time;
 
   cyperus_delay_init(delay_param.delay.cyperus_params, jackcli_samplerate);
   
@@ -448,16 +456,23 @@ void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedb
   int i = 0;
 
   dsp_parameter dsp_param = delay->dsp_param;
+  float new_time  = time * jackcli_samplerate;
+
+  if( new_time < 0.0 )
+    new_time = 0.0;
   
-  printf("about to assign amt\n");
   delay->dsp_param.delay.amt = amt;
-  printf("assigned delay->dsp_param.delay.amt: %f\n", delay->dsp_param.delay.amt);
-  printf("about to assign time\n");
-  delay->dsp_param.delay.time = time * jackcli_samplerate;
-  printf("assigned delay->dsp_param.delay.time: %f\n", delay->dsp_param.delay.time);
-  printf("about to assign feedback\n");
   delay->dsp_param.delay.feedback = feedback;
-  printf("assigned delay->dsp_param.delay.feedback: %f\n", delay->dsp_param.delay.feedback);
+
+  delay->dsp_param.delay.cyperus_params->x0 = (short)floor(new_time);
+  delay->dsp_param.delay.cyperus_params->x1 = new_time - delay->dsp_param.delay.cyperus_params->x0;
+
+
+  printf("new_time: %f\n", new_time);
+  printf("delay->x0: %f\n", delay->dsp_param.delay.cyperus_params->x0);  
+  printf("delay->x1: %f\n", delay->dsp_param.delay.cyperus_params->x1);  
+  
+  delay->dsp_param.delay.time = dsp_param.delay.cyperus_params->x0;
   
   /*
     dsp_voice_parameters[module_no].delay.cyperus_params[0].pos = 0;
