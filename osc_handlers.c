@@ -1075,7 +1075,6 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
   float q = 0.0;
   int count = 0;
 
-  printf("path: <%s>\n", path);
   
   module_path = argv[0];
   amt=argv[1]->f;
@@ -1120,7 +1119,6 @@ int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_a
   float shift;
   float mix;
   
-  printf("path: <%s>\n", path);
   
   bus_path = argv[0];
   amt=argv[1]->f;
@@ -1163,7 +1161,6 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
 
   int count;
   
-  printf("path: <%s>\n", path);
   
   module_path = argv[0];
   amt=argv[1]->f;
@@ -1205,7 +1202,6 @@ int osc_add_module_karlsen_lowpass_handler(const char *path, const char *types, 
   float freq;
   float res;
   
-  printf("path: <%s>\n", path);
   
   bus_path = argv[0];
   amt=argv[1]->f;
@@ -1247,8 +1243,6 @@ osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_
   float res;
 
   int count;
-  
-  printf("path: <%s>\n", path);
   
   module_path = argv[0];
   amt=argv[1]->f;
