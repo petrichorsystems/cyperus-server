@@ -387,6 +387,7 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
   dsp_parameter delay_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
+  
   delay_param.type = DSP_DELAY_PARAMETER_ID;
   delay_param.pos = 0;
   delay_param.delay.name = "delay";
@@ -405,7 +406,9 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
 
   delay_param.delay.cyperus_params[0].pos = 0;
   delay_param.delay.cyperus_params[0].delay_pos = 0;
-  delay_param.delay.cyperus_params[0].x1 = time - delay_param.delay.time;
+
+  delay_param.delay.cyperus_params->x0 = delay_param.delay.time;
+  delay_param.delay.cyperus_params->x1 = (time * jackcli_samplerate) - delay_param.delay.cyperus_params->x0;  
 
   cyperus_delay_init(delay_param.delay.cyperus_params, jackcli_samplerate);
   
