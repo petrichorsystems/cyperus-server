@@ -412,6 +412,7 @@ float cyperus_moog_vcf(struct cyperus_parameters *filter, int jack_sr, int pos) 
   return filter->lastoutval3;
 }
 
+
 float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
   float outsample = 0.0;
 
