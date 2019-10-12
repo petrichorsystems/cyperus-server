@@ -412,33 +412,21 @@ float cyperus_moog_vcf(struct cyperus_parameters *filter, int jack_sr, int pos) 
   return filter->lastoutval3;
 }
 
-float cyperus_delay_init(struct cyperus_parameters *delay, int jack_sr, int pos) {
-  delay->state0 = 0.0;
-  delay->x0 = 0.0;
-  delay->x1 = 0.0;
-  delay->x2 = 0.0;
-  delay->y0 = 0.0;
-  delay->y1 = 0.0;
-}
-
 float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
-  float delay_time = 0.0;
   float outsample = 0.0;
-  
-  delay_time = delay->delay_time;
 
-  if( delay->pos >= delay_time )
+  
+  if( delay->pos >= delay->delay_time )
     delay->pos = 0;
 
-  delay->delay_pos = delay->pos - delay_time;
+  delay->delay_pos = delay->pos - delay->delay_time;
 
   if( delay->delay_pos < 0 )
-    delay->delay_pos += delay_time;
+    delay->delay_pos += delay->delay_time;
 
-  outsample = delay->signal_buffer[delay->pos] = delay->in * delay->fb;
+  outsample = delay->signal_buffer[delay->pos] = delay->in + (delay->signal_buffer[delay->delay_pos] * delay->fb);
   delay->pos += 1;
 
-  
   return outsample * delay->delay_amt;
 }
 
