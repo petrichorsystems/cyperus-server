@@ -435,9 +435,7 @@ float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
   if( delay->delay_pos < 0 )
     delay->delay_pos += delay_time;
 
-  delay->x2 = (delay->signal_buffer[delay->delay_pos - 1] - delay->signal_buffer[delay->delay_pos]) * delay->x1 + delay->signal_buffer[delay->delay_pos - 1];
-
-  outsample = delay->signal_buffer[delay->pos] = delay->in + delay->x2 * delay->fb;
+  outsample = delay->signal_buffer[delay->pos] = delay->in * delay->fb;
   delay->pos += 1;
 
   

@@ -1074,10 +1074,12 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
 
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
-      if( temp_op->ins == NULL )
+      if( temp_op->ins == NULL ) {
         temp_op->outs->sample->value = 0.0;
-      else
-        temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
+      } else {
+	if( temp_op->outs != NULL )
+	  temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
+      }
     } else {
       temp_op->module->dsp_function(temp_op, jack_sr, pos);
     }
@@ -1136,12 +1138,12 @@ void
         dsp_global_operation_head_processing = NULL;
         printf("assigned new graph\n");
         printf("operations in new graph: \n");
-        temp_op = dsp_global_operation_head;
-        while(temp_op != NULL) {
-          printf("temp_op->dsp_id: %s, temp_op->outs->dsp_id: %s\n", temp_op->dsp_id,
-                 temp_op->outs->dsp_id);
-          temp_op = temp_op->next;
-        }
+	if(dsp_global_operation_head != NULL) {
+	  temp_op = dsp_global_operation_head;
+	  while(temp_op != NULL) {
+	    temp_op = temp_op->next;
+	  }
+	}
         printf("done listing\n");
       }
       
