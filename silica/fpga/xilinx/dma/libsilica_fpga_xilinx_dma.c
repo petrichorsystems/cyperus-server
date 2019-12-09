@@ -1,3 +1,21 @@
+/* libsilica_fpga_xilinx_dma.c
+This file is a part of 'cyperus'
+This program is free software: you can redistribute it and/or modify
+hit under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+'cyperus' is a JACK client for learning about software synthesis
+
+Copyright 2019 murray foster */
+
 #include <assert.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -32,12 +50,12 @@ static void timespec_sub(struct timespec *t1, const struct timespec *t2)
   }
 }
 
-int write_fpga_xilinx_dma(char *devicename, u_int32_t addr, u_int32_t size, u_int32_t offset, u_int32_t count, unsigned char **tx_buffer)
+int write_fpga_xilinx_dma(char *devicename, u_int32_t addr, u_int32_t size, u_int32_t offset, u_int32_t count, void *tx_buffer)
 {
   int rc;
   int write_count = 0;
-  char *buffer = NULL;
-  char *allocated = NULL;
+  void *buffer = NULL;
+  void *allocated = NULL;
   struct timespec ts_start, ts_end;
 
   posix_memalign((void **)&allocated, 4096/*alignment*/, size + 4096);
@@ -76,13 +94,13 @@ int write_fpga_xilinx_dma(char *devicename, u_int32_t addr, u_int32_t size, u_in
   return write_count;
 }
 
-int read_fpga_xilinx_dma(char *devicename, uint32_t addr, uint32_t size, uint32_t offset, uint32_t count, unsigned char **rx_buffer)
+int read_fpga_xilinx_dma(char *devicename, uint32_t addr, uint32_t size, uint32_t offset, uint32_t count, void *rx_buffer)
 {
   int rc;
   int read_count = 0;
   int time;
-  char *buffer = NULL;
-  char *allocated = NULL;
+  void *buffer = NULL;
+  void *allocated = NULL;
   struct timespec ts_start, ts_end;
 
   posix_memalign((void **)&allocated, 4096/*alignment*/, size + 4096);
@@ -122,7 +140,7 @@ int read_fpga_xilinx_dma(char *devicename, uint32_t addr, uint32_t size, uint32_
   return read_count;
 }
 
-int silica_write_fpga_xilinx_dma(unsigned char **buffer, size_t size) {
+int libsilica_write_fpga_xilinx_dma(void *buffer, size_t size) {
   int write_count = write_fpga_xilinx_dma("/dev/xdma0_h2c_0", 0, size, 0, 1, buffer);
   if ( write_count < 0) {
     return -1;
@@ -130,7 +148,7 @@ int silica_write_fpga_xilinx_dma(unsigned char **buffer, size_t size) {
   return write_count;
 }
 
-int silica_read_fpga_xilinx_dma(unsigned char **buffer, size_t size) {
+int libsilica_read_fpga_xilinx_dma(void *buffer, size_t size) {
   int read_count = read_fpga_xilinx_dma("/dev/xdma0_c2h_0", 0, size, 0, 1, buffer);
   if ( read_count != size) {
     return -1;

@@ -1,4 +1,4 @@
-/* libcyperus.h
+/* dsp_math.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -14,12 +14,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 'cyperus' is a JACK client for learning about software synthesis
 
-Copyright 2015 murray foster */
+Copyright 2019 murray foster */
 
 #include "rtqueue.h"
 
-#ifndef LIBCYPERUS_H
-#define LIBCYPERUS_H
+#ifndef DSP_MATH_H
+#define DSP_MATH_H
 
 #define VOCODERSIGNALSIZE 2048
 #define VOCODERHOPSIZE 256
