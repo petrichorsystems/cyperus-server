@@ -56,7 +56,7 @@ int main() {
   printf("write success\n");
 
   rx_data = malloc((size_t)transfer_size);
-  transferred_bytes = libsilica_read_fpga_xilinx_dma(&rx_data, transfer_size);
+  tra nsferred_bytes = libsilica_read_fpga_xilinx_dma(&rx_data, transfer_size);
   printf("read success\n");
   
   for(int i=0; i<transfer_size; i++) {

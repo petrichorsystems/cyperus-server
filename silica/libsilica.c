@@ -22,6 +22,36 @@ Copyright 2019 murray foster */
 
 silica_device_t *silica_device;
 
+
+int _float_to_bytes(int index, unsigned char outbox[], float member)
+{
+  unsigned long d = *(unsigned long *)&member;
+
+  outbox[index] = d & 0x00FF;
+  index++;
+
+  outbox[index] = (d & 0xFF00) >> 8;
+  index++;
+
+  outbox[index] = (d & 0xFF0000) >> 16;
+  index++;
+
+  outbox[index] = (d & 0xFF000000) >> 24;
+  index++;
+  return index;
+}
+
+
+float _bytes_to_float(int index, unsigned char outbox[])
+{
+  unsigned long d;
+
+  d =  (outbox[index+3] << 24) | (outbox[index+2] << 16)
+    | (outbox[index+1] << 8) | (outbox[index]);
+  float member = *(float *)&d;
+  return member;
+}
+
 int silica_init(char *device_name) {
 
   printf("sizeof(libsilica_dsp_add_float2_instruction_t): %ld\n",
@@ -43,9 +73,12 @@ int silica_init(char *device_name) {
   return 0;
 }
 
-float *silica_add_float2(float x0, float x1) {
+float silica_add_float2(float x0, float x1) {
   libsilica_dsp_add_float2_instruction_t instruction;
-  float *byte_result;
+
+  unsigned char temp_value_bytes[8];
+  float temp_value;
+
   libsilica_dsp_add_float2_result_t *result;
   dsp_opcode opcode = ADD_FLOAT2;
   int num_x = 2;
@@ -58,12 +91,18 @@ float *silica_add_float2(float x0, float x1) {
   
   /* silica_device->write((unsigned char**)&instruction, sizeof(instruction)); */
 
-  silica_device->write((void *)&instruction.x, sizeof(instruction.x));
+  _float_to_bytes(0, temp_value_bytes, x0);
+  // _float_to_bytes(4, temp_value_bytes, x1);
 
-  byte_result = (float *)malloc(sizeof(float));
-  silica_device->read(&byte_result, sizeof(result));
+  
+  silica_device->write((void *)&temp_value_bytes, 4);
+  silica_device->read(&temp_value_bytes, 4);
 
+  temp_value = _bytes_to_float(0, temp_value_bytes);
+  
+  printf("silica_add_float2: received: %f\n", temp_value);
+  
   free(instruction.x);
 
-  return byte_result;
+  return temp_value;
 }

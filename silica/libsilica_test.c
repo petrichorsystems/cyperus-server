@@ -30,14 +30,14 @@ Copyright 2019 murray foster */
 
 int main() {
   char *device_name = "fpga_xilinx_dma";
-  float *add_float2_output;
+  float add_float2_output;
   
   silica_init(device_name);
   add_float2_output = silica_add_float2(3.23f, 1.2345f);
 
-  printf("add_float2_output: %f\n", *add_float2_output);
-  if( (*add_float2_output > 4.464) &&
-      (*add_float2_output < 4.4646) ) {
+  printf("add_float2_output: %f\n", add_float2_output);
+  if( (add_float2_output > 4.464) &&
+      (add_float2_output < 4.4646) ) {
     printf("silica_add_float2_output success\n");
   } else {
     printf("silica_add_float2_output failed\n");
