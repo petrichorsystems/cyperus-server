@@ -18,9 +18,6 @@ Copyright 2015 murray foster */
 
 #include <lo/lo.h>
 
-#include "dsp_types.h"
-#include "dsp_math.h"
-
 #ifndef OSC_HANDLERS_H
 #define OSC_HANDLERS_H
 

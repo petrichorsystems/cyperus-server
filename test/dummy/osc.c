@@ -20,12 +20,6 @@ Copyright 2015 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
 
-#include "cyperus.h"
-#include "rtqueue.h"
-#include "dsp_math.h"
-#include "dsp.h"
-#include "dsp_types.h"
-#include "dsp_ops.h"
 #include "osc.h"
 #include "osc_handlers.h"
 

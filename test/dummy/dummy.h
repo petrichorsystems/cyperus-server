@@ -1,4 +1,4 @@
-/* cyperus.h
+/* dummy.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -16,12 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include "rtqueue.h"
-
-#ifndef CYPERUS_H
-#define CYPERUS_H
+#ifndef DUMMY_H
+#define DUMMY_H
 
 extern int jack_sr;
-extern rtqueue_t *fifo_out;
-extern rtqueue_t *fifo_in;
 #endif
