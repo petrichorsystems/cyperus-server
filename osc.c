@@ -75,6 +75,7 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, "/cyperus/list/bus_port", "s", osc_list_bus_port_handler, NULL);
  
   lo_server_thread_add_method(lo_thread, "/cyperus/add/connection", "ss", osc_add_connection_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/remove/connection", "ss", osc_remove_connection_handler, NULL);
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/block_processor", "s", osc_add_module_block_processor_handler, NULL);
 

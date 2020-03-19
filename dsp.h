@@ -63,6 +63,9 @@ dsp_add_bus(char *target_path, struct dsp_bus *new_bus, char *ins, char *outs);
 int
 dsp_add_connection(char *id_out, char *id_in);
 
+int
+dsp_remove_connection(char *id_out, char *id_in);
+
 struct dsp_bus*
 dsp_parse_bus_path(char *target_bus_path);
 

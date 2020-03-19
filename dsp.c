@@ -532,6 +532,140 @@ dsp_add_connection(char *id_out, char *id_in) {
   return 0;
 } /* dsp_add_connection */
 
+
+int
+dsp_remove_connection(char *id_out, char *id_in) {
+  struct dsp_connection *temp_connection;
+  struct dsp_connection *found_connection;
+  struct dsp_port_out *port_out = NULL;
+  struct dsp_port_in *port_in = NULL;
+  struct dsp_bus_port *bus_port = NULL;
+  char *port_id;
+  char *temp_result[3];
+  char *module_path, *port_out_id, *port_in_id, *bus_path,
+    *module_id, *bus_port_path, *bus_port_id, *bus_id;
+  struct dsp_bus *target_bus;
+  struct dsp_module *target_module;
+  struct dsp_bus_port *target_bus_port;
+
+  /* parsing id_out (connection output) */
+  dsp_parse_path(temp_result, id_out);
+  if( strcmp(temp_result[0], "{") == 0) {
+    port_out = dsp_find_port_out(dsp_main_ins, temp_result[2]);
+  }
+
+  if( strcmp(temp_result[0], ">") == 0 ) {
+    module_path = temp_result[1];
+    port_out_id = temp_result[2];
+
+    dsp_parse_path(temp_result, module_path);
+    bus_path = temp_result[1];
+    module_id = temp_result[2];
+
+    target_bus = dsp_parse_bus_path(bus_path);
+
+    target_module = dsp_find_module(target_bus->dsp_module_head,
+				    module_id);
+    port_out = dsp_find_port_out(target_module->outs, port_out_id);
+  }
+  if( strcmp(temp_result[0], ":") == 0) {
+    bus_port_path = temp_result[1];
+    bus_port_id = temp_result[2];
+
+    dsp_parse_path(temp_result, bus_port_path);
+    bus_path = temp_result[1];
+
+    target_bus = dsp_parse_bus_path(bus_path);
+    target_bus_port = dsp_find_bus_port(target_bus->outs,
+					bus_port_id);
+    if( target_bus_port == NULL ) {
+      target_bus_port = dsp_find_bus_port(target_bus->ins,
+					  bus_port_id);
+      if( target_bus_port )
+	port_out = target_bus_port->out;
+    } else {
+      port_out = target_bus_port->out;
+    }
+  }
+
+  /* parsing id_in (to connection input) */
+  dsp_parse_path(temp_result, id_in);
+  if( strcmp(temp_result[0], "}") == 0) {
+    port_in = dsp_find_port_out(dsp_main_outs, temp_result[2]);
+  }
+
+  if( strcmp(temp_result[0], "<") == 0 ) {
+    module_path = temp_result[1];
+    port_in_id = temp_result[2];
+    dsp_parse_path(temp_result, module_path);
+    bus_path = temp_result[1];
+    module_id = temp_result[2];
+    target_bus = dsp_parse_bus_path(bus_path);
+    target_module = dsp_find_module(target_bus->dsp_module_head,
+				    module_id);
+    port_in = dsp_find_port_in(target_module->ins, port_in_id);
+  }
+
+  if( strcmp(temp_result[0], ":") == 0) {
+
+    bus_port_path = temp_result[1];
+    bus_port_id = temp_result[2];
+
+    dsp_parse_path(temp_result, bus_port_path);
+    bus_path = temp_result[1];
+
+    target_bus = dsp_parse_bus_path(bus_path);
+    target_bus_port = dsp_find_bus_port(target_bus->ins,
+					bus_port_id);
+    if( target_bus_port == NULL ) {
+      target_bus_port = dsp_find_bus_port(target_bus->outs,
+					  bus_port_id);
+      if( target_bus_port )
+	port_in = target_bus_port->in;
+    } else {
+      port_in = target_bus_port->in;
+    }
+  }
+
+  if( (port_out == NULL) ||
+      (port_in == NULL) ) {
+    printf("failed to add connection!\n");
+    return 1;
+  }
+
+  if(dsp_global_connection_graph) {
+    temp_connection = dsp_global_connection_graph;
+    while(temp_connection != NULL) {
+      if( (!strcmp(temp_connection->id_out, id_out)) &&
+	  (!strcmp(temp_connection->id_in, id_in)) ) {
+	printf("found target connection\n");
+	found_connection = temp_connection;
+	temp_connection = temp_connection->prev;
+ 
+	/* check if previous connection is root/NULL */
+	if( temp_connection ) {
+	  temp_connection->next = found_connection->next;
+	} else {
+	  dsp_global_connection_graph = found_connection->next;
+	}
+	  
+	dsp_connection_terminate(found_connection);
+	printf("free()'d target connection\n");
+	
+	dsp_build_optimized_graph(NULL);
+	return 0;
+      }
+      temp_connection = temp_connection->next;
+    }
+  }
+
+  /* TODO: check that the current processing graph isn't the same as this new one,
+           replace the actual processing graph if it's not (on the last sample cycle),
+  */
+
+  return 1;
+} /* dsp_remove_connection */
+
 void
 dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection) {
   /* is the below ever actually the case? */

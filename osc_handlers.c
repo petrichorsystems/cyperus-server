@@ -67,6 +67,7 @@ int osc_address_handler(const char *path, const char *types, lo_arg **argv,
 int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
+  printf("osc_list_main_handler..\n");
   struct dsp_port_out *temp_port_out;
   struct dsp_port_in *temp_port_in;
   char *mains_str = malloc(sizeof(char) * ((44 * (jackcli_channels_in +
@@ -418,6 +419,28 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
   return 0;
 } /* osc_add_connection_handler */
 
+int osc_remove_connection_handler(const char *path, const char *types, lo_arg **argv,
+			       int argc, void *data, void *user_data)
+{
+  char *path_out, *path_in;
+  int failed = 0;
+  
+  printf("path: <%s>\n", path);
+
+  path_out = argv[0];
+  path_in = argv[1];
+
+  failed = dsp_remove_connection(path_out, path_in);
+
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/remove/connection", "ssi", path_out, path_in, failed);
+  lo_address_free(lo_addr_send);
+
+  printf("done osc_remove_connection_handler()\n");
+  
+  return 0;
+} /* osc_remove_connection_handler */
+
 int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,
 			     int argc, void *data, void *user_data)
 {
@@ -560,6 +583,7 @@ int osc_add_module_block_processor_handler(const char *path, const char *types, 
 int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data)
 {
+  printf("osc_add_module_delay_handler()..\n");
   char *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
