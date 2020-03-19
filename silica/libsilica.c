@@ -20,40 +20,11 @@ Copyright 2019 murray foster */
 #include "libsilica.h"
 #include "libsilica_dsp_types.h"
 
+
+
 silica_device_t *silica_device;
 
-
-int _float_to_bytes(int index, unsigned char outbox[], float member)
-{
-  unsigned long d = *(unsigned long *)&member;
-
-  outbox[index] = d & 0x00FF;
-  index++;
-
-  outbox[index] = (d & 0xFF00) >> 8;
-  index++;
-
-  outbox[index] = (d & 0xFF0000) >> 16;
-  index++;
-
-  outbox[index] = (d & 0xFF000000) >> 24;
-  index++;
-  return index;
-}
-
-
-float _bytes_to_float(int index, unsigned char outbox[])
-{
-  unsigned long d;
-
-  d =  (outbox[index+3] << 24) | (outbox[index+2] << 16)
-    | (outbox[index+1] << 8) | (outbox[index]);
-  float member = *(float *)&d;
-  return member;
-}
-
 int silica_init(char *device_name) {
-
   printf("sizeof(libsilica_dsp_add_float2_instruction_t): %ld\n",
          sizeof(libsilica_dsp_add_float2_instruction_t));
     printf("sizeof(libsilica_dsp_add_float2_result_t): %ld\n",
@@ -70,39 +41,79 @@ int silica_init(char *device_name) {
     return -1;
   }
 
+  printf("finished initialization\n");
   return 0;
 }
 
-float silica_add_float2(float x0, float x1) {
+int silica_add_float2(int x0, int x1) {
   libsilica_dsp_add_float2_instruction_t instruction;
 
-  unsigned char temp_value_bytes[8];
-  float temp_value;
+  int temp_value;
+  int temp_values[2] = {0.0};
+  int temp_values_in[2] = {0.0};
 
   libsilica_dsp_add_float2_result_t *result;
   dsp_opcode opcode = ADD_FLOAT2;
   int num_x = 2;
   
   instruction.opcode = opcode;
-  instruction.x = malloc(sizeof(float) * num_x);
-  instruction.x[0] = x0;
+  instruction.x = malloc(sizeof(int) * num_x);
+  instruction.x[0] = x0 * ;
   instruction.x[1] = x1;
   instruction.num_x = num_x;
-  
-  /* silica_device->write((unsigned char**)&instruction, sizeof(instruction)); */
+  int y;
 
-  _float_to_bytes(0, temp_value_bytes, x0);
-  // _float_to_bytes(4, temp_value_bytes, x1);
-
+  temp_values[0] = x0;
+  temp_values[1] = x1;
   
-  silica_device->write((void *)&temp_value_bytes, 4);
-  silica_device->read(&temp_value_bytes, 4);
+  printf("before write\n");
+  silica_device->write(&temp_values, sizeof(temp_values));
+  printf("after write\n");
 
-  temp_value = _bytes_to_float(0, temp_value_bytes);
+  silica_device->read(&temp_values_in, sizeof(temp_values));
   
-  printf("silica_add_float2: received: %f\n", temp_value);
+  printf("silica_add_float2: received: [0]: %d\n", temp_values_in[0]);
+  printf("silica_add_float2: received: [1]: %d\n", temp_values_in[1]);
   
   free(instruction.x);
 
-  return temp_value;
+  return temp_values_in[0];
+}
+
+int silica_add_float3(int x0, int x1, int x2) {
+  libsilica_dsp_add_float2_instruction_t instruction;
+
+  int temp_value;
+  int temp_values[3] = {0.0};
+  int temp_values_in[3] = {0.0};
+
+  libsilica_dsp_add_float2_result_t *result;
+  dsp_opcode opcode = ADD_FLOAT3;
+  int num_x = 3;
+  
+  instruction.opcode = opcode;
+  instruction.x = malloc(sizeof(int) * num_x);
+  instruction.x[0] = x0;
+  instruction.x[1] = x1;
+  instruction.x[2] = x2;
+  instruction.num_x = num_x;
+  int y;
+
+  temp_values[0] = x0;
+  temp_values[1] = x1;
+  temp_values[2] = x2;
+  
+  printf("before write\n");
+  silica_device->write(&temp_values, sizeof(temp_values));
+  printf("after write\n");
+
+  silica_device->read(&temp_values_in, sizeof(temp_values));
+  
+  printf("silica_add_float2: received: [0]: %d\n", temp_values_in[0]);
+  printf("silica_add_float2: received: [1]: %d\n", temp_values_in[1]);
+  printf("silica_add_float2: received: [2]: %d\n", temp_values_in[2]);
+  
+  free(instruction.x);
+
+  return temp_values_in[0];
 }

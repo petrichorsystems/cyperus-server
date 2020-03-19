@@ -42,7 +42,7 @@ unsigned char *gen_rdm_bytestream (size_t num_bytes)
 }
 
 int main() {
-  int transfer_size = 4096;
+  int transfer_size = 4;
   int transferred_bytes = 0;
 
   unsigned char *tx_data = NULL;
@@ -56,9 +56,9 @@ int main() {
   printf("write success\n");
 
   rx_data = malloc((size_t)transfer_size);
-  tra nsferred_bytes = libsilica_read_fpga_xilinx_dma(&rx_data, transfer_size);
+  transferred_bytes = libsilica_read_fpga_xilinx_dma(&rx_data, transfer_size);
   printf("read success\n");
-  
+
   for(int i=0; i<transfer_size; i++) {
     printf("i:%d, tx:%d, rx:%d\n", i, tx_data[i], rx_data[i]);
     if(tx_data[i] != rx_data[i]) {

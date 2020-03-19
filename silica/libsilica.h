@@ -30,4 +30,5 @@ typedef struct {
 #endif
 
 int silica_init(char *device_name);
-float silica_add_float2(float x, float y);
+int silica_add_float2(int x0, int y1);
+int silica_add_float3(int x0, int y1, int y2);

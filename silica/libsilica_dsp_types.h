@@ -21,7 +21,8 @@ Copyright 2019 murray foster */
 
 typedef enum{
              NONE = 0,
-             ADD_FLOAT2 = 1
+             ADD_FLOAT2 = 1,
+	     ADD_FLOAT3 = 2
 } dsp_opcode;
 
 typedef struct {
@@ -35,5 +36,6 @@ typedef struct {
   float *y;
   short unsigned int num_y;
 } libsilica_dsp_add_float2_result_t;
+
 
 #endif
