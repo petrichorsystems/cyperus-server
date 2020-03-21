@@ -343,7 +343,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 {
   int i;
   struct dsp_bus *temp_bus;
-  char *path_str, *bus_str, *ins_str, *outs_str = NULL;
+  char *path_str, *bus_str, *ins_str, *outs_str, *new_id = NULL;
 
   struct dsp_bus *new_bus;
   
@@ -372,6 +372,9 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
   new_bus = dsp_bus_init(bus_str);
   dsp_add_bus(path_str, new_bus, ins_str, outs_str);
 
+  new_id = malloc(sizeof(char) * strlen(new_bus->id));
+  strcpy(new_id, new_bus->id);
+  
   for(i=0; i < strlen(ins_str); i++)
     if(ins_str[i] == ',')
       ins_str[i] = '|';
@@ -379,9 +382,11 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
     if(outs_str[i] == ',')
       outs_str[i] = '|';
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/bus", "ssssi", path_str, bus_str, ins_str, outs_str,
+  lo_send(lo_addr_send,"/cyperus/add/bus", "sssssi", path_str, bus_str, ins_str, outs_str, new_id,
 	  strcmp(new_bus->name, bus_str));
   free(lo_addr_send);
+  free(new_id);
+  
   return 0;
 } /* osc_add_bus_handler */
 
