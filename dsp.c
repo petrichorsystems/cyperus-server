@@ -680,7 +680,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   struct dsp_operation *matched_op_out = NULL;
   struct dsp_operation *matched_op_in = NULL;
 
-  struct dsp_operation *temp_translation_op = NULL;
+  struct dsp_operation *temp_t5Aranslation_op = NULL;
 
   struct dsp_operation_sample *temp_sample_out = NULL;
   struct dsp_operation_sample *temp_sample_in = NULL;
@@ -845,6 +845,13 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
           }
 	} else {
 	  temp_op = dsp_operation_init(connection->id_out);
+
+	  if(dsp_global_operation_head_processing == NULL)
+	    dsp_global_operation_head_processing = temp_op;
+	  else {
+	    dsp_operation_insert_tail(dsp_global_operation_head_processing,
+				      temp_op);
+	  }
         }
       } else {
 	temp_op = temp_op_out;
@@ -855,14 +862,6 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       else
 	dsp_operation_sample_insert_tail(temp_op->outs, sample_out);
 
-
-      if(dsp_global_operation_head_processing == NULL)
-	dsp_global_operation_head_processing = temp_op;
-      else {
-
-          dsp_operation_insert_tail(dsp_global_operation_head_processing,
-                                    temp_op);
-      }
     }
 
     matched_op_out = temp_op;
@@ -923,6 +922,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       temp_op_in = temp_op_in->next;
     }
 
+    int created_op = 0;
     if( sample_in == NULL ) {
       if( is_bus_port_in ) {
 	sample_in = dsp_operation_sample_init("<bus port port in>", 0.0, 1);
@@ -957,25 +957,25 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 	} else {
 	  temp_op = dsp_operation_init(connection->id_in);
         }
+
+	if(dsp_global_operation_head_processing == NULL)
+	  dsp_global_operation_head_processing = temp_op;
+	else {
+	  if( is_module_in ) {
+	    dsp_operation_insert_ahead(matched_op_out, temp_op);
+	  } else {
+	    dsp_operation_insert_tail(dsp_global_operation_head_processing,
+				      temp_op);
+	  }
+	}
       } else {
 	temp_op = temp_op_in;
       }
-      
+
       if(temp_op->ins == NULL)
 	temp_op->ins = sample_in;
       else
 	dsp_operation_sample_insert_tail(temp_op->ins, sample_in);
-
-      if(dsp_global_operation_head_processing == NULL)
-	dsp_global_operation_head_processing = temp_op;
-      else {
-        if( is_module_in ) {
-          dsp_operation_insert_ahead(matched_op_out, temp_op);
-        } else {
-          dsp_operation_insert_tail(dsp_global_operation_head_processing,
-                                    temp_op);
-        }
-      }
     }
     
     new_summand = dsp_operation_sample_init(sample_out->dsp_id, 0.0, 0);
@@ -1166,7 +1166,7 @@ dsp_build_mains(int channels_in, int channels_out) {
 
     if( dsp_optimized_main_outs == NULL )
       dsp_optimized_main_outs = temp_op;
-    else
+    else 
       dsp_operation_insert_tail(dsp_optimized_main_outs, temp_op);
 
     free(formal_main_name);
@@ -1198,7 +1198,6 @@ void
   printf("assigning flag\n");
   dsp_global_new_operation_graph = 1;
   printf("assigned flag\n");
-
 } /* dsp_build_optimized_graph */
 
 void
@@ -1219,6 +1218,7 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
     }
     temp_op = temp_op->next;
   }
+  
   return;
 } /* dsp_process */
 
