@@ -680,7 +680,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   struct dsp_operation *matched_op_out = NULL;
   struct dsp_operation *matched_op_in = NULL;
 
-  struct dsp_operation *temp_t5Aranslation_op = NULL;
+  struct dsp_operation *temp_trranslation_op = NULL;
 
   struct dsp_operation_sample *temp_sample_out = NULL;
   struct dsp_operation_sample *temp_sample_in = NULL;
