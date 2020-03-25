@@ -845,13 +845,12 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
           }
 	} else {
 	  temp_op = dsp_operation_init(connection->id_out);
-
-	  if(dsp_global_operation_head_processing == NULL)
-	    dsp_global_operation_head_processing = temp_op;
-	  else {
-	    dsp_operation_insert_tail(dsp_global_operation_head_processing,
-				      temp_op);
 	  }
+	if(dsp_global_operation_head_processing == NULL)
+	  dsp_global_operation_head_processing = temp_op;
+	else {
+	  dsp_operation_insert_tail(dsp_global_operation_head_processing,
+				    temp_op);
         }
       } else {
 	temp_op = temp_op_out;
