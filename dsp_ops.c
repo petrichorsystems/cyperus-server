@@ -752,10 +752,17 @@ void dsp_bandpass(struct dsp_operation *bandpass, int jack_samplerate, int pos) 
 
   insample = dsp_sum_summands(bandpass->ins->summands);
 
+
+  /* set bandpass cutoff frequency if we have incoming data for that input */
+  if( bandpass->ins->next->summands != NULL )
+    dsp_param.bandpass.freq = dsp_sum_summands(bandpass->ins->next->summands) * jack_samplerate;
+
+  
   bandpass->module->dsp_param.bandpass.cyperus_params->in = insample;
   bandpass->module->dsp_param.bandpass.cyperus_params->amt = dsp_param.bandpass.amt;
   bandpass->module->dsp_param.bandpass.cyperus_params->freq = dsp_param.bandpass.freq;
   bandpass->module->dsp_param.bandpass.cyperus_params->q = dsp_param.bandpass.q;
+
   
   outsample = cyperus_bandpass(bandpass->module->dsp_param.bandpass.cyperus_params, jack_samplerate, pos);
 
@@ -781,6 +788,8 @@ int dsp_create_bandpass(struct dsp_bus *target_bus, float amt, float freq, float
   cyperus_bandpass_init(filter_param.bandpass.cyperus_params, jackcli_samplerate);
 
   ins = dsp_port_in_init("in", 512);
+  ins->next = dsp_port_in_init("param_cutoff_freq", 512);
+    
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
                  "bandpass filter",
