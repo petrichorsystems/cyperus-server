@@ -42,6 +42,10 @@ int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float pha
 void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);
 void dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos);
 
+int dsp_create_triangle(struct dsp_bus *target_bus, float freq, float amp);
+void dsp_edit_triangle(struct dsp_module *triangle, float freq, float amp);
+void dsp_triangle(struct dsp_operation *triangle, int jack_samplerate, int pos);
+
 int dsp_create_square(struct dsp_bus *target_bus, float freq, float amp);
 void dsp_edit_square(struct dsp_module *square, float freq, float amp);
 void dsp_square(struct dsp_operation *square, int jack_samplerate, int pos);
