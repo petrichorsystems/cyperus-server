@@ -38,6 +38,10 @@ int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float fe
 void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);
 void dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos);
 
+int dsp_create_sawtooth(struct dsp_bus *target_bus, float freq, float amp);
+void dsp_edit_sawtooth(struct dsp_module *sawtooth, float freq, float amp);
+void dsp_sawtooth(struct dsp_operation *sawtooth, int jack_samplerate, int pos);
+
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase);
 void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);
 void dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos);

@@ -467,6 +467,55 @@ void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedb
   
 } /* dsp_edit_delay */
 
+int dsp_create_sawtooth(struct dsp_bus *target_bus, float freq, float amp) {
+  dsp_parameter sawtooth_param;
+  struct dsp_port_in *ins;
+  struct dsp_port_out *outs;
+  sawtooth_param.type = DSP_SAWTOOTH_PARAMETER_ID;
+  sawtooth_param.pos = 0;
+  sawtooth_param.sawtooth.name = "sawtooth";
+  sawtooth_param.sawtooth.cyperus_params = malloc(sizeof(struct cyperus_parameters));
+  sawtooth_param.sawtooth.freq = freq;
+  sawtooth_param.sawtooth.amp = amp;
+
+  ins = dsp_port_in_init("in", 512);
+  outs = dsp_port_out_init("out", 1);
+  dsp_add_module(target_bus,
+		 "sawtooth",
+		 dsp_sawtooth,
+		 dsp_optimize_module,
+		 sawtooth_param,
+		 ins,
+		 outs);
+  
+  return 0;
+} /* dsp_create_sawtooth */
+
+void
+dsp_edit_sawtooth(struct dsp_module *sawtooth, float freq, float amp) {
+  sawtooth->dsp_param.sawtooth.freq = freq;
+  sawtooth->dsp_param.sawtooth.amp = amp;
+  
+  return;
+} /* dsp_edit_sawtooth */
+
+void
+dsp_sawtooth(struct dsp_operation *sawtooth, int jack_samplerate, int pos) {
+  float outsample = 0.0;
+  dsp_parameter dsp_param = sawtooth->module->dsp_param;
+
+  sawtooth->module->dsp_param.sawtooth.cyperus_params->freq = sawtooth->module->dsp_param.sawtooth.freq;
+  sawtooth->module->dsp_param.sawtooth.cyperus_params->amp = sawtooth->module->dsp_param.sawtooth.amp;
+  
+  outsample = cyperus_sawtooth(sawtooth->module->dsp_param.sawtooth.cyperus_params,
+			   jack_samplerate, pos);
+  
+  /* drive audio outputs */
+  sawtooth->outs->sample->value = outsample;
+  
+  return;
+} /* dsp_sawtooth */
+
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase) {
   dsp_parameter sine_param;
   struct dsp_port_in *ins;

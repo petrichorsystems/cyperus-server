@@ -114,6 +114,7 @@ float cyperus_block_processor(struct cyperus_parameters *block_processor, int ja
 float cyperus_envelope_follower(struct cyperus_parameters *envelope_follower, int jack_sr, int pos);
 
 /* signal generators */
+float cyperus_sawtooth(struct cyperus_parameters *sawtoothwav, int jack_sr, int pos);
 float cyperus_sine(struct cyperus_parameters *sinewav, int jack_sr, int pos);
 float cyperus_square(struct cyperus_parameters *squarewav, int jack_sr, int pos);
 float cyperus_triangle(struct cyperus_parameters *triwav, int jack_sr, int pos);

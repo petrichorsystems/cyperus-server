@@ -82,14 +82,17 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/delay", "sfff", osc_add_module_delay_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/delay", "sfff", osc_edit_module_delay_handler, NULL);
 
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/sawtooth", "sff", osc_add_module_sawtooth_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/sawtooth", "sff", osc_edit_module_sawtooth_handler, NULL);
+  
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/sine", "sfff", osc_add_module_sine_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/sine", "sfff", osc_edit_module_sine_handler, NULL);
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/triangle", "sff", osc_add_module_triangle_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/triangle", "sff", osc_edit_module_triangle_handler, NULL);
 
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/square", "ff", osc_add_module_square_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/square", "iff", osc_edit_module_square_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/square", "sff", osc_add_module_square_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/square", "sff", osc_edit_module_square_handler, NULL);
   
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/envelope_follower", "sfff", osc_add_module_envelope_follower_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/envelope_follower", "sfff", osc_edit_module_envelope_follower_handler, NULL);
