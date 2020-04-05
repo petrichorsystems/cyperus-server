@@ -97,9 +97,6 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/envelope_follower", "sfff", osc_add_module_envelope_follower_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/envelope_follower", "sfff", osc_edit_module_envelope_follower_handler, NULL);
 
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/lowpass", "sff", osc_add_module_lowpass_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/lowpass", "sff", osc_edit_module_lowpass_handler, NULL);
-
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/highpass", "sff", osc_add_module_highpass_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/highpass", "sff", osc_edit_module_highpass_handler, NULL);
 

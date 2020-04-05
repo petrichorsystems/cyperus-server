@@ -134,9 +134,6 @@ float cyperus_pitch_shift(struct cyperus_parameters *pitch_shift, int jack_sr, i
 
 float cyperus_apple_biquad_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos);
 
-void cyperus_lowpass_init(struct cyperus_parameters *filter, int jack_sr);
-float cyperus_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos);
-
 void cyperus_highpass_init(struct cyperus_parameters *filter, int jack_sr);
 float cyperus_highpass(struct cyperus_parameters *filter, int jack_sr, int pos);
 

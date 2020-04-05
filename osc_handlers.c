@@ -719,19 +719,25 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
   
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
+  snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
 
+  printf("strlen(module_path) - 37: %d\n", strlen(module_path) - 37);
+  printf("bus_path: %s\n", bus_path);
+  
   module_id = malloc(sizeof(char) * 37);
   strncpy(module_id, module_path + strlen(module_path) - 36, 37);
+
+  printf("module_id: %s\n", module_id);
   
-  target_bus = dsp_parse_bus_path(bus_path);
-  
+  target_bus = dsp_parse_bus_path(bus_path);  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  
+
+  printf("about to edit\n");
   dsp_edit_sawtooth(target_module, freq, amp);
+  printf("finished editin\n");
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sawtooth","sfff", module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/edit/module/sawtooth","sff", module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -1048,167 +1054,6 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
   return 0;
 } /* osc_edit_module_envelope_follower_handler */
 
-
-int osc_add_module_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                      int argc, void *data, void *user_data)
-{
-  char *bus_path, *module_id = NULL;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *temp_module, *target_module = NULL;
-
-  float freq;
-  float amp;
-  
-  printf("path: <%s>\n", path);
-
-  bus_path = argv[0];
-  amp=argv[1]->f;
-  freq=argv[2]->f;
-
-  target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_lowpass(target_bus, amp, freq);
-
-  temp_module = target_bus->dsp_module_head;
-  while(temp_module != NULL) {
-    target_module = temp_module;
-    temp_module = temp_module->next;
-  }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
-
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/lowpass","sff", module_id, amp, freq);
-  free(lo_addr_send);
-
-  free(module_id);
-  
-  return 0;
-} /* osc_create_module_lowpass_handler */
-
-int osc_edit_module_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                       int argc, void *data, void *user_data)
-{
-  char *module_path, *module_id = NULL;
-  char *bus_path = NULL;
-  struct dsp_bus *target_bus = NULL;;
-  struct dsp_module *target_module = NULL;
-  float amt = 0.0;
-  float freq = 0.0;
-  int count = 0;
-
-  printf("path: <%s>\n", path);
-  
-  module_path = argv[0];
-  amt=argv[1]->f;
-  freq=argv[2]->f;
-
-  
-  /* split up path */
-
-  
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
-  
-  module_id = malloc(sizeof(char) * 37);  
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
- 
-  target_bus = dsp_parse_bus_path(bus_path);
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  
-  dsp_edit_lowpass(target_module, amt, freq);
-  
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/lowpass","sff", module_id, amt, freq);
-  free(lo_addr_send);
-
-  
-  free(module_id);
-  free(bus_path);
- 
-  return 0;
-} /* osc_edit_module_lowpass_handler */
-
-
-
-int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                      int argc, void *data, void *user_data)
-{
-  char *bus_path, *module_id = NULL;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *temp_module, *target_module = NULL;
-
-  float freq;
-  float amp;
-  
-  printf("path: <%s>\n", path);
-
-  bus_path = argv[0];
-  amp=argv[1]->f;
-  freq=argv[2]->f;
-
-  target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_highpass(target_bus, amp, freq);
-
-  temp_module = target_bus->dsp_module_head;
-  while(temp_module != NULL) {
-    target_module = temp_module;
-    temp_module = temp_module->next;
-  }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
-
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/highpass","sff", module_id, amp, freq);
-  free(lo_addr_send);
-
-  free(module_id);
-  
-  return 0;
-} /* osc_create_module_highpass_handler */
-
-int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                       int argc, void *data, void *user_data)
-{
-  char *module_path, *module_id = NULL;
-  char *bus_path = NULL;
-  struct dsp_bus *target_bus = NULL;;
-  struct dsp_module *target_module = NULL;
-  float amt = 0.0;
-  float freq = 0.0;
-  int count = 0;
-
-  printf("path: <%s>\n", path);
-  
-  module_path = argv[0];
-  amt=argv[1]->f;
-  freq=argv[2]->f;
-
-  
-  /* split up path */
-
-  
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
-  
-  module_id = malloc(sizeof(char) * 37);  
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
- 
-  target_bus = dsp_parse_bus_path(bus_path);
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  
-  dsp_edit_highpass(target_module, amt, freq);
-  
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/highpass","sff", module_id, amt, freq);
-  free(lo_addr_send);
-
-  
-  free(module_id);
-  free(bus_path);
- 
-  return 0;
-} /* osc_edit_module_highpass_handler */
-
 int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data)
 {
@@ -1290,6 +1135,83 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
  
   return 0;
 } /* osc_edit_module_bandpass_handler */
+
+int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
+                                                      int argc, void *data, void *user_data)
+{
+  char *bus_path, *module_id = NULL;
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
+
+  float freq;
+  float amp;
+  
+  printf("path: <%s>\n", path);
+
+  bus_path = argv[0];
+  amp=argv[1]->f;
+  freq=argv[2]->f;
+
+  target_bus = dsp_parse_bus_path(bus_path);  
+  dsp_create_highpass(target_bus, amp, freq);
+
+  temp_module = target_bus->dsp_module_head;
+  while(temp_module != NULL) {
+    target_module = temp_module;
+    temp_module = temp_module->next;
+  }
+  module_id = malloc(sizeof(char) * 37);
+  strcpy(module_id, target_module->id);
+
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/add/module/highpass","sfff", module_id, amp, freq);
+  free(lo_addr_send);
+
+  free(module_id);
+  
+  return 0;
+} /* osc_create_module_highpass_handler */
+
+int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
+                                                       int argc, void *data, void *user_data)
+{
+  char *module_path, *module_id = NULL;
+  char *bus_path = NULL;
+  struct dsp_bus *target_bus = NULL;;
+  struct dsp_module *target_module = NULL;
+  float amt = 0.0;
+  float freq = 0.0;
+  int count = 0;
+  
+  module_path = argv[0];
+  amt=argv[1]->f;
+  freq=argv[2]->f;
+
+  
+  /* split up path */
+
+  
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  strncpy(bus_path, module_path, strlen(module_path) - 37);
+  
+  module_id = malloc(sizeof(char) * 37);  
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
+ 
+  target_bus = dsp_parse_bus_path(bus_path);
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  
+  dsp_edit_highpass(target_module, amt, freq);
+  
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/edit/module/highpass","sff", module_id, amt, freq);
+  free(lo_addr_send);
+
+  
+  free(module_id);
+  free(bus_path);
+ 
+  return 0;
+} /* osc_edit_module_highpass_handler */
 
 
 int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,

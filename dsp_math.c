@@ -145,35 +145,6 @@ void _filter_freq_reset(struct cyperus_parameters *filter, int jack_sr, int low)
   
 } /* _filter_freq_reset */
 
-void cyperus_lowpass_init(struct cyperus_parameters *filter, int jack_sr) {
-
-  _filter_freq_reset(filter, jack_sr, 1);
-  
-} /* cyperus_lowpass_init */
-
-float cyperus_lowpass(struct cyperus_parameters *filter, int jack_sr, int pos) {
-
-  float freq;
-
-  if( filter->freq < 0)
-    freq = 0;
-  else
-    freq = filter->freq;
-  filter->x0 = freq;
-  filter->x1 = freq * (2 * 3.14159f) / jack_sr;
-  
-  float outsample = 0.0f;
-  float last = filter->x2;
-  float coef = filter->x1;
-  float feedback = 1 - coef;
-
-  last = outsample = coef * filter->in + feedback * last;
-  filter->x2 = last;
-  
-  return outsample * filter->amt;
-} /* cyperus_lowpass */
-
-
 void cyperus_highpass_init(struct cyperus_parameters *filter, int jack_sr) {
 
   _filter_freq_reset(filter, jack_sr, 0);

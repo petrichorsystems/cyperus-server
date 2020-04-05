@@ -97,12 +97,6 @@ typedef struct dsp_module_parameter {
       float amt;
       float freq; 
       struct cyperus_parameters *cyperus_params;
-    } lowpass;
-    struct {
-      char *name;
-      float amt;
-      float freq; 
-      struct cyperus_parameters *cyperus_params;
     } highpass;
     struct {
       char *name;
