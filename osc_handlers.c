@@ -1033,18 +1033,20 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
   attack=argv[1]->f;
   decay=argv[2]->f;
   scale=argv[3]->f;
-
+  
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  for(count=0; count < (strlen(module_path) - 38); count++)
-    bus_path[count] = module_path[count];
+  snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
 
-  module_path = malloc(sizeof(char) * 37);
-  for(count=strlen(module_path) - 37; count < strlen(module_path) + 1; count++) {
-    module_id[count - strlen(module_path) - 37] = module_path[count];
-  }
+  printf("strlen(module_path) - 37: %d\n", strlen(module_path) - 37);
+  printf("bus_path: %s\n", bus_path);
   
-  target_bus = dsp_parse_bus_path(bus_path);
+  module_id = malloc(sizeof(char) * 37);
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
+
+  printf("module_id: %s\n", module_id);
+  
+  target_bus = dsp_parse_bus_path(bus_path);  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
 
   dsp_edit_envelope_follower(target_module, attack, decay, scale);
