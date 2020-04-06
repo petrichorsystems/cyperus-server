@@ -71,7 +71,6 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/bus", "ssss", osc_add_bus_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/list/bus", "si", osc_list_bus_handler, NULL);
-
   lo_server_thread_add_method(lo_thread, "/cyperus/list/bus_port", "s", osc_list_bus_port_handler, NULL);
  
   lo_server_thread_add_method(lo_thread, "/cyperus/add/connection", "ss", osc_add_connection_handler, NULL);
@@ -108,15 +107,18 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 
   lo_server_thread_add_method(lo_thread, "/cyperus/add/module/karlsen_lowpass", "sfff", osc_add_module_karlsen_lowpass_handler, NULL);
   lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/karlsen_lowpass", "sfff", osc_edit_module_karlsen_lowpass_handler, NULL);
+
+
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/osc_transmit", "ssssi", osc_add_module_osc_transmit_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/osc_transmit", "ssssi", osc_edit_module_osc_transmit_handler, NULL);
+
   
   lo_server_thread_add_method(lo_thread, "/cyperus/list/module_port", "s", osc_list_module_port_handler, NULL);
-
   lo_server_thread_add_method(lo_thread, "/cyperus/list/module", "s", osc_list_modules_handler, NULL);
   
   /* below are deprecated or to-be reimplemented */
   
-  lo_server_thread_add_method(lo_thread, "/cyperus/remove", "i", osc_remove_module_handler, NULL);
-  
+  lo_server_thread_add_method(lo_thread, "/cyperus/remove", "i", osc_remove_module_handler, NULL);  
   lo_server_thread_add_method(lo_thread, "/cyperus/add/pinknoise", NULL, osc_add_pinknoise_handler, NULL);
 
   lo_server_thread_start(lo_thread);

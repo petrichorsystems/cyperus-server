@@ -74,6 +74,11 @@ int dsp_create_karlsen_lowpass(struct dsp_bus *target_bus, float amp, float freq
 int dsp_edit_karlsen_lowpass(struct dsp_module *karlsen_lowpass, float amp, float freq, float res);
 float dsp_karlsen_lowpass(struct dsp_operation *karlsen_lowpass, int jack_samplerate, int pos);
 
+void dsp_osc_transmit(struct dsp_operation *osc_transmit, int jack_samplerate, int pos);
+int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, char *path, int samplerate_divisor);
+void dsp_edit_osc_transmit(struct dsp_module *osc_transmit, char *host, char *port, char *path, int samplerate_divisor);
+
+
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
  
 int dsp_create_pinknoise();

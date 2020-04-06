@@ -42,7 +42,8 @@ struct cyperus_parameters {
   float delay_amt; /* delay amount, 0-1 */
   float delay_time; /* init this with
 		       = seconds * sample_rate */
-
+  int count;
+  
   float attack;
   float decay;
   float scale;

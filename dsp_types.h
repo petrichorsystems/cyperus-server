@@ -117,6 +117,14 @@ typedef struct dsp_module_parameter {
       float freq;
       float amp;
     } sawtooth;
+    struct {
+      char *name;
+      char *host;
+      char *port;
+      char *path;
+      int samplerate_divisor;
+      int count;
+    } osc_transmit;
   };
 }dsp_parameter;
 
@@ -137,7 +145,8 @@ typedef enum dsp_parameter_identifiers{
   DSP_HIGHPASS_PARAMETER_ID=15,
   DSP_BANDPASS_PARAMETER_ID=16,
   DSP_TRIANGLE_PARAMETER_ID=17,
-  DSP_SAWTOOTH_PARAMETER_ID=18
+  DSP_SAWTOOTH_PARAMETER_ID=18,
+  DSP_OSC_TRANSMIT_PARAMETER_ID=19
 }dsp_param_identifiers;
 
 struct dsp_port_in {

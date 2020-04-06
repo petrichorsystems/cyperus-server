@@ -246,11 +246,19 @@ dsp_parse_bus_path(char *target_path) {
       if( output_token != NULL ) {
 	if( strcmp(output_token, "") != 0 ) {
 	  while( temp_bus != NULL ) {
+	    printf("path_index[path_count: '%s'\n", path_index[path_count]);
+	    printf("temp_bus->id:          '%s'\n", temp_bus->id);
+	    printf("strcmp: %d\n", strcmp(path_index[path_count], temp_bus->id));
+	    printf("strlen(path_index[path_count]): %d\n", strlen(path_index[path_count]));
+	    printf("strlen(temp_bus->id): %d\n", strlen(temp_bus->id));
 	    if( strcmp(path_index[path_count], temp_bus->id) == 0) {
+	      printf("path_count += 1\n");
 	      path_count += 1;
 	      target_bus = temp_bus;
+	      printf("last_bus_id: %s\n", last_bus_id);
 	      if( (strcmp(temp_bus->id, last_bus_id) == 0) &&
 		  (bus_count == path_count) ) {
+		printf("returning\n");
 		return temp_bus;
 	      } else
 		if(temp_bus->down != NULL) {

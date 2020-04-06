@@ -20,6 +20,8 @@ Copyright 2018 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
+#include <lo/lo.h>
+
 #include "jackcli.h"
 #include "cyperus.h"
 #include "dsp_math.h"
@@ -787,6 +789,82 @@ void dsp_edit_highpass(struct dsp_module *highpass, float amt, float freq) {
 
   return;
 } /* dsp_edit_highpass */
+
+void dsp_osc_transmit(struct dsp_operation *osc_transmit, int jack_samplerate, int pos) {
+  float insample = 0.0;
+
+  if( osc_transmit->ins->next->summands != NULL ) {
+    insample = dsp_sum_summands(osc_transmit->ins->summands);
+  }
+
+  if ( osc_transmit->module->dsp_param.osc_transmit.count % osc_transmit->module->dsp_param.osc_transmit.samplerate_divisor == 0 ) {
+    lo_address lo_addr_send = lo_address_new((const char*)osc_transmit->module->dsp_param.osc_transmit.host, (const char*)osc_transmit->module->dsp_param.osc_transmit.port);
+    lo_send(lo_addr_send, (const char*)osc_transmit->module->dsp_param.osc_transmit.path, "f", insample);
+    free(lo_addr_send);
+  }
+  osc_transmit->module->dsp_param.osc_transmit.count++;
+  
+  return;
+} /* dsp_osc_transmit */
+
+int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, char *path, int samplerate_divisor) {
+  printf("start dsp_create_osc_transmit()\n");
+  dsp_parameter osc_transmitter_param;
+  struct dsp_port_in *ins;
+  struct dsp_port_out *outs;
+  
+  osc_transmitter_param.type = DSP_OSC_TRANSMIT_PARAMETER_ID;
+  osc_transmitter_param.pos = 0;
+  osc_transmitter_param.osc_transmit.name = "osc transmitter";
+
+  osc_transmitter_param.osc_transmit.host = malloc(sizeof(char) * (strlen(host) + 1));
+  strcpy(osc_transmitter_param.osc_transmit.host, host);
+  
+  osc_transmitter_param.osc_transmit.port = malloc(sizeof(char) * (strlen(port) + 1));
+  strcpy(osc_transmitter_param.osc_transmit.port, port);
+  
+  osc_transmitter_param.osc_transmit.path = malloc(sizeof(char) * (strlen(path) + 1));
+  strcpy(osc_transmitter_param.osc_transmit.path, path);
+
+  osc_transmitter_param.osc_transmit.samplerate_divisor = samplerate_divisor;
+  osc_transmitter_param.osc_transmit.count = 0;
+  
+  ins = dsp_port_in_init("in", 512);
+
+  dsp_add_module(target_bus,
+                 "osc transmitter",
+                 dsp_osc_transmit,
+                 dsp_optimize_module,
+                 osc_transmitter_param,
+                 ins,
+                 NULL);
+  printf("finish dsp_create_osc_transmit()\n");
+  return 0;
+} /* dsp_create_osc_transmit */
+
+void dsp_edit_osc_transmit(struct dsp_module *osc_transmit, char *host, char *port, char *path, int samplerate_divisor) {
+  printf("start dsp_edit_osc_transmit()\n");
+  free(osc_transmit->dsp_param.osc_transmit.host);
+  free(osc_transmit->dsp_param.osc_transmit.port);
+  free(osc_transmit->dsp_param.osc_transmit.path);
+
+  printf("finish free()s\n");
+  
+  osc_transmit->dsp_param.osc_transmit.host = malloc(sizeof(char) * (strlen(host) + 1));
+  strcpy(osc_transmit->dsp_param.osc_transmit.host, host);
+  
+  osc_transmit->dsp_param.osc_transmit.port = malloc(sizeof(char) * (strlen(port) + 1));
+  strcpy(osc_transmit->dsp_param.osc_transmit.port, port);
+  
+  osc_transmit->dsp_param.osc_transmit.path = malloc(sizeof(char) * (strlen(path) + 1));
+  strcpy(osc_transmit->dsp_param.osc_transmit.path, path);
+
+  osc_transmit->dsp_param.osc_transmit.samplerate_divisor = samplerate_divisor;  
+
+  printf("finish dsp_edit_osc_transmit()\n");
+  return;
+} /* dsp_edit_osc_transmit */
+
 
 void dsp_bandpass(struct dsp_operation *bandpass, int jack_samplerate, int pos) {
   float insample = 0.0;
