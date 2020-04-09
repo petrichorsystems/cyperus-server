@@ -1456,14 +1456,11 @@ osc_edit_module_osc_transmit_handler(const char *path, const char *types, lo_arg
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  module_path = argv[0];
   host=argv[1];
   port=argv[2];
   osc_path=argv[3];
   samplerate_divisor=argv[4]->i;
-
-  target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_edit_osc_transmit(target_bus, host, port, osc_path, samplerate_divisor);
 
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
