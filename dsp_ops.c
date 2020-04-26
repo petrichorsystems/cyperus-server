@@ -303,7 +303,6 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
   dsp_parameter block_processor_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-  block_processor_param.type = DSP_BLOCK_PROCESSOR_PARAMETER_ID;
   block_processor_param.pos = 0;
   block_processor_param.block_processor.name = "block_processor";
   block_processor_param.block_processor.cyperus_params = (struct cyperus_parameters *)malloc(sizeof(struct cyperus_parameters));
@@ -390,7 +389,6 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
   dsp_parameter delay_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-  delay_param.type = DSP_DELAY_PARAMETER_ID;
   delay_param.pos = 0;
   delay_param.delay.name = "delay";
   delay_param.delay.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -473,7 +471,6 @@ int dsp_create_sawtooth(struct dsp_bus *target_bus, float freq, float amp) {
   dsp_parameter sawtooth_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-  sawtooth_param.type = DSP_SAWTOOTH_PARAMETER_ID;
   sawtooth_param.pos = 0;
   sawtooth_param.sawtooth.name = "sawtooth";
   sawtooth_param.sawtooth.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -521,8 +518,7 @@ dsp_sawtooth(struct dsp_operation *sawtooth, int jack_samplerate, int pos) {
 int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase) {
   dsp_parameter sine_param;
   struct dsp_port_in *ins;
-  struct dsp_port_out *outs;
-  sine_param.type = DSP_SINE_PARAMETER_ID;
+  struct dsp_port_out *outs;;
   sine_param.pos = 0;
   sine_param.sine.name = "sine";
   sine_param.sine.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -578,7 +574,6 @@ int dsp_create_triangle(struct dsp_bus *target_bus, float freq, float amp) {
   dsp_parameter triangle_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-  triangle_param.type = DSP_TRIANGLE_PARAMETER_ID;
   triangle_param.pos = 0;
   triangle_param.triangle.name = "triangle";
   triangle_param.triangle.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -630,7 +625,6 @@ dsp_create_square(struct dsp_bus *target_bus, float freq, float amp) {
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
   
-  square_param.type = DSP_SQUARE_PARAMETER_ID;
   square_param.pos = 0;
   square_param.square.name = "square";
   square_param.square.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -681,7 +675,7 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float dec
   dsp_parameter envelope_follower_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-  envelope_follower_param.type = DSP_ENVELOPE_FOLLOWER_PARAMETER_ID;
+
   envelope_follower_param.pos = 0;
   envelope_follower_param.envelope_follower.name = "envelope_follower";
   envelope_follower_param.envelope_follower.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -761,7 +755,6 @@ int dsp_create_highpass(struct dsp_bus *target_bus, float amt, float freq) {
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
   
-  filter_param.type = DSP_HIGHPASS_PARAMETER_ID;
   filter_param.pos = 0;
   filter_param.highpass.name = "highpass filter";
   filter_param.highpass.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -813,7 +806,6 @@ int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, 
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
   
-  osc_transmitter_param.type = DSP_OSC_TRANSMIT_PARAMETER_ID;
   osc_transmitter_param.pos = 0;
   osc_transmitter_param.osc_transmit.name = "osc transmitter";
 
@@ -898,7 +890,6 @@ int dsp_create_bandpass(struct dsp_bus *target_bus, float amt, float freq, float
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
   
-  filter_param.type = DSP_BANDPASS_PARAMETER_ID;
   filter_param.pos = 0;
   filter_param.bandpass.name = "bandpass filter";
   filter_param.bandpass.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -937,7 +928,7 @@ dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, float
   dsp_parameter pitch_shift_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-  pitch_shift_param.type = DSP_PITCH_SHIFT_PARAMETER_ID;
+
   pitch_shift_param.pos = 0;
   pitch_shift_param.pitch_shift.name = "pitch shift";
   pitch_shift_param.pitch_shift.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -1003,7 +994,7 @@ dsp_create_karlsen_lowpass(struct dsp_bus *target_bus, float amp, float freq, fl
   dsp_parameter karlsen_lowpass_param;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-  karlsen_lowpass_param.type = DSP_KARLSEN_LOWPASS_PARAMETER_ID;
+  
   karlsen_lowpass_param.pos = 0;
   karlsen_lowpass_param.karlsen_lowpass.name = "apple biquad lowpass filter";
   karlsen_lowpass_param.karlsen_lowpass.cyperus_params = malloc(sizeof(struct cyperus_parameters));
@@ -1075,7 +1066,6 @@ dsp_karlsen_lowpass(struct dsp_operation *karlsen_lowpass, int jack_samplerate, 
 int
 dsp_create_pinknoise(void) {
   dsp_parameter pinknoise_param;
-  pinknoise_param.type = DSP_PINKNOISE_PARAMETER_ID;
   pinknoise_param.pos = 0;
   pinknoise_param.pinknoise.name = "pinknoise";
   pinknoise_param.pinknoise.cyperus_params = malloc(sizeof(struct cyperus_parameters));
