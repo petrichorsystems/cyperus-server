@@ -3973,7 +3973,7 @@ static void cyperus_lowpa_designEachParamEQ(float N, float BW, float B_data[],
 static void cyperus_lo_designVarSlopeFilter(dsp_module_parameters_t *parameters)
 {
   float Fc = parameters.float32_type[0];
-  float Slope = (float)parameters.integer_type[0];
+  float Slope = parameters.float32_type[1];
 
   float B[12];
   float A[8];
@@ -4054,18 +4054,18 @@ static void cyperus_lo_designVarSlopeFilter(dsp_module_parameters_t *parameters)
   }
 }
 
-void math_modules_dsp_filter_varslope_lowpass_init(struct cyperus__parameters_t *filter, int jack_sr) {
+void math_modules_dsp_filter_varslope_lowpass_init(dsp_module_parameters_t *parameters, int jack_sr) {
   /* initialize non-finites */
   int i;
   rt_InitInfAndNaN(sizeof(float));
   for (i = 0; i < 8; i++) {
-    filter->float32_type[i + 32]] = 0.0f;
+    parameters->float32_type[i + 32]] = 0.0f;
   } 
-  cyperus_lo_designVarSlopeFilter(filter->parameters);  
+  cyperus_lo_designVarSlopeFilter(parameters);  
 } /* cyperus_filter_varslope_lowpass_init */
 
-void math_modules_dsp_filter_varslope_lowpass_edit(struct cyperus_parameters *filter) {
-  cyperus_lo_designVarSlopeFilter(filter->parameters);
+void math_modules_dsp_filter_varslope_lowpass_edit(dsp_module_parameters_t *parameters) {
+  cyperus_lo_designVarSlopeFilter(parameters);
 }
 
 float math_modules_dsp_filter_varslope_lowpass(struct cyperus_parameters *filter, int samplerate, int pos) {
@@ -4134,5 +4134,5 @@ float math_modules_dsp_filter_varslope_lowpass(struct cyperus_parameters *filter
 	 &W0_FILT_STATES, 
 	 sizeof(float) * 16);
 
-  return stageOut * filter->amp;
+  return stageOut * filter->parameters->float32_type[1];
 }  /* cyperus_filter_varslope_lowpass */
