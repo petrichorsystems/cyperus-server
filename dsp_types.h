@@ -23,9 +23,13 @@ Copyright 2018 murray foster */
 #define DSP_TYPES_H
 
 typedef struct dsp_module_parameter {
-  int type;
   float in;
+  
   int pos;
+
+  char *name;
+  dsp_module_parameters_t *parameters;
+  
   union {
     struct {
       char *name;

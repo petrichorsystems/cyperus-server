@@ -16,6 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2019 murray foster */
 
+#include <stdint.h>
+
 #include "rtqueue.h"
 
 #ifndef DSP_MATH_H
@@ -25,6 +27,13 @@ Copyright 2019 murray foster */
 #define VOCODERHOPSIZE 256
 #define VOCODERFRAMESIZE 2048
 #define VOCODEROVERSAMPLE 32
+
+typedef struct dsp_module_parameters {
+  int *integer_type;
+  float *float32_type;
+  uint8_t *uint8_type;
+  char **char_type;
+} dsp_module_parameters_t;
 
 struct cyperus_parameters {
   /* block processing */

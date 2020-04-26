@@ -3970,9 +3970,14 @@ static void cyperus_lowpa_designEachParamEQ(float N, float BW, float B_data[],
   }
 }
 
-static void cyperus_lo_designVarSlopeFilter(float Slope, float Fc, float B[12],
-  float A[8])
+static void cyperus_lo_designVarSlopeFilter(dsp_module_parameters_t *parameters)
 {
+  float Fc = parameters.float32_type[0];
+  float Slope = (float)parameters.integer_type[0];
+
+  float B[12];
+  float A[8];
+  
   int32_t N;
   float b_B_data[24];
   float b_A_data[16];
@@ -3981,10 +3986,18 @@ static void cyperus_lo_designVarSlopeFilter(float Slope, float Fc, float B[12],
   int32_t b_B_size[2];
   int32_t b_A_size[2];
   int32_t A_tmp;
+
   if (!(Fc < 1.0)) {
     Fc = 1.0;
   }
 
+  memcpy(&B,
+	 parameters->float32_type + (3 * sizeof(float)), 
+	   sizeof(float) * 12);
+  memcpy(&A,
+	 parameters->float32_type + (15 * sizeof(float)), 
+	 sizeof(float) * 8);
+  
   Slope = rt_roundd_snf(Slope / 6.0) * 6.0;
   memset(&B[0], 0, 12U * sizeof(float));
   B[0] = 1.0;
@@ -4031,21 +4044,28 @@ static void cyperus_lo_designVarSlopeFilter(float Slope, float Fc, float B[12],
       A[A_tmp] = b_A_data[A_tmp];
       A[1 + (i << 1)] = b_A_data[A_tmp + 1];
     }
+
+    memcpy(parameters->float32_type + (3 * sizeof(float)),
+	   &B, 
+	   sizeof(float) * 12);
+    memcpy(parameters->float32_type + (15 * sizeof(float)),
+	   &A, 
+	   sizeof(float) * 8);
   }
 }
 
-void math_modules_dsp_filter_varslope_lowpass_init(struct cyperus_parameters *filter, int jack_sr) {
+void math_modules_dsp_filter_varslope_lowpass_init(struct cyperus__parameters_t *filter, int jack_sr) {
   /* initialize non-finites */
   int i;
   rt_InitInfAndNaN(sizeof(float));
   for (i = 0; i < 8; i++) {
-    filter->W0_FILT_STATES[i] = 0.0f;
-  }  
-  cyperus_lo_designVarSlopeFilter(filter->slope, filter->fc, filter->B, filter->A);  
+    filter->float32_type[i + 32]] = 0.0f;
+  } 
+  cyperus_lo_designVarSlopeFilter(filter->parameters);  
 } /* cyperus_filter_varslope_lowpass_init */
 
 void math_modules_dsp_filter_varslope_lowpass_edit(struct cyperus_parameters *filter) {
-  cyperus_lo_designVarSlopeFilter(filter->slope, filter->fc, filter->B, filter->A);
+  cyperus_lo_designVarSlopeFilter(filter->parameters);
 }
 
 float math_modules_dsp_filter_varslope_lowpass(struct cyperus_parameters *filter, int samplerate, int pos) {
@@ -4063,38 +4083,56 @@ float math_modules_dsp_filter_varslope_lowpass(struct cyperus_parameters *filter
   float stageOut;
 
   int ioIdx;
+
+  float B[12];
+  float A[8];
+  float W0_FILT_STATES[16];
+
+  memcpy(&B,
+	 filter->parameters->float32_type + (3 * sizeof(float)), 
+	 sizeof(float) * 12);
+  memcpy(&A,
+	 filter->parameters->float32_type + (15 * sizeof(float)), 
+	 sizeof(float) * 8);
+  memcpy(&W0_FILT_STATES,
+	 filter->parameters->float32_type + (23 * sizeof(float)), 
+	 sizeof(float) * 16);
   
-  numAccum = filter->W0_FILT_STATES[0];
-  stageOut = filter->B[0] * insample + numAccum;
-  numAccum = filter->W0_FILT_STATES[1];
-  numAccum += filter->B[1] * insample;
-  filter->W0_FILT_STATES[0] = numAccum - filter->A[0] * stageOut;
-  filter->W0_FILT_STATES[1] = filter->B[2] * insample -
-    filter->A[1] * stageOut;
+  numAccum = W0_FILT_STATES[0];
+  stageOut = B[0] * insample + numAccum;
+  numAccum = W0_FILT_STATES[1];
+  numAccum += B[1] * insample;
+  W0_FILT_STATES[0] = numAccum - A[0] * stageOut;
+  W0_FILT_STATES[1] = B[2] * insample -
+    A[1] * stageOut;
   stageIn = stageOut;
-  numAccum = filter->W0_FILT_STATES[2];
-  stageOut = filter->B[3] * stageOut + numAccum;
-  numAccum = filter->W0_FILT_STATES[3];
-  numAccum += filter->B[4] * stageIn;
-  filter->W0_FILT_STATES[2] = numAccum - filter->A[2] * stageOut;
-  filter->W0_FILT_STATES[3] = filter->B[5] * stageIn -
-    filter->A[3] * stageOut;
+  numAccum = W0_FILT_STATES[2];
+  stageOut = B[3] * stageOut + numAccum;
+  numAccum = W0_FILT_STATES[3];
+  numAccum += B[4] * stageIn;
+  W0_FILT_STATES[2] = numAccum - A[2] * stageOut;
+  W0_FILT_STATES[3] = B[5] * stageIn -
+    A[3] * stageOut;
   stageIn = stageOut;
-  numAccum = filter->W0_FILT_STATES[4];
-  stageOut = filter->B[6] * stageOut + numAccum;
-  numAccum = filter->W0_FILT_STATES[5];
-  numAccum += filter->B[7] * stageIn;
-  filter->W0_FILT_STATES[4] = numAccum - filter->A[4] * stageOut;
-  filter->W0_FILT_STATES[5] = filter->B[8] * stageIn -
-    filter->A[5] * stageOut;
+  numAccum = W0_FILT_STATES[4];
+  stageOut = B[6] * stageOut + numAccum;
+  numAccum = W0_FILT_STATES[5];
+  numAccum += B[7] * stageIn;
+  W0_FILT_STATES[4] = numAccum - A[4] * stageOut;
+  W0_FILT_STATES[5] = B[8] * stageIn -
+    A[5] * stageOut;
   stageIn = stageOut;
-  numAccum = filter->W0_FILT_STATES[6];
-  stageOut = filter->B[9] * stageOut + numAccum;
-  numAccum = filter->W0_FILT_STATES[7];
-  numAccum += filter->B[10] * stageIn;
-  filter->W0_FILT_STATES[6] = numAccum - filter->A[6] * stageOut;
-  filter->W0_FILT_STATES[7] = filter->B[11] * stageIn -
-    filter->A[7] * stageOut;
-  
+  numAccum = W0_FILT_STATES[6];
+  stageOut = B[9] * stageOut + numAccum;
+  numAccum = W0_FILT_STATES[7];
+  numAccum += B[10] * stageIn;
+  W0_FILT_STATES[6] = numAccum - A[6] * stageOut;
+  W0_FILT_STATES[7] = B[11] * stageIn -
+    A[7] * stageOut;
+
+  memcpy(filter->parameters->float32_type + (23 * sizeof(float)),
+	 &W0_FILT_STATES, 
+	 sizeof(float) * 16);
+
   return stageOut * filter->amp;
 }  /* cyperus_filter_varslope_lowpass */
