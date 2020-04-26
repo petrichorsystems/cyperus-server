@@ -14,8 +14,8 @@
  * Validation result: Not run
  */
 
-#ifndef modules_dsp_filter_varslope_lowpass_h_
-#define modules_dsp_filter_varslope_lowpass_h_
+#ifndef math_modules_dsp_filter_varslope_lowpass_h_
+#define math_modules_dsp_filter_varslope_lowpass_h_
 
 #include <float.h>
 #include <math.h>
@@ -117,8 +117,8 @@ struct cyperus_parameters {
   float W0_FILT_STATES[16];
 };
 
-extern void modules_dsp_filter_varslope_lowpass_init(struct cyperus_parameters *filter, int jack_sr);
-extern float modules_dsp_filter_varslope_lowpass(struct cyperus_parameters *filter, int samplerate, int pos);
-extern void modules_dsp_filter_varslope_lowpass_edit(struct cyperus_parameters *filter);
+extern void math_modules_dsp_filter_varslope_lowpass_init(struct cyperus_parameters *filter, int jack_sr);
+extern float math_modules_dsp_filter_varslope_lowpass(struct cyperus_parameters *filter, int samplerate, int pos);
+extern void math_modules_dsp_filter_varslope_lowpass_edit(struct cyperus_parameters *filter);
 
 #endif
