@@ -22,13 +22,14 @@ Copyright 2018 murray foster */
 
 #include <lo/lo.h>
 
-#include "jackcli.h"
-#include "cyperus.h"
-#include "dsp_math.h"
-#include "dsp.h"
-#include "dsp_ops.h"
+#include "../../../../jackcli.h"
+#include "../../../../cyperus.h"
+#include "../../../../dsp_math.h"
+#include "../../../../dsp.h"
+#include "../../../../dsp_ops.h"
 
 #include "math_modules_dsp_filter_varslope_lowpass.h"
+#include "ops_modules_dsp_filter_varslope_lowpass.h"
 
 int
 dsp_create_filter_varslope_lowpass(struct dsp_bus *target_bus,
@@ -42,7 +43,7 @@ dsp_create_filter_varslope_lowpass(struct dsp_bus *target_bus,
   filter_varslope_lowpass_param.name = "filter_varslope_lowpass";
   filter_varslope_lowpass_param.pos = 0;
   filter_varslope_lowpass_param.in = 0.0f;
-  filter_varslope_lowpass_param.parameters = malloc(sizeof(dsp_module_parmeters_t));
+  filter_varslope_lowpass_param.parameters = malloc(sizeof(dsp_module_parameters_t));
   filter_varslope_lowpass_param.parameters->float32_type = malloc(sizeof(float) * 40);
 
   filter_varslope_lowpass_param.parameters->float32_type[0] = amplitude;
@@ -50,7 +51,7 @@ dsp_create_filter_varslope_lowpass(struct dsp_bus *target_bus,
   filter_varslope_lowpass_param.parameters->float32_type[2] = cutoff_frequency;
   filter_varslope_lowpass_param.parameters->float32_type[3] = cutoff_frequency / (jackcli_samplerate / 2.0f);
 
-  math_modules_dsp_filter_varslope_lowpass_init(filter_varslope_lowpass_param.parameters);
+  math_modules_dsp_filter_varslope_lowpass_init(filter_varslope_lowpass_param.parameters, jackcli_samplerate);
   
   ins = dsp_port_in_init("in", 512);
   ins->next = dsp_port_in_init("param_cutoff", 512);
@@ -69,10 +70,9 @@ void
 dsp_filter_varslope_lowpass(struct dsp_operation *filter_varslope_lowpass, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;
-  dsp_parameter dsp_param = filter_varslope_lowpass->module->dsp_param;
 
   insample = dsp_sum_summands(filter_varslope_lowpass->ins->summands);
-  filter_varslope_lowpass->module->dsp_param->parameters.in = insample;
+  filter_varslope_lowpass->module->dsp_param.in = insample;
 
   if( filter_varslope_lowpass->ins->next->summands != NULL ) {
 
@@ -83,7 +83,7 @@ dsp_filter_varslope_lowpass(struct dsp_operation *filter_varslope_lowpass, int j
     
   }
 
-  outsample = math_modules_dsp_filter_varslope_lowpass(filter_varslope_lowpass->module->dsp_param,
+  outsample = math_modules_dsp_filter_varslope_lowpass(&filter_varslope_lowpass->module->dsp_param,
 						       jack_samplerate,
 						       pos);
 
@@ -99,21 +99,21 @@ void dsp_edit_filter_varslope_lowpass(struct dsp_module *filter_varslope_lowpass
 				      float slope,
 				      float cutoff_frequency) {
   printf("about to assign amplitude\n");
-  filter_varslope_lowpass->dsp_param->parameters[0] = amplitude;
-  printf("assigned filter_varslope_lowpass->dsp_param->parameters->float32_type[0]: %f\n",
-	 filter_varslope_lowpass->dsp_param->parameters->float32_type[0]);
+  filter_varslope_lowpass->dsp_param.parameters->float32_type[0] = amplitude;
+  printf("assigned filter_varslope_lowpass->dsp_param.parameters->float32_type[0]: %f\n",
+	 filter_varslope_lowpass->dsp_param.parameters->float32_type[0]);
   printf("about to assign slope\n");
-  filter_varslope_lowpass->dsp_param->parameters->float32_type[1] = slope;
-  printf("assigned filter_varslope_lowpass->dsp_param->parameters->float32_type[1]: %f\n",
-	 filter_varslope_lowpass->dsp_param->parameters->float32_type[1]);
+  filter_varslope_lowpass->dsp_param.parameters->float32_type[1] = slope;
+  printf("assigned filter_varslope_lowpass->dsp_param.parameters->float32_type[1]: %f\n",
+	 filter_varslope_lowpass->dsp_param.parameters->float32_type[1]);
   printf("about to assign cutoff_frequency\n");
-  filter_varslope_lowpass->dsp_param->parameters->float32_type[2] = cutoff_frequency;
-  printf("assigned filter_varslope_lowpass->dsp_param->parameters->float32_type[2]: %f\n", filter_varslope_lowpass->dsp_param->parameters->float32_type[2]);
+  filter_varslope_lowpass->dsp_param.parameters->float32_type[2] = cutoff_frequency;
+  printf("assigned filter_varslope_lowpass->dsp_param.parameters->float32_type[2]: %f\n", filter_varslope_lowpass->dsp_param.parameters->float32_type[2]);
   printf("about to assign fc\n");
-  filter_varslope_lowpass->dsp_param->parameters->float32_type[3] = cutoff_frequency / (jackcli_samplerate / 2.0f);
-  printf("assigned filter_varslope_lowpass->dsp_param->parameters->float32_type[3]: %f\n", filter_varslope_lowpass->dsp_param->parameters->float32_type[3]);
+  filter_varslope_lowpass->dsp_param.parameters->float32_type[3] = cutoff_frequency / (jackcli_samplerate / 2.0f);
+  printf("assigned filter_varslope_lowpass->dsp_param.parameters->float32_type[3]: %f\n", filter_varslope_lowpass->dsp_param.parameters->float32_type[3]);
 
-  math_modules_dsp_filter_varslope_lowpass_edit(filter_varslope_lowpass->dsp_param->parameters);
+  math_modules_dsp_filter_varslope_lowpass_edit(filter_varslope_lowpass->dsp_param.parameters);
 
   printf("returning\n");
   

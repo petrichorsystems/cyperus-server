@@ -391,7 +391,7 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
 void
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
-	       void (*dsp_function) (char*, struct dsp_module*, int, int),
+	       void (*dsp_function) (struct dsp_operation*, int, int),
 	       struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
