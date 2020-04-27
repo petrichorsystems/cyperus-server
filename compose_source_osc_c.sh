@@ -26,9 +26,15 @@ do
 	    osc_params=`cat "modules/$module_type/$module_subtype/$module/osc.params"`
 	    add_func=`cat "modules/$module_type/$module_subtype/$module/osc_modules_${module_type}_${module_subtype}_${module}.h" | grep add | cut -d' ' -f2 | cut -d'(' -f1`
 	    edit_func=`cat "modules/$module_type/$module_subtype/$module/osc_modules_${module_type}_${module_subtype}_${module}.h" | grep edit | cut -d' ' -f2 | cut -d'(' -f1`
-	    osc_path="/cyperus/add/module/$module_type/$module_subtype/$module"
-	    handler_prefix="\"$osc_path\", \"$osc_params\""
+
+	    osc_method="add"
+	    osc_path="/cyperus/$osc_method/module/$module_type/$module_subtype/$module"
+	    handler_prefix="\"$osc_path\", \"$osc_params\""	  	    
 	    echo "  lo_server_thread_add_method(lo_thread, $handler_prefix, $add_func, NULL);" >> osc.c
+	    
+	    osc_method="edit"
+	    osc_path="/cyperus/$osc_method/module/$module_type/$module_subtype/$module"
+	    handler_prefix="\"$osc_path\", \"$osc_params\""	  	    	    
 	    echo "  lo_server_thread_add_method(lo_thread, $handler_prefix, $edit_func, NULL);" >> osc.c
 	done
     done
