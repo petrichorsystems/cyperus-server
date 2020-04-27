@@ -20,18 +20,17 @@ Copyright 2015 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
 
-#include "cyperus.h"
-#include "rtqueue.h"
-#include "dsp_math.h"
-#include "dsp.h"
-#include "dsp_types.h"
-#include "dsp_ops.h"
-#include "jackcli.h"
-#include "osc.h"
-#include "osc_modules_dsp_filter_varslope_lowpass.h"
+#include "../../../../cyperus.h"
+#include "../../../../rtqueue.h"
+#include "../../../../dsp_math.h"
+#include "../../../../dsp.h"
+#include "../../../../dsp_types.h"
+#include "../../../../dsp_ops.h"
+#include "../../../../jackcli.h"
+#include "../../../../osc.h"
 
-lo_server_thread_add_method(lo_thread, "/cyperus/add/module/filter_varslope_lowpass", "sfff", osc_add_module_filter_varslope_lowpass_handler, NULL);
-lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/filter_varslope_lowpass", "sfff", osc_edit_module_filter_varslope_lowpass_handler, NULL);
+#include "ops_modules_dsp_filter_varslope_lowpass.h"
+#include "osc_modules_dsp_filter_varslope_lowpass.h"
 
 int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
@@ -41,19 +40,19 @@ int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char 
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
-  float amt;
-  float time;
-  float feedback;
+  float amplitude;
+  float slope;
+  float cutoff_frequency;
   
   printf("path: <%s>\n", path);
 
   bus_path = argv[0];
-  amt=argv[1]->f;
-  time=argv[2]->f;
-  feedback=argv[3]->f;
+  amplitude=argv[1]->f;
+  slope=argv[2]->f;
+  cutoff_frequency=argv[3]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_filter_varslope_lowpass(target_bus, amt, time, feedback);
+  dsp_create_filter_varslope_lowpass(target_bus, amplitude, slope, cutoff_frequency);
 
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -65,7 +64,7 @@ int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char 
 
   printf("add_module_filter_varslope_lowpass_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/filter_varslope_lowpass","sfff", module_id, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/add/module/filter_varslope_lowpass","sfff", module_id, amplitude, slope, cutoff_frequency);
   free(lo_addr_send);
   return;
 } /* osc_add_module_filter_varslope_lowpass_handler */
@@ -79,15 +78,15 @@ osc_edit_module_filter_varslope_lowpass_handler(const char *path, const char *ty
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
-  float amt;
-  float time;
-  float feedback;
+  float amplitude;
+  float slope;
+  float cutoff_frequency;
   int count;
 
   module_path = argv[0];
-  amt=argv[1]->f;
-  time=argv[2]->f;
-  feedback=argv[3]->f;
+  amplitude=argv[1]->f;
+  slope=argv[2]->f;
+  cutoff_frequency=argv[3]->f;
 
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
@@ -98,10 +97,10 @@ osc_edit_module_filter_varslope_lowpass_handler(const char *path, const char *ty
   target_bus = dsp_parse_bus_path(bus_path);  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
 
-  dsp_edit_filter_varslope_lowpass(target_module, amt, time, feedback);
+  dsp_edit_filter_varslope_lowpass(target_module, amplitude, slope, cutoff_frequency);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/filter_varslope_lowpass","sfff", module_id, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/edit/module/filter_varslope_lowpass","sfff", module_id, amplitude, slope, cutoff_frequency);
   free(lo_addr_send);
   
   return 0;

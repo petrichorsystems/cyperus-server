@@ -16,11 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <lo/lo.h>
-
-#include "dsp_types.h"
-#include "dsp_math.h"
-
 #ifndef OSC_MODULES_DSP_FILTER_VARSLOPE_LOWPASS_H
 #define OSC_MODULES_DSP_FILTER_VARSLOPE_LOWPASS_H
 
