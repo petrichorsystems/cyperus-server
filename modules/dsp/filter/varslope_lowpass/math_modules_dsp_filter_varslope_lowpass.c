@@ -3972,7 +3972,7 @@ static void cyperus_lowpa_designEachParamEQ(float N, float BW, float B_data[],
 
 static void cyperus_lo_designVarSlopeFilter(dsp_module_parameters_t *parameters)
 {
-  float Fc = parameters->float32_type[0];
+  float Fc = parameters->float32_type[3];
   float Slope = parameters->float32_type[1];
 
   float B[12];
@@ -3991,11 +3991,11 @@ static void cyperus_lo_designVarSlopeFilter(dsp_module_parameters_t *parameters)
     Fc = 1.0;
   }
 
-  memcpy(&B,
-	 parameters->float32_type + (3 * sizeof(float)), 
-	   sizeof(float) * 12);
-  memcpy(&A,
-	 parameters->float32_type + (15 * sizeof(float)), 
+  memcpy(&B[0],
+	 &parameters->float32_type[3], 
+	 sizeof(float) * 12);
+  memcpy(&A[0],
+	 &parameters->float32_type[15], 
 	 sizeof(float) * 8);
   
   Slope = rt_roundd_snf(Slope / 6.0) * 6.0;
@@ -4045,11 +4045,11 @@ static void cyperus_lo_designVarSlopeFilter(dsp_module_parameters_t *parameters)
       A[1 + (i << 1)] = b_A_data[A_tmp + 1];
     }
 
-    memcpy(parameters->float32_type + (3 * sizeof(float)),
-	   &B, 
+    memcpy(&parameters->float32_type[3],
+	   &B[0], 
 	   sizeof(float) * 12);
-    memcpy(parameters->float32_type + (15 * sizeof(float)),
-	   &A, 
+    memcpy(&parameters->float32_type[15],
+	   &A[0], 
 	   sizeof(float) * 8);
   }
 }
@@ -4088,14 +4088,14 @@ float math_modules_dsp_filter_varslope_lowpass(dsp_parameter *filter, int sample
   float A[8];
   float W0_FILT_STATES[16];
 
-  memcpy(&B,
-	 filter->parameters->float32_type + (3 * sizeof(float)), 
+  memcpy(&B[0],
+	 &filter->parameters->float32_type[3], 
 	 sizeof(float) * 12);
-  memcpy(&A,
-	 filter->parameters->float32_type + (15 * sizeof(float)), 
+  memcpy(&A[0],
+	 &filter->parameters->float32_type[15], 
 	 sizeof(float) * 8);
-  memcpy(&W0_FILT_STATES,
-	 filter->parameters->float32_type + (23 * sizeof(float)), 
+  memcpy(&W0_FILT_STATES[0],
+	 &filter->parameters->float32_type[23], 
 	 sizeof(float) * 16);
   
   numAccum = W0_FILT_STATES[0];
@@ -4130,9 +4130,9 @@ float math_modules_dsp_filter_varslope_lowpass(dsp_parameter *filter, int sample
   W0_FILT_STATES[7] = B[11] * stageIn -
     A[7] * stageOut;
 
-  memcpy(filter->parameters->float32_type + (23 * sizeof(float)),
-	 &W0_FILT_STATES, 
+  memcpy(&filter->parameters->float32_type[23],
+	 &W0_FILT_STATES[0], 
 	 sizeof(float) * 16);
 
-  return stageOut * filter->parameters->float32_type[1];
+  return stageOut * filter->parameters->float32_type[0];
 }  /* cyperus_filter_varslope_lowpass */

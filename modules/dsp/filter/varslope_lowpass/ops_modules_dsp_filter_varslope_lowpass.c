@@ -86,7 +86,7 @@ dsp_filter_varslope_lowpass(struct dsp_operation *filter_varslope_lowpass, int j
   outsample = math_modules_dsp_filter_varslope_lowpass(&filter_varslope_lowpass->module->dsp_param,
 						       jack_samplerate,
 						       pos);
-
+  
   /* drive audio outputs */
   filter_varslope_lowpass->outs->sample->value = outsample;
 
