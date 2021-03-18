@@ -43,9 +43,9 @@ dsp_create_filter_varslope_lowpass(struct dsp_bus *target_bus,
   filter_varslope_lowpass_param.name = "filter_varslope_lowpass";
   filter_varslope_lowpass_param.pos = 0;
   filter_varslope_lowpass_param.in = 0.0f;
+
   filter_varslope_lowpass_param.parameters = malloc(sizeof(dsp_module_parameters_t));
   filter_varslope_lowpass_param.parameters->float32_type = malloc(sizeof(float) * 40);
-
   filter_varslope_lowpass_param.parameters->float32_type[0] = amplitude;
   filter_varslope_lowpass_param.parameters->float32_type[1] = slope;
   filter_varslope_lowpass_param.parameters->float32_type[2] = cutoff_frequency;

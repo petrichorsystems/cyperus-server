@@ -388,7 +388,7 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
   return;
 } /* dsp_add_bus */
 
-void
+struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (struct dsp_operation*, int, int),
@@ -406,7 +406,8 @@ dsp_add_module(struct dsp_bus *target_bus,
     target_bus->dsp_module_head = new_module;
   else
     dsp_module_insert_tail(target_bus->dsp_module_head, new_module);
-  return;
+  
+  return new_module;
 } /* dsp_add_module */
 
 void
@@ -731,8 +732,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
     temp_op_out_path = current_path;
 
     
-  /* OUTPUT PROCESSING */
-    
+  /* OUTPUT PROCESSING */    
     
     /* grab 'out' op and sample address */
     temp_op_out = dsp_global_operation_head_processing;
@@ -1230,8 +1230,8 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   return;
 } /* dsp_process */
 
-void
-*dsp_thread(void *arg) {
+void*
+dsp_thread(void *arg) {
   int pos, i;
   float outsample = (float)0.0;
 

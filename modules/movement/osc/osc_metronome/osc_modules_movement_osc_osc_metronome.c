@@ -60,7 +60,7 @@ int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types
 
   printf("add_module_osc_metronome_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sfff", module_id, frequency);
+  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sf", module_id, frequency);
   free(lo_addr_send);
   return;
 } /* osc_add_module_osc_osc_metronome_handler */
@@ -75,8 +75,6 @@ osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, l
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
   float frequency;
-  float slope;
-  float cutoff_frequency;
   int count;
 
   module_path = argv[0];
