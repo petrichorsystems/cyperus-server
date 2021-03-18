@@ -28,6 +28,7 @@
 #include "../../../../cyperus.h"
 #include "../../../../dsp.h"
 #include "../../../../dsp_ops.h"
+#include "../../../threadsync.h"
 
 
 extern int

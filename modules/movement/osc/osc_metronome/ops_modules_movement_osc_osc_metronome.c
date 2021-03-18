@@ -27,8 +27,15 @@ Copyright 2018 murray foster */
 #include "../../../../dsp_math.h"
 #include "../../../../dsp.h"
 #include "../../../../dsp_ops.h"
+#include "../../../threadsync.h"
 
 #include "ops_modules_movement_osc_osc_metronome.h"
+
+void*
+_osc_metronome_thread(void *arg) {
+  
+} /* _osc_metronome_thread */
+
 
 int
 dsp_create_osc_metronome(struct dsp_bus *target_bus,
