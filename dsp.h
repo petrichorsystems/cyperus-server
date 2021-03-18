@@ -49,7 +49,7 @@ dsp_remove_module(struct dsp_module *module, int remove);
 void
 dsp_bypass_module(struct dsp_module *module, int bypass);
 
-void
+struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (struct dsp_operation*, int, int),
