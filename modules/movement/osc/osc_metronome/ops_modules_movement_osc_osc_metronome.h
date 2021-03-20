@@ -33,12 +33,12 @@
 
 extern int
 dsp_create_osc_metronome(struct dsp_bus *target_bus,
-                         float frequency);
+                         float beats_per_minute);
 extern float
 dsp_osc_metronome(struct dsp_operation *osc_metronome,
 			    int jack_samplerate,
 			    int pos);
 extern void
 dsp_edit_osc_metronome(struct dsp_module *osc_metronome,
-                       float frequency);
+                       float beats_per_minute);
 #endif

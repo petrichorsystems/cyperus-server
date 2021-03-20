@@ -40,15 +40,15 @@ int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
-  float frequency;
+  float beats_per_minute;
   
   printf("path: <%s>\n", path);
 
   bus_path = argv[0];
-  frequency=argv[1]->f;
+  beats_per_minute=argv[1]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_osc_metronome(target_bus, frequency);
+  dsp_create_osc_metronome(target_bus, beats_per_minute);
 
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -60,7 +60,7 @@ int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types
 
   printf("add_module_osc_metronome_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sf", module_id, frequency);
+  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sf", module_id, beats_per_minute);
   free(lo_addr_send);
   return;
 } /* osc_add_module_osc_osc_metronome_handler */
@@ -74,12 +74,14 @@ osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, l
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
-  float frequency;
+  float beats_per_minute;
   int count;
 
   module_path = argv[0];
-  frequency=argv[1]->f;
+  beats_per_minute=argv[1]->f;
 
+  printf("osc_edit_module_osc_osc_metronome_handler::beats_per_minute: %f\n", beats_per_minute);
+  
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
 
@@ -89,10 +91,10 @@ osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, l
   target_bus = dsp_parse_bus_path(bus_path);  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
 
-  dsp_edit_osc_metronome(target_module, frequency);
+  dsp_edit_osc_metronome(target_module, beats_per_minute);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/osc_metronome","sf", module_id, frequency);
+  lo_send(lo_addr_send,"/cyperus/edit/module/osc_metronome","sf", module_id, beats_per_minute);
   free(lo_addr_send);
   
   return 0;
