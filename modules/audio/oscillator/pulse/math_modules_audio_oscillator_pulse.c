@@ -16,8 +16,6 @@
 
 #include <math.h>
 
-#include "../../../../dsp_math.h"
-#include "../../../math_utils.h"
 #include "math_modules_audio_oscillator_pulse.h"
 
 #define twopi 6.28318530717952646f

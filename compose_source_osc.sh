@@ -1,5 +1,8 @@
 #!/bin/bash
-cp templates/osc.c.template/osc.c.template.prefix osc.c
+rm osc.c
+rm osc.h
+
+cp templates/osc.h.template/osc.h.template.prefix osc.h
 
 for module_type in `ls modules/ | grep -v "\."`
 do
@@ -10,13 +13,14 @@ do
 	    osc_params=`cat "modules/$module_type/$module_subtype/$module/osc.params"`
 	    add_func=`cat "modules/$module_type/$module_subtype/$module/osc_modules_${module_type}_${module_subtype}_${module}.h" | grep add | cut -d' ' -f2 | cut -d'(' -f1`
 	    edit_func=`cat "modules/$module_type/$module_subtype/$module/osc_modules_${module_type}_${module_subtype}_${module}.h" | grep edit | cut -d' ' -f2 | cut -d'(' -f1`
-	    echo "#include \"modules/$module_type/$module_subtype/$module/osc_modules_${module_type}_${module_subtype}_${module}.h\"" >> osc.c
+	    echo "#include \"modules/$module_type/$module_subtype/$module/osc_modules_${module_type}_${module_subtype}_${module}.h\"" >> osc.h
 	done
     done
 done
 
-cat templates/osc.c.template/osc.c.template.mid.0 >> osc.c
+cat templates/osc.h.template/osc.h.template.suffix >> osc.h
 
+cat templates/osc.c.template/osc.c.template.prefix >> osc.c
 for module_type in `ls modules/ | grep -v "\."`
 do
     for module_subtype in `ls modules/$module_type/ | grep -v "\."`

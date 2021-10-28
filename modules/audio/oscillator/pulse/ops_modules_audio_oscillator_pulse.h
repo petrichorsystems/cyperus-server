@@ -21,15 +21,7 @@
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include <lo/lo.h>
-
-#include "../../../../dsp_types.h"
-#include "../../../../jackcli.h"
-#include "../../../../cyperus.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp.h"
 #include "../../../../dsp_ops.h"
-
 
 extern int
 dsp_create_oscillator_pulse(struct dsp_bus *target_bus,

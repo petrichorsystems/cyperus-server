@@ -26,6 +26,8 @@ Copyright 2018 murray foster */
 #include "dsp_math.h"
 #include "dsp.h"
 
+#include "dsp_types.h"
+
 char* dsp_generate_object_id() {
   char *id;
   int id_len = 37;
