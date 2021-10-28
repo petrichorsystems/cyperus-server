@@ -1,4 +1,4 @@
-/* threadsync.h
+/* osc.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -16,15 +16,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#ifndef threadsync_h_
+#ifndef OSC_H
+#define OSC_H
+
 #include <stdio.h> //printf
-#include <pthread.h>
+#include <string.h> //memset
+#include <stdlib.h> //exit(0);
 
-extern pthread_mutex_t threadsync_is_waiting_mutex;
-extern pthread_cond_t threadsync_is_waiting_cond;
+#include <lo/lo.h>
 
-void threadsync_init();
-void threadsync_sync();
-void threadsync_wait_for_sync();
-
-#endif
+#include "osc_handlers.h"
