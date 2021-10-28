@@ -21,6 +21,8 @@ Copyright 2015 murray foster */
 
 #include "../../../../osc.h"
 
+char *send_host_out;
+
 int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data);
 int osc_edit_module_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,

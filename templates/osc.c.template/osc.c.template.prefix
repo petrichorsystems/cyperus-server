@@ -36,8 +36,8 @@ int osc_change_address(char *new_host_out, char *new_port_out) {
 }
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
-  send_host_out = "127.0.0.1";
-  send_port_out = osc_port_out;
+  char *send_host_out = "127.0.0.1";
+  char *send_port_out = osc_port_out;
 
   send_host_out = malloc(sizeof(char) * 10);
   strcpy(send_host_out, "127.0.0.1");
@@ -45,7 +45,7 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   send_port_out = malloc(sizeof(char) * 6);
   strcpy(send_port_out, osc_port_out);
 
-  lo_thread = lo_server_thread_new(osc_port_in, osc_error);
+  lo_server_thread lo_thread = lo_server_thread_new(osc_port_in, osc_error);
 
   /* below is for debug, add method that will match any path and args */
   /* lo_server_thread_add_method(st, NULL, NULL, generic_handler, NULL); */

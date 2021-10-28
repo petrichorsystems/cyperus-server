@@ -16,12 +16,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#ifndef DSP_OPS_H
+#define DSP_OPS_H
+
+#include <stdio.h> //printf
+#include <string.h> //memset
+#include <stdlib.h> //exit(0)
+
+#include <lo/lo.h>
+
 #include "rtqueue.h"
 #include "dsp_math.h"
 #include "dsp.h"
-
-#ifndef DSP_OPS_H
-#define DSP_OPS_H
+#include "jackcli.h"
 
 float dsp_sum_input(struct dsp_port_in *in);
 float dsp_sum_summands(struct dsp_operation_sample *summands);

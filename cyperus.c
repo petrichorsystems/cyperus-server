@@ -16,23 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
-#include <jack/jack.h> 
-#include <math.h>
-#include <lo/lo.h>
-#include <fftw3.h>
-#include <signal.h>
-#include <unistd.h>
 
 #include "cyperus.h"
-#include "rtqueue.h"
-#include "jackcli.h"
-#include "dsp.h"
-#include "dsp_ops.h"
-#include "osc.h"
-#include "osc_handlers.h"
 
 void print_usage() {
   printf("Usage: cyperus [options] [arg]\n\n");

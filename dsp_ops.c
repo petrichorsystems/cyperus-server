@@ -16,16 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include <lo/lo.h>
-
-#include "jackcli.h"
-#include "cyperus.h"
-#include "dsp_math.h"
-#include "dsp.h"
 #include "dsp_ops.h"
 
 dsp_parameter dsp_voice_parameters[0];

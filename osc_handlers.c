@@ -16,18 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
-
-#include "cyperus.h"
-#include "rtqueue.h"
-#include "dsp_math.h"
-#include "dsp.h"
-#include "dsp_types.h"
-#include "dsp_ops.h"
-#include "jackcli.h"
-#include "osc.h"
 #include "osc_handlers.h"
 
 void osc_error(int num, const char *msg, const char *path)

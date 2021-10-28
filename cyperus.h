@@ -21,6 +21,25 @@ Copyright 2018 murray foster */
 #ifndef CYPERUS_H
 #define CYPERUS_H
 
+#include <stdio.h> //printf
+#include <string.h> //memset
+#include <stdlib.h> //exit(0);
+#include <jack/jack.h> 
+#include <math.h>
+#include <lo/lo.h>
+#include <fftw3.h>
+#include <signal.h>
+#include <unistd.h>
+
+#include "rtqueue.h"
+#include "jackcli.h"
+#include "dsp.h"
+#include "dsp_ops.h"
+#include "osc.h"
+#include "osc_handlers.h"
+
+
+
 extern int jack_sr;
 extern rtqueue_t *fifo_out;
 extern rtqueue_t *fifo_in;

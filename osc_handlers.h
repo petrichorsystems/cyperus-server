@@ -18,11 +18,16 @@ Copyright 2015 murray foster */
 
 #include <lo/lo.h>
 
-#include "dsp_types.h"
-#include "dsp_math.h"
-
 #ifndef OSC_HANDLERS_H
 #define OSC_HANDLERS_H
+
+#include <stdio.h> //printf
+#include <string.h> //memset
+#include <stdlib.h> //exit(0);
+
+#include "dsp.h"
+#include "jackcli.h"
+#include "osc.h"
 
 void osc_error(int num, const char *msg, const char *path);
 
