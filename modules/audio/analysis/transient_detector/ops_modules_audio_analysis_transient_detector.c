@@ -81,7 +81,7 @@ float
 dsp_transient_detector(struct dsp_operation *transient_detector,
 			 int jack_samplerate,
 		       int pos) {
-  float sensitivity_ms = transient_detector->module->dsp_param.parameters->float32_type[0];
+  float sensitivity = transient_detector->module->dsp_param.parameters->float32_type[0];
   float attack_ms = transient_detector->module->dsp_param.parameters->float32_type[1];
   float decay_ms = transient_detector->module->dsp_param.parameters->float32_type[2];
   float scale = transient_detector->module->dsp_param.parameters->float32_type[3];

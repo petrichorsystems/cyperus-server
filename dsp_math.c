@@ -48,6 +48,47 @@ float cyperus_block_processor(struct cyperus_parameters *block_processor, int ja
   return outsample;
 }
 
+float _cyperus_level_detector_coeff(int jack_sr, float duration) {
+  return exp(log(0.01f) / (duration * jack_sr * 0.001f));
+}
+
+float cyperus_level_detector(struct cyperus_parameters *level_detector, int jack_sr, int pos) {
+  float attack_ms = level_detector->attack;
+  float decay_ms = level_detector->decay;
+
+  float pulse_attack_ms = level_detector->x0;
+  float pulse_decay_ms = level_detector->x1;
+  
+  float coeff_attack = _cyperus_level_detector_coeff(jack_sr, attack_ms);
+  float coeff_decay = _cyperus_level_detector_coeff(jack_sr, decay_ms);
+  
+  float coeff_pulse_attack = _cyperus_level_detector_coeff(jack_sr, attack_ms);
+  float coeff_pulse_decay = _cyperus_level_detector_coeff(jack_sr, decay_ms);
+
+  float output_level = level_detector->x2;
+  
+  float insample = level_detector->in;
+  float outsample, absin = 0.0f;
+  
+  absin = fabs(insample);
+  if(absin > level_detector->signal_buffer[0])
+    outsample = coeff_attack * (outsample - absin) + outsample;
+  else
+    outsample = coeff_decay * (outsample - absin) + outsample;
+  level_detector->signal_buffer[0] = outsample;
+  
+  if( level_detector->amt == outsample ) {
+    level_detector->signal_buffer[1] = output_level;
+  }
+  if(absin > level_detector->signal_buffer[1])
+    outsample = coeff_pulse_attack * level_detector->signal_buffer[1];
+  else
+    outsample = coeff_pulse_decay * level_detector->signal_buffer[1];
+  level_detector->signal_buffer[1] = outsample;
+  
+  return outsample;
+}
+
 float cyperus_envelope_follower(struct cyperus_parameters *envelope_follower, int jack_sr, int pos)
 {
   float attack_ms = envelope_follower->attack;
@@ -64,7 +105,7 @@ float cyperus_envelope_follower(struct cyperus_parameters *envelope_follower, in
   else
     outsample = coeff_decay * (outsample - absin) + outsample;
   envelope_follower->signal_buffer[0] = outsample;
-  return fabs(outsample);
+  return fabs(outsample) * envelope_follower->scale;
 }
 
 float cyperus_sine(struct cyperus_parameters *sinewav, int jack_sr, int pos)

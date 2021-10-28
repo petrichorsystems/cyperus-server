@@ -122,6 +122,7 @@ struct cyperus_parameters {
 
 float cyperus_block_processor(struct cyperus_parameters *block_processor, int jack_sr, int pos);
 float cyperus_envelope_follower(struct cyperus_parameters *envelope_follower, int jack_sr, int pos);
+float cyperus_level_detector(struct cyperus_parameters *level_detector, int jack_sr, int pos);
 
 /* signal generators */
 float cyperus_sawtooth(struct cyperus_parameters *sawtoothwav, int jack_sr, int pos);
