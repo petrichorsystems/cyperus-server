@@ -44,14 +44,14 @@ class OscServer(ServerThread):
         print('args', args)
         responses.put(args)
         
-    @make_method('/cyperus/add/module/sine', 'sfff')
+    @make_method('/cyperus/add/module/audio/oscillator/pulse', 'sffff')
     def osc_add_module_sine(self, path, args):
         print("received '/cyperus/add/module/audio/oscillator/pulse'")
         responses.put(args)
 
-    @make_method('/cyperus/edit/module/sine', 'sfff')
+    @make_method('/cyperus/edit/module/audio/oscillator/pulse', 'sffff')
     def osc_edit_module_sine(self, path, args):
-        print("received '/cyperus/edit/module/sine'")
+        print("received '/cyperus/edit/module/audio/oscillator/pulse'")
         responses.put(args)
 
     @make_method('/cyperus/list/module_port', 'ss')
@@ -177,8 +177,8 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
     response = responses.get()
 
     for num in range(0, 1000):
-        print("/cyperus/edit/module/sine", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), float(num), 1.0, 0.0)
-        liblo.send(dest, "/cyperus/edit/module/sine", "/{}?{}".format(bus_main0_uuid, sine_module_uuid),  float(num), 1.0, 0.0)
+        print("/cyperus/edit/module/audio/oscillator/pulse", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), float(num), 0.5, 0.0, 0.0)
+        liblo.send(dest, "/cyperus/edit/module/audio/oscillator/pulse", "/{}?{}".format(bus_main0_uuid, sine_module_uuid),  float(num), 0.5, 0.0, 0.0)
         response = responses.get()
         time.sleep(0.1)
 
