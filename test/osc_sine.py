@@ -9,7 +9,7 @@ responses = queue.Queue()
 
 class OscServer(ServerThread):
     def __init__(self):
-        ServerThread.__init__(self, 97217)
+        ServerThread.__init__(self, 5000)
         
     @make_method('/cyperus/address', 'ss')
     def osc_address_handler(self, path, args):
@@ -185,7 +185,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
 
 if __name__ == '__main__':
     #outgoing connection
-    dest = liblo.Address(97211)
+    dest = liblo.Address(5001)
 
     #incoming server
     server = OscServer()

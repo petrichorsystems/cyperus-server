@@ -9,7 +9,7 @@ responses = queue.Queue()
 
 class OscServer(ServerThread):
     def __init__(self):
-        ServerThread.__init__(self, 97217)
+        ServerThread.__init__(self, 5000)
         
     @make_method('/cyperus/address', 'ss')
     def osc_address_handler(self, path, args):
@@ -44,14 +44,14 @@ class OscServer(ServerThread):
         print('args', args)
         responses.put(args)
         
-    @make_method('/cyperus/add/module/oscillator_pulse', 'sfff')
-    def osc_add_module_oscillator_pulse(self, path, args):
-        print("received '/cyperus/add/module/oscillator_pulse'")
+    @make_method('/cyperus/add/module/sine', 'sfff')
+    def osc_add_module_sine(self, path, args):
+        print("received '/cyperus/add/module/audio/oscillator/pulse'")
         responses.put(args)
 
-    @make_method('/cyperus/edit/module/oscillator_pulse', 'sfff')
-    def osc_edit_module_oscillator_pulse(self, path, args):
-        print("received '/cyperus/edit/module/oscillator_pulse'")
+    @make_method('/cyperus/edit/module/sine', 'sfff')
+    def osc_edit_module_sine(self, path, args):
+        print("received '/cyperus/edit/module/sine'")
         responses.put(args)
 
     @make_method('/cyperus/list/module_port', 'ss')
@@ -64,14 +64,14 @@ class OscServer(ServerThread):
         print("fallback, received '{}'".format(path))
         print("fallback, args '{}'".format(args))
         
-def test_single_channel_single_bus_oscillator_pulse(dest):
+def test_single_channel_single_bus_sine_follower_sine(dest):
     mains = {'in': [],
              'out': []}
     bus_main0_uuid = None
     bus_ports  = {'in': [],
                   'out': []}
-    oscillator_pulse_module_uuid = None
-    oscillator_pulse_module_ports = {'in': [],
+    sine_module_uuid = None
+    sine_module_ports = {'in': [],
                           'out': []}
     
     liblo.send(dest, "/cyperus/list/main")
@@ -89,8 +89,6 @@ def test_single_channel_single_bus_oscillator_pulse(dest):
         else:
             mains['in'].append(elem)
 
-    print('done')
-            
     liblo.send(dest, "/cyperus/add/bus", "/", "main0", "in", "out")
     liblo.send(dest, "/cyperus/list/bus", "/", 1)
     response = responses.get()
@@ -119,37 +117,53 @@ def test_single_channel_single_bus_oscillator_pulse(dest):
     print('mains', mains)
 
     print(bus_main0_uuid)
-    print(bus_main0_uuid)
 
-    liblo.send(dest, "/cyperus/add/module/oscillator_pulse", "/{}".format(bus_main0_uuid),440.0, 0.5, 0.0, 0.0)
+    liblo.send(dest, "/cyperus/add/module/audio/oscillator/pulse", "/{}".format(bus_main0_uuid), 440.0, 0.5, 0.0, 0.0)
     response = responses.get()
-    oscillator_pulse_module_uuid = response[0]    
+    sine_module_uuid = response[0]    
     
     liblo.send(dest, "/cyperus/list/module_port", "/{}?{}".format(bus_main0_uuid,
-                                                                  oscillator_pulse_module_uuid))
+                                                                  sine_module_uuid))
     response = responses.get()
-    print('response: {}'.format(response))
-
-    raw_oscillator_pulse_module_ports = response[1].split('\n')
-    print(raw_oscillator_pulse_module_ports)
-
+    print('bloc_processor response: {}'.format(response))
+    raw_sine_module_ports = response[1].split('\n')
+    print(raw_sine_module_ports)
     outs = False
-    for elem in filter(None, raw_oscillator_pulse_module_ports):
+    for elem in filter(None, raw_sine_module_ports):
         if 'out:' in elem:
             outs = True
         elif 'in:' in elem:
             pass
         elif outs:
-            oscillator_pulse_module_ports['out'].append(elem)
+            sine_module_ports['out'].append(elem)
         else:
-            oscillator_pulse_module_ports['in'].append(elem)
-    print('oscillator_pulse_module_ports', oscillator_pulse_module_ports)
+            sine_module_ports['in'].append(elem)
+    print('sine_module_ports', sine_module_ports)
+
+
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               mains['in'][0],
+               "/{}:{}".format(bus_main0_uuid,
+                               bus_ports['in'][0].split('|')[0]))
+    response = responses.get()
+
+
+    liblo.send(dest,
+               "/cyperus/add/connection",
+               "/{}:{}".format(bus_main0_uuid,
+                               bus_ports['in'][0].split('|')[0]),
+               "/{}?{}<{}".format(bus_main0_uuid,
+                                  sine_module_uuid,
+                                  sine_module_ports['in'][0].split('|')[0]))
+    response = responses.get()
+
     
     liblo.send(dest,
                "/cyperus/add/connection",
                "/{}?{}>{}".format(bus_main0_uuid,
-                                  oscillator_pulse_module_uuid,
-                                  oscillator_pulse_module_ports['out'][0].split('|')[0]),
+                                  sine_module_uuid,
+                                  sine_module_ports['out'][0].split('|')[0]),
                "/{}:{}".format(bus_main0_uuid,
                                bus_ports['out'][0].split('|')[0]))
     response = responses.get()
@@ -162,25 +176,21 @@ def test_single_channel_single_bus_oscillator_pulse(dest):
 
     response = responses.get()
 
-    # time.sleep(5)
-    
-    # liblo.send(dest, "/cyperus/edit/module/oscillator_pulse", "/{}?{}".format(bus_main0_uuid, oscillator_pulse_module_uuid), 220.0, 1.0, 0.0)
-    # response = responses.get()
-
-    # time.sleep(5)
-    
-    # liblo.send(dest, "/cyperus/edit/module/oscillator_pulse", "/{}?{}".format(bus_main0_uuid, oscillator_pulse_module_uuid), 110.0, 1.0, 0.0)
-    # response = responses.get()
+    for num in range(0, 1000):
+        print("/cyperus/edit/module/sine", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), float(num), 1.0, 0.0)
+        liblo.send(dest, "/cyperus/edit/module/sine", "/{}?{}".format(bus_main0_uuid, sine_module_uuid),  float(num), 1.0, 0.0)
+        response = responses.get()
+        time.sleep(0.1)
 
 if __name__ == '__main__':
     #outgoing connection
-    dest = liblo.Address(97211)
+    dest = liblo.Address(5001)
 
     #incoming server
     server = OscServer()
 
     server.start()
 
-    test_single_channel_single_bus_oscillator_pulse(dest)
+    test_single_channel_single_bus_sine_follower_sine(dest)
 
     input("press enter to quit...\n")

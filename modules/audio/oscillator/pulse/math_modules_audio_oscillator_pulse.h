@@ -12,9 +12,9 @@
 #include "../../../../dsp_types.h"
 
 extern void
-math_modules_audio_oscillator_pulse_init(dsp_parameter *params);
+math_modules_audio_oscillator_pulse_init(dsp_module_parameters_t *parameters);
 
 extern float
-math_modules_audio_oscillator_pulse(dsp_parameter *params, int samplerate, int pos);
+math_modules_audio_oscillator_pulse(dsp_module_parameters_t *parameters, int samplerate, int pos);
 
 #endif

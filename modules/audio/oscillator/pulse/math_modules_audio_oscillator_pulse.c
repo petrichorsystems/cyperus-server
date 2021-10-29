@@ -44,40 +44,40 @@ float PhaseFrac(uint32_t inPhase) {
 float lininterp(float x, float a, float b) { return a + x * (b - a); }
 
 extern
-void math_modules_audio_oscillator_pulse_init(dsp_parameter *params) {
+void math_modules_audio_oscillator_pulse_init(dsp_module_parameters_t *parameters) {
   double sineIndexToPhase = twopi / K_SINE_SIZE;
   double pmf = (1L << 29) / twopi;
   for (int i = 0; i <= K_SINE_SIZE; ++i) {
     double phase = i * sineIndexToPhase;
     float d = sin(phase);
-    params->parameters->float32_arr_type[0][i] = d;
-    params->parameters->float32_arr_type[1][i] = 1.0 / d;
+    parameters->float32_arr_type[0][i] = d;
+    parameters->float32_arr_type[1][i] = 1.0 / d;
   }  
-  params->parameters->float32_arr_type[1][0] = params->parameters->float32_arr_type[1][K_SINE_SIZE / 2] = params->parameters->float32_arr_type[1][K_SINE_SIZE] = kBadValue;
+  parameters->float32_arr_type[1][0] = parameters->float32_arr_type[1][K_SINE_SIZE / 2] = parameters->float32_arr_type[1][K_SINE_SIZE] = kBadValue;
   int sz = K_SINE_SIZE;
   int sz2 = sz >> 1;
   for (int i = 1; i <= 8; ++i) {
-    params->parameters->float32_arr_type[1][i] = params->parameters->float32_arr_type[1][sz - i] = kBadValue;
-    params->parameters->float32_arr_type[1][sz2 - i] = params->parameters->float32_arr_type[1][sz2 + i] = kBadValue;
+    parameters->float32_arr_type[1][i] = parameters->float32_arr_type[1][sz - i] = kBadValue;
+    parameters->float32_arr_type[1][sz2 - i] = parameters->float32_arr_type[1][sz2 + i] = kBadValue;
   }
 } /* math_modules_audio_oscillator_pulse_init */
 
 extern
-float math_modules_audio_oscillator_pulse(dsp_parameter *params, int samplerate, int pos) {
+float math_modules_audio_oscillator_pulse(dsp_module_parameters_t *parameters, int samplerate, int pos) {
   
   /* void Pulse_next(Pulse* unit, int inNumSamples) { */
 
   float outsample = 0.0f;
     
-  float freqin = params->parameters->float32_type[0];
-  float duty = params->parameters->float32_type[1];
+  float freqin = parameters->float32_type[0];
+  float duty = parameters->float32_type[1];
 
-  float freqin_last = params->parameters->float32_type[6];
-  int phase = params->parameters->float32_type[7];
-  float y1 = params->parameters->float32_type[9];
+  float freqin_last = parameters->float32_type[6];
+  int phase = parameters->float32_type[7];
+  float y1 = parameters->float32_type[9];
 
-    float* numtbl = params->parameters->float32_arr_type[0];
-    float* dentbl = params->parameters->float32_arr_type[1];
+    float* numtbl = parameters->float32_arr_type[0];
+    float* dentbl = parameters->float32_arr_type[1];
 
     int freq, N, prevN;
     float scale, prevscale;
@@ -85,31 +85,31 @@ float math_modules_audio_oscillator_pulse(dsp_parameter *params, int samplerate,
 
     if (freqin != freqin_last) {
         N = (int)((samplerate * 0.5) / freqin);
-        if (N != params->parameters->float32_type[5]) {
+        if (N != parameters->float32_type[5]) {
             float maxfreqin;
-            maxfreqin = sc_max(params->parameters->float32_type[6], freqin);
-            freq = (int)(params->parameters->float32_type[4] * maxfreqin);
+            maxfreqin = sc_max(parameters->float32_type[6], freqin);
+            freq = (int)(parameters->float32_type[4] * maxfreqin);
             crossfade = 1;
         } else {
-            freq = (int)(params->parameters->float32_type[4] * freqin);
+            freq = (int)(parameters->float32_type[4] * freqin);
             crossfade = 0;
         }
-        prevN = params->parameters->float32_type[5];
-        prevscale = params->parameters->float32_type[7];
-        params->parameters->float32_type[5] = N;
-        params->parameters->float32_type[7] = scale = 0.5 / N;
+        prevN = parameters->float32_type[5];
+        prevscale = parameters->float32_type[7];
+        parameters->float32_type[5] = N;
+        parameters->float32_type[7] = scale = 0.5 / N;
     } else {
-        N = params->parameters->float32_type[5];
-        freq = (int)(params->parameters->float32_type[4] * freqin);
-        scale = params->parameters->float32_type[7];
+        N = parameters->float32_type[5];
+        freq = (int)(parameters->float32_type[4] * freqin);
+        scale = parameters->float32_type[7];
         crossfade = 0;
     }
     int N2 = 2 * N + 1;
 
-    int phaseoff = params->parameters->float32_type[9];
+    int phaseoff = parameters->float32_type[9];
     int next_phaseoff = (int)(duty * (1L << 28));
     int phaseoff_slope = (int)((next_phaseoff - phaseoff) * M_SLOPE_FACTOR);
-    params->parameters->float32_type[9] = next_phaseoff;
+    parameters->float32_type[9] = next_phaseoff;
     float rscale = 1.f / scale + 1.f;
     float pul1, pul2;
 
@@ -265,9 +265,9 @@ float math_modules_audio_oscillator_pulse(dsp_parameter *params, int samplerate,
             phase += freq; phaseoff += phaseoff_slope;
     }
     
-    params->parameters->float32_type[10] = y1;
-    params->parameters->float32_type[8] = phase;
-    params->parameters->float32_type[6] = freqin;
+    parameters->float32_type[10] = y1;
+    parameters->float32_type[8] = phase;
+    parameters->float32_type[6] = freqin;
 
     return outsample;
 }
