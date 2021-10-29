@@ -1,6 +1,7 @@
 #!/bin/bash
-rm osc.c
-rm osc.h
+rm -f osc.c
+rm -f osc.h
+mkdir -p build
 
 cp templates/osc.h.template/osc.h.template.prefix osc.h
 

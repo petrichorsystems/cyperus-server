@@ -40,9 +40,6 @@ int osc_change_address(char *new_host_out, char *new_port_out) {
 }
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
-  char *send_host_out = "127.0.0.1";
-  char *send_port_out = osc_port_out;
-
   send_host_out = malloc(sizeof(char) * 10);
   strcpy(send_host_out, "127.0.0.1");
 

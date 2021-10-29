@@ -63,6 +63,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 					   4 + /* strlen("in:\n") */
 					   5 + /* strlen("out:\n") */
 					   1));
+
   strcpy(mains_str, "in:\n");
   /* process main inputs */
   temp_port_out = dsp_main_ins;
@@ -81,6 +82,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
     strcat(mains_str, "\n");
     temp_port_in = temp_port_in->next;
   }
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/list/main", "s", mains_str);
   free(mains_str);
