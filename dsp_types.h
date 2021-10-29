@@ -23,6 +23,21 @@ Copyright 2018 murray foster */
 
 #include "dsp_math.h"
 
+extern struct dsp_operation *dsp_global_operation_head_processing;
+extern struct dsp_operation *dsp_global_operation_head;
+
+extern struct dsp_connection *dsp_global_connection_graph;
+extern struct dsp_connection *dsp_global_connection_graph_processing;
+extern struct dsp_translation_connection *dsp_global_translation_connection_graph_processing;
+extern struct dsp_bus *dsp_global_bus_head;
+extern struct dsp_operation *dsp_global_translation_graph;
+
+extern struct dsp_port_out *dsp_main_ins;
+extern struct dsp_port_in *dsp_main_outs;
+
+extern struct dsp_operation *dsp_optimized_main_ins;
+extern struct dsp_operation *dsp_optimized_main_outs;
+
 typedef struct dsp_module_parameter {
   float in;
   

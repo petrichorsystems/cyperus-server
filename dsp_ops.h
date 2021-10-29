@@ -31,9 +31,6 @@ Copyright 2018 murray foster */
 #include "dsp.h"
 #include "jackcli.h"
 
-struct dsp_operation *dsp_global_operation_head_processing;
-struct dsp_operation *dsp_global_operation_head;
-
 float dsp_sum_input(struct dsp_port_in *in);
 float dsp_sum_summands(struct dsp_operation_sample *summands);
 void dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *outs);

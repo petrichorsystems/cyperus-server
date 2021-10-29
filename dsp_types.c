@@ -18,6 +18,18 @@ Copyright 2018 murray foster */
 
 #include "dsp_types.h"
 
+struct dsp_operation *dsp_global_operation_head_processing;
+struct dsp_operation *dsp_global_operation_head;
+
+struct dsp_connection *dsp_global_connection_graph;
+struct dsp_connection *dsp_global_connection_graph_processing;
+struct dsp_translation_connection *dsp_global_translation_connection_graph_processing;
+struct dsp_bus *dsp_global_bus_head;
+struct dsp_operation *dsp_global_translation_graph;
+
+struct dsp_port_out *dsp_main_ins;
+struct dsp_port_in *dsp_main_outs;
+
 char* dsp_generate_object_id() {
   char *id;
   int id_len = 37;

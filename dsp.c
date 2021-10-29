@@ -20,12 +20,6 @@ Copyright 2015 murray foster */
 
 #define MAX_PATH_ID_LENGTH 16384
 
-struct dsp_port_out *dsp_main_ins;
-struct dsp_port_in *dsp_main_outs;
-
-struct dsp_operation *dsp_optimized_main_ins;
-struct dsp_operation *dsp_optimized_main_outs;
-
 int dsp_global_new_operation_graph = 0;
 
 struct dsp_bus_port
