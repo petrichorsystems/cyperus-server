@@ -265,16 +265,6 @@ struct dsp_translation_sample {
   struct dsp_operation_sample *sample_out;
 };
 
-/* pre-optimized */
-extern struct dsp_connection *dsp_global_connection_graph; /* GLOBAL */
-extern struct dsp_bus *dsp_global_bus_head; /* GLOBAL */
-
-/* optimized */
-extern struct dsp_translation_connection *dsp_global_translation_connection_graph_processing; /* GLOBAL */
-extern struct dsp_operation *dsp_global_operation_head_processing; /* GLOBAL */
-
-extern struct dsp_operation *dsp_global_translation_graph; /* GLOBAL */
-extern struct dsp_operation *dsp_global_operation_head; /* GLOBAL */
 
 struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size);
 void dsp_port_in_insert_head(struct dsp_port_in *head_port, struct dsp_port_in *port_in);

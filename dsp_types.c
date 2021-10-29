@@ -30,6 +30,9 @@ struct dsp_operation *dsp_global_translation_graph;
 struct dsp_port_out *dsp_main_ins;
 struct dsp_port_in *dsp_main_outs;
 
+struct dsp_operation *dsp_optimized_main_ins;
+struct dsp_operation *dsp_optimized_main_outs;
+
 char* dsp_generate_object_id() {
   char *id;
   int id_len = 37;

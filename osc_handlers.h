@@ -16,8 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <lo/lo.h>
-
 #ifndef OSC_HANDLERS_H
 #define OSC_HANDLERS_H
 
@@ -26,9 +24,11 @@ Copyright 2015 murray foster */
 /* #include <stdlib.h> exit(0); */
 
 #include "dsp.h"
+#include "dsp_types.h"
 #include "jackcli.h"
 #include "osc.h"
 
+char *int_to_str(int x);
 
 void osc_error(int num, const char *msg, const char *path);
 

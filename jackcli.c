@@ -16,11 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
-#include <jack/jack.h>
-
 #include "jackcli.h"
 
 rtqueue_t **jackcli_fifo_ins;
@@ -39,7 +34,7 @@ jack_port_t **jackcli_ports_output;
 jack_default_audio_sample_t **jackcli_outs;
 jack_default_audio_sample_t **jackcli_ins;
 
-static int jackcli_process_callback(jack_nframes_t nframes, void *arg)
+int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 {
   float sample; 
   unsigned i, n; 
@@ -106,7 +101,7 @@ int jackcli_fifo_setup()
 } /* jackcli_fifo_setup */
 
 
-static void jackcli_shutdown_callback(void *arg)
+void jackcli_shutdown_callback(void *arg)
 {
   exit(1);
 } /* jackcli_shutdown_callback */

@@ -41,7 +41,6 @@ int generic_handler(const char *path, const char *types, lo_arg ** argv,
   return 0;
 }
 
-
 int osc_address_handler(const char *path, const char *types, lo_arg **argv,
 			int argc, void *data, void *user_data)
 {
@@ -328,7 +327,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
 } /* osc_list_bus_port_handler */
 
 int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
-			   int argc, void *data, void *user_data)
+                               int argc, void *data, void *user_data)
 {
   int i;
   struct dsp_bus *temp_bus;
@@ -380,7 +379,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 } /* osc_add_bus_handler */
 
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
-			      int argc, void *data, void *user_data)
+                                     int argc, void *data, void *user_data)
 {
   int voice;
   int module_no;
@@ -397,7 +396,7 @@ int osc_remove_module_handler(const char *path, const char *types, lo_arg ** arg
 
 
 int osc_add_connection_handler(const char *path, const char *types, lo_arg **argv,
-			       int argc, void *data, void *user_data)
+                                      int argc, void *data, void *user_data)
 {
   char *path_out, *path_in;
   int failed = 0;
@@ -419,7 +418,7 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 } /* osc_add_connection_handler */
 
 int osc_remove_connection_handler(const char *path, const char *types, lo_arg **argv,
-			       int argc, void *data, void *user_data)
+                                         int argc, void *data, void *user_data)
 {
   char *path_out, *path_in;
   int failed = 0;
@@ -441,7 +440,7 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 } /* osc_remove_connection_handler */
 
 int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,
-			     int argc, void *data, void *user_data)
+                                    int argc, void *data, void *user_data)
 {
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *target_module = NULL;
@@ -484,7 +483,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 } /* osc_list_modules_handler */
 
 int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
-			     int argc, void *data, void *user_data)
+                                        int argc, void *data, void *user_data)
 {
   int count;
   struct dsp_bus *temp_bus;
@@ -555,7 +554,7 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 } /* osc_list_module_port_handler */
 
 int osc_add_module_block_processor_handler(const char *path, const char *types, lo_arg ** argv,
-					   int argc, void *data, void *user_data)
+                                                  int argc, void *data, void *user_data)
 {
   char *bus_path, *module_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
@@ -582,7 +581,7 @@ int osc_add_module_block_processor_handler(const char *path, const char *types, 
 
 
 int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
-				 int argc, void *data, void *user_data)
+                                        int argc, void *data, void *user_data)
 {
   printf("osc_add_module_delay_handler()..\n");
   char *bus_path, *module_id = NULL;
@@ -978,7 +977,7 @@ osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** 
 
 
 int osc_add_module_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
-				 int argc, void *data, void *user_data)
+                                                    int argc, void *data, void *user_data)
 {
   char *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
@@ -1095,7 +1094,7 @@ int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg 
 } /* osc_create_module_bandpass_handler */
 
 int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                       int argc, void *data, void *user_data)
+                                            int argc, void *data, void *user_data)
 {
   char *module_path, *module_id = NULL;
   char *bus_path = NULL;
@@ -1139,7 +1138,7 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
 } /* osc_edit_module_bandpass_handler */
 
 int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                      int argc, void *data, void *user_data)
+                                           int argc, void *data, void *user_data)
 {
   char *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
@@ -1175,7 +1174,7 @@ int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg 
 } /* osc_create_module_highpass_handler */
 
 int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                                       int argc, void *data, void *user_data)
+                                            int argc, void *data, void *user_data)
 {
   char *module_path, *module_id = NULL;
   char *bus_path = NULL;
@@ -1217,7 +1216,7 @@ int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg
 
 
 int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
-				int argc, void *data, void *user_data)
+                                              int argc, void *data, void *user_data)
 {
   char *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
@@ -1300,7 +1299,7 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
 
 
 int osc_add_module_karlsen_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
-				int argc, void *data, void *user_data)
+                                                  int argc, void *data, void *user_data)
 {
   char *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
@@ -1381,7 +1380,7 @@ osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_
 
 
 int osc_add_module_osc_transmit_handler(const char *path, const char *types, lo_arg ** argv,
-				 int argc, void *data, void *user_data)
+                                               int argc, void *data, void *user_data)
 {
   char *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;

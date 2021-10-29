@@ -19,6 +19,12 @@ Copyright 2015 murray foster */
 #ifndef JACKCLI_H
 #define JACKCLI_H
 
+
+#include <stdio.h> //printf
+#include <string.h> //memset
+#include <stdlib.h> //exit(0);
+
+#include <jack/jack.h>
 #include "rtqueue.h"
 
 /* ==== BEGIN to-be-defined cyperus params ==== */
