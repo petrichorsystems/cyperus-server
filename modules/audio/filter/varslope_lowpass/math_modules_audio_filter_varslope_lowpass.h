@@ -10,12 +10,12 @@
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
  * Embedded hardware selection: Intel->x86-64 (Windows64)
- * Code generation objective: Execution efficiency
+ * Code generation objec5Btive: Execution efficiency
  * Validation result: Not run
  */
 
-#ifndef math_modules_dsp_filter_varslope_lowpass_h_
-#define math_modules_dsp_filter_varslope_lowpass_h_
+#ifndef MATH_MODULES_DSP_FILTER_VARSLOPE_LOWPASS_H
+#define MATH_MODULES_DSP_FILTER_VARSLOPE_LOWPASS_H
 
 #include <float.h>
 #include <math.h>

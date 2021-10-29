@@ -16,14 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include <lo/lo.h>
-#include "../../../../dsp.h"
-
-#include "math_modules_audio_filter_varslope_lowpass.h"
 #include "ops_modules_audio_filter_varslope_lowpass.h"
 
 int

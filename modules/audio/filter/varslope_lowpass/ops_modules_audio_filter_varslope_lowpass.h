@@ -21,6 +21,11 @@
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
+#include <lo/lo.h>
+#include "../../../../dsp.h"
+
+#include "math_modules_audio_filter_varslope_lowpass.h"
+
 int
 dsp_create_filter_varslope_lowpass(struct dsp_bus *target_bus,
 				   float amplitude,
