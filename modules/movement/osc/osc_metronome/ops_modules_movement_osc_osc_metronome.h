@@ -14,12 +14,17 @@
  * Validation result: Not run
  */
 
-#ifndef ops_modules_movement_osc_metronome_h_
-#define ops_modules_movement_osc_metronome_h_
+#ifndef OPS_MODULES_MOVEMENT_OSC_METRONOME_H
+#define OPS_MODULES_MOVEMENT_OSC_METRONOME_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
+
+#include "../../../../dsp_types.h"
+#include "../../../../dsp_ops.h"
+#include "../../../../jackcli.h"
+#include "../../../../osc.h"
 
 #include <lo/lo.h>
 
@@ -28,10 +33,10 @@
 extern int
 dsp_create_osc_metronome(struct dsp_bus *target_bus,
                          float beats_per_minute);
-extern float
+extern void
 dsp_osc_metronome(struct dsp_operation *osc_metronome,
-			    int jack_samplerate,
-			    int pos);
+                  int jack_samplerate,
+                  int pos);
 extern void
 dsp_edit_osc_metronome(struct dsp_module *osc_metronome,
                        float beats_per_minute);

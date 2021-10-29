@@ -44,7 +44,7 @@ int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   beats_per_minute=argv[1]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
@@ -62,7 +62,7 @@ int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sf", module_id, beats_per_minute);
   free(lo_addr_send);
-  return;
+  return 0;
 } /* osc_add_module_osc_osc_metronome_handler */
 
 
@@ -77,7 +77,7 @@ osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, l
   float beats_per_minute;
   int count;
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   beats_per_minute=argv[1]->f;
 
   printf("osc_edit_module_osc_osc_metronome_handler::beats_per_minute: %f\n", beats_per_minute);

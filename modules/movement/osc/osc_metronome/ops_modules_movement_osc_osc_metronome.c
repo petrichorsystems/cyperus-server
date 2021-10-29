@@ -59,7 +59,7 @@ dsp_create_osc_metronome(struct dsp_bus *target_bus,
   return 0;
 } /* dsp_create_osc_metronome */
 
-float
+void
 dsp_osc_metronome(struct dsp_operation *osc_metronome,
                   int jack_samplerate,
                   int pos) {
@@ -81,7 +81,7 @@ dsp_osc_metronome(struct dsp_operation *osc_metronome,
   } else {
     osc_metronome->module->dsp_param.parameters->integer_type[0] += 1;
   }
-  return outsample;
+
 } /* dsp_osc_metronome */
 
 

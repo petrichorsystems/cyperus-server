@@ -19,6 +19,21 @@ Copyright 2015 murray foster */
 #ifndef OSC_MODULES_MOVEMENT_OSC_OSC_METRONOME_H
 #define OSC_MODULES_MOVEMENT_OSC_OSC_METRONOME_H
 
+#include <stdio.h> //printf
+#include <string.h> //memset
+#include <stdlib.h> //exit(0);
+
+/* #include "../../../../cyperus.h" */
+/* #include "../../../../rtqueue.h" */
+/* #include "../../../../dsp_math.h" */
+#include "../../../../dsp.h"
+#include "../../../../dsp_types.h"
+/* #include "../../../../dsp_ops.h" */
+/* #include "../../../../jackcli.h" */
+/* #include "../../../../osc.h" */
+
+#include "ops_modules_movement_osc_osc_metronome.h"
+
 int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types, lo_arg ** argv,
                                              int argc, void *data, void *user_data);
 int osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, lo_arg ** argv,
