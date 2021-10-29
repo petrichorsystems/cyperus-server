@@ -16,12 +16,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2019 murray foster */
 
-#include <stdint.h>
-
-#include "rtqueue.h"
 
 #ifndef DSP_MATH_H
 #define DSP_MATH_H
+
+#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <fftw3.h>
+
+#include "rtqueue.h"
 
 #define VOCODERSIGNALSIZE 2048
 #define VOCODERHOPSIZE 256

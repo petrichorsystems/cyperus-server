@@ -16,7 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#ifndef threadsync_h_
+#ifndef THREADSYNC_H
+
 #include <stdio.h> //printf
 #include <pthread.h>
 

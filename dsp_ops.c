@@ -195,7 +195,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  else if( strstr("<", temp_result[0]) )
 	    temp_op_in_path = temp_result[1];
 	  else if( strstr(">", temp_result[0]) ) {
-	    printf("temp_connection->id_in: '%s', contains output! aborting..\n");
+	    printf("temp_connection->id_in: '%s', contains output! aborting..\n", (char *)temp_connection->id_in);
 	    exit(1);
 	  } else
 	    temp_op_in_path = current_path;
@@ -254,8 +254,8 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 					  temp_op_in);
 	    }
 	    temp_translation_connection = dsp_translation_connection_init(temp_connection,
-									  temp_connection->id_out,
-									  temp_connection->id_in,
+									  (char *)temp_connection->id_out,
+									  (char *)temp_connection->id_in,
 									  temp_op_out,
 									  temp_op_in,
 									  temp_sample_out,
@@ -269,7 +269,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  }
 
 
-          new_summand = dsp_operation_sample_init(temp_sample_out->dsp_id, 0.0, 0);
+          new_summand = dsp_operation_sample_init((char *)temp_sample_out->dsp_id, 0.0, 0);
           new_summand->sample = temp_sample_out->sample;
           if( sample_in->summands == NULL )
             sample_in->summands = new_summand;
@@ -349,7 +349,7 @@ struct dsp_operation
 
   temp_port_in = module->ins;
   while(temp_port_in != NULL) {
-    temp_sample = dsp_operation_sample_init(temp_port_in->id, 0.0, 1);
+    temp_sample = dsp_operation_sample_init((char *)temp_port_in->id, 0.0, 1);
     if(new_op->ins == NULL)
       new_op->ins = temp_sample;
     else
@@ -359,7 +359,7 @@ struct dsp_operation
 
   temp_port_out = module->outs;
   while(temp_port_out != NULL) {
-    temp_sample = dsp_operation_sample_init(temp_port_out->id, 0.0, 1);
+    temp_sample = dsp_operation_sample_init((char *)temp_port_out->id, 0.0, 1);
     if(new_op->outs == NULL)
       new_op->outs = temp_sample;
     else
@@ -956,7 +956,7 @@ dsp_edit_pitch_shift(struct dsp_module *pitch_shift, float amp, float shift, flo
   return 0;
 } /* dsp_edit_pitch_shift */
 
-float
+void
 dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;
@@ -975,7 +975,6 @@ dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos)
 
   pitch_shift->outs->sample->value = outsample;
 
-  return outsample;
 } /* dsp_pitch_shift */
 
 
@@ -1025,7 +1024,7 @@ dsp_edit_karlsen_lowpass(struct dsp_module *karlsen_lowpass, float amp, float fr
   return 0;
 } /* dsp_edit_karlsen_lowpass */
 
-float
+void
 dsp_karlsen_lowpass(struct dsp_operation *karlsen_lowpass, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;
@@ -1044,7 +1043,6 @@ dsp_karlsen_lowpass(struct dsp_operation *karlsen_lowpass, int jack_samplerate, 
 
   karlsen_lowpass->outs->sample->value = outsample;
   
-  return outsample;
 } /* dsp_karlsen_lowpass */
 
 
@@ -1063,11 +1061,9 @@ dsp_create_pinknoise(void) {
   return 0;
 } /* dsp_create_pinknoise */
 
-float
+void
 dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos) {
   float outsample = 0.0;
   
   outsample = cyperus_pinknoise(&(noise_param.pinknoise.cyperus_params[0]),jack_samplerate,pos);
-  
-  return outsample;
 } /* dsp_pinknoise */

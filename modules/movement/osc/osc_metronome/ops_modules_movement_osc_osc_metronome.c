@@ -16,20 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include <lo/lo.h>
-
-#include "../../../../jackcli.h"
-#include "../../../../cyperus.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
-#include "../../../threadsync.h"
-#include "../../../../osc.h"
-
 #include "ops_modules_movement_osc_osc_metronome.h"
 
 void*
@@ -47,7 +33,6 @@ dsp_create_osc_metronome(struct dsp_bus *target_bus,
 
   osc_metronome_param.name = "osc_metronome";
   osc_metronome_param.pos = 0;
-
   
   osc_metronome_param.parameters = malloc(sizeof(dsp_module_parameters_t));
   osc_metronome_param.parameters->float32_type = malloc(sizeof(float) * 2);

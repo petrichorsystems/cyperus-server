@@ -45,8 +45,8 @@ int generic_handler(const char *path, const char *types, lo_arg ** argv,
 int osc_address_handler(const char *path, const char *types, lo_arg **argv,
 			int argc, void *data, void *user_data)
 {
-  char *new_host_out = argv[0];
-  char *new_port_out = argv[1];
+  char *new_host_out = (char *)argv[0];
+  char *new_port_out = (char *)argv[1];
   printf("hit osc_address_handler\n");
   osc_change_address(new_host_out, new_port_out);
 
@@ -194,7 +194,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   int more = 0;
   int current_index, last_break, last_cutoff, copy_index = 0;
   
-  path_str = argv[0];
+  path_str = (char *)argv[0];
   list_type = argv[1]->i;
 
   printf("path: <%s>\n", path);
@@ -283,7 +283,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
   size_t result_str_size = 0;
   struct dsp_bus_port *temp_bus_port = NULL;
 
-  path_str = argv[0];
+  path_str = (char *)argv[0];
 
   printf("path: <%s>\n", path);
   printf("path_str: %s\n", path_str);
@@ -338,10 +338,10 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
   
   printf("path: <%s>\n", path);
 
-  path_str = argv[0];
-  bus_str = argv[1];
-  ins_str = argv[2];
-  outs_str = argv[3];
+  path_str = (char *)argv[0];
+  bus_str = (char *)argv[1];
+  ins_str = (char *)argv[2];
+  outs_str = (char *)argv[3];
   
   printf("path_str: %s\n", path_str);
   printf("bus_str: %s\n", bus_str);
@@ -404,8 +404,8 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
   
   printf("path: <%s>\n", path);
 
-  path_out = argv[0];
-  path_in = argv[1];
+  path_out = (char *)argv[0];
+  path_in = (char *)argv[1];
 
   failed = dsp_add_connection(path_out, path_in);
 
@@ -426,8 +426,8 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
   
   printf("path: <%s>\n", path);
 
-  path_out = argv[0];
-  path_in = argv[1];
+  path_out = (char *)argv[0];
+  path_in = (char *)argv[1];
 
   failed = dsp_remove_connection(path_out, path_in);
 
@@ -450,7 +450,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
   char *result_str = NULL;
   printf("path: <%s>\n", path);
 
-  path_str = argv[0];
+  path_str = (char *)argv[0];
   
   target_bus = dsp_parse_bus_path(path_str);
   target_module = target_bus->dsp_module_head;
@@ -495,13 +495,13 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   struct dsp_port_out *temp_port_out;
   char *module_path;
   
-  module_path = argv[0];
+  module_path = (char *)argv[0];
 
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
 
-  printf("strlen(module_path) - 37: %d\n", strlen(module_path) - 37);
+  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
   printf("bus_path: %s\n", bus_path);
   
   module_id = malloc(sizeof(char) * 37);
@@ -562,7 +562,7 @@ int osc_add_module_block_processor_handler(const char *path, const char *types, 
   struct dsp_module *temp_module, *target_module = NULL;
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   
   target_bus = dsp_parse_bus_path(bus_path);
   dsp_create_block_processor(target_bus);
@@ -595,7 +595,7 @@ int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** 
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   amt=argv[1]->f;
   time=argv[2]->f;
   feedback=argv[3]->f;
@@ -615,7 +615,7 @@ int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/delay","sfff", module_id, amt, time, feedback);
   free(lo_addr_send);
-  return;
+  return 0;
 } /* osc_add_module_delay_handler */
 
 
@@ -632,7 +632,7 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
   float feedback;
   int count;
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   amt=argv[1]->f;
   time=argv[2]->f;
   feedback=argv[3]->f;
@@ -667,7 +667,7 @@ int osc_add_module_sawtooth_handler(const char *path, const char *types, lo_arg 
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   freq=argv[1]->f;
   amp=argv[2]->f;
 
@@ -707,7 +707,7 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
 
   printf("path: <%s>\n", path);
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   freq=argv[1]->f;
   amp=argv[2]->f;
   
@@ -715,7 +715,7 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
 
-  printf("strlen(module_path) - 37: %d\n", strlen(module_path) - 37);
+  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
   printf("bus_path: %s\n", bus_path);
   
   module_id = malloc(sizeof(char) * 37);
@@ -750,7 +750,7 @@ int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** a
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   freq=argv[1]->f;
   amp=argv[2]->f;
   phase=argv[3]->f;
@@ -792,7 +792,7 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
 
   printf("path: <%s>\n", path);
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   freq=argv[1]->f;
   amp=argv[2]->f;
   phase=argv[3]->f;
@@ -829,7 +829,7 @@ int osc_add_module_square_handler(const char *path, const char *types, lo_arg **
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   freq=argv[1]->f;
   amp=argv[2]->f;
 
@@ -869,7 +869,7 @@ osc_edit_module_square_handler(const char *path, const char *types, lo_arg ** ar
 
   printf("path: <%s>\n", path);
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   freq=argv[1]->f;
   amp=argv[2]->f;
   
@@ -906,7 +906,7 @@ int osc_add_module_triangle_handler(const char *path, const char *types, lo_arg 
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   freq=argv[1]->f;
   amp=argv[2]->f;
 
@@ -946,7 +946,7 @@ osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** 
 
   printf("path: <%s>\n", path);
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   freq=argv[1]->f;
   amp=argv[2]->f;
   
@@ -954,7 +954,7 @@ osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** 
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
 
-  printf("strlen(module_path) - 37: %d\n", strlen(module_path) - 37);
+  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
   printf("bus_path: %s\n", bus_path);
   
   module_id = malloc(sizeof(char) * 37);
@@ -990,7 +990,7 @@ int osc_add_module_envelope_follower_handler(const char *path, const char *types
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   attack=argv[1]->f;
   decay=argv[2]->f;
   scale=argv[3]->f;
@@ -1029,7 +1029,7 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
   int count;
   printf("path: <%s>\n", path);
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   attack=argv[1]->f;
   decay=argv[2]->f;
   scale=argv[3]->f;
@@ -1038,7 +1038,7 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
 
-  printf("strlen(module_path) - 37: %d\n", strlen(module_path) - 37);
+  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
   printf("bus_path: %s\n", bus_path);
   
   module_id = malloc(sizeof(char) * 37);
@@ -1069,7 +1069,7 @@ int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg 
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   amp=argv[1]->f;
   freq=argv[2]->f;
   q=argv[3]->f;
@@ -1107,7 +1107,7 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
   int count = 0;
 
   
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   amt=argv[1]->f;
   freq=argv[2]->f;
   q=argv[3]->f;
@@ -1150,7 +1150,7 @@ int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg 
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   amp=argv[1]->f;
   freq=argv[2]->f;
 
@@ -1185,7 +1185,7 @@ int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg
   float freq = 0.0;
   int count = 0;
   
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   amt=argv[1]->f;
   freq=argv[2]->f;
 
@@ -1228,7 +1228,7 @@ int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_a
   float mix;
   
   
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   amt=argv[1]->f;
   shift=argv[2]->f;
   mix=argv[3]->f;
@@ -1270,7 +1270,7 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
   int count;
   
   
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   amt=argv[1]->f;
   shift=argv[2]->f;
   mix=argv[3]->f;
@@ -1311,7 +1311,7 @@ int osc_add_module_karlsen_lowpass_handler(const char *path, const char *types, 
   float res;
   
   
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   amt=argv[1]->f;
   freq=argv[2]->f;
   res=argv[3]->f;
@@ -1352,7 +1352,7 @@ osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_
 
   int count;
   
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   amt=argv[1]->f;
   freq=argv[2]->f;
   res=argv[3]->f;
@@ -1395,11 +1395,11 @@ int osc_add_module_osc_transmit_handler(const char *path, const char *types, lo_
   
   printf("path: <%s>\n", path);
   
-  bus_path = argv[0];
-  host=argv[1];
-  port=argv[2];
-  osc_path=argv[3];
-  samplerate_divisor=argv[4]->i;
+  bus_path = (char *)argv[0];
+  host = (char *)argv[1];
+  port = (char *)argv[2];
+  osc_path = (char *)argv[3];
+  samplerate_divisor = argv[4]->i;
 
   printf("bus_path: %s\n", bus_path);
   printf("host: %s\n", host);
@@ -1444,17 +1444,17 @@ osc_edit_module_osc_transmit_handler(const char *path, const char *types, lo_arg
   
   printf("path: <%s>\n", path);
 
-  module_path = argv[0];
-  host=argv[1];
-  port=argv[2];
-  osc_path=argv[3];
-  samplerate_divisor=argv[4]->i;
+  module_path = (char *)argv[0];
+  host = (char *)argv[1];
+  port = (char *)argv[2];
+  osc_path = (char *)argv[3];
+  samplerate_divisor = argv[4]->i;
 
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
 
-  printf("strlen(module_path) - 37: %d\n", strlen(module_path) - 37);
+  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
   printf("bus_path: %s\n", bus_path);
   
   module_id = malloc(sizeof(char) * 37);

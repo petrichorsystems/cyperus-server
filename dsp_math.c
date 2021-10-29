@@ -16,16 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <math.h>
-#include <time.h>
-#include <fftw3.h>
 
 #include "dsp_math.h"
-#include "rtqueue.h"
-
 
 #define MAX_FRAME_LENGTH 8192
 

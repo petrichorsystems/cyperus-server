@@ -18,6 +18,16 @@ Copyright 2015 murray foster */
 
 #ifndef OSC_MODULES_AUDIO_ANALYSIS_TRANSIENT_DETECTOR_H
 #define OSC_MODULES_AUDIO_ANALYSIS_TRANSIENT_DETECTOR_H
+#include <stdio.h> //printf
+#include <string.h> //memset
+#include <stdlib.h> //exit(0);
+
+#include <lo/lo.h>
+
+#include "../../../../dsp_types.h"
+#include "../../../../osc.h"
+
+#include "ops_modules_audio_analysis_transient_detector.h"
 
 int osc_add_module_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
 						       int argc, void *data, void *user_data);

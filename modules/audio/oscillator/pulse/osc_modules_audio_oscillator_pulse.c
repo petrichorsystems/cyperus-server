@@ -35,7 +35,7 @@ int osc_add_module_oscillator_pulse_handler(const char *path, const char *types,
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
 
   frequency = argv[1]->f;
   pulse_width = argv[2]->f;
@@ -57,7 +57,7 @@ int osc_add_module_oscillator_pulse_handler(const char *path, const char *types,
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/oscillator_pulse","sffff", module_id, frequency, pulse_width, mul, add);
   free(lo_addr_send);
-  return;
+  return 0;
 } /* osc_add_module_oscillator_pulse_handler */
 
 
@@ -73,7 +73,7 @@ osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo
 
   int count;
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   frequency = argv[1]->f;
   pulse_width = argv[2]->f;
   mul = argv[3]->f;

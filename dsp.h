@@ -16,11 +16,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include "dsp_types.h"
-#include "dsp_math.h"
-
 #ifndef DSP_H
 #define DSP_H
+
+#include <stdio.h> //printf
+#include <string.h> //memset
+#include <stdlib.h> //exit(0);
+
+#include "cyperus.h"
+#include "rtqueue.h"
+#include "dsp_ops.h"
+#include "jackcli.h"
+#include "dsp_types.h"
+
+struct dsp_connection *dsp_global_connection_graph;
+struct dsp_connection *dsp_global_connection_graph_processing;
+struct dsp_translation_connection *dsp_global_translation_connection_graph_processing;
+struct dsp_bus *dsp_global_bus_head;
+struct dsp_operation *dsp_global_translation_graph;
 
 extern struct dsp_port_out *dsp_main_ins;
 extern struct dsp_port_in *dsp_main_outs;
@@ -70,7 +83,7 @@ struct dsp_bus*
 dsp_parse_bus_path(char *target_bus_path);
 
 void
-dsp_parse_path(char *result[], char *path);
+dsp_parse_path(char *result[], const char *path);
 
 void
 dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports);

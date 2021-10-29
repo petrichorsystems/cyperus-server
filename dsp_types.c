@@ -48,7 +48,7 @@ struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size) {
   new_port->prev = NULL;
   new_port->next = NULL;
   new_port->name = malloc(sizeof(char) * strlen(port_name) + 1);
-  strcpy(new_port->name, port_name);
+  strcpy((char *)new_port->name, port_name);
   new_port->id = dsp_generate_object_id();
   new_port->remove = 0;
   new_port->values = rtqueue_init(fifo_size);
@@ -102,7 +102,7 @@ struct dsp_port_out* dsp_port_out_init(const char *port_name, int audio) {
   new_port->prev = NULL;
   new_port->next = NULL;
   new_port->name = malloc(sizeof(char) * strlen(port_name) + 1);
-  strcpy(new_port->name, port_name);
+  strcpy((char *)new_port->name, port_name);
   new_port->id = dsp_generate_object_id();
   new_port->remove = 0;
   new_port->audio = audio;
@@ -151,10 +151,10 @@ struct dsp_connection* dsp_connection_init(const char *id_out,
   new_connection->remove = 0;
 
   new_connection->id_out = malloc(sizeof(char) * strlen(id_out) + 1);
-  strcpy(new_connection->id_out, id_out);
+  strcpy((char *)new_connection->id_out, id_out);
   
   new_connection->id_in = malloc(sizeof(char) * strlen(id_in) + 1);
-  strcpy(new_connection->id_in, id_in);
+  strcpy((char *)new_connection->id_in, id_in);
 
   new_connection->out_value = port_out->value;
   new_connection->in_values = port_in->values;
@@ -217,15 +217,15 @@ void dsp_connection_terminate(struct dsp_connection *connection) {
   connection->id_in = NULL;
   connection->out_value = (float)0;
   connection->in_values = NULL;
-  free(connection->id);
+  free((char *)connection->id);
   connection->id = NULL;
-  free(connection);
+  free((char *)connection);
   connection = NULL;
 }
 
 struct dsp_module* dsp_module_init(const char *module_name,
-				   void (*dsp_function) (char*, struct dsp_module*, int, int),
-				   struct dsp_operation (*dsp_optimize) (char*, struct dsp_module*),
+				   void (*dsp_function) (struct dsp_operation*, int, int),
+				   struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,
 				   struct dsp_port_out *outs) {
@@ -233,7 +233,7 @@ struct dsp_module* dsp_module_init(const char *module_name,
   new_module->prev = NULL;
   new_module->next = NULL;
   new_module->name = malloc(sizeof(char) * strlen(module_name) + 1);
-  strcpy(new_module->name, module_name);
+  strcpy((char *)new_module->name, module_name);
   new_module->id = dsp_generate_object_id();
   new_module->dsp_function = dsp_function;
   new_module->dsp_optimize = dsp_optimize;
@@ -293,7 +293,7 @@ struct dsp_bus_port* dsp_bus_port_init(char *port_name, int output) {
   new_port->prev = NULL;
   new_port->next = NULL;
   new_port->name = malloc(sizeof(char) * strlen(port_name) + 1);
-  strcpy(new_port->name, port_name);
+  strcpy((char *)new_port->name, port_name);
   new_port->id = dsp_generate_object_id();
   new_port->remove = 0;
   new_port->output = output;
@@ -346,7 +346,7 @@ void dsp_bus_port_list_reverse(struct dsp_bus_port *head_port) {
 struct dsp_bus* dsp_bus_init(const char *bus_name) {
   struct dsp_bus *new_bus = (struct dsp_bus*)malloc(sizeof(struct dsp_bus));
   new_bus->name = malloc(sizeof(char) * strlen(bus_name) + 1);
-  strcpy(new_bus->name, bus_name);
+  strcpy((char *)new_bus->name, bus_name);
   new_bus->id = dsp_generate_object_id();
   new_bus->prev = NULL;
   new_bus->next = NULL;
@@ -428,7 +428,7 @@ struct dsp_operation* dsp_operation_init(char *dsp_id) {
   struct dsp_operation *new_operation = (struct dsp_operation*)malloc(sizeof(struct dsp_operation));
   new_operation->id = dsp_generate_object_id();
   new_operation->dsp_id = malloc(sizeof(char) * strlen(dsp_id) + 1);
-  strcpy(new_operation->dsp_id, dsp_id);
+  strcpy((char *)new_operation->dsp_id, dsp_id);
   new_operation->prev = NULL;
   new_operation->next = NULL;
   new_operation->ins = NULL;
@@ -503,10 +503,10 @@ struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_co
   new_translation_conn->connection = connection;
   
   new_translation_conn->id_out = malloc(sizeof(char) * strlen(id_out) + 1);
-  strcpy(new_translation_conn->id_out, id_out);
+  strcpy((char *)new_translation_conn->id_out, id_out);
   
   new_translation_conn->id_in = malloc(sizeof(char) * strlen(id_in) + 1);
-  strcpy(new_translation_conn->id_in, id_in);
+  strcpy((char *)new_translation_conn->id_in, id_in);
 
   new_translation_conn->operation_out = op_out;
   new_translation_conn->operation_in = op_in;
@@ -542,7 +542,7 @@ struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, float value
   struct dsp_operation_sample *new_operation_sample = (struct dsp_operation_sample*)malloc(sizeof(struct dsp_operation_sample));
   new_operation_sample->id = dsp_generate_object_id();
   new_operation_sample->dsp_id = malloc(sizeof(char) * strlen(dsp_id) + 1);
-  strcpy(new_operation_sample->dsp_id, dsp_id);
+  strcpy((char *)new_operation_sample->dsp_id, dsp_id);
   new_operation_sample->prev = NULL;
   new_operation_sample->next = NULL;
   new_operation_sample->summands = NULL;

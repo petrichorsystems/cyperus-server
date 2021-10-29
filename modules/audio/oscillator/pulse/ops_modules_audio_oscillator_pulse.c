@@ -30,37 +30,37 @@ dsp_create_oscillator_pulse(struct dsp_bus *target_bus,
                             float mul,
                             float add
                             ) {
-  dsp_parameter params;
+  dsp_parameter *params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
 
-  params.name = "oscillator_pulse";
-  params.pos = 0;
+  params->name = "oscillator_pulse";
+  params->pos = 0;
 
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));
-  params.parameters->float32_type = malloc(sizeof(float) * 11);
+  params->parameters = malloc(sizeof(dsp_module_parameters_t));
+  params->parameters->float32_type = malloc(sizeof(float) * 11);
 
   /* user-facing parameters */
-  params.parameters->float32_type[0] = frequency; /* ZIN0(0) */
-  params.parameters->float32_type[1] = pulse_width; /* ZIN0(1) */
-  params.parameters->float32_type[2] = mul;
-  params.parameters->float32_type[3] = add;
+  params->parameters->float32_type[0] = frequency; /* ZIN0(0) */
+  params->parameters->float32_type[1] = pulse_width; /* ZIN0(1) */
+  params->parameters->float32_type[2] = mul;
+  params->parameters->float32_type[3] = add;
 
   /* internal parameters */
-  params.parameters->float32_type[4] = 8192 * (1.0 / jackcli_samplerate) * 65536.0 * 0.5; /* m_cpstoinc */
-  params.parameters->float32_type[5] = (int)((jackcli_samplerate * 0.5) / frequency); /* m_N */
-  params.parameters->float32_type[6] = frequency; /* m_freqIn */
-  params.parameters->float32_type[7] = 0.5 / params.parameters->float32_type[5]; /* m_scale */
-  params.parameters->float32_type[8] = 0; /* m_phase */
-  params.parameters->float32_type[9] = 0.0f; /* m_phaseoff */
-  params.parameters->float32_type[10] = 0.0f; /* m_y1 */
+  params->parameters->float32_type[4] = 8192 * (1.0 / jackcli_samplerate) * 65536.0 * 0.5; /* m_cpstoinc */
+  params->parameters->float32_type[5] = (int)((jackcli_samplerate * 0.5) / frequency); /* m_N */
+  params->parameters->float32_type[6] = frequency; /* m_freqIn */
+  params->parameters->float32_type[7] = 0.5 / params->parameters->float32_type[5]; /* m_scale */
+  params->parameters->float32_type[8] = 0; /* m_phase */
+  params->parameters->float32_type[9] = 0.0f; /* m_phaseoff */
+  params->parameters->float32_type[10] = 0.0f; /* m_y1 */
 
   /* allocate internal buffers */
-  params.parameters->float32_arr_type = malloc(sizeof(float*)*2);
-  params.parameters->float32_arr_type[0] = malloc(sizeof(float) * 8192 + 1); /* ft->mSine */
-  params.parameters->float32_arr_type[1] = malloc(sizeof(float) * 8192 + 1); /* ft->mCosecant */
+  params->parameters->float32_arr_type = malloc(sizeof(float*)*2);
+  params->parameters->float32_arr_type[0] = malloc(sizeof(float) * 8192 + 1); /* ft->mSine */
+  params->parameters->float32_arr_type[1] = malloc(sizeof(float) * 8192 + 1); /* ft->mCosecant */
   
-  math_modules_audio_oscillator_pulse_init(params.parameters);
+  math_modules_audio_oscillator_pulse_init(params);
   
   ins = dsp_port_in_init("in", 512);
   ins->next = dsp_port_in_init("param_freq", 512);
@@ -73,7 +73,7 @@ dsp_create_oscillator_pulse(struct dsp_bus *target_bus,
 		 "oscillator_pulse",
 		 dsp_oscillator_pulse,
 		 dsp_optimize_module,
-		 params,
+		 *params,
 		 ins,
 		 outs);
   return 0;

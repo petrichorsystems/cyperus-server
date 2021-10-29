@@ -16,8 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
 #include "threadsync.h"
+
+pthread_mutex_t threadsync_is_waiting_mutex;
+pthread_cond_t threadsync_is_waiting_cond;
 
 void
 threadsync_init() {

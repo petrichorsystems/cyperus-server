@@ -19,9 +19,10 @@ Copyright 2015 murray foster */
 #ifndef OSC_MODULES_AUDIO_OSCILLATOR_PULSE_H
 #define OSC_MODULES_AUDIO_OSCILLATOR_PULSE_H
 
+#include "../../../../dsp.h"
+#include "../../../../dsp_types.h"
 #include "../../../../osc.h"
-
-char *send_host_out;
+#include "../../../../osc_handlers.h"
 
 int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data);

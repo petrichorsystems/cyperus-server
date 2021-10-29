@@ -22,18 +22,19 @@
 #include <stdlib.h> //exit(0)
 
 #include "../../../../dsp_ops.h"
+#include "../../../../jackcli.h"
 
-extern int
+int
 dsp_create_oscillator_pulse(struct dsp_bus *target_bus,
                             float frequency,
                             float pulse_width,
                             float mul,
                             float add);
-extern void
+void
 dsp_oscillator_pulse(struct dsp_operation *oscillator_pulse,
 			    int jack_samplerate,
 			    int pos);
-extern void
+void
 dsp_edit_oscillator_pulse(struct dsp_module *oscillator_pulse,
                             float frequency,
                             float pulse_width,

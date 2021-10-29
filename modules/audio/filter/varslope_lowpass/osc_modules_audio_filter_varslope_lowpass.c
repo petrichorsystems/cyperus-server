@@ -16,20 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
-
-#include "../../../../cyperus.h"
-#include "../../../../rtqueue.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp.h"
-#include "../../../../dsp_types.h"
-#include "../../../../dsp_ops.h"
-#include "../../../../jackcli.h"
-#include "../../../../osc.h"
-
-#include "ops_modules_audio_filter_varslope_lowpass.h"
 #include "osc_modules_audio_filter_varslope_lowpass.h"
 
 int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
@@ -46,7 +32,7 @@ int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char 
   
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   amplitude=argv[1]->f;
   slope=argv[2]->f;
   cutoff_frequency=argv[3]->f;
@@ -66,7 +52,7 @@ int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/filter_varslope_lowpass","sfff", module_id, amplitude, slope, cutoff_frequency);
   free(lo_addr_send);
-  return;
+  return 0;
 } /* osc_add_module_filter_varslope_lowpass_handler */
 
 
@@ -83,7 +69,7 @@ osc_edit_module_filter_varslope_lowpass_handler(const char *path, const char *ty
   float cutoff_frequency;
   int count;
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   amplitude=argv[1]->f;
   slope=argv[2]->f;
   cutoff_frequency=argv[3]->f;

@@ -280,8 +280,8 @@ void dsp_connection_printf(struct dsp_connection *connection);
 void dsp_connection_terminate(struct dsp_connection *connection);
 
 struct dsp_module* dsp_module_init(const char *module_name,
-				   void (*dsp_function) (char *, struct dsp_module*, int, int),
-				   struct dsp_operation (*dsp_optimize) (char *, struct dsp_module*),
+				   void (*dsp_function) (struct dsp_operation*, int, int),
+				   struct dsp_operation *(*dsp_optimize) (char *, struct dsp_module*),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,
 				   struct dsp_port_out *outs);

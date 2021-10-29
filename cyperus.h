@@ -16,31 +16,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include "rtqueue.h"
-
 #ifndef CYPERUS_H
 #define CYPERUS_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
-#include <jack/jack.h> 
-#include <math.h>
-#include <lo/lo.h>
-#include <fftw3.h>
-#include <signal.h>
 #include <unistd.h>
 
+#include "dsp_types.h"
 #include "rtqueue.h"
 #include "jackcli.h"
 #include "dsp.h"
 #include "dsp_ops.h"
-#include "osc.h"
 #include "osc_handlers.h"
-
-
+#include "osc.h"
 
 extern int jack_sr;
 extern rtqueue_t *fifo_out;
 extern rtqueue_t *fifo_in;
+struct dsp_bus *dsp_global_bus_head;
 #endif

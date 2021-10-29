@@ -21,12 +21,7 @@ Copyright 2018 murray foster */
 #include <stdlib.h> //exit(0)
 
 #include <lo/lo.h>
-
-#include "../../../../jackcli.h"
-#include "../../../../cyperus.h"
-#include "../../../../dsp_math.h"
 #include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
 
 #include "math_modules_audio_filter_varslope_lowpass.h"
 #include "ops_modules_audio_filter_varslope_lowpass.h"

@@ -21,26 +21,16 @@
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include <lo/lo.h>
-
-#include "../../../../dsp_types.h"
-#include "../../../../jackcli.h"
-#include "../../../../cyperus.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
-
-
-extern int
+int
 dsp_create_filter_varslope_lowpass(struct dsp_bus *target_bus,
 				   float amplitude,
 				   float slope,
 				   float cutoff_frequency);
-extern void
+void
 dsp_filter_varslope_lowpass(struct dsp_operation *filter_varslope_lowpass,
 			    int jack_samplerate,
 			    int pos);
-extern void
+void
 dsp_edit_filter_varslope_lowpass(struct dsp_module *filter_varslope_lowpass,
 				 float amplitude,
 				 float slope,

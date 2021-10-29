@@ -25,10 +25,14 @@ Copyright 2018 murray foster */
 
 #include <lo/lo.h>
 
+#include "dsp_types.h"
 #include "rtqueue.h"
 #include "dsp_math.h"
 #include "dsp.h"
 #include "jackcli.h"
+
+struct dsp_operation *dsp_global_operation_head_processing;
+struct dsp_operation *dsp_global_operation_head;
 
 float dsp_sum_input(struct dsp_port_in *in);
 float dsp_sum_summands(struct dsp_operation_sample *summands);
@@ -75,11 +79,11 @@ void dsp_bandpass(struct dsp_operation *bandpass, int jack_samplerate, int pos);
 
 int dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, float mix);
 int dsp_edit_pitch_shift(struct dsp_module *pitch_shift, float amp, float shift, float mix);
-float dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos);
+void dsp_pitch_shift(struct dsp_operation *pitch_shift, int jack_samplerate, int pos);
 
 int dsp_create_karlsen_lowpass(struct dsp_bus *target_bus, float amp, float freq, float res);
 int dsp_edit_karlsen_lowpass(struct dsp_module *karlsen_lowpass, float amp, float freq, float res);
-float dsp_karlsen_lowpass(struct dsp_operation *karlsen_lowpass, int jack_samplerate, int pos);
+void dsp_karlsen_lowpass(struct dsp_operation *karlsen_lowpass, int jack_samplerate, int pos);
 
 void dsp_osc_transmit(struct dsp_operation *osc_transmit, int jack_samplerate, int pos);
 int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, char *path, int samplerate_divisor);
@@ -89,6 +93,6 @@ void dsp_edit_osc_transmit(struct dsp_module *osc_transmit, char *host, char *po
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */
  
 int dsp_create_pinknoise();
-float dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos);
+void dsp_pinknoise(dsp_parameter noise_param, int jack_samplerate, int pos);
 
 #endif

@@ -16,17 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
-
-#include "cyperus.h"
-#include "rtqueue.h"
-#include "dsp_math.h"
 #include "dsp.h"
-#include "dsp_types.h"
-#include "dsp_ops.h"
-#include "jackcli.h"
 
 #define MAX_PATH_ID_LENGTH 16384
 
@@ -133,7 +123,7 @@ struct dsp_port_in
 } /* dsp_find_port_in */
 
 void
-dsp_parse_path(char* result[], char *path) {
+dsp_parse_path(char* result[], const char *path) {
   char temp_string[MAX_PATH_ID_LENGTH];
   char *parsed_id, *parsed_path;
   int i, id_length, match_found;
@@ -197,7 +187,7 @@ dsp_parse_path(char* result[], char *path) {
   if( strcmp(result[0], "/") )
     result[1] = parsed_path;
   else
-    result[1] = path;
+    result[1] = (char *)path;
   result[2] = parsed_id;
   return;
 } /* dsp_parse_path */
@@ -249,8 +239,8 @@ dsp_parse_bus_path(char *target_path) {
 	    printf("path_index[path_count: '%s'\n", path_index[path_count]);
 	    printf("temp_bus->id:          '%s'\n", temp_bus->id);
 	    printf("strcmp: %d\n", strcmp(path_index[path_count], temp_bus->id));
-	    printf("strlen(path_index[path_count]): %d\n", strlen(path_index[path_count]));
-	    printf("strlen(temp_bus->id): %d\n", strlen(temp_bus->id));
+	    printf("strlen(path_index[path_count]): %d\n", (int)strlen(path_index[path_count]));
+	    printf("strlen(temp_bus->id): %d\n", (int)strlen(temp_bus->id));
 	    if( strcmp(path_index[path_count], temp_bus->id) == 0) {
 	      printf("path_count += 1\n");
 	      path_count += 1;
@@ -480,7 +470,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "}") == 0) {
-    port_in = dsp_find_port_out(dsp_main_outs, temp_result[2]);
+    port_in = dsp_find_port_in(dsp_main_outs, temp_result[2]);
   }
 
   if( strcmp(temp_result[0], "<") == 0 ) {
@@ -601,7 +591,7 @@ dsp_remove_connection(char *id_out, char *id_in) {
   /* parsing id_in (to connection input) */
   dsp_parse_path(temp_result, id_in);
   if( strcmp(temp_result[0], "}") == 0) {
-    port_in = dsp_find_port_out(dsp_main_outs, temp_result[2]);
+    port_in = dsp_find_port_in(dsp_main_outs, temp_result[2]);
   }
 
   if( strcmp(temp_result[0], "<") == 0 ) {
@@ -718,7 +708,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 
   int is_main_in_out = 0;
   
-  dsp_parse_path(temp_result, connection->id_out);
+  dsp_parse_path(temp_result, (char *)connection->id_out);
   if( strstr(":", temp_result[0]) ) {
     temp_op_out_path = current_path;
     is_bus_port_out = 1;
@@ -776,13 +766,13 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   
   dsp_parse_path(temp_result, connection->id_out);
   if( strstr(":", temp_result[0]) ) {
-    temp_op_in_path = connection->id_out;
+    temp_op_in_path = (char *)connection->id_out;
     is_bus_port_in = 1;
   } else if( strstr("<", temp_result[0]) ) {
     printf("found connection input connected to connection input! BAD. and bailing\n");
     exit(1);
   } else if( strstr("}", temp_result[0]) ) {
-    temp_op_in_path = connection->id_out;
+    temp_op_in_path = (char *)connection->id_out;
     is_main_in_out = 1;
   } else if( strstr(">", temp_result[0]) ) {
     temp_op_out_path = temp_result[1];
@@ -884,9 +874,9 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
   /* INPUT PROCESSING */
 
   
-  dsp_parse_path(temp_result, connection->id_in);
+  dsp_parse_path(temp_result, (char *)connection->id_in);
   if( strstr(":", temp_result[0]) ) {
-    temp_op_in_path = connection->id_in;
+    temp_op_in_path = (char *)connection->id_in;
     is_bus_port_in = 1;
   } else if( strstr("<", temp_result[0]) ) {
     temp_op_in_path = temp_result[1];
@@ -895,7 +885,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
       is_module_in = 1;
     }
   } else if( strstr("}", temp_result[0]) ) {
-    temp_op_in_path = connection->id_in;
+    temp_op_in_path = (char *)connection->id_in;
     is_main_out_in = 1;
   } else if( strstr(">", temp_result[0]) ) {
     printf("found connection output connected to connection output! BAD. and bailing\n");
@@ -986,7 +976,7 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 	dsp_operation_sample_insert_tail(temp_op->ins, sample_in);
     }
     
-    new_summand = dsp_operation_sample_init(sample_out->dsp_id, 0.0, 0);
+    new_summand = dsp_operation_sample_init((char *)sample_out->dsp_id, 0.0, 0);
     new_summand->sample = sample_out->sample;
     if(sample_in->summands == NULL)
       sample_in->summands = new_summand;
@@ -1075,7 +1065,7 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
-      dsp_optimize_connections_module(current_path, temp_module->id, temp_module->outs);
+      dsp_optimize_connections_module(current_path, (char *)temp_module->id, temp_module->outs);
       temp_module = temp_module->next;
     }
     
