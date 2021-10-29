@@ -1,6 +1,6 @@
 
-#ifndef math_modules_dsp_filter_varslope_lowpass_h_
-#define math_modules_dsp_filter_varslope_lowpass_h_
+#ifndef MATH_MODULES_DSP_FILTER_VARSLOPE_LOWPASS_H
+#define MATH_MODULES_DSP_FILTER_VARSLOPE_LOWPASS_H
 
 #include <float.h>
 #include <math.h>

@@ -18,6 +18,10 @@ Copyright 2015 murray foster */
 
 #include "osc.h"
 
+char *send_host_out;
+char *send_port_out;
+lo_server_thread lo_thread;
+
 int osc_change_address(char *new_host_out, char *new_port_out) {
   free(send_host_out);
   free(send_port_out);

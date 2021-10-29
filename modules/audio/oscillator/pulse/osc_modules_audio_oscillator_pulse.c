@@ -20,7 +20,6 @@ Copyright 2015 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
 
-#include "ops_modules_audio_oscillator_pulse.h"
 #include "osc_modules_audio_oscillator_pulse.h"
 
 int osc_add_module_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,

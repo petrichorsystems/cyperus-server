@@ -19,14 +19,22 @@ Copyright 2015 murray foster */
 #ifndef OSC_MODULES_AUDIO_OSCILLATOR_PULSE_H
 #define OSC_MODULES_AUDIO_OSCILLATOR_PULSE_H
 
+#include <stdio.h> //printf
+#include <string.h> //memset
+#include <stdlib.h> //exit(0)
+
 #include "../../../../dsp.h"
+#include "../../../../dsp_ops.h"
 #include "../../../../dsp_types.h"
+#include "../../../../dsp_math.h"
 #include "../../../../osc.h"
 #include "../../../../osc_handlers.h"
 
-int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
+#include "ops_modules_audio_oscillator_pulse.h"
+
+int osc_add_module_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data);
-int osc_edit_module_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,
 						    int argc, void *data, void *user_data);
 
 #endif

@@ -14,14 +14,20 @@
  * Validation result: Not run
  */
 
-#ifndef ops_modules_dsp_oscillator_pulse_h_
-#define ops_modules_dsp_oscillator_pulse_h_
+#ifndef OPS_MODULES_AUDIO_OSCILLATOR_PULSE_H
+#define OPS_MODULES_AUDIO_OSCILLATOR_PULSE_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
+#include "../../../../dsp.h"
 #include "../../../../dsp_ops.h"
+#include "../../../../dsp_types.h"
+#include "../../../../dsp_math.h"
+#include "../../../../osc.h"
+#include "../../../../osc_handlers.h"
+
 #include "../../../../jackcli.h"
 
 int

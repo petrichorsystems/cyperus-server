@@ -19,10 +19,14 @@ Copyright 2015 murray foster */
 #ifndef OSC_H
 #define OSC_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
-
 #include <lo/lo.h>
 
 #include "osc_handlers.h"
+
+extern char *send_host_out;
+extern char *send_port_out;
+extern lo_server_thread lo_thread;
+
+int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
+int osc_change_address(char *new_host_out, char *new_port_out);
+
