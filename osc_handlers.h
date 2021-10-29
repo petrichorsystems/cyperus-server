@@ -29,10 +29,6 @@ Copyright 2015 murray foster */
 #include "jackcli.h"
 #include "osc.h"
 
-char *send_host_out;
-char *send_port_out;
-lo_server_thread lo_thread;
-
 
 void osc_error(int num, const char *msg, const char *path);
 
