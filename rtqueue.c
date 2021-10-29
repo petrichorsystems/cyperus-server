@@ -17,10 +17,7 @@ JACK sample data for process()'ing.
 
 Copyright 2014 murray foster */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <jack/jack.h>
-#include <pthread.h>
+#include "rtqueue.h"
 
 int dequeue_is_waiting = 0;
 pthread_mutex_t dequeue_is_waiting_mutex;
@@ -32,15 +29,6 @@ pthread_cond_t enqueue_is_waiting_cond;
 
 /* JACK sample size, set by JACK server */
 const size_t smpl_size = sizeof (jack_default_audio_sample_t) ;
-
-typedef struct queue
-{
-  int head;
-  int tail;
-  int recordlimit;
-  int records;
-  float *queue;
-} rtqueue_t;
 
 rtqueue_t *
 rtqueue_init(int recordlimit)

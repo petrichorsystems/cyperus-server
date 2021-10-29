@@ -18,22 +18,14 @@ Copyright 2018 murray foster */
 
 #ifndef CYPERUS_H
 #define CYPERUS_H
-
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <pthread.h>
 #include <unistd.h>
 
-#include "dsp_types.h"
-#include "rtqueue.h"
-#include "jackcli.h"
 #include "dsp.h"
-#include "dsp_ops.h"
-#include "osc_handlers.h"
+#include "jackcli.h"
 #include "osc.h"
 
-extern int jack_sr;
-extern rtqueue_t *fifo_out;
-extern rtqueue_t *fifo_in;
-struct dsp_bus *dsp_global_bus_head;
 #endif

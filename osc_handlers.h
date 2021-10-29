@@ -21,9 +21,9 @@ Copyright 2015 murray foster */
 #ifndef OSC_HANDLERS_H
 #define OSC_HANDLERS_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
+/* #include <stdio.h> printf */
+/* #include <string.h> memset */
+/* #include <stdlib.h> exit(0); */
 
 #include "dsp.h"
 #include "jackcli.h"

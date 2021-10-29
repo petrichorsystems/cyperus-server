@@ -17,8 +17,13 @@ JACK sample data for process()'ing.
 
 Copyright 2014 murray foster */
 
-#ifndef rtqueue_h__
-#define rtqueue_h__
+#ifndef RTQUEUE_H
+#define RTQUEUE_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <jack/jack.h>
 
 typedef struct queue
 {

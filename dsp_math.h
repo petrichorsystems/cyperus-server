@@ -20,13 +20,10 @@ Copyright 2019 murray foster */
 #ifndef DSP_MATH_H
 #define DSP_MATH_H
 
-#include <math.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-#include <time.h>
-#include <fftw3.h>
+#include <math.h>
 
 #include "rtqueue.h"
 

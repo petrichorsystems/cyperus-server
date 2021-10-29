@@ -16,16 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
-#include <uuid/uuid.h>
-
-#include "cyperus.h"
-#include "rtqueue.h"
-#include "dsp_math.h"
-#include "dsp.h"
-
 #include "dsp_types.h"
 
 char* dsp_generate_object_id() {

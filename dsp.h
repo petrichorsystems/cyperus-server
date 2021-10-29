@@ -19,15 +19,10 @@ Copyright 2015 murray foster */
 #ifndef DSP_H
 #define DSP_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
-
-#include "cyperus.h"
-#include "rtqueue.h"
-#include "dsp_ops.h"
-#include "jackcli.h"
+#include "dsp_math.h"
 #include "dsp_types.h"
+#include "dsp_ops.h"
+
 
 struct dsp_connection *dsp_global_connection_graph;
 struct dsp_connection *dsp_global_connection_graph_processing;

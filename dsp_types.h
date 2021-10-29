@@ -16,11 +16,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include "dsp_math.h"
-#include "rtqueue.h"
-
 #ifndef DSP_TYPES_H
 #define DSP_TYPES_H
+
+#include <uuid/uuid.h>
+
+#include "dsp_math.h"
 
 typedef struct dsp_module_parameter {
   float in;

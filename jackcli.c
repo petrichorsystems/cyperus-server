@@ -22,7 +22,6 @@ Copyright 2015 murray foster */
 #include <jack/jack.h>
 
 #include "jackcli.h"
-#include "rtqueue.h"
 
 rtqueue_t **jackcli_fifo_ins;
 rtqueue_t **jackcli_fifo_outs;

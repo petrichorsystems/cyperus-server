@@ -16,8 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <math.h>
-
+#include "dsp_types.h"
 #include "dsp_math.h"
 
 #define MAX_FRAME_LENGTH 8192
