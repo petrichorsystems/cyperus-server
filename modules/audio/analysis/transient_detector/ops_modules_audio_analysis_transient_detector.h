@@ -37,7 +37,7 @@ dsp_create_transient_detector(struct dsp_bus *target_bus,
 			      float attack_ms,
 			      float decay_ms,
 			      float scale);
-extern float
+extern void
 dsp_transient_detector(struct dsp_operation *transient_detector,
 		       int jack_samplerate,
 		       int pos);

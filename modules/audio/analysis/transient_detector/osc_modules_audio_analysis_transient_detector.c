@@ -30,7 +30,7 @@ int osc_add_module_analysis_transient_detector_handler(const char *path, const c
    
   printf("path: <%s>\n", path);
 
-  bus_path = argv[0];
+  bus_path = (char *)argv[0];
   sensitivity = argv[1]->f;
   attack_ms = argv[2]->f;
   decay_ms = argv[3]->f;
@@ -63,7 +63,7 @@ int osc_add_module_analysis_transient_detector_handler(const char *path, const c
 	  scale
 	  );
   free(lo_addr_send);
-  return;
+  return 0;
 } /* osc_add_module_osc_transient_detector_handler */
 
 
@@ -78,7 +78,7 @@ osc_edit_module_analysis_transient_detector_handler(const char *path, const char
   float sensitivity, attack_ms, decay_ms, scale = 0.0f;
   int count;
 
-  module_path = argv[0];
+  module_path = (char *)argv[0];
   sensitivity = argv[1]->f;
   attack_ms = argv[2]->f;
   decay_ms = argv[3]->f;

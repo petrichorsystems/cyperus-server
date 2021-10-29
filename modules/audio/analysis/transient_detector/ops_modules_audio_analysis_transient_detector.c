@@ -77,7 +77,7 @@ dsp_create_transient_detector(struct dsp_bus *target_bus,
   return 0;
 } /* dsp_create_transient_detector */
 
-float
+void
 dsp_transient_detector(struct dsp_operation *transient_detector,
 			 int jack_samplerate,
 		       int pos) {
@@ -124,8 +124,6 @@ dsp_transient_detector(struct dsp_operation *transient_detector,
     free(lo_addr_send);
   } else
     transient_detector->outs->sample->value = 0.0f;
-
-  return;
 } /* dsp_transient_detector */
 
 
