@@ -69,12 +69,18 @@ float math_modules_audio_oscillator_pulse(dsp_module_parameters_t *parameters, i
 
   float outsample = 0.0f;
     
-  float freqin = parameters->float32_type[0];
+  /* float freqin = parameters->float32_type[0]; */
+
+  /* float freqin = (1 / sin(parameters->float32_type[0])* pos / samplerate)); */
+
+  float freqin = ;
+
+
   float duty = parameters->float32_type[1];
 
   float freqin_last = parameters->float32_type[6];
-  int phase = parameters->float32_type[7];
-  float y1 = parameters->float32_type[9];
+  int phase = parameters->float32_type[8];
+  float y1 = parameters->float32_type[10];
 
     float* numtbl = parameters->float32_arr_type[0];
     float* dentbl = parameters->float32_arr_type[1];

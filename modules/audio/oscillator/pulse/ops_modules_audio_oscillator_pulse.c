@@ -82,23 +82,15 @@ dsp_oscillator_pulse(struct dsp_operation *oscillator_pulse, int jack_samplerate
   float insample = 0.0;
   float outsample = 0.0;
 
-  insample = dsp_sum_summands(oscillator_pulse->ins->summands);
-  if( oscillator_pulse->ins->next->summands != NULL ) {
-
-    /* come back to this -- we need to figure out how to perform input calculations
-       with the large coefficient calculations. */
-    
-    /* dsp_param.oscillator_pulse- = dsp_sum_summands(oscillator_pulse->ins->next->summands) * jack_samplerate; */
-    
-  }
-
-  /* outsample = math_modules_audio_oscillator_pulse(oscillator_pulse->module->dsp_param.parameters,
+  outsample = math_modules_audio_oscillator_pulse(oscillator_pulse->module->dsp_param.parameters,
                                                   jack_samplerate,
-                                                  pos); */
+                                                  pos);
   
   /* drive audio outputs */
-  oscillator_pulse->outs->sample->value = 0.0;
+  oscillator_pulse->outs->sample->value = outsample;
 
+  printf("outsample: %f\n", outsample);
+  
   return;
 } /* dsp_oscillator_pulse */
 
