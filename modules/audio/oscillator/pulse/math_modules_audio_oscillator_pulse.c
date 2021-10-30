@@ -64,18 +64,10 @@ void math_modules_audio_oscillator_pulse_init(dsp_module_parameters_t *parameter
 
 extern
 float math_modules_audio_oscillator_pulse(dsp_module_parameters_t *parameters, int samplerate, int pos) {
-  
-  /* void Pulse_next(Pulse* unit, int inNumSamples) { */
 
   float outsample = 0.0f;
-    
-  /* float freqin = parameters->float32_type[0]; */
 
-  /* float freqin = (1 / sin(parameters->float32_type[0])* pos / samplerate)); */
-
-  float freqin = ;
-
-
+  float freqin = parameters->float32_type[0];
   float duty = parameters->float32_type[1];
 
   float freqin_last = parameters->float32_type[6];
@@ -211,7 +203,9 @@ float math_modules_audio_oscillator_pulse(dsp_module_parameters_t *parameters, i
             }
 
             outsample = y1 = pul1 - pul2 + 0.999f * y1;
-            phase += freq; phaseoff += phaseoff_slope; xfade += xfade_slope;
+            phase += freq;
+            phaseoff += phaseoff_slope;
+            xfade += xfade_slope;
     } else {
             float* tbl = (float*)((char*)dentbl + ((phase >> xlobits) & xlomask13)); float t0 = tbl[0];
             float t1 = tbl[1]; if (t0 == kBadValue || t1 == kBadValue) {
@@ -268,7 +262,8 @@ float math_modules_audio_oscillator_pulse(dsp_module_parameters_t *parameters, i
             }
             
             outsample = y1 = (pul1 - pul2) * scale + 0.999f * y1;
-            phase += freq; phaseoff += phaseoff_slope;
+            phase += freq;
+            phaseoff += phaseoff_slope;
     }
     
     parameters->float32_type[10] = y1;

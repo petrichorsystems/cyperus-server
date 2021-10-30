@@ -61,7 +61,7 @@ dsp_create_oscillator_pulse(struct dsp_bus *target_bus,
 
   math_modules_audio_oscillator_pulse_init(params.parameters);
   
-  ins = dsp_port_in_init("param_freq", 512);
+  ins = dsp_port_in_init("param_frequency", 512);
   ins->next = dsp_port_in_init("param_pulse_width", 512);
   ins->next->next = dsp_port_in_init("mul", 512);
   ins->next->next->next = dsp_port_in_init("add", 512);  

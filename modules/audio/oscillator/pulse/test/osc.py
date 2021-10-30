@@ -175,10 +175,8 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
                mains['out'][0])
 
     response = responses.get()
-
-    exit(0)
     
-    for num in range(0,1000):
+    for num in range(0,441):
         print("/cyperus/edit/module/audio/oscillator/pulse", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), float(num), 0.5, 0.5, 0.0)
         liblo.send(dest, "/cyperus/edit/module/audio/oscillator/pulse", "/{}?{}".format(bus_main0_uuid, sine_module_uuid),  float(num), 0.5, 0.5, 0.0)
         response = responses.get()
