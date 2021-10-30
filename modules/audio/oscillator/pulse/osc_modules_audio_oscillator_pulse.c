@@ -54,6 +54,11 @@ int osc_add_module_oscillator_pulse_handler(const char *path, const char *types,
   strcpy(module_id, target_module->id);
 
   printf("add_module_oscillator_pulse_handler, module_id: %s\n", module_id);
+
+  printf("strlen(target_bus->id): %d\n", (int)strlen(target_bus->id));
+  printf("strlen(module_id): %d\n", (int)strlen(module_id));
+
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/audio/oscillator/pulse","sffff", module_id, frequency, pulse_width, mul, add);
   free(lo_addr_send);
@@ -65,6 +70,8 @@ int
 osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {
+  printf("-- osc_edit_module_socillator_pulse_handler,  start of function\n");
+  
   char *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
@@ -72,7 +79,7 @@ osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo
   float frequency, pulse_width, mul, add;
 
   int count;
-
+  
   module_path = (char *)argv[0];
   frequency = argv[1]->f;
   pulse_width = argv[2]->f;
@@ -82,14 +89,24 @@ osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
 
-  module_id = malloc(sizeof(char) * 37);  
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
+  printf("bus_path: %s\n", bus_path);
+  printf("module_path: %s\n", module_path);
+  
+  module_id = malloc(sizeof(char) * 37);
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
 
-  target_bus = dsp_parse_bus_path(bus_path);  
+  printf("module_id: %s\n", module_id);  
+  target_bus = dsp_parse_bus_path(bus_path);
+
+  printf("target_bus: %s\n", target_bus->id);
+  printf("strlen(target_bus->id): %d\n", (int)strlen(target_bus->id));
+  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
 
-  dsp_edit_oscillator_pulse(target_module, frequency, pulse_width, mul, add);
-
+  /* printf("about to edit pulsewave oscillator\n"); */
+  /* dsp_edit_oscillator_pulse(target_module, frequency, pulse_width, mul, add); */
+  /* printf("edited pulsewave oscillator\n"); */
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/edit/module/audio/oscillator/pulse","sffff", module_id, frequency, pulse_width, mul, add);
   free(lo_addr_send);

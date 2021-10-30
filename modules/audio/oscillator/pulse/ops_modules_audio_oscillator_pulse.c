@@ -34,24 +34,11 @@ dsp_create_oscillator_pulse(struct dsp_bus *target_bus,
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
 
-  printf("about to assign params\n");
-  
-  params.name = "oscillator_pulse";
-
-  printf("about to set position\n");
-  
-  params.pos = 0;
-
-  printf("about to malloc() parameters\n");
-  
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));
-
-  printf("about to assign float33_type\n");
-  
+  params.name = "oscillator_pulse";  
+  params.pos = 0;  
+  params.parameters = malloc(sizeof(dsp_module_parameters_t));  
   params.parameters->float32_type = malloc(sizeof(float) * 11);
 
-  printf("about to assign user-facing params\n");
-  
   /* user-facing parameters */
   params.parameters->float32_type[0] = frequency; /* ZIN0(0) */
   params.parameters->float32_type[1] = pulse_width; /* ZIN0(1) */
@@ -72,16 +59,12 @@ dsp_create_oscillator_pulse(struct dsp_bus *target_bus,
   params.parameters->float32_arr_type[0] = malloc(sizeof(float) * 8192 + 1); /* ft->mSine */
   params.parameters->float32_arr_type[1] = malloc(sizeof(float) * 8192 + 1); /* ft->mCosecant */
 
-
-  printf("about to init module\n");
   math_modules_audio_oscillator_pulse_init(params.parameters);
-  printf("finished init module\n");
   
-  ins = dsp_port_in_init("in", 512);
-  ins->next = dsp_port_in_init("param_freq", 512);
-  ins->next->next = dsp_port_in_init("param_pulse_width", 512);
-  ins->next->next->next = dsp_port_in_init("mul", 512);
-  ins->next->next->next->next = dsp_port_in_init("add", 512);  
+  ins = dsp_port_in_init("param_freq", 512);
+  ins->next = dsp_port_in_init("param_pulse_width", 512);
+  ins->next->next = dsp_port_in_init("mul", 512);
+  ins->next->next->next = dsp_port_in_init("add", 512);  
   outs = dsp_port_out_init("out", 1);
 
   dsp_add_module(target_bus,
@@ -109,12 +92,12 @@ dsp_oscillator_pulse(struct dsp_operation *oscillator_pulse, int jack_samplerate
     
   }
 
-  outsample = math_modules_audio_oscillator_pulse(oscillator_pulse->module->dsp_param.parameters,
+  /* outsample = math_modules_audio_oscillator_pulse(oscillator_pulse->module->dsp_param.parameters,
                                                   jack_samplerate,
-                                                  pos);
+                                                  pos); */
   
   /* drive audio outputs */
-  oscillator_pulse->outs->sample->value = outsample;
+  oscillator_pulse->outs->sample->value = 0.0;
 
   return;
 } /* dsp_oscillator_pulse */

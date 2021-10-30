@@ -767,8 +767,9 @@ int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** a
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
+  
   printf("add_module_sine_handler, module_id: %s\n", module_id);
-
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, freq, amp, phase);
   free(lo_addr_send);
@@ -806,7 +807,6 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
   strncpy(module_id, module_path + strlen(module_path) - 36, 37);
   
   target_bus = dsp_parse_bus_path(bus_path);
-  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   
   dsp_edit_sine(target_module, freq, amp, phase);

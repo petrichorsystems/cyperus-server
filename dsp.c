@@ -204,37 +204,38 @@ dsp_parse_bus_path(char *target_path) {
   while (*p)                      /* while not end of string */
     {
       char *sp = p;                  /* set a start pointer */
-      while (*p && *p != '/') p++;   /* advance to space    */
+      while (*p && *p != '/') p++;   /* advance to '/'    */
       output_token = malloc (p - sp + 1); /* allocate */
       strncpy (output_token, sp, p - sp);         /* copy   */
       output_token[p - sp] = 0;   /* force null-termination */
       if( output_token != NULL ) {
 	if( strcmp(output_token, "") != 0 ) {
 	  path_index[bus_count] = output_token;
-	  bus_count += 1;
-	  free(output_token);
-	}
-      }
-      while (*p && *p == '/') p++;   /* find next non-space */
-    }
+           bus_count += 1;
+           free(output_token);
+         }
+       }
+       while (*p && *p == '/') p++;   /* find next non-space */
+     }
 
-  last_bus_id = path_index[bus_count - 1];
-  p = target_path;
-  while (*p)                      /* while not end of string */
-    {
-      char *sp = p;                  /* set a start pointer */
-      while (*p && *p != '/') p++;   /* advance to space    */
-      output_token = malloc (p - sp + 1); /* allocate */
-      strncpy (output_token, sp, p - sp);         /* copy   */
-      output_token[p - sp] = 0;   /* force null-termination */
-      if( output_token != NULL ) {
-	if( strcmp(output_token, "") != 0 ) {
-	  while( temp_bus != NULL ) {
+   last_bus_id = path_index[bus_count - 1];
+   p = target_path;
+   while (*p)                      /* while not end of string */
+     {
+       char *sp = p;                  /* set a start pointer */
+       while (*p && *p != '/') p++;   /* advance to space    */
+       output_token = malloc (p - sp + 1); /* allocate */
+       strncpy (output_token, sp, p - sp);         /* copy   */
+       output_token[p - sp] = 0;   /* force null-termination */
+       if( output_token != NULL ) {
+         if( strcmp(output_token, "") != 0 ) {
+           while( temp_bus != NULL ) {
+            path_index[path_count][36] = '\0'; /* force null-termination */
 	    printf("path_index[path_count: '%s'\n", path_index[path_count]);
 	    printf("temp_bus->id:          '%s'\n", temp_bus->id);
 	    printf("strcmp: %d\n", strcmp(path_index[path_count], temp_bus->id));
 	    printf("strlen(path_index[path_count]): %d\n", (int)strlen(path_index[path_count]));
-	    printf("strlen(temp_bus->id): %d\n", (int)strlen(temp_bus->id));
+	    printf("strlen(temp_bus->id): %d\n", (int)strlen(temp_bus->id)); 
 	    if( strcmp(path_index[path_count], temp_bus->id) == 0) {
 	      printf("path_count += 1\n");
 	      path_count += 1;
@@ -253,9 +254,13 @@ dsp_parse_bus_path(char *target_path) {
 		  return NULL;
 		}
 	    }
+            printf("temp_bus = temp_bus->next\n");
 	    temp_bus = temp_bus->next;
+            printf("after temp_bus->next\n");
 	  }
+          printf("free(output_token)");
 	  free(output_token);
+          printf("after free(output_token)");
 	}
       }
       while (*p && *p == '/') p++;   /* find next non-space */
