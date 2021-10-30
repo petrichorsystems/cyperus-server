@@ -1,4 +1,4 @@
-/* ops_modules_audio_oscillator_pulse.c
+/* dsp_ops.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 'cyperus' is a JACK client for learning about software synthesis
 
-Copyright 2021 murray foster */
+Copyright 2018 murray foster */
 
 #include <stdio.h> //printf
 #include <string.h> //memset
@@ -40,12 +40,28 @@ dsp_create_oscillator_pulse(struct dsp_bus *target_bus,
   params.parameters->float32_type = malloc(sizeof(float) * 11);
 
   /* user-facing parameters */
-  params.parameters->float32_type[0] = frequency;
-  params.parameters->float32_type[1] = pulse_width;
+  params.parameters->float32_type[0] = frequency; /* ZIN0(0) */
+  params.parameters->float32_type[1] = pulse_width; /* ZIN0(1) */
   params.parameters->float32_type[2] = mul;
   params.parameters->float32_type[3] = add;
 
-  ins = dsp_port_in_init("param_frequency", 512);
+  /* internal parameters */
+  params.parameters->float32_type[4] = 8192 * (1.0 / jackcli_samplerate) * 65536.0 * 0.5; /* m_cpstoinc */
+  params.parameters->float32_type[5] = (int)((jackcli_samplerate * 0.5) / frequency); /* m_N */
+  params.parameters->float32_type[6] = frequency; /* m_freqIn */
+  params.parameters->float32_type[7] = 0.5 / params.parameters->float32_type[5]; /* m_scale */
+  params.parameters->float32_type[8] = 0; /* m_phase */
+  params.parameters->float32_type[9] = 0.0f; /* m_phaseoff */
+  params.parameters->float32_type[10] = 0.0f; /* m_y1 */
+
+  /* allocate internal buffers */
+  params.parameters->float32_arr_type = malloc(sizeof(float*)*2);
+  params.parameters->float32_arr_type[0] = malloc(sizeof(float) * 8192 + 1); /* ft->mSine */
+  params.parameters->float32_arr_type[1] = malloc(sizeof(float) * 8192 + 1); /* ft->mCosecant */
+
+  math_modules_audio_oscillator_pulse_init(params.parameters);
+  
+  ins = dsp_port_in_init("param_freq", 512);
   ins->next = dsp_port_in_init("param_pulse_width", 512);
   ins->next->next = dsp_port_in_init("mul", 512);
   ins->next->next->next = dsp_port_in_init("add", 512);  
@@ -62,13 +78,18 @@ dsp_create_oscillator_pulse(struct dsp_bus *target_bus,
 } /* dsp_create_oscillator_pulse */
 
 void
-dsp_oscillator_pulse(struct dsp_operation *oscillator_pulse, int jack_samplerate, int pos) {  
-  /* drive audio outputs */
-  oscillator_pulse->outs->sample->value = math_modules_audio_oscillator_pulse(
-                                                                              oscillator_pulse->module->dsp_param.parameters,
-                                                                              jack_samplerate,
-                                                                              pos);
+dsp_oscillator_pulse(struct dsp_operation *oscillator_pulse, int jack_samplerate, int pos) {
+  float insample = 0.0;
+  float outsample = 0.0;
+
+  outsample = math_modules_audio_oscillator_pulse(oscillator_pulse->module->dsp_param.parameters,
+                                                  jack_samplerate,
+                                                  pos);
   
+  /* drive audio outputs */
+  oscillator_pulse->outs->sample->value = outsample;
+
+  printf("outsample: %f\n", outsample);
   
   return;
 } /* dsp_oscillator_pulse */
