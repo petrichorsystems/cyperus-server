@@ -114,10 +114,6 @@ float cyperus_sawtooth(struct cyperus_parameters *sawtoothwav, int jack_sr, int 
   return (2.0f * sawtoothwav->amp) / M_PI * atanf( (*cos_val / *sin_val) );
 }
 
-float cyperus_square(struct cyperus_parameters *squarewav, int jack_sr, int pos) {
-  return sin(squarewav->freq * (2 * M_PI) * pos / jack_sr) >= 0 ? squarewav->amp : -1 * squarewav->amp;
-}
-
 float cyperus_triangle(struct cyperus_parameters *triwav, int jack_sr, int pos) {
   return 2 * triwav->amp / M_PI * asinf( sinf( (2 * M_PI / (jack_sr/triwav->freq)) * pos ) );
 }

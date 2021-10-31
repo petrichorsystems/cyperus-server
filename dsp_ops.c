@@ -608,58 +608,6 @@ dsp_triangle(struct dsp_operation *triangle, int jack_samplerate, int pos) {
   return;
 } /* dsp_triangle */
 
-
-int
-dsp_create_square(struct dsp_bus *target_bus, float freq, float amp) {
-  dsp_parameter square_param;
-  struct dsp_port_in *ins;
-  struct dsp_port_out *outs;
-  
-  square_param.pos = 0;
-  square_param.square.name = "square";
-  square_param.square.cyperus_params = malloc(sizeof(struct cyperus_parameters));
-  square_param.square.freq = freq;
-  square_param.square.amp = amp;
-  
-  ins = dsp_port_in_init("in", 512);
-  outs = dsp_port_out_init("out", 1);
-
-  dsp_add_module(target_bus,
-                 "square",
-                 dsp_square,
-                 dsp_optimize_module,
-                 square_param,
-                 ins,
-                 outs);
-  
-  return 0;
-} /* dsp_create_square */
-
-void
-dsp_edit_square(struct dsp_module *square, float freq, float amp) {
-  square->dsp_param.square.freq = freq;
-  square->dsp_param.square.amp = amp;
-
-  return;
-} /* dsp_edit_square */
-
-void
-dsp_square(struct dsp_operation *square, int jack_samplerate, int pos) {
-  float outsample = 0.0;
-  dsp_parameter dsp_param = square->module->dsp_param;
-
-  square->module->dsp_param.square.cyperus_params->freq = dsp_param.square.freq;
-  square->module->dsp_param.square.cyperus_params->amp = dsp_param.square.amp;
-  
-  outsample = cyperus_square(square->module->dsp_param.square.cyperus_params,
-                             jack_samplerate,pos);
-
-  square->outs->sample->value = outsample;
-  
-  return;
-} /* dsp_square */
-
-
 int
 dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale) {
   dsp_parameter envelope_follower_param;

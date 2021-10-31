@@ -58,10 +58,6 @@ int dsp_create_triangle(struct dsp_bus *target_bus, float freq, float amp);
 void dsp_edit_triangle(struct dsp_module *triangle, float freq, float amp);
 void dsp_triangle(struct dsp_operation *triangle, int jack_samplerate, int pos);
 
-int dsp_create_square(struct dsp_bus *target_bus, float freq, float amp);
-void dsp_edit_square(struct dsp_module *square, float freq, float amp);
-void dsp_square(struct dsp_operation *square, int jack_samplerate, int pos);
-
 int dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale);
 void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale);
 void dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos);

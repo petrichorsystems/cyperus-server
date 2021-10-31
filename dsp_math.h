@@ -133,7 +133,6 @@ float cyperus_level_detector(struct cyperus_parameters *level_detector, int jack
 /* signal generators */
 float cyperus_sawtooth(struct cyperus_parameters *sawtoothwav, int jack_sr, int pos);
 float cyperus_sine(struct cyperus_parameters *sinewav, int jack_sr, int pos);
-float cyperus_square(struct cyperus_parameters *squarewav, int jack_sr, int pos);
 float cyperus_triangle(struct cyperus_parameters *triwav, int jack_sr, int pos);
 float cyperus_whitenoise(struct cyperus_parameters *noiz, int jack_sr, int pos);
 float cyperus_pinknoise(struct cyperus_parameters *noiz, int jack_sr, int pos);
