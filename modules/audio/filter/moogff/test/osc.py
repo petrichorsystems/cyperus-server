@@ -44,14 +44,14 @@ class OscServer(ServerThread):
         print('args', args)
         responses.put(args)
         
-    @make_method('/cyperus/add/module/audio/oscillator/pulse', 'sffff')
+    @make_method('/cyperus/add/module/audio/filter/moogff', 'sfffff')
     def osc_add_module_sine(self, path, args):
-        print("received '/cyperus/add/module/audio/oscillator/pulse'")
+        print("received '/cyperus/add/module/audio/filter/moogff'")
         responses.put(args)
 
-    @make_method('/cyperus/edit/module/audio/oscillator/pulse', 'sffff')
+    @make_method('/cyperus/edit/module/audio/filter/moogff', 'sfffff')
     def osc_edit_module_sine(self, path, args):
-        print("received '/cyperus/edit/module/audio/oscillator/pulse'")
+        print("received '/cyperus/edit/module/audio/filter/moogff'")
         responses.put(args)
 
     @make_method('/cyperus/list/module_port', 'ss')
@@ -118,7 +118,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
 
     print(bus_main0_uuid)
 
-    liblo.send(dest, "/cyperus/add/module/audio/oscillator/pulse", "/{}".format(bus_main0_uuid), 440.0, 0.5, 1.0, 0.0)
+    liblo.send(dest, "/cyperus/add/module/audio/filter/moogff", "/{}".format(bus_main0_uuid), 800.0, 1.0, 0.0, 1.0, 0.0)
     response = responses.get()
     sine_module_uuid = response[0]    
     
@@ -139,7 +139,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
         else:
             sine_module_ports['in'].append(elem)
     print('sine_module_ports', sine_module_ports)
-
+    
 
     liblo.send(dest,
                "/cyperus/add/connection",
@@ -177,10 +177,10 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
     response = responses.get()
     
     for num in range(0,441):
-        print("/cyperus/edit/module/audio/oscillator/pulse", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), float(num), 0.5, 0.5, 0.0)
-        liblo.send(dest, "/cyperus/edit/module/audio/oscillator/pulse", "/{}?{}".format(bus_main0_uuid, sine_module_uuid),  float(num), 0.5, 0.5, 0.0)
+        print("/cyperus/edit/module/audio/filter/moogff", "/{}?{}".format(bus_main0_uuid, sine_module_uuid), float(num), 1.0, 0.0, 1.0, 0.0)
+        liblo.send(dest, "/cyperus/edit/module/audio/filter/moogff", "/{}?{}".format(bus_main0_uuid, sine_module_uuid),  float(num), 1.0, 0.0, 1.0, 0.0)
         response = responses.get()
-        time.sleep(0.2)
+        time.sleep(0.1)
 
 if __name__ == '__main__':
     #outgoing connection
