@@ -11,6 +11,7 @@
         float32_type[7] = add;      
       # INTERNAL
         int8_type[1] = state;
+        int8_type[2] = gate_state;
         float32_type[8] = attack_coeff;
         float32_type[9] = decay_coeff;
         float32_type[10] = release_coeff;

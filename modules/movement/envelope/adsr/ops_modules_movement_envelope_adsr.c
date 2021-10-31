@@ -57,6 +57,7 @@ dsp_create_movement_envelope_adsr(struct dsp_bus *target_bus,
   
   /* internal parameters
   params.parameters->int8_type[1] = state
+  params.parameters->int8_type[2] = gate_state
   params.parameters->float32_type[8] = attack_coeff;
   params.parameters->float32_type[9] = decay_coeff;
   params.parameters->float32_type[10] = release_coeff;

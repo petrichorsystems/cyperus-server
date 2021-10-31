@@ -164,6 +164,7 @@ void _set_target_ratio_dr(dsp_module_parameters_t *parameters, float target_rati
 
 extern
 void math_modules_movement_envelope_adsr_init(dsp_module_parameters_t *parameters, int samplerate) {
+  _reset(parameters);
   _set_attack_rate(parameters, 0.0f);
   _set_decay_rate(parameters, 0.0f);
   _set_release_rate(parameters, 0.0f);
@@ -200,11 +201,13 @@ extern
 float math_modules_movement_envelope_adsr(dsp_module_parameters_t *parameters, int samplerate, int pos) {
   float out = 0.0f;
 
+  int gate = parameters->int8_type[0];
   float sustain_level = parameters->float32_type[3];
   float mul = parameters->float32_type[6];
   float add = parameters->float32_type[7];
   
   int state = parameters->int8_type[1];
+  int gate_state = parameters->int8_type[2];
   float attack_coeff = parameters->float32_type[8];
   float decay_coeff = parameters->float32_type[9];
   float release_coeff = parameters->float32_type[10];
@@ -212,6 +215,18 @@ float math_modules_movement_envelope_adsr(dsp_module_parameters_t *parameters, i
   float decay_base = parameters->float32_type[12];
   float release_base = parameters->float32_type[13];  
   float last_out = parameters->float32_type[14];
+
+  if(gate) {
+    if(gate_state == 0) {
+      state = ENV_STATE_ATTACK;
+      gate_state = 1;
+    }
+    else if(state != ENV_STATE_IDLE) {
+      state = ENV_STATE_RELEASE;
+      gate_state = 0;
+    }
+    gate = 0;
+  }
   
   switch (state) {
   case ENV_STATE_IDLE:
@@ -240,7 +255,10 @@ float math_modules_movement_envelope_adsr(dsp_module_parameters_t *parameters, i
     }
   }
 
+  parameters->int8_type[0] = gate;
   parameters->int8_type[1] = state;
+  parameters->int8_type[2] = gate_state;
   parameters->float32_type[14] = out;
+  
   return out * mul + add;
 }

@@ -11,6 +11,7 @@
 #include "../../../../dsp_math.h"
 #include "../../../../dsp_types.h"
 
+void _reset(dsp_module_parameters_t *parameters);
 float _calc_coeff(float rate, float target_ratio);
 void _set_attack_rate(dsp_module_parameters_t *parameters, float rate);
 void _set_decay_rate(dsp_module_parameters_t *parameters, float rate);
