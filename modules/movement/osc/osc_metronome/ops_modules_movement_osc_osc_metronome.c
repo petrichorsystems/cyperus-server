@@ -39,9 +39,9 @@ dsp_create_osc_metronome(struct dsp_bus *target_bus,
   osc_metronome_param.parameters->float32_type[0] = beats_per_minute;
 
   /* sample position tracking */
-  osc_metronome_param.parameters->integer_type = malloc(sizeof(int) * 2);
-  osc_metronome_param.parameters->integer_type[0] = 0;
-  osc_metronome_param.parameters->integer_type[1] = (int)((float)1.0 / (osc_metronome_param.parameters->float32_type[0] / 60.0f) * (float)jackcli_samplerate);
+  osc_metronome_param.parameters->int8_type = malloc(sizeof(int) * 2);
+  osc_metronome_param.parameters->int8_type[0] = 0;
+  osc_metronome_param.parameters->int8_type[1] = (int)((float)1.0 / (osc_metronome_param.parameters->float32_type[0] / 60.0f) * (float)jackcli_samplerate);
   
   osc_metronome_param.parameters->char_type = malloc(sizeof(char*));
   osc_metronome_param.parameters->char_type[0] = malloc(sizeof(char) * 37); /* len(uuid4) + len('\n') */
@@ -67,8 +67,8 @@ dsp_osc_metronome(struct dsp_operation *osc_metronome,
   char *path = NULL;
   int path_len = 0;
 
-  int samples_waited = osc_metronome->module->dsp_param.parameters->integer_type[0];
-  int samples_to_wait = osc_metronome->module->dsp_param.parameters->integer_type[1];
+  int samples_waited = osc_metronome->module->dsp_param.parameters->int8_type[0];
+  int samples_to_wait = osc_metronome->module->dsp_param.parameters->int8_type[1];
   if( samples_waited == samples_to_wait - 1) {
     path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
     path = (char *)malloc(sizeof(char) * path_len);
@@ -77,9 +77,9 @@ dsp_osc_metronome(struct dsp_operation *osc_metronome,
     lo_send(lo_addr_send, path, "f", 1.0f);
     free(lo_addr_send);
     outsample = 1.0f;
-    osc_metronome->module->dsp_param.parameters->integer_type[0] = 0;
+    osc_metronome->module->dsp_param.parameters->int8_type[0] = 0;
   } else {
-    osc_metronome->module->dsp_param.parameters->integer_type[0] += 1;
+    osc_metronome->module->dsp_param.parameters->int8_type[0] += 1;
   }
 
 } /* dsp_osc_metronome */
@@ -91,8 +91,8 @@ void dsp_edit_osc_metronome(struct dsp_module *osc_metronome,
   osc_metronome->dsp_param.parameters->float32_type[0] = beats_per_minute;
   printf("assigned osc_metronome.dsp_param.parameters->float32_type[0]: %f\n",
 	 osc_metronome->dsp_param.parameters->float32_type[0]);
-  osc_metronome->dsp_param.parameters->integer_type[0] = 0;
-  osc_metronome->dsp_param.parameters->integer_type[1] = (int)(1.0f / (osc_metronome->dsp_param.parameters->float32_type[0] / 60.0f) * (float)jackcli_samplerate);
+  osc_metronome->dsp_param.parameters->int8_type[0] = 0;
+  osc_metronome->dsp_param.parameters->int8_type[1] = (int)(1.0f / (osc_metronome->dsp_param.parameters->float32_type[0] / 60.0f) * (float)jackcli_samplerate);
   printf("returning\n");
   
 } /* dsp_edit_osc_metronome */

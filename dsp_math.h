@@ -33,7 +33,7 @@ Copyright 2019 murray foster */
 #define VOCODEROVERSAMPLE 32
 
 typedef struct dsp_module_parameters {
-  int *integer_type;
+  int *int8_type;
   float *float32_type;
   float **float32_arr_type;
   double *double_type;
