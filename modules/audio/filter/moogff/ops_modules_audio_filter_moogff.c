@@ -101,10 +101,7 @@ dsp_filter_moogff(struct dsp_operation *filter_moogff, int jack_samplerate, int 
   
   /* drive audio outputs */
   filter_moogff->outs->sample->value = outsample;
-
-  printf("outsample: %f\n", outsample);
   
-  return;
 } /* dsp_filter_moogff */
 
 

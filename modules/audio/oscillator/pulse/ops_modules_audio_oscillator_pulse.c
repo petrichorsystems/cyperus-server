@@ -84,12 +84,9 @@ dsp_oscillator_pulse(struct dsp_operation *oscillator_pulse, int jack_samplerate
 
   outsample = math_modules_audio_oscillator_pulse(oscillator_pulse->module->dsp_param.parameters,
                                                   jack_samplerate,
-                                                  pos);
-  
+                                                  pos);  
   /* drive audio outputs */
   oscillator_pulse->outs->sample->value = outsample;
-
-  printf("outsample: %f\n", outsample);
   
   return;
 } /* dsp_oscillator_pulse */
