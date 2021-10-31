@@ -35,7 +35,8 @@ Copyright 2019 murray foster */
 typedef struct dsp_module_parameters {
   int *integer_type;
   float *float32_type;
-  float **float32_arr_type;  
+  float **float32_arr_type;
+  double *double_type;
   uint8_t *uint8_type;
   char **char_type;
 } dsp_module_parameters_t;

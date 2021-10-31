@@ -1,4 +1,4 @@
-/* dsp_ops.c
+/* ops_modules_filter_varslope_lowpass.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 'cyperus' is a JACK client for learning about software synthesis
 
-Copyright 2018 murray foster */
+Copyright 2021 murray foster */
 
 #include "ops_modules_audio_filter_varslope_lowpass.h"
 
