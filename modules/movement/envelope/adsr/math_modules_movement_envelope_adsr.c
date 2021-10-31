@@ -37,9 +37,21 @@ You may modify and use this source code to create binary code for your own purpo
 
 #include "math_modules_movement_envelope_adsr.h"
 
+#define ENV_STATE_IDLE 0
+#define ENV_STATE_ATTACK 1
+#define ENV_STATE_DECAY 2
+#define ENV_STATE_SUSTAIN 3
+#define ENV_STATE_RELEASE 4
+
+void _reset(dsp_module_parameters_t *parameters) {
+  parameters->int8_type[0] = 0;
+  parameters->int8_type[1] = ENV_STATE_IDLE;
+  parameters->float32_type[14] = 0.0f;
+} /* _reset */
+
 float _calc_coeff(float rate, float target_ratio) {
     return exp(-log((1.0 + target_ratio) / target_ratio) / rate);
-}
+} /* _calc_coeff */
 
 void _set_attack_rate(dsp_module_parameters_t *parameters, float rate) {
   if(rate == parameters->float32_type[0])
@@ -159,7 +171,8 @@ void math_modules_movement_envelope_adsr_init(dsp_module_parameters_t *parameter
   _set_target_ratio_a(parameters, 0.3f);
   _set_target_ratio_dr(parameters, 0.0001f);
   parameters->float32_type[6] = 1.0f;
-  parameters->float32_type[7] = 0.0f;;
+  parameters->float32_type[7] = 0.0f;
+  parameters->float32_type[14] = 0.0f;
 } /* math_modules_movement_envelope_adsr_init */
 
 extern
@@ -185,9 +198,49 @@ void math_modules_movement_envelope_adsr_edit(dsp_module_parameters_t *parameter
 
 extern
 float math_modules_movement_envelope_adsr(dsp_module_parameters_t *parameters, int samplerate, int pos) {
-  float outsample = 0.0f;
+  float out = 0.0f;
 
+  float sustain_level = parameters->float32_type[3];
+  float mul = parameters->float32_type[6];
+  float add = parameters->float32_type[7];
   
+  int state = parameters->int8_type[1];
+  float attack_coeff = parameters->float32_type[8];
+  float decay_coeff = parameters->float32_type[9];
+  float release_coeff = parameters->float32_type[10];
+  float attack_base = parameters->float32_type[11];
+  float decay_base = parameters->float32_type[12];
+  float release_base = parameters->float32_type[13];  
+  float last_out = parameters->float32_type[14];
   
-  return outsample;
+  switch (state) {
+  case ENV_STATE_IDLE:
+    break;
+  case ENV_STATE_ATTACK:
+    out = attack_base + last_out * attack_coeff;
+    if (out >= 1.0) {
+      out = 1.0;
+      state = ENV_STATE_DECAY;
+    }
+    break;
+  case ENV_STATE_DECAY:
+    out = decay_base + last_out * decay_coeff;
+    if (out <= sustain_level) {
+      out = sustain_level;
+      state = ENV_STATE_SUSTAIN;
+    }
+    break;
+  case ENV_STATE_SUSTAIN:
+    break;
+  case ENV_STATE_RELEASE:
+    out = release_base + last_out * release_coeff;
+    if (out <= 0.0) {
+      out = 0.0;
+      state = ENV_STATE_IDLE;
+    }
+  }
+
+  parameters->int8_type[1] = state;
+  parameters->float32_type[14] = out;
+  return out * mul + add;
 }

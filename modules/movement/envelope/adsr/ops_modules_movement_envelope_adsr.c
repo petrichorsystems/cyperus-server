@@ -42,7 +42,7 @@ dsp_create_movement_envelope_adsr(struct dsp_bus *target_bus,
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));  
   params.parameters->float32_type = malloc(sizeof(float) * 14);
-  params.parameters->int8_type = malloc(sizeof(int));
+  params.parameters->int8_type = malloc(sizeof(int) * 2);
   
   /* user-facing parameters
   params.parameters->int8_type[0] = gate;
@@ -56,12 +56,14 @@ dsp_create_movement_envelope_adsr(struct dsp_bus *target_bus,
   params.parameters->float32_type[7] = add; */
   
   /* internal parameters
+  params.parameters->int8_type[1] = state
   params.parameters->float32_type[8] = attack_coeff;
   params.parameters->float32_type[9] = decay_coeff;
   params.parameters->float32_type[10] = release_coeff;
   params.parameters->float32_type[11] = attack_base;
   params.parameters->float32_type[12] = decay_base;
-  params.parameters->float32_type[13] = release_base; */
+  params.parameters->float32_type[13] = release_base; 
+  params.parameters->float32_type[14] = last_output_value; */
 
   
   math_modules_movement_envelope_adsr_init(params.parameters, jackcli_samplerate);

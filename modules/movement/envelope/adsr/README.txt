@@ -10,9 +10,11 @@
         float32_type[6] = mul;
         float32_type[7] = add;      
       # INTERNAL
+        int8_type[1] = state;
         float32_type[8] = attack_coeff;
         float32_type[9] = decay_coeff;
         float32_type[10] = release_coeff;
         float32_type[11] = attack_base;
         float32_type[12] = decay_base;
         float32_type[13] = release_base;
+        float32_type[14] = last_output_value;

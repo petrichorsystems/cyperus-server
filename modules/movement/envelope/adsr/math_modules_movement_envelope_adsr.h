@@ -11,6 +11,14 @@
 #include "../../../../dsp_math.h"
 #include "../../../../dsp_types.h"
 
+float _calc_coeff(float rate, float target_ratio);
+void _set_attack_rate(dsp_module_parameters_t *parameters, float rate);
+void _set_decay_rate(dsp_module_parameters_t *parameters, float rate);
+void _set_release_rate(dsp_module_parameters_t *parameters, float rate);
+void _set_sustain_level(dsp_module_parameters_t *parameters, float level);
+void _set_target_ratio_a(dsp_module_parameters_t *parameters, float target_ratio);
+void _set_target_ratio_dr(dsp_module_parameters_t *parameters, float target_ratio);
+
 extern void
 math_modules_movement_envelope_adsr_init(dsp_module_parameters_t *parameters, int samplerate);
 
