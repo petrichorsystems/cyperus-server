@@ -40,9 +40,11 @@ dsp_create_movement_envelope_adsr(struct dsp_bus *target_bus,
 
   params.name = "envelope_adsr";  
   params.pos = 0;  
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));  
-  params.parameters->float32_type = malloc(sizeof(float) * 14);
-  params.parameters->int8_type = malloc(sizeof(int) * 2);
+  params.parameters = malloc(sizeof(dsp_module_parameters_t));
+  printf("malloc() float32\n");
+  params.parameters->float32_type = malloc(sizeof(float) * 15);
+  printf("malloc() int8\n");
+  params.parameters->int8_type = malloc(sizeof(int) * 3);
   
   /* user-facing parameters
   params.parameters->int8_type[0] = gate;

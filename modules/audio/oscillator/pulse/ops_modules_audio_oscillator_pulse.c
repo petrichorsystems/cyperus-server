@@ -82,6 +82,11 @@ dsp_oscillator_pulse(struct dsp_operation *oscillator_pulse, int jack_samplerate
   float insample = 0.0;
   float outsample = 0.0;
 
+  /* mul input */
+  if( oscillator_pulse->ins->next->next->summands != NULL ) {
+     oscillator_pulse->module->dsp_param.parameters->float32_type[2] = dsp_sum_summands(oscillator_pulse->ins->next->next->summands);
+  }
+  
   outsample = math_modules_audio_oscillator_pulse(oscillator_pulse->module->dsp_param.parameters,
                                                   jack_samplerate,
                                                   pos);  
