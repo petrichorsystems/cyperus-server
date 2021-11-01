@@ -266,8 +266,6 @@ float math_modules_movement_envelope_adsr(dsp_module_parameters_t *parameters, i
       gate_state = 0;
     }
   }
-
-  printf("out: %f\n", out);
          
   parameters->int8_type[0] = gate;
   parameters->int8_type[1] = state;
