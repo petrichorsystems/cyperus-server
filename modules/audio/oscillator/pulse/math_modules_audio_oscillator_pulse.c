@@ -269,5 +269,5 @@ float math_modules_audio_oscillator_pulse(dsp_module_parameters_t *parameters, i
     parameters->float32_type[8] = phase;
     parameters->float32_type[6] = freqin;
 
-    return outsample;
+    return outsample * parameters->float32_type[2] + parameters->float32_type[3];
 }
