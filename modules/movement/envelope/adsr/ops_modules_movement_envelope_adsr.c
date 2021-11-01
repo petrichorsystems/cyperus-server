@@ -67,7 +67,15 @@ dsp_create_movement_envelope_adsr(struct dsp_bus *target_bus,
   params.parameters->float32_type[14] = last_output_value; */
 
   
-  math_modules_movement_envelope_adsr_init(params.parameters, jackcli_samplerate);
+  math_modules_movement_envelope_adsr_init(params.parameters,
+                                           attack_rate * (float)jackcli_samplerate,
+                                           decay_rate * (float)jackcli_samplerate,
+                                           release_rate * (float)jackcli_samplerate,
+                                           sustain_level,
+                                           target_ratio_a,
+                                           target_ratio_dr,
+                                           mul,
+                                           add);
   
   ins = dsp_port_in_init("param_frequency", 512);
   ins->next = dsp_port_in_init("param_pulse_width", 512);
@@ -82,21 +90,20 @@ dsp_create_movement_envelope_adsr(struct dsp_bus *target_bus,
 		 params,
 		 ins,
 		 outs);
+  
   return 0;
 } /* dsp_create_movement_envelope_adsr */
 
 void
 dsp_movement_envelope_adsr(struct dsp_operation *envelope_adsr, int jack_samplerate, int pos) {
-  float insample = 0.0;
-  float outsample = 0.0;
+  float insample = 0.0f;
+  float outsample = 0.0f;
 
   outsample = math_modules_movement_envelope_adsr(envelope_adsr->module->dsp_param.parameters,
                                                   jack_samplerate,
-                                                  pos);  
+                                                  pos);
   /* drive audio outputs */
   envelope_adsr->outs->sample->value = outsample;
-  
-  return;
 } /* dsp_movement_envelope_adsr */
 
 
@@ -114,9 +121,9 @@ dsp_edit_movement_envelope_adsr(struct dsp_module *envelope_adsr,
   
   math_modules_movement_envelope_adsr_edit(envelope_adsr->dsp_param.parameters,
                                            gate,
-                                           attack_rate,
-                                           decay_rate,
-                                           release_rate,
+                                           attack_rate * (float)jackcli_samplerate,
+                                           decay_rate * (float)jackcli_samplerate,
+                                           release_rate * (float)jackcli_samplerate,
                                            sustain_level,
                                            target_ratio_a,
                                            target_ratio_dr,

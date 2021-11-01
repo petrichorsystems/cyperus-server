@@ -61,6 +61,8 @@ int osc_add_module_movement_envelope_adsr_handler(const char *path, const char *
                                     target_ratio_dr,
                                     mul,
                                     add);          
+
+  printf("now doing module stuff\n");
   
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -70,10 +72,13 @@ int osc_add_module_movement_envelope_adsr_handler(const char *path, const char *
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
+  printf("about to send msg\n");
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
           "/cyperus/add/module/movement/envelope/adsr",
           "siffffffff",
+          module_id,
           gate,
           attack_rate,
           decay_rate,
@@ -85,6 +90,8 @@ int osc_add_module_movement_envelope_adsr_handler(const char *path, const char *
           add);
   free(lo_addr_send);
 
+  printf("free'd\n");
+  
   return 0;
 } /* osc_add_module_movement_envelope_adsr_handler */
 
@@ -134,11 +141,14 @@ osc_edit_module_movement_envelope_adsr_handler(const char *path, const char *typ
                                   target_ratio_dr,
                                   mul,
                                   add);                                          
+
+  printf("about to send osc msg\n");
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
           "/cyperus/edit/module/movement/envelope/adsr",
           "siffffffff",
+          module_id,
           gate,
           attack_rate,
           decay_rate,
@@ -147,8 +157,11 @@ osc_edit_module_movement_envelope_adsr_handler(const char *path, const char *typ
           target_ratio_a,
           target_ratio_dr,
           mul,
-          add);          
+          add);
+
+  printf("send osc msg\n");
   free(lo_addr_send);
+  printf("free'd\n");
   
   return 0;
 } /* osc_edit_module_movement_envelope_adsr_handler */

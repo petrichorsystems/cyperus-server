@@ -46,6 +46,7 @@ You may modify and use this source code to create binary code for your own purpo
 void _reset(dsp_module_parameters_t *parameters) {
   parameters->int8_type[0] = 0;
   parameters->int8_type[1] = ENV_STATE_IDLE;
+  parameters->int8_type[2] = 0;  
   parameters->float32_type[14] = 0.0f;
 } /* _reset */
 
@@ -137,11 +138,11 @@ void _set_target_ratio_a(dsp_module_parameters_t *parameters, float target_ratio
   parameters->float32_type[4] = target_ratio;
   parameters->float32_type[11] = attack_base;
 
-  printf("math_modules_movement_envelope_adsr.c::_set_target_ratio_a - assigned sustain target ratio %f\n", target_ratio);
+  printf("math_modules_movement_envelope_adsr.c::_set_target_ratio_a - assigned attack target ratio %f\n", target_ratio);
 } /* _set_target_ratio_a */
 
 void _set_target_ratio_dr(dsp_module_parameters_t *parameters, float target_ratio) {
-  if(target_ratio == parameters->float32_type[4])
+  if(target_ratio == parameters->float32_type[5])
     return;
 
   float sustain_level = parameters->float32_type[3];
@@ -159,18 +160,26 @@ void _set_target_ratio_dr(dsp_module_parameters_t *parameters, float target_rati
   parameters->float32_type[12] = decay_base;
   parameters->float32_type[13] = release_base;
   
-  printf("math_modules_movement_envelope_adsr.c::_set_target_ratio_dr - assigned sustain target ratio %f\n", target_ratio);
+  printf("math_modules_movement_envelope_adsr.c::_set_target_ratio_dr - assigned decay-release target ratio %f\n", target_ratio);
 } /* _set_target_ratio_dr */
 
 extern
-void math_modules_movement_envelope_adsr_init(dsp_module_parameters_t *parameters, int samplerate) {
+void math_modules_movement_envelope_adsr_init(dsp_module_parameters_t *parameters,
+                                              float attack_rate,
+                                              float decay_rate,
+                                              float release_rate,
+                                              float sustain_level,
+                                              float target_ratio_a,
+                                              float target_ratio_dr,
+                                              float mul,
+                                              float add) {
   _reset(parameters);
-  _set_attack_rate(parameters, 0.0f);
-  _set_decay_rate(parameters, 0.0f);
-  _set_release_rate(parameters, 0.0f);
-  _set_sustain_level(parameters, 1.0f);
-  _set_target_ratio_a(parameters, 0.3f);
-  _set_target_ratio_dr(parameters, 0.0001f);
+  _set_attack_rate(parameters, attack_rate);
+  _set_decay_rate(parameters, decay_rate);
+  _set_release_rate(parameters, release_rate);
+  _set_sustain_level(parameters, sustain_level);
+  _set_target_ratio_a(parameters, target_ratio_a);
+  _set_target_ratio_dr(parameters, target_ratio_dr);
   parameters->float32_type[6] = 1.0f;
   parameters->float32_type[7] = 0.0f;
   parameters->float32_type[14] = 0.0f;
@@ -192,7 +201,8 @@ void math_modules_movement_envelope_adsr_edit(dsp_module_parameters_t *parameter
   _set_release_rate(parameters, release_rate);
   _set_sustain_level(parameters, sustain_level);
   _set_target_ratio_a(parameters, target_ratio_a);
-  _set_target_ratio_dr(parameters, target_ratio_dr);  
+  _set_target_ratio_dr(parameters, target_ratio_dr);
+  parameters->int8_type[0] = gate;
   parameters->float32_type[6] = mul;
   parameters->float32_type[7] = add;
 }
@@ -246,19 +256,23 @@ float math_modules_movement_envelope_adsr(dsp_module_parameters_t *parameters, i
     }
     break;
   case ENV_STATE_SUSTAIN:
+    state = ENV_STATE_RELEASE;
     break;
   case ENV_STATE_RELEASE:
     out = release_base + last_out * release_coeff;
     if (out <= 0.0) {
       out = 0.0;
       state = ENV_STATE_IDLE;
+      gate_state = 0;
     }
   }
 
+  printf("out: %f\n", out);
+         
   parameters->int8_type[0] = gate;
   parameters->int8_type[1] = state;
   parameters->int8_type[2] = gate_state;
   parameters->float32_type[14] = out;
   
-  return out * mul + add;
+  return out;
 }
