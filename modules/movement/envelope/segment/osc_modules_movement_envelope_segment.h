@@ -1,4 +1,4 @@
-/* osc_modules_movement_envelope_env.h
+/* osc_modules_movement_envelope_segment.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#ifndef OSC_MODULES_MOVEMENT_ENVELOPE_ENV_H
-#define OSC_MODULES_MOVEMENT_ENVELOPE_ENV_H
+#ifndef OSC_MODULES_MOVEMENT_ENVELOPE_SEGMENT_H
+#define OSC_MODULES_MOVEMENT_ENVELOPE_SEGMENT_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
@@ -30,11 +30,11 @@ Copyright 2021 murray foster */
 #include "../../../../osc.h"
 #include "../../../../osc_handlers.h"
 
-#include "ops_modules_movement_envelope_env.h"
+#include "ops_modules_movement_envelope_segment.h"
 
-int osc_add_module_movement_envelope_env_handler(const char *path, const char *types, lo_arg ** argv,
-                                                  int argc, void *data, void *user_data);
-int osc_edit_module_movement_envelope_env_handler(const char *path, const char *types, lo_arg ** argv,
-                                                   int argc, void *data, void *user_data);
+int osc_add_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
+                                                     int argc, void *data, void *user_data);
+int osc_edit_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
+                                                      int argc, void *data, void *user_data);
 
 #endif

@@ -1,4 +1,4 @@
-/* ops_modules_movement_envelope_env.c
+/* ops_modules_movement_envelope_segment.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@ Copyright 2021 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include "math_modules_movement_envelope_env.h"
-#include "ops_modules_movement_envelope_env.h"
+#include "math_modules_movement_envelope_segment.h"
+#include "ops_modules_movement_envelope_segment.h"
 
 int
-dsp_create_movement_envelope_env(struct dsp_bus *target_bus,
+dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
                                   int gate,
                                   float attack_rate,
                                   float decay_rate,
@@ -38,7 +38,7 @@ dsp_create_movement_envelope_env(struct dsp_bus *target_bus,
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
 
-  params.name = "envelope_env";  
+  params.name = "envelope_segment";  
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
   printf("malloc() float32\n");
@@ -69,7 +69,7 @@ dsp_create_movement_envelope_env(struct dsp_bus *target_bus,
   params.parameters->float32_type[14] = last_output_value; */
 
   
-  math_modules_movement_envelope_env_init(params.parameters,
+  math_modules_movement_envelope_segment_init(params.parameters,
                                            attack_rate * (float)jackcli_samplerate,
                                            decay_rate * (float)jackcli_samplerate,
                                            release_rate * (float)jackcli_samplerate,
@@ -86,31 +86,31 @@ dsp_create_movement_envelope_env(struct dsp_bus *target_bus,
   outs = dsp_port_out_init("out", 1);
 
   dsp_add_module(target_bus,
-		 "envelope_env",
-		 dsp_movement_envelope_env,
+		 "envelope_segment",
+		 dsp_movement_envelope_segment,
 		 dsp_optimize_module,
 		 params,
 		 ins,
 		 outs);
   
   return 0;
-} /* dsp_create_movement_envelope_env */
+} /* dsp_create_movement_envelope_segment */
 
 void
-dsp_movement_envelope_env(struct dsp_operation *envelope_env, int jack_samplerate, int pos) {
+dsp_movement_envelope_segment(struct dsp_operation *envelope_segment, int jack_samplerate, int pos) {
   float insample = 0.0f;
   float outsample = 0.0f;
 
-  outsample = math_modules_movement_envelope_env(envelope_env->module->dsp_param.parameters,
+  outsample = math_modules_movement_envelope_segment(envelope_segment->module->dsp_param.parameters,
                                                   jack_samplerate,
                                                   pos);
   /* drive audio outputs */
-  envelope_env->outs->sample->value = outsample;
-} /* dsp_movement_envelope_env */
+  envelope_segment->outs->sample->value = outsample;
+} /* dsp_movement_envelope_segment */
 
 
 void
-dsp_edit_movement_envelope_env(struct dsp_module *envelope_env,
+dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
                                 int gate,
                                 float attack_rate,
                                 float decay_rate,
@@ -121,7 +121,7 @@ dsp_edit_movement_envelope_env(struct dsp_module *envelope_env,
                                 float mul,
                                 float add) {
   
-  math_modules_movement_envelope_env_edit(envelope_env->dsp_param.parameters,
+  math_modules_movement_envelope_segment_edit(envelope_segment->dsp_param.parameters,
                                            gate,
                                            attack_rate * (float)jackcli_samplerate,
                                            decay_rate * (float)jackcli_samplerate,
@@ -132,5 +132,5 @@ dsp_edit_movement_envelope_env(struct dsp_module *envelope_env,
                                            mul,
                                            add);
   
-  printf("dsp_edit_movement_envelope_env::returning\n");
-} /* dsp_edit_movement_envelope_env */
+  printf("dsp_edit_movement_envelope_segment::returning\n");
+} /* dsp_edit_movement_envelope_segment */

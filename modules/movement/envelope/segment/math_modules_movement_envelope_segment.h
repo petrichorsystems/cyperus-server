@@ -1,6 +1,6 @@
 
-#ifndef MATH_MODULES_MOVEMENT_ENVELOPE_ENV_H
-#define MATH_MODULES_MOVEMENT_ENVELOPE_ENV_H
+#ifndef MATH_MODULES_MOVEMENT_ENVELOPE_SEGMENT_H
+#define MATH_MODULES_MOVEMENT_ENVELOPE_SEGMENT_H
 
 #include <float.h>
 #include <math.h>
@@ -12,7 +12,7 @@
 #include "../../../../dsp_types.h"
 
 extern void
-math_modules_movement_envelope_env_init(dsp_module_parameters_t *parameters,
+math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parameters,
                                          float attack_rate,
                                          float decay_rate,
                                          float release_rate,
@@ -23,7 +23,7 @@ math_modules_movement_envelope_env_init(dsp_module_parameters_t *parameters,
                                          float add);
 
 extern void
-math_modules_movement_envelope_env_edit(dsp_module_parameters_t *parameters,
+math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parameters,
                                          int gate,
                                          float attack_rate,
                                          float decay_rate,
@@ -35,7 +35,7 @@ math_modules_movement_envelope_env_edit(dsp_module_parameters_t *parameters,
                                          float add);
 
 extern float
-math_modules_movement_envelope_env(dsp_module_parameters_t *parameters, int samplerate, int pos);
+math_modules_movement_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos);
 
 
 #endif

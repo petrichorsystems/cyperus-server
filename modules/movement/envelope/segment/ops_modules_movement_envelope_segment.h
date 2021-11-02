@@ -1,4 +1,4 @@
-/* osp_modules_movement_envelope_env.h
+/* osp_modules_movement_envelope_segment.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#ifndef OPS_MODULES_MOVEMENT_ENVELOPE_ENV_H
-#define OPS_MODULES_MOVEMENT_ENVELOPE_ENV_H
+#ifndef OPS_MODULES_MOVEMENT_ENVELOPE_SEGMENT_H
+#define OPS_MODULES_MOVEMENT_ENVELOPE_SEGMENT_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
@@ -33,7 +33,7 @@ Copyright 2021 murray foster */
 #include "../../../../jackcli.h"
 
 int
-dsp_create_movement_envelope_env(struct dsp_bus *target_bus,
+dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
                                   int gate,
                                   float attack_rate,
                                   float decay_rate,
@@ -44,12 +44,12 @@ dsp_create_movement_envelope_env(struct dsp_bus *target_bus,
                                   float mul,
                                   float add);
 void
-dsp_movement_envelope_env(struct dsp_operation *envelope_env,
+dsp_movement_envelope_segment(struct dsp_operation *envelope_segment,
                            int jack_samplerate,
                            int pos);
 
 void
-dsp_edit_movement_envelope_env(struct dsp_module *envelope_env,
+dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
                                      int gate,
                                      float attack_rate,
                                      float decay_rate,
