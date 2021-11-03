@@ -20,9 +20,6 @@
 
 #define twopi 6.28318530717952646f
 
-
-#define sc_max(a, b) (((a) > (b)) ? (a) : (b))
-
 #define M_SLOPE_FACTOR 2048
 
 #define K_SINE_SIZE 8192
@@ -84,7 +81,7 @@ float math_modules_audio_oscillator_pulse(dsp_module_parameters_t *parameters, i
         N = (int)((samplerate * 0.5) / freqin);
         if (N != parameters->float32_type[5]) {
             float maxfreqin;
-            maxfreqin = sc_max(parameters->float32_type[6], freqin);
+            maxfreqin = modules_math_sc_max(parameters->float32_type[6], freqin);
             freq = (int)(parameters->float32_type[4] * maxfreqin);
             crossfade = 1;
         } else {

@@ -25,15 +25,12 @@ Copyright 2021 murray foster */
 
 int
 dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
-                                  int gate,
-                                  float attack_rate,
-                                  float decay_rate,
-                                  float release_rate,
-                                  float sustain_level,
-                                  float target_ratio_a,
-                                  float target_ratio_dr,
-                                  float mul,
-                                  float add) {
+                                     int gate,
+                                     float level,
+                                     float time,
+                                     float curve,
+                                     float mul,
+                                     float add) {
   dsp_parameter params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
@@ -41,43 +38,52 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   params.name = "envelope_segment";  
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
+    printf("malloc() int8\n");
+  params.parameters->int8_type = malloc(sizeof(int) * 5);
   printf("malloc() float32\n");
-  params.parameters->float32_type = malloc(sizeof(float) * 15);
-  printf("malloc() int8\n");
-  params.parameters->int8_type = malloc(sizeof(int) * 3);
+  params.parameters->float32_type = malloc(sizeof(float) * 8);
   
   /* user-facing parameters
-  params.parameters->int8_type[0] = gate;
-  params.parameters->float32_type[0] = attack_rate; 
-  params.parameters->float32_type[1] = decay_rate;
-  params.parameters->float32_type[2] = release_rate;
-  params.parameters->float32_type[3] = sustain_level;
-  params.parameters->float32_type[4] = target_ratio_a;
-  params.parameters->float32_type[5] = target_ratio_dr;
+  params.parameters->float32_types[0] = gate
+  params.parameters->float32_types[1] = level_scale;
+  params.parameters->float32_types[2] = time_scale;
+  params.parameters->float32_types[3] = done_action;
+  params.parameters->float32_types[4] = init_level;
+  params.parameters->float32_types[5] = num_stages;
+
+  params.parameters->int8_types[0] = release_node;
+  params.parameters->int8_types[1] = loop_node;
+  params.parameters->int8_types[2] = node_offset;
+
   params.parameters->float32_type[6] = mul;
   params.parameters->float32_type[7] = add; */
   
   /* internal parameters
-  params.parameters->int8_type[1] = state
-  params.parameters->int8_type[2] = gate_state
-  params.parameters->float32_type[8] = attack_coeff;
-  params.parameters->float32_type[9] = decay_coeff;
-  params.parameters->float32_type[10] = release_coeff;
-  params.parameters->float32_type[11] = attack_base;
-  params.parameters->float32_type[12] = decay_base;
-  params.parameters->float32_type[13] = release_base; 
-  params.parameters->float32_type[14] = last_output_value; */
+  params.parameters->double_type[0] = a1;
+  params.parameters->double_type[1] = a2;
+  params.parameters->double_type[2] = b1;
+  params.parameters->double_type[3] = y1;
+  params.parameters->double_type[4] = y2;
+  params.parameters->double_type[5] = grow;
+  params.parameters->double_type[6] = end_level;
+
+  params.parameters->int8_type[8] = counter;
+  params.parameters->int8_type[9] = stage;
+  params.parameters->int8_type[10] = shape;
+  params.parameters->int8_type[11] = release_node;
+
+  params.parameters->float32_type[8] = prev_gate;
+    
+   */
 
   
   math_modules_movement_envelope_segment_init(params.parameters,
-                                           attack_rate * (float)jackcli_samplerate,
-                                           decay_rate * (float)jackcli_samplerate,
-                                           release_rate * (float)jackcli_samplerate,
-                                           sustain_level,
-                                           target_ratio_a,
-                                           target_ratio_dr,
-                                           mul,
-                                           add);
+                                              gate,
+                                              level,
+                                              time * (float)jackcli_samplerate,                                              
+                                              curve,
+                                              mul,
+                                              add);
   
   ins = dsp_port_in_init("param_frequency", 512);
   ins->next = dsp_port_in_init("param_pulse_width", 512);
@@ -111,26 +117,20 @@ dsp_movement_envelope_segment(struct dsp_operation *envelope_segment, int jack_s
 
 void
 dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
-                                int gate,
-                                float attack_rate,
-                                float decay_rate,
-                                float release_rate,
-                                float sustain_level,
-                                float target_ratio_a,
-                                float target_ratio_dr,
-                                float mul,
-                                float add) {
+                                   int gate,
+                                   float level,
+                                   float time,
+                                   float curve,
+                                   float mul,
+                                   float add) {
   
   math_modules_movement_envelope_segment_edit(envelope_segment->dsp_param.parameters,
-                                           gate,
-                                           attack_rate * (float)jackcli_samplerate,
-                                           decay_rate * (float)jackcli_samplerate,
-                                           release_rate * (float)jackcli_samplerate,
-                                           sustain_level,
-                                           target_ratio_a,
-                                           target_ratio_dr,
-                                           mul,
-                                           add);
+                                              gate,
+                                              level
+                                              time * (float)jackcli_samplerate,
+                                              curve,
+                                              mul,
+                                              add);
   
   printf("dsp_edit_movement_envelope_segment::returning\n");
 } /* dsp_edit_movement_envelope_segment */

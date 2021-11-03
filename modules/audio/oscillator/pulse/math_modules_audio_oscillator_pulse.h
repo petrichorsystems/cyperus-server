@@ -10,6 +10,7 @@
 #include "../../../../jackcli.h"
 #include "../../../../dsp_math.h"
 #include "../../../../dsp_types.h"
+#include "../../../math_utils.h"
 
 extern void
 math_modules_audio_oscillator_pulse_init(dsp_module_parameters_t *parameters);

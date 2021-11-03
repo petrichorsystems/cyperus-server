@@ -16,10 +16,12 @@
  * Validation result: Not run
  */
 
-#ifndef math_utils_h_
-#define math_utils_h_
+#ifndef MODULES_MATH_UTILS_H_
+#define MODULES_MATH_UTILS_H_
 #include <stdint.h>
 #include <stddef.h>
+
+#define modules_math_sc_max(a, b) (((a) > (b)) ? (a) : (b));
 
 extern float rtGetNaN(void);
 extern float rtGetNaNF(void);

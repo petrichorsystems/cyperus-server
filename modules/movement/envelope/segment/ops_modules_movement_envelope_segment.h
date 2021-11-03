@@ -34,29 +34,23 @@ Copyright 2021 murray foster */
 
 int
 dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
-                                  int gate,
-                                  float attack_rate,
-                                  float decay_rate,
-                                  float release_rate,
-                                  float sustain_level,
-                                  float target_ratio_a,
-                                  float target_ratio_dr,
-                                  float mul,
-                                  float add);
+                                     int gate,
+                                     float level,
+                                     float time,
+                                     float curve,
+                                     float mul,
+                                     float add);
 void
 dsp_movement_envelope_segment(struct dsp_operation *envelope_segment,
-                           int jack_samplerate,
-                           int pos);
+                              int jack_samplerate,
+                              int pos);
 
 void
 dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
-                                     int gate,
-                                     float attack_rate,
-                                     float decay_rate,
-                                     float release_rate,
-                                     float sustain_level,
-                                     float target_ratio_a,
-                                     float target_ratio_dr,
-                                     float mul,
-                                     float add);
+                                   int gate,
+                                   float level,
+                                   float time,
+                                   float curve,,
+                                   float mul,
+                                   float add);
 #endif

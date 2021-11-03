@@ -1,4 +1,4 @@
-    envelope_adsr_params
+    envelope_segment_params
       # USER
         int8_type[0] = gate;
         float32_type[0] = attack_rate; 
