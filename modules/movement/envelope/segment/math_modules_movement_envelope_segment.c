@@ -347,7 +347,7 @@ void _next_k(EnvGen* unit, int inNumSamples) {
     _perform(unit, out, level, 1);
 
     // Print("x %d %d %d %g\n", unit->m_stage, counter, unit->m_shape, *out);
-    unit->m_level = level;
+      cvvcc vv                                                                   unit->m_level = level;
     unit->m_counter = counter - 1;
 }
 

@@ -25,12 +25,16 @@ Copyright 2021 murray foster */
 
 int
 dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
-                                     int gate,
-                                     float level,
-                                     float time,
-                                     float curve,
-                                     float mul,
-                                     float add) {
+                                     float *levels,
+                                     float *times,
+                                     float *curve,
+                                     int release_node,
+                                     int loop_node,
+                                     int offset,
+                                     float gate,
+                                     float level_scale,
+                                     float level_bias,
+                                     float time_scale) {
   dsp_parameter params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
@@ -38,26 +42,30 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   params.name = "envelope_segment";  
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
-    printf("malloc() int8\n");
-  params.parameters->int8_type = malloc(sizeof(int) * 5);
-  printf("malloc() float32\n");
-  params.parameters->float32_type = malloc(sizeof(float) * 8);
-  
-  /* user-facing parameters
-  params.parameters->float32_types[0] = gate
-  params.parameters->float32_types[1] = level_scale;
-  params.parameters->float32_types[2] = time_scale;
-  params.parameters->float32_types[3] = done_action;
-  params.parameters->float32_types[4] = init_level;
-  params.parameters->float32_types[5] = num_stages;
 
-  params.parameters->int8_types[0] = release_node;
-  params.parameters->int8_types[1] = loop_node;
-  params.parameters->int8_types[2] = node_offset;
-
-  params.parameters->float32_type[6] = mul;
-  params.parameters->float32_type[7] = add; */
+  /* envelope parameters */
+  params.parameters->float32_arr_type = malloc(sizeof(*float) * 3);
+  params.parameters->float32_arr_type[0] = sizeof(levels);
+  memcpy(params.parameters->float32_arr_type[0], levels);
+  params.parameters->float32_arr_type[1] = sizeof(times);
+  memcpy(params.parameters->float32_arr_type[1], times);
+  params.parameters->float32_arr_type[2] = sizeof(curve);
+  memcpy(params.parameters->float32_arr_type[2], curve);
   
+  params.parameters->int8_type = malloc(sizeof(int) * 3);
+  params.parameters->float32_type = malloc(sizeof(float) * 4);
+  
+  params.parameters->int8_type[0] = release_node;
+  params.parameters->int8_type[1] = loop_node;
+  params.parameters->int8_type[2] = offset;
+
+  /* envelope generator parameters */
+  
+  params.parameters->float32_type[0] = gate;
+  params.parameters->float32_type[1] = level_scale;
+  params.parameters->float32_type[2] = level_bias;
+  params.parameters->float32_type[3] = time_scale;
+
   /* internal parameters
   params.parameters->double_type[0] = a1;
   params.parameters->double_type[1] = a2;

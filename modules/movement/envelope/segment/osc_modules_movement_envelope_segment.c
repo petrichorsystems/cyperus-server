@@ -24,6 +24,56 @@ Copyright 2015 murray foster */
 
 #include "osc_modules_movement_envelope_segment.h"
 
+void _parse_envelope_segments(lo_arg **argv,
+                              float *levels,
+                              float *times,
+                              float *curve,
+                              int *release_node,
+                              int *loop_node,
+                              int *offset,
+                              float *gate,
+                              float *level_scale,
+                              float *level_bias,
+                              float *time_scale
+                              ) {
+  int num_levels = argv[1]->i;
+  levels = malloc(sizeof(float) * num_levels);
+  for(int idx=2; idx < num_levels + 2; idx++)
+    levels[idx - 2] = argv[idx]->f;
+
+  int num_times = argv[idx]->i;  
+  times = malloc(sizeof(float)*num_times);
+  for(idx=idx+1; idx < num_levels + 2 + num_times + 1; idx++)
+    times[idx - 2 - num_times - 1] = argv[idx]->f;
+  
+  int num_curve = argv[idx]->i;  
+  curve = malloc(sizeof(float)*num_curve);
+  for(idx=idx+1; idx < num_levels + 2 + num_times + 1 + num_curve + 1; idx++)
+    curve[idx - 2 - num_times - 1 - num_levels - 1] = argv[idx]->f;
+
+  idx += 1;
+  release_node = argv[idx]->i;
+
+  idx += 1;
+  loop_node = argv[idx]->i;
+
+  idx += 1;
+  offset = argv[idx]->i;
+
+  idx += 1;
+  gate = argv[idx]->f;
+
+  idx += 1;
+  level_scale = argv[idx]->f;
+
+  idx += 1;
+  level_bias = argv[idx]->f;
+
+  idx += 1;
+  time_scale = argv[idx]->f;
+
+} /* _parse_envelope_segments */
+
 int osc_add_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
@@ -32,35 +82,37 @@ int osc_add_module_movement_envelope_segment_handler(const char *path, const cha
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
-  int gate;
-  float attack_rate, decay_rate, release_rate, sustain_level, target_ratio_a, target_ratio_dr,
-    mul, add;
-  
+  float *levels, *times, *curve;
+  int release_node, loop_node, offset;
+  float gate, level_scale, level_bias, time_scale;
+
   printf("path: <%s>\n", path);
   bus_path = (char *)argv[0];
-
-  gate = argv[1]->i;
-  attack_rate = argv[2]->f;
-  decay_rate = argv[3]->f;
-  release_rate = argv[4]->f;
-  sustain_level = argv[5]->f;
-  target_ratio_a = argv[6]->f;
-  target_ratio_dr = argv[7]->f;
-  mul = argv[8]->f;
-  add = argv[9]->f;
   
-  target_bus = dsp_parse_bus_path(bus_path);
+  _parse_envelope_segments(argv,
+                           levels,
+                           times,
+                           curve,
+                           &release_node,
+                           &loop_node,
+                           &offset,
+                           &gate,
+                           &level_scale,
+                           &level_bias,
+                           &time_scale);
   
+  target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_movement_envelope_segment(target_bus,
-                                    gate,
-                                    attack_rate,
-                                    decay_rate,
-                                    release_rate,
-                                    sustain_level,
-                                    target_ratio_a,
-                                    target_ratio_dr,
-                                    mul,
-                                    add);          
+                                       levels,
+                                       times,
+                                       curve,
+                                       release_node,
+                                       loop_node,
+                                       offset,
+                                       gate,
+                                       level_scale,
+                                       level_bias,
+                                       time_scale);
 
   printf("now doing module stuff\n");
   
@@ -105,24 +157,24 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
 
-  int gate;
-  float attack_rate, decay_rate, release_rate, sustain_level, target_ratio_a, target_ratio_dr,
-    mul, add;
+  float *levels, *times, *curve;
+  int release_node, loop_node, offset;
+  float gate, level_scale, level_bias, time_scale;
 
-  
   printf("path: <%s>\n", path);
   
   module_path = (char *)argv[0];
-
-  gate = argv[1]->i;
-  attack_rate = argv[2]->f;
-  decay_rate = argv[3]->f;
-  release_rate = argv[4]->f;
-  sustain_level = argv[5]->f;
-  target_ratio_a = argv[6]->f;
-  target_ratio_dr = argv[7]->f;
-  mul = argv[8]->f;
-  add = argv[9]->f;
+  _parse_envelope_segments(argv,
+                           levels,
+                           times,
+                           curve,
+                           &release_node,
+                           &loop_node,
+                           &offset,
+                           &gate,
+                           &level_scale,
+                           &level_bias,
+                           &time_scale);
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
@@ -132,16 +184,17 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   dsp_edit_movement_envelope_segment(target_module,
-                                  gate,
-                                  attack_rate,
-                                  decay_rate,
-                                  release_rate,
-                                  sustain_level,
-                                  target_ratio_a,
-                                  target_ratio_dr,
-                                  mul,
-                                  add);                                          
-
+                                     levels,
+                                     times,
+                                     curve,
+                                     release_node,
+                                     loop_node,
+                                     offset,
+                                     gate,
+                                     level_scale,
+                                     level_bias,
+                                     time_scale);
+  
   printf("about to send osc msg\n");
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
