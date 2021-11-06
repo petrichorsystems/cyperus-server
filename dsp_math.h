@@ -39,6 +39,7 @@ typedef struct dsp_module_parameters {
   double *double_type;
   uint8_t *uint8_type;
   char **char_type;
+  void *bytes_type;
 } dsp_module_parameters_t;
 
 struct cyperus_parameters {

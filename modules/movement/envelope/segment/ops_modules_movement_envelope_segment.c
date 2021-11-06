@@ -27,6 +27,7 @@ int
 dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
                                      float *levels,
                                      float *times,
+                                     float *shape,
                                      float *curve,
                                      int release_node,
                                      int loop_node,
@@ -34,7 +35,9 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
                                      float gate,
                                      float level_scale,
                                      float level_bias,
-                                     float time_scale) {
+                                     float time_scale,
+                                     float init_level,
+                                     int num_stages) {
   dsp_parameter params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
@@ -42,61 +45,45 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   params.name = "envelope_segment";  
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
+  params.parameters->bytes_type = (void *)malloc(sizeof(env_gen_params_t));
+  env_gen_params_t *envelope_gen = (env_gen_params_t*)params.parameters->bytes_type;
+  env_params_t *envelope = (env_params_t*)malloc(sizeof(env_params_t));
+  envelope_gen->envelope = envelope;
 
   /* envelope parameters */
-  params.parameters->float32_arr_type = malloc(sizeof(*float) * 3);
-  params.parameters->float32_arr_type[0] = sizeof(levels);
-  memcpy(params.parameters->float32_arr_type[0], levels);
-  params.parameters->float32_arr_type[1] = sizeof(times);
-  memcpy(params.parameters->float32_arr_type[1], times);
-  params.parameters->float32_arr_type[2] = sizeof(curve);
-  memcpy(params.parameters->float32_arr_type[2], curve);
-  
-  params.parameters->int8_type = malloc(sizeof(int) * 3);
-  params.parameters->float32_type = malloc(sizeof(float) * 4);
-  
-  params.parameters->int8_type[0] = release_node;
-  params.parameters->int8_type[1] = loop_node;
-  params.parameters->int8_type[2] = offset;
+  envelope->levels = malloc(sizeof(levels));
+  memcpy(envelope->levels, levels, sizeof(levels));
+  envelope->times = malloc(sizeof(times));
+  memcpy(envelope->times, times, sizeof(times));
 
-  /* envelope generator parameters */
+  if(shape) {
+    envelope->shape = malloc(sizeof(shape));
+    memcpy(envelope->shape, shape, sizeof(shape));
+  }
+  if(curve) {
+    envelope->curve = malloc(sizeof(curve));
+    memcpy(envelope->curve, curve, sizeof(curve));
+  }
   
-  params.parameters->float32_type[0] = gate;
-  params.parameters->float32_type[1] = level_scale;
-  params.parameters->float32_type[2] = level_bias;
-  params.parameters->float32_type[3] = time_scale;
+  envelope->release_node = release_node;  
+  envelope->loop_node = loop_node;
+  envelope->offset = offset;
 
-  /* internal parameters
-  params.parameters->double_type[0] = a1;
-  params.parameters->double_type[1] = a2;
-  params.parameters->double_type[2] = b1;
-  params.parameters->double_type[3] = y1;
-  params.parameters->double_type[4] = y2;
-  params.parameters->double_type[5] = grow;
-  params.parameters->double_type[6] = end_level;
-
-  params.parameters->int8_type[8] = counter;
-  params.parameters->int8_type[9] = stage;
-  params.parameters->int8_type[10] = shape;
-  params.parameters->int8_type[11] = release_node;
-
-  params.parameters->float32_type[8] = prev_gate;
-    
-   */
-
+  /* envelope generator parameters */  
+  envelope_gen->gate = gate;
+  envelope_gen->level_scale = level_scale;
+  envelope_gen->level_bias = level_bias;
+  envelope_gen->time_scale = time_scale;
+  envelope_gen->release_node = release_node;
+  envelope_gen->init_level = init_level;  
+  envelope_gen->num_stages = num_stages;
   
-  math_modules_movement_envelope_segment_init(params.parameters,
-                                              gate,
-                                              level,
-                                              time * (float)jackcli_samplerate,                                              
-                                              curve,
-                                              mul,
-                                              add);
+  math_modules_movement_envelope_segment_init(params.parameters);
   
-  ins = dsp_port_in_init("param_frequency", 512);
-  ins->next = dsp_port_in_init("param_pulse_width", 512);
-  ins->next->next = dsp_port_in_init("param_mul", 512);
-  ins->next->next->next = dsp_port_in_init("param_add", 512);  
+  ins = dsp_port_in_init("param_gate", 512);
+  ins->next = dsp_port_in_init("param_level_scale", 512);
+  ins->next->next = dsp_port_in_init("param_level_time_scale", 512);
+  ins->next->next->next = dsp_port_in_init("param_init_level", 512);  
   outs = dsp_port_out_init("out", 1);
 
   dsp_add_module(target_bus,
@@ -125,20 +112,19 @@ dsp_movement_envelope_segment(struct dsp_operation *envelope_segment, int jack_s
 
 void
 dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
-                                   int gate,
-                                   float level,
-                                   float time,
-                                   float curve,
-                                   float mul,
-                                   float add) {
+                                   float gate,
+                                   float level_scale,
+                                   float level_bias,
+                                   float time_scale,
+                                   float init_level,
+                                   int num_stages) {
   
   math_modules_movement_envelope_segment_edit(envelope_segment->dsp_param.parameters,
                                               gate,
-                                              level
-                                              time * (float)jackcli_samplerate,
-                                              curve,
-                                              mul,
-                                              add);
-  
+                                              level_scale,
+                                              level_bias,
+                                              time_scale,
+                                              init_level,
+                                              num_stages);  
   printf("dsp_edit_movement_envelope_segment::returning\n");
 } /* dsp_edit_movement_envelope_segment */

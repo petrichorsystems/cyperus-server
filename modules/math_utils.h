@@ -21,7 +21,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define modules_math_sc_max(a, b) (((a) > (b)) ? (a) : (b));
+#define modules_math_sc_max(a, b) (((a) > (b)) ? (a) : (b))
+#define modules_math_sc_min(a, b) (((a) < (b)) ? (a) : (b))
 
 extern float rtGetNaN(void);
 extern float rtGetNaNF(void);

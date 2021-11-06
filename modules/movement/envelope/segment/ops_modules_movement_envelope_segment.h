@@ -29,28 +29,36 @@ Copyright 2021 murray foster */
 #include "../../../../dsp_math.h"
 #include "../../../../osc.h"
 #include "../../../../osc_handlers.h"
-
 #include "../../../../jackcli.h"
+#include "../../../math_utils.h"
 
 int
 dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
-                                     int gate,
-                                     float level,
-                                     float time,
-                                     float curve,
-                                     float mul,
-                                     float add);
+                                     float *levels,
+                                     float *times,
+                                     float *shape,
+                                     float *curve,
+                                     int release_node,
+                                     int loop_node,
+                                     int offset,
+                                     float gate,
+                                     float level_scale,
+                                     float level_bias,
+                                     float time_scale,
+                                     float init_level,
+                                     int num_stages);
+
+
 void
 dsp_movement_envelope_segment(struct dsp_operation *envelope_segment,
                               int jack_samplerate,
                               int pos);
-
 void
 dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
-                                   int gate,
-                                   float level,
-                                   float time,
-                                   float curve,,
-                                   float mul,
-                                   float add);
+                                   float gate,
+                                   float level_scale,
+                                   float level_bias,
+                                   float time_scale,
+                                   float init_level,
+                                   int num_stages);
 #endif
