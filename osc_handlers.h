@@ -30,9 +30,6 @@ Copyright 2015 murray foster */
 
 char *int_to_str(int x);
 
-int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
-                        int argc, void *data, void *user_data);
-
 void osc_error(int num, const char *msg, const char *path);
 
 int osc_address_handler(const char *path, const char *types, lo_arg ** argv,
@@ -126,6 +123,10 @@ int osc_add_module_osc_transmit_handler(const char *path, const char *types, lo_
 int
 osc_edit_module_osc_transmit_handler(const char *path, const char *types, lo_arg ** argv,
                                     int argc, void *data, void *user_data);
+
+
+int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
+                        int argc, void *data, void *user_data);
 
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */

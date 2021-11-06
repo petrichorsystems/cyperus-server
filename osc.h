@@ -37,7 +37,7 @@ int osc_change_address(char *new_host_out, char *new_port_out);
 #include "modules/movement/envelope/adsr/osc_modules_movement_envelope_adsr.h"
 #include "modules/movement/envelope/segment/osc_modules_movement_envelope_segment.h"
 #include "modules/movement/osc/osc_metronome/osc_modules_movement_osc_osc_metronome.h"
-
+#include "modules/movement/envelope/segment/osc_modules_movement_envelope_segment.h"
 
 
 #endif
