@@ -4,5 +4,4 @@ core = cyperus.c dsp.c dsp_types.c dsp_ops.c dsp_math.c rtqueue.c jackcli.c osc.
 module_utils = modules/math_utils.c
 
 all:
-	bash compose_source_osc.sh
 	gcc -o build/cyperus $(core) $(module_utils) $(dsp_module_sources) -lm -lpthread -ljack -llo -luuid
