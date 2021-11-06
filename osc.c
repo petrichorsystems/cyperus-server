@@ -47,75 +47,7 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   strcpy(send_port_out, osc_port_out);
 
   lo_server_thread lo_thread = lo_server_thread_new(osc_port_in, osc_error);
-  // lo_server_thread_add_method(lo_thread, NULL, NULL, generic_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/address", "ss", osc_address_handler, NULL);
-  
-  lo_server_thread_add_method(lo_thread, "/cyperus/list/main", NULL, osc_list_main_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/bus", "ssss", osc_add_bus_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/list/bus", "si", osc_list_bus_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/list/bus_port", "s", osc_list_bus_port_handler, NULL);
- 
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/connection", "ss", osc_add_connection_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/remove/connection", "ss", osc_remove_connection_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/block_processor", "s", osc_add_module_block_processor_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/delay", "sfff", osc_add_module_delay_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/delay", "sfff", osc_edit_module_delay_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/sawtooth", "sff", osc_add_module_sawtooth_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/sawtooth", "sff", osc_edit_module_sawtooth_handler, NULL);
-  
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/sine", "sfff", osc_add_module_sine_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/sine", "sfff", osc_edit_module_sine_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/triangle", "sff", osc_add_module_triangle_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/triangle", "sff", osc_edit_module_triangle_handler, NULL);
-  
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/envelope_follower", "sfff", osc_add_module_envelope_follower_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/envelope_follower", "sfff", osc_edit_module_envelope_follower_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/highpass", "sff", osc_add_module_highpass_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/highpass", "sff", osc_edit_module_highpass_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/bandpass", "sfff", osc_add_module_bandpass_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/bandpass", "sfff", osc_edit_module_bandpass_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/pitch_shift", "sfff", osc_add_module_pitch_shift_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/pitch_shift", "sfff", osc_edit_module_pitch_shift_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/karlsen_lowpass", "sfff", osc_add_module_karlsen_lowpass_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/karlsen_lowpass", "sfff", osc_edit_module_karlsen_lowpass_handler, NULL);
-
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/osc_transmit", "ssssi", osc_add_module_osc_transmit_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/osc_transmit", "ssssi", osc_edit_module_osc_transmit_handler, NULL);
-
-  
-  lo_server_thread_add_method(lo_thread, "/cyperus/list/module_port", "s", osc_list_module_port_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/list/module", "s", osc_list_modules_handler, NULL);
-  
-  /* below are deprecated or to-be reimplemented */
-  
-  lo_server_thread_add_method(lo_thread, "/cyperus/remove", "i", osc_remove_module_handler, NULL);  
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/pinknoise", NULL, osc_add_pinknoise_handler, NULL);
-
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/audio/analysis/transient_detector", "sfffi", osc_add_module_analysis_transient_detector_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/audio/analysis/transient_detector", "sfffi", osc_edit_module_analysis_transient_detector_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/audio/filter/moogff", "sfffff", osc_add_module_filter_moogff_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/audio/filter/moogff", "sfffff", osc_edit_module_filter_moogff_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/audio/filter/varslope_lowpass", "sfff", osc_add_module_filter_varslope_lowpass_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/audio/filter/varslope_lowpass", "sfff", osc_edit_module_filter_varslope_lowpass_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/audio/oscillator/pulse", "sffff", osc_add_module_oscillator_pulse_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/audio/oscillator/pulse", "sffff", osc_edit_module_oscillator_pulse_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/movement/envelope/adsr", "siffffffff", osc_add_module_movement_envelope_adsr_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/movement/envelope/adsr", "siffffffff", osc_edit_module_movement_envelope_adsr_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/movement/envelope/segment", "NULL", osc_add_module_movement_envelope_segment_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/movement/envelope/segment", "NULL", osc_edit_module_movement_envelope_segment_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/movement/osc/osc_metronome", "sf", osc_add_module_osc_osc_metronome_handler, NULL);
-  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/movement/osc/osc_metronome", "sf", osc_edit_module_osc_osc_metronome_handler, NULL);
+  lo_server_thread_add_method(lo_thread, NULL, NULL, cyperus_osc_handler, NULL);
 
   lo_server_thread_start(lo_thread);
 }

@@ -30,8 +30,8 @@ Copyright 2015 murray foster */
 
 char *int_to_str(int x);
 
-int generic_handler(const char *path, const char *types, lo_arg ** argv,
-                    int argc, void *data, void *user_data);
+int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
+                        int argc, void *data, void *user_data);
 
 void osc_error(int num, const char *msg, const char *path);
 
