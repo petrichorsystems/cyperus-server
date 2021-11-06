@@ -345,6 +345,8 @@ float _next_aa(int samplerate, dsp_module_parameters_t *parameters) {
 
 extern
 void math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parameters) {
+  printf("math_modules_movement_envelope_segment::math_modules_movement_envelope_segment_init()\n");
+
   
   // gate = 1.0, levelScale = 1.0, levelBias = 0.0, timeScale
   // level0, numstages, release_node, loop_node,
@@ -363,10 +365,11 @@ void math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parame
   envelope_gen->prev_gate = 0.0f;
   envelope_gen->released = 0;
   
-  const int initial_shape = (int)*envelope_gen->envelope->shape;
+  const int initial_shape = (int)envelope_gen->envelope->shape;
+  
   if (initial_shape == shape_Hold)
     envelope_gen->level = envelope_gen->envelope->levels[0]; // we start at the end level;
-
+  
   /* calculate first sample */
   _next_k(jackcli_samplerate, parameters);
 
