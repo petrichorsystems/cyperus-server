@@ -21,7 +21,7 @@ Copyright 2015 murray foster */
 char *send_host_out;
 char *send_port_out;
 lo_server_thread lo_thread;
-
+        
 int osc_change_address(char *new_host_out, char *new_port_out) {
   free(send_host_out);
   free(send_port_out);
@@ -47,9 +47,7 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   strcpy(send_port_out, osc_port_out);
 
   lo_server_thread lo_thread = lo_server_thread_new(osc_port_in, osc_error);
-
-  /* below is for debug, add method that will match any path and args */
-  /* lo_server_thread_add_method(st, NULL, NULL, generic_handler, NULL); */
+  // lo_server_thread_add_method(lo_thread, NULL, NULL, generic_handler, NULL);
 
   lo_server_thread_add_method(lo_thread, "/cyperus/address", "ss", osc_address_handler, NULL);
   
@@ -104,3 +102,20 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, "/cyperus/remove", "i", osc_remove_module_handler, NULL);  
   lo_server_thread_add_method(lo_thread, "/cyperus/add/pinknoise", NULL, osc_add_pinknoise_handler, NULL);
 
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/audio/analysis/transient_detector", "sfffi", osc_add_module_analysis_transient_detector_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/audio/analysis/transient_detector", "sfffi", osc_edit_module_analysis_transient_detector_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/audio/filter/moogff", "sfffff", osc_add_module_filter_moogff_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/audio/filter/moogff", "sfffff", osc_edit_module_filter_moogff_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/audio/filter/varslope_lowpass", "sfff", osc_add_module_filter_varslope_lowpass_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/audio/filter/varslope_lowpass", "sfff", osc_edit_module_filter_varslope_lowpass_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/audio/oscillator/pulse", "sffff", osc_add_module_oscillator_pulse_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/audio/oscillator/pulse", "sffff", osc_edit_module_oscillator_pulse_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/movement/envelope/adsr", "siffffffff", osc_add_module_movement_envelope_adsr_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/movement/envelope/adsr", "siffffffff", osc_edit_module_movement_envelope_adsr_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/movement/envelope/segment", "NULL", osc_add_module_movement_envelope_segment_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/movement/envelope/segment", "NULL", osc_edit_module_movement_envelope_segment_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/add/module/movement/osc/osc_metronome", "sf", osc_add_module_osc_osc_metronome_handler, NULL);
+  lo_server_thread_add_method(lo_thread, "/cyperus/edit/module/movement/osc/osc_metronome", "sf", osc_edit_module_osc_osc_metronome_handler, NULL);
+
+  lo_server_thread_start(lo_thread);
+}

@@ -33,12 +33,12 @@ Copyright 2021 murray foster */
 #include "ops_modules_movement_envelope_segment.h"
 
 enum {
-    segment_stdshape_Linen,
+    segment_stdshape_Linen=0,
     segment_stdshape_Triangle,
     segment_stdshape_Sine,
     segment_stdshape_Perc,
     segment_stdshape_Pairs,
-    segment_stdshape_Xyc=0
+    segment_stdshape_Xyc
 };
 
 int osc_add_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
