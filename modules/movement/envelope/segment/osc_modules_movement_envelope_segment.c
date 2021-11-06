@@ -58,7 +58,6 @@ void _parse_envelope_segments(lo_arg **argv,
   curve = malloc(sizeof(float)*num_curve);
   for(idx=idx+1; idx < num_levels + 2 + num_times + 1 + num_shape + 1 + num_curve + 1; idx++)
     curve[idx - 2 - num_times - 1 - num_levels - 1 - num_curve - 1] = argv[idx]->f;
-
   
   idx += 1;
   memcpy(release_node, &argv[idx]->i, sizeof(int));
@@ -86,9 +85,55 @@ void _parse_envelope_segments(lo_arg **argv,
 
   idx += 1;
   memcpy(num_stages, &argv[idx]->i, sizeof(int));
-
-  
 } /* _parse_envelope_segments */
+
+void _parse_envelope_stdshapes(lo_arg **argv,
+                              float *levels,
+                              float *times,
+                              float *shape,
+                              float *curve,
+                              int *release_node,
+                              int *loop_node,
+                              int *offset,
+                              float *gate,
+                              float *level_scale,
+                              float *level_bias,
+                              float *time_scale,
+                              float *init_level,
+                              int *num_stages) {
+  int stdshape = argv[1]->i;
+  int idx = 0;
+  int num_levels = 0;
+  int num_times = 0;
+  int num_shape = 0;
+  int num_curve = 0;
+
+  switch(stdshape) {
+  case segment_stdshape_Perc:
+    printf("segment_stdshape_Perc\n");
+    float attack_time = argv[2]->f;
+    float release_time = argv[3]->f;
+    float level = argv[4]->f;
+    float perc_curve = argv[5]->f;
+    levels = malloc(sizeof(float) * 3);
+    levels[0] = 0.0f; levels[3]=level; levels[2] = 0.0f;
+    times = malloc(sizeof(float) * 2);
+    times[0] = attack_time; times[1] = release_time;
+    *curve = perc_curve;
+    *release_node = 0;
+    *loop_node = 0;
+    *gate = 0.0f;
+    *level_scale = 1.0f;
+    *level_bias = 0.0f;
+    *time_scale = 1.0f;
+    *init_level = 0.0f;
+    *num_stages = 2;
+    break;
+  default:
+    break;
+  }
+} /* _parse_envelope_stdshapes */
+
 
 int osc_add_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
@@ -169,7 +214,6 @@ int osc_add_module_movement_envelope_segment_handler(const char *path, const cha
   return 0;
 } /* osc_add_module_movement_envelope_segment_handler */
 
-
 int
 osc_edit_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
                                                int argc, void *data, void *user_data)
@@ -240,3 +284,81 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
   return 0;
 } /* osc_edit_module_movement_envelope_segment_handler */
 
+int osc_add_module_movement_envelope_stdshape_handler(const char *path, const char *types, lo_arg ** argv,
+                                                      int argc, void *data, void *user_data)
+{
+  printf("osc_add_module_envelope_stdshape_handler()..\n");
+  char *bus_path, *module_id = NULL;
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
+
+  float *levels, *times, *shape, *curve;
+  int release_node, loop_node, offset, num_stages;
+  float gate, level_scale, level_bias, time_scale, init_level;
+
+  printf("path: <%s>\n", path);
+  bus_path = (char *)argv[0];
+  
+  _parse_envelope_stdshapes(argv,
+                            levels,
+                            times,
+                            shape,
+                            curve,
+                            &release_node,
+                            &loop_node,
+                            &offset,
+                            &gate,
+                            &level_scale,
+                            &level_bias,
+                            &time_scale,
+                            &init_level,
+                            &num_stages);
+  
+  target_bus = dsp_parse_bus_path(bus_path);  
+  dsp_create_movement_envelope_segment(target_bus,
+                                       levels,
+                                       times,
+                                       shape,
+                                       curve,
+                                       release_node,
+                                       loop_node,
+                                       offset,
+                                       gate,
+                                       level_scale,
+                                       level_bias,
+                                       time_scale,
+                                       init_level,
+                                       num_stages);
+  
+  printf("now doing module stuff\n");
+  
+  temp_module = target_bus->dsp_module_head;
+  while(temp_module != NULL) {
+    target_module = temp_module;
+    temp_module = temp_module->next;
+  }
+  module_id = malloc(sizeof(char) * 37);
+  strcpy(module_id, target_module->id);
+  
+  /* printf("about to send msg\n"); */
+  
+  /* lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); */
+  /* lo_send(lo_addr_send, */
+  /*         "/cyperus/add/module/movement/envelope/stdshape", */
+  /*         "siffffffff", */
+  /*         module_id, */
+  /*         gate, */
+  /*         attack_rate, */
+  /*         decay_rate, */
+  /*         release_rate, */
+  /*         sustain_level, */
+  /*         target_ratio_a, */
+  /*         target_ratio_dr, */
+  /*         mul, */
+  /*         add); */
+  /* free(lo_addr_send); */
+
+  printf("free'd\n");
+  
+  return 0;
+} /* osc_add_module_movement_envelope_stdshape_handler */

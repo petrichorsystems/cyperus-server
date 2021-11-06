@@ -19,19 +19,6 @@ Copyright 2021 murray foster */
 
 #include "math_modules_movement_envelope_segment.h"
 
-enum {
-    shape_Step,
-    shape_Linear,
-    shape_Exponential,
-    shape_Sine,
-    shape_Welch,
-    shape_Curve,
-    shape_Squared,
-    shape_Cubed,
-    shape_Hold,
-    shape_Sustain = 9999
-};
-
 // called by nextSegment and check_gate:
 // - counter: num samples to next segment
 // - level: current envelope value

@@ -15,6 +15,19 @@
 
 #define ENVGEN_NOT_STARTED 1000000000
 
+enum {
+    shape_Step,
+    shape_Linear,
+    shape_Exponential,
+    shape_Sine,
+    shape_Welch,
+    shape_Curve,
+    shape_Squared,
+    shape_Cubed,
+    shape_Hold,
+    shape_Sustain = 9999
+};
+
 typedef struct env_parameters {
   float *levels;
   float *times;
