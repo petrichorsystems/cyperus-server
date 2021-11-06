@@ -45,31 +45,50 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   params.name = "envelope_segment";  
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
-  params.parameters->bytes_type = (void *)malloc(sizeof(env_gen_params_t));
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)params.parameters->bytes_type;
-  env_params_t *envelope = (env_params_t*)malloc(sizeof(env_params_t));
-  envelope_gen->envelope = envelope;
 
-  printf("dsp_create_movement_envelope_segment::assigned envelope\n");
+  printf("hi0\n");
+
+  printf("hi1\n");
+  
+  env_gen_params_t *envelope_gen = (env_gen_params_t*)malloc(sizeof(env_gen_params_t));
+  
+  
+  printf("hi2\n");
+  
+  envelope_gen->envelope = malloc(sizeof(env_params_t));
+
+  printf("hello 0\n");
   
   /* envelope parameters */
-  envelope->levels = malloc(sizeof(levels));
-  memcpy(envelope->levels, levels, sizeof(levels));
-  envelope->times = malloc(sizeof(times));
-  memcpy(envelope->times, times, sizeof(times));
+  envelope_gen->envelope->levels = malloc(sizeof(levels)); //malloc(sizeof(levels));
 
-  if(shape) {
-    envelope->shape = malloc(sizeof(shape));
-    memcpy(envelope->shape, shape, sizeof(shape));
-  }
-  if(curve) {
-    envelope->curve = malloc(sizeof(curve));
-    memcpy(envelope->curve, curve, sizeof(curve));
-  }
+  printf("hello 1\n");
+  envelope_gen->envelope->levels=malloc(sizeof(levels));
+  memcpy(envelope_gen->envelope->levels, &levels, sizeof(levels));
+  envelope_gen->envelope->times = malloc(sizeof(times));
+  memcpy(envelope_gen->envelope->times, &times, sizeof(times));
+
+  printf("about to hit conditionals\n");
   
-  envelope->release_node = release_node;  
-  envelope->loop_node = loop_node;
-  envelope->offset = offset;
+  if(shape) {
+    envelope_gen->envelope->shape = malloc(sizeof(shape));
+    memcpy(envelope_gen->envelope->shape, &shape, sizeof(shape));
+  } else
+    envelope_gen->envelope->shape = NULL;
+  
+  if(curve) {
+    envelope_gen->envelope->curve = malloc(sizeof(curve));
+    memcpy(envelope_gen->envelope->curve, &curve, sizeof(curve));
+  } else
+    envelope_gen->envelope->curve = NULL;
+
+  printf("hello2\n");
+  
+  envelope_gen->envelope->release_node = release_node;  
+  envelope_gen->envelope->loop_node = loop_node;
+  envelope_gen->envelope->offset = offset;
+
+  printf("hello3\n");
 
   /* envelope generator parameters */  
   envelope_gen->gate = gate;
@@ -79,7 +98,11 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   envelope_gen->release_node = release_node;
   envelope_gen->init_level = init_level;  
   envelope_gen->num_stages = num_stages;
+
+  printf("dsp_create_movement_envelope_segment::assigned envelope\n");
   
+  params.parameters->bytes_type = (void *)malloc(sizeof(env_gen_params_t));
+  /* copy envelope_gen */
   math_modules_movement_envelope_segment_init(params.parameters);
   
   ins = dsp_port_in_init("param_gate", 512);
