@@ -50,6 +50,8 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   env_params_t *envelope = (env_params_t*)malloc(sizeof(env_params_t));
   envelope_gen->envelope = envelope;
 
+  printf("dsp_create_movement_envelope_segment::assigned envelope\n");
+  
   /* envelope parameters */
   envelope->levels = malloc(sizeof(levels));
   memcpy(envelope->levels, levels, sizeof(levels));

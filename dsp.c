@@ -210,9 +210,9 @@ dsp_parse_bus_path(char *target_path) {
       output_token[p - sp] = 0;   /* force null-termination */
       if( output_token != NULL ) {
 	if( strcmp(output_token, "") != 0 ) {
-	  path_index[bus_count] = output_token;
-           bus_count += 1;
-           free(output_token);
+	  strncpy(path_index[bus_count], output_token, 36);
+          bus_count += 1;
+          free(output_token);
          }
        }
        while (*p && *p == '/') p++;   /* find next non-space */
@@ -224,9 +224,13 @@ dsp_parse_bus_path(char *target_path) {
      {
        char *sp = p;                  /* set a start pointer */
        while (*p && *p != '/') p++;   /* advance to space    */
+       
        output_token = malloc (p - sp + 1); /* allocate */
+
        strncpy (output_token, sp, p - sp);         /* copy   */
+       
        output_token[p - sp] = 0;   /* force null-termination */
+       
        if( output_token != NULL ) {
          if( strcmp(output_token, "") != 0 ) {
            while( temp_bus != NULL ) {
@@ -264,7 +268,7 @@ dsp_parse_bus_path(char *target_path) {
 	}
       }
       while (*p && *p == '/') p++;   /* find next non-space */
-    }
+     }
   return NULL;
 } /* dsp_parse_bus_path */
 

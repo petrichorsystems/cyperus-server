@@ -119,7 +119,7 @@ void _parse_envelope_stdshapes(lo_arg **argv,
     levels[0] = 0.0f; levels[3]=level; levels[2] = 0.0f;
     times = malloc(sizeof(float) * 2);
     times[0] = attack_time; times[1] = release_time;
-    *curve = perc_curve;
+    curve = &perc_curve;
     *release_node = 0;
     *loop_node = 0;
     *gate = 0.0f;
@@ -180,8 +180,6 @@ int osc_add_module_movement_envelope_segment_handler(const char *path, const cha
                                        time_scale,
                                        init_level,
                                        num_stages);
-
-  printf("now doing module stuff\n");
   
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -313,7 +311,8 @@ int osc_add_module_movement_envelope_stdshape_handler(const char *path, const ch
                             &time_scale,
                             &init_level,
                             &num_stages);
-  
+
+  printf("bus_path: %s\n", bus_path); 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_movement_envelope_segment(target_bus,
                                        levels,
