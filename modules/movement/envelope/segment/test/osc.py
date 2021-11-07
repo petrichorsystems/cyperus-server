@@ -44,12 +44,12 @@ class OscServer(ServerThread):
         print('args', args)
         responses.put(args)
         
-    @make_method('/cyperus/add/module/movement/envelope/stdshape', 'siffffffff')
+    @make_method('/cyperus/add/module/movement/envelope/stdshape', 'siffff')
     def osc_add_module_sine(self, path, args):
         print("received '/cyperus/add/module/movement/envelope/stdshape'")
         responses.put(args)
 
-    @make_method('/cyperus/edit/module/movement/envelope/stdshape', 'siffffffff')
+    @make_method('/cyperus/edit/module/movement/envelope/stdshape', 'siffff')
     def osc_edit_module_sine(self, path, args):
         print("received '/cyperus/edit/module/movement/envelope/stdshape'")
         responses.put(args)
@@ -146,24 +146,6 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
         else:
             sine_module_ports['in'].append(elem)
     print('sine_module_ports', sine_module_ports)
-
-
-    liblo.send(dest,
-               "/cyperus/add/connection",
-               mains['in'][0],
-               "/{}:{}".format(bus_main0_uuid,
-                               bus_ports['in'][0].split('|')[0]))
-    response = responses.get()
-
-
-    liblo.send(dest,
-               "/cyperus/add/connection",
-               "/{}:{}".format(bus_main0_uuid,
-                               bus_ports['in'][0].split('|')[0]),
-               "/{}?{}<{}".format(bus_main0_uuid,
-                                  sine_module_uuid,
-                                  sine_module_ports['in'][0].split('|')[0]))
-    response = responses.get()
 
     
     liblo.send(dest,

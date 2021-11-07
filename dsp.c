@@ -210,7 +210,7 @@ dsp_parse_bus_path(char *target_path) {
       output_token[p - sp] = 0;   /* force null-termination */
       if( output_token != NULL ) {
 	if( strcmp(output_token, "") != 0 ) {
-	  strncpy(path_index[bus_count], output_token, 36);
+	  path_index[bus_count] = output_token;
           bus_count += 1;
           free(output_token);
          }

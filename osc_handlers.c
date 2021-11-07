@@ -492,8 +492,12 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   strncpy(module_id, module_path + strlen(module_path) - 36, 37);
 
   printf("module_id: %s\n", module_id);
+
+  temp_bus = dsp_parse_bus_path(bus_path);
+
+  printf("about to find module\n");
   
-  temp_bus = dsp_parse_bus_path(bus_path);  
+  
   temp_module = dsp_find_module(temp_bus->dsp_module_head, module_id);
   printf("appending result_str (or somethin)\n");
   
@@ -707,7 +711,8 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
 
   printf("module_id: %s\n", module_id);
   
-  target_bus = dsp_parse_bus_path(bus_path);  
+  target_bus = dsp_parse_bus_path(bus_path);
+  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
 
   printf("about to edit\n");
@@ -1428,8 +1433,8 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/remove/connection") == 0)
     handler_ptr = osc_remove_connection_handler;
 
-  else if(strcmp(path, "/cyperus/list/module_port") == 0)
-    handler_ptr = osc_list_module_port_handler;
+  else if(strcmp(path, "/cyperus/list/modules") == 0)
+    handler_ptr = osc_list_modules_handler;
   else if(strcmp(path, "/cyperus/list/module_port") == 0)
     handler_ptr = osc_list_module_port_handler;
   

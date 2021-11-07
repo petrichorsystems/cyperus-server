@@ -201,8 +201,13 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
   float out;
   env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
 
+  printf("_perform::got envelope_gen\n");
+
+  printf("_perform::envelope_gen->shape: %d\n", envelope_gen->shape);
+  
   double grow, a2, b1, y0, y1, y2;
   float level = envelope_gen->envelope->levels[envelope_gen->stage];
+  
   switch (envelope_gen->shape) {
   case shape_Step:
     break;
@@ -294,9 +299,13 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     } else
       out = level;
     break;
+  default:
+    printf("_perform::WARNING: uknown shape!\n");
   }
   
-  envelope_gen->level = level;
+  // envelope_gen->level = level;
+
+  printf("_perform::returning\n");
   
   return out;
 }
@@ -311,6 +320,7 @@ float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
   int counter = envelope_gen->counter;
   double level = envelope_gen->level;
 
+  printf("about to run _check_gate()\n");
   _check_gate(samplerate, parameters);
   envelope_gen->prev_gate = gate;
 
@@ -324,6 +334,7 @@ float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
       return envelope_gen->level;
   }
 
+  printf("about to run _perform\n");
   out = _perform(samplerate, parameters, &_check_gate_passthru, 0);
 
   // Print("x %d %d %d %g\n", envelope_gen->stage, counter, envelope_gen->shape, *out);
@@ -369,6 +380,8 @@ void math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parame
   
   if (initial_shape == shape_Hold)
     envelope_gen->level = envelope_gen->envelope->levels[0]; // we start at the end level;
+
+  printf("about to run _next_k()\n");
   
   /* calculate first sample */
   _next_k(jackcli_samplerate, parameters);

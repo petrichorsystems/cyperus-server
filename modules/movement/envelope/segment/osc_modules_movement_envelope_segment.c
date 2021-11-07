@@ -339,23 +339,19 @@ int osc_add_module_movement_envelope_stdshape_handler(const char *path, const ch
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
   
-  /* printf("about to send msg\n"); */
+  printf("about to send msg\n");
   
-  /* lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); */
-  /* lo_send(lo_addr_send, */
-  /*         "/cyperus/add/module/movement/envelope/stdshape", */
-  /*         "siffffffff", */
-  /*         module_id, */
-  /*         gate, */
-  /*         attack_rate, */
-  /*         decay_rate, */
-  /*         release_rate, */
-  /*         sustain_level, */
-  /*         target_ratio_a, */
-  /*         target_ratio_dr, */
-  /*         mul, */
-  /*         add); */
-  /* free(lo_addr_send); */
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,
+          "/cyperus/add/module/movement/envelope/stdshape",
+          "siffff",
+          module_id,
+          argv[1]->i,
+          argv[2]->f,
+          argv[3]->f,
+          argv[4]->f,
+          argv[5]->f);
+  free(lo_addr_send);
 
   printf("free'd\n");
   

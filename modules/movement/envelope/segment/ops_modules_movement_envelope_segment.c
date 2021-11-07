@@ -80,14 +80,10 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   envelope_gen->release_node = release_node;
   envelope_gen->init_level = init_level;  
   envelope_gen->num_stages = num_stages;
-
-  printf("fuck\n");
   
   params.parameters->bytes_type = malloc(sizeof(envelope_gen));
   memcpy(params.parameters->bytes_type, &envelope_gen, sizeof(envelope_gen));  
-  math_modules_movement_envelope_segment_init(params.parameters);
-
-  printf("about to do ports\n");
+  // math_modules_movement_envelope_segment_init(params.parameters);
   
   ins = dsp_port_in_init("param_gate", 512);
   ins->next = dsp_port_in_init("param_level_scale", 512);
@@ -95,8 +91,6 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   ins->next->next->next = dsp_port_in_init("param_init_level", 512);  
   outs = dsp_port_out_init("out", 1);
 
-  printf("dsp_create_movement_envelope_segment::assigned envelope\n");
-  
   dsp_add_module(target_bus,
 		 "envelope_segment",
 		 dsp_movement_envelope_segment,
@@ -104,7 +98,8 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
 		 params,
 		 ins,
 		 outs);
-  
+
+  printf("dsp_create_movement_envelope_segment::dsp_add_module()\n");
   return 0;
 } /* dsp_create_movement_envelope_segment */
 
