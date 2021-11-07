@@ -131,14 +131,14 @@ void _parse_envelope_stdshapes(lo_arg **argv,
     *curve = malloc(sizeof(float));
     (*curve)[0] = perc_curve;
     
-    *release_node = 0;
+    *release_node = -1;
     *loop_node = 0;
     *gate = 1.0f;
     *level_scale = 1.0f;
     *level_bias = 0.0f;
     *time_scale = 1.0f;
     *init_level = 0.0f;
-    *num_stages = 2;
+    *num_stages = 3;
     break;
   default:
     break;
