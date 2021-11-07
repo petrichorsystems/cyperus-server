@@ -53,33 +53,28 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
 
   printf("about to assign envelope parameters\n");
   
-  /* envelope parameters */
-
-  printf(" ?? levels[0]: %f\n", levels[0]);
-  printf(" ?? levels[1]: %f\n", levels[1]);
-  printf(" ?? levels[2]: %f\n", levels[2]);
-  
-  params.parameters->float32_arr_type[0] = malloc(sizeof(levels));
-  memcpy(params.parameters->float32_arr_type[0], &levels, sizeof(levels));
-
-  printf("levels[0]: %f\n: ", levels[0]);
+  /* envelope parameters */  
+  params.parameters->float32_arr_type[0] = malloc(sizeof(*levels));
+  memcpy(&params.parameters->float32_arr_type[0], &levels, sizeof(params.parameters->float32_arr_type[0]));
   
   params.parameters->float32_arr_type[1] = malloc(sizeof(times));
-  memcpy(params.parameters->float32_arr_type[1], &times, sizeof(times));
+  memcpy(&params.parameters->float32_arr_type[1], &times, sizeof(params.parameters->float32_arr_type[1]));
 
   printf("about to assign optional envelope parameters\n");
   
   if(shape) {
     params.parameters->float32_arr_type[2] = malloc(sizeof(shape));
-    memcpy(params.parameters->float32_arr_type[2], &shape, sizeof(shape));
+    memcpy(&params.parameters->float32_arr_type[2], &shape, sizeof(params.parameters->float32_arr_type[2]));
   } else
     params.parameters->float32_arr_type[2] = NULL;
   
   if(curve) {
-    params.parameters->float32_arr_type[3] = malloc(sizeof(curve));
-    memcpy(params.parameters->float32_arr_type[3], &curve, sizeof(curve));
+    params.parameters->float32_arr_type[3] = malloc(sizeof(params.parameters->float32_arr_type[3]));
+    memcpy(&params.parameters->float32_arr_type[3], &curve, sizeof(curve));
   } else
     params.parameters->float32_arr_type[3] = NULL;
+
+  printf(" >> num_stages: %d\n", num_stages);
   
   params.parameters->int8_type[0] = release_node;  
   params.parameters->int8_type[1] = loop_node;

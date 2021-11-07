@@ -138,6 +138,7 @@ int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
     parameters->int8_type[4] = parameters->int8_type[2];
     return 0;
   } else if (parameters->float32_type[0] <= -1.f && parameters->float32_type[7] > -1.f) {
+    printf("forced release\n");
     // forced release: jump to last segment overriding its duration
     double dur = -parameters->float32_type[0] - 1.f;
     parameters->int8_type[4] = (int)(dur * samplerate);
@@ -152,6 +153,9 @@ int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
     parameters->int8_type[8] = 1;
     return 0;
   }
+
+  printf("math_modules_movement_enveleope_segment.c::_check_gate(), parameters->int8_type[5]: %d, parameters->int8_type[3] - 1: %d\n", parameters->int8_type[5], parameters->int8_type[3] - 1);
+  
   return 1;
 }
 
@@ -203,9 +207,10 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
   float out;
   
   double grow, a2, b1, y0, y1, y2;
-  
-  float level = parameters->float32_arr_type[0][parameters->int8_type[5]];
 
+  printf("parameters->float32_type[6]: %f\n", parameters->float32_type[6]);
+  float level = parameters->float32_type[6];
+  
   printf("_perform::about to run the switch\n");
   
   switch (parameters->int8_type[6]) {

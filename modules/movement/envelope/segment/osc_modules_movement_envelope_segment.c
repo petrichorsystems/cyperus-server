@@ -116,16 +116,18 @@ void _parse_envelope_stdshapes(lo_arg **argv,
     float level = argv[4]->f;
     float perc_curve = argv[5]->f;
     
-    levels = malloc(sizeof(float) * 3);
-    *levels[0] = 0.0f;
-    *levels[1] = level;
-    *levels[2] = 0.0f;
+    *levels = malloc(sizeof(float) * 3);
+    (*levels)[0] = 0.0f;
+    (*levels)[1] = level;
+    (*levels)[2] = 0.0f;
 
-    times = malloc(sizeof(float) * 2);
-    *times[0] = attack_time;
-    *times[1] = release_time;
+    *times = malloc(sizeof(float) * 2);
+    (*times)[0] = attack_time;
+    (*times)[1] = release_time;
 
-    *curve = perc_curve;
+    *curve = malloc(sizeof(perc_curve));
+    memcpy(*curve, &perc_curve, sizeof(curve));
+    
     *release_node = 0;
     *loop_node = 0;
     *gate = 0.0f;
@@ -318,11 +320,12 @@ int osc_add_module_movement_envelope_stdshape_handler(const char *path, const ch
                             &time_scale,
                             &init_level,
                             &num_stages);
-  
-    /* printf(" -- attack_time: %f\n", times[0]); */
-    /* printf(" -- release_time: %f\n", times[1]); */
-    /* printf(" -- level: %f\n", levels[1]); */
-    /* printf(" -- perc_curve: %f\n", curve[0]); */
+
+  printf("what's up\n");
+     printf(" -- attack_time: %f\n", times[0]); 
+     printf(" -- release_time: %f\n", times[1]); 
+     printf(" -- level: %f\n", levels[1]); 
+     printf(" -- perc_curve: %f\n", curve[0]); 
   
   printf("bus_path: %s\n", bus_path); 
   target_bus = dsp_parse_bus_path(bus_path);
