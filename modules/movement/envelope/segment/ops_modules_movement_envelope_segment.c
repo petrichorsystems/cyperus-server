@@ -47,9 +47,9 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
   
   params.parameters->float32_arr_type = malloc(sizeof(float*) * 4);
-  params.parameters->float32_type = malloc(sizeof(float) * 6);
+  params.parameters->float32_type = malloc(sizeof(float) * 8);
   params.parameters->double_type = malloc(sizeof(double) * 7);
-  params.parameters->int8_type = malloc(sizeof(int) * 4);
+  params.parameters->int8_type = malloc(sizeof(int) * 10);
 
   printf("about to assign envelope parameters\n");
   

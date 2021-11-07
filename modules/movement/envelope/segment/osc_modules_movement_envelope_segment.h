@@ -31,6 +31,7 @@ Copyright 2021 murray foster */
 #include "../../../../osc_handlers.h"
 
 #include "ops_modules_movement_envelope_segment.h"
+#include "math_modules_movement_envelope_segment.h"
 
 enum {
     segment_stdshape_Linen=0,

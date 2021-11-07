@@ -125,12 +125,15 @@ void _parse_envelope_stdshapes(lo_arg **argv,
     (*times)[0] = attack_time;
     (*times)[1] = release_time;
 
-    *curve = malloc(sizeof(perc_curve));
-    memcpy(*curve, &perc_curve, sizeof(curve));
+    *shape = malloc(sizeof(float));
+    (*shape)[0] = shape_Curve;
+    
+    *curve = malloc(sizeof(float));
+    (*curve)[0] = perc_curve;
     
     *release_node = 0;
     *loop_node = 0;
-    *gate = 0.0f;
+    *gate = 1.0f;
     *level_scale = 1.0f;
     *level_bias = 0.0f;
     *time_scale = 1.0f;
