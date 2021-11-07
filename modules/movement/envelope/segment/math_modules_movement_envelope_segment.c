@@ -203,10 +203,13 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
 
   printf("_perform::got envelope_gen\n");
 
-  printf("_perform::envelope_gen->shape: %d\n", envelope_gen->shape);
+  printf("_perform::envelope_gen->shape: %d\n", (int)envelope_gen->shape);
+  printf("_perform::envelope_gen->stage: %d\n", envelope_gen->stage);
   
   double grow, a2, b1, y0, y1, y2;
   float level = envelope_gen->envelope->levels[envelope_gen->stage];
+
+  printf("_perform::about to run the switch\n");
   
   switch (envelope_gen->shape) {
   case shape_Step:
@@ -303,7 +306,7 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     printf("_perform::WARNING: uknown shape!\n");
   }
   
-  // envelope_gen->level = level;
+  envelope_gen->level = level;
 
   printf("_perform::returning\n");
   
@@ -375,6 +378,10 @@ void math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parame
   envelope_gen->shape = shape_Hold;
   envelope_gen->prev_gate = 0.0f;
   envelope_gen->released = 0;
+
+  printf("math_modules_movement_envelope_segment_init::envelope_gen->shape: %d, shape_Hold: %d\n",
+         envelope_gen->shape,
+         shape_Hold);
   
   const int initial_shape = (int)envelope_gen->envelope->shape;
   

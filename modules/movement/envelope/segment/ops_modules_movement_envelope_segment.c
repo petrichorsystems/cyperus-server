@@ -83,7 +83,7 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   
   params.parameters->bytes_type = malloc(sizeof(envelope_gen));
   memcpy(params.parameters->bytes_type, &envelope_gen, sizeof(envelope_gen));  
-  // math_modules_movement_envelope_segment_init(params.parameters);
+  math_modules_movement_envelope_segment_init(params.parameters);
   
   ins = dsp_port_in_init("param_gate", 512);
   ins->next = dsp_port_in_init("param_level_scale", 512);
