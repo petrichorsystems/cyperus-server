@@ -452,8 +452,6 @@ void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedb
     dsp_voice_parameters[module_no].delay.cyperus_params[0].pos = 0;
     dsp_voice_parameters[module_no].delay.cyperus_params[0].delay_pos = 0;
   */
-
-  printf("returning\n");
   
 } /* dsp_edit_delay */
 

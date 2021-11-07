@@ -1407,13 +1407,13 @@ int osc_add_pinknoise_handler(const char *path, const char *types, lo_arg ** arg
 int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
                     int argc, void *data, void *user_data)
 {
-  int i;
-  printf("path: <%s>\n", path);
-  for (i = 0; i < argc; i++) {
-    printf("arg %d '%c' ", i, types[i]);
-    lo_arg_pp((lo_type)types[i], argv[i]);
-    printf("\n");
-  }
+  /* int i; */
+  /* printf("path: <%s>\n", path); */
+  /* for (i = 0; i < argc; i++) { */
+  /*   printf("arg %d '%c' ", i, types[i]); */
+  /*   lo_arg_pp((lo_type)types[i], argv[i]); */
+  /*   printf("\n"); */
+  /* } */
   int (*handler_ptr)(const char *path, const char *types, lo_arg ** argv,
                      int argc, void *data, void *user_data);
   handler_ptr = NULL;

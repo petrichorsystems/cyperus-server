@@ -29,18 +29,18 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
   // out = unit->m_level;
   float counter;
   float level;
-
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
-  
-  float previous_end_level = envelope_gen->end_level;
-  if (envelope_gen->shape == shape_Hold)
+  float shape;
+  float a1, a2, b1, y1, y2, grow;
+  float previous_end_level = parameters->double_type[6];
+  if (parameters->int8_type[6] == shape_Hold)
     level = previous_end_level;
-  double end_level = envelope_gen->envelope->levels[0]  * envelope_gen->level_scale + envelope_gen->level_bias; // scale levels
+  double end_level = parameters->float32_arr_type[0][0] * parameters->float32_type[1] + parameters->float32_type[2]; // scale levels
   if (dur < 0)
-    dur = envelope_gen->envelope->times[0] * envelope_gen->time_scale;
-  envelope_gen->shape = (int)envelope_gen->shape;
-  double curve = (double)envelope_gen->envelope->curve[0];
-  envelope_gen->end_level = end_level;
+    dur = parameters->float32_arr_type[1][0] * parameters->float32_type[3];
+
+  shape = (int)parameters->float32_arr_type[2][0];
+  double curve = (double)parameters->float32_arr_type[3][0];
+  parameters->double_type[6] = end_level;
 
   counter = (int)(dur * samplerate);
   counter = modules_math_sc_max(1, counter);
@@ -48,9 +48,9 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
   // Print("counter %d stageOffset %d   level %g   end_level %g   dur %g   shape %d   curve %g\n", counter,
   // stageOffset, level, end_level, dur, unit->m_shape, curve); Print("SAMPLERATE %g\n", SAMPLERATE);
   if (counter == 1)
-    envelope_gen->shape = 1; // shape_Linear
+    shape = 1; // shape_Linear
   // Print("new counter = %d  shape = %d\n", counter, unit->m_shape);
-  switch (envelope_gen->shape) {
+  switch ((int)shape) {
   case shape_Step: {
     level = end_level;
   } break;
@@ -58,62 +58,70 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
     level = previous_end_level;
   } break;
   case shape_Linear: {
-    envelope_gen->shape = (end_level - level) / counter;
+    shape = (end_level - level) / counter;
     // Print("grow %g\n", unit->m_grow);
   } break;
   case shape_Exponential: {
-    envelope_gen->shape = pow(end_level / level, 1.0 / counter);
+    shape = pow(end_level / level, 1.0 / counter);
   } break;
   case shape_Sine: {
     double w = M_PI / counter;
     
-    envelope_gen->a2 = (end_level + level) * 0.5;
-    envelope_gen->b1 = 2.0 * cos(w);
-    envelope_gen->y1 = (end_level - level) * 0.5;
-    envelope_gen->y2 = envelope_gen->y1 * sin(M_PI * 0.5 - w);
-    level = envelope_gen->a2 - envelope_gen->y1;
+    a2 = (end_level + level) * 0.5;
+    b1 = 2.0 * cos(w);
+    y1 = (end_level - level) * 0.5;
+    y2 = y1 * sin(M_PI * 0.5 - w);
+    level = a2 - y1;
   } break;
   case shape_Welch: {
     double w = (M_PI * 0.5) / counter;
     
-    envelope_gen->b1 = 2.0 * cos(w);
+    b1 = 2.0 * cos(w);
 
     if (end_level >= level) {
-      envelope_gen->a2 = level;
-      envelope_gen->y1 = 0.;
-      envelope_gen->y2 = -sin(w) * (end_level - level);
+      a2 = level;
+      y1 = 0.0;
+      y2 = -sin(w) * (end_level - level);
     } else {
-      envelope_gen->a2 = end_level;
-      envelope_gen->y1 = level - end_level;
-      envelope_gen->y2 = cos(w) * (level - end_level);
+      a2 = end_level;
+      y1 = level - end_level;
+      y2 = cos(w) * (level - end_level);
     }
-    level = envelope_gen->a2 + envelope_gen->y1;
+    level = a2 + y1;
   } break;
   case shape_Curve: {
     if (fabs(curve) < 0.001) {
-      envelope_gen->shape = 1; // shape_Linear
-      envelope_gen->grow = (end_level - level) / counter;
+      shape = 1; // shape_Linear
+      grow = (end_level - level) / counter;
     } else {
       double a1 = (end_level - level) / (1.0 - exp(curve));
-      envelope_gen->a2 = level + a1;
-      envelope_gen->b1 = a1;
-      envelope_gen->grow = exp(curve / counter);
+      a2 = level + a1;
+      b1 = a1;
+      grow = exp(curve / counter);
     }
   } break;
   case shape_Squared: {
-    envelope_gen->y1 = sqrt(level);
-    envelope_gen->y2 = sqrt(end_level);
-    envelope_gen->grow = (envelope_gen->y2 - envelope_gen->y1) / counter;
+    y1 = sqrt(level);
+    y2 = sqrt(end_level);
+    grow = (y2 - y1) / counter;
   } break;
   case shape_Cubed: {
-    envelope_gen->y1 = pow(level, 1.0 / 3.0); // 0.33333333);
-    envelope_gen->y2 = pow(end_level, 1.0 / 3.0);
-    envelope_gen->grow = (envelope_gen->y2 - envelope_gen->y1) / counter;
+    y1 = pow(level, 1.0 / 3.0); // 0.33333333);
+    y2 = pow(end_level, 1.0 / 3.0);
+    grow = (y2 - y1) / counter;
   } break;
   };
 
-  envelope_gen->counter = counter;
-  envelope_gen->level = level;
+  parameters->double_type[0] = a1;
+  parameters->double_type[1] = a2;
+  parameters->double_type[2] = b1;
+  parameters->double_type[3] = y1;
+  parameters->double_type[4] = y2;
+  parameters->double_type[5] = grow;
+  parameters->int8_type[4] = counter;  
+  parameters->int8_type[6] = shape;
+  parameters->float32_type[6] = level;
+  
   return 1;
 }
 
@@ -122,76 +130,70 @@ int _check_gate_passthru(int samplerate, dsp_module_parameters_t *parameters) {
 }
 
 int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
-  float prev_gate = envelope_gen->prev_gate;
-  float gate = envelope_gen->gate;
-  float offset = envelope_gen->envelope->offset;
-  float counter;
-    if (prev_gate <= 0.0f && gate > 0.0f) {
-        envelope_gen->stage = -1;
-        envelope_gen->released = 0;
-        envelope_gen->done = 0;
-        envelope_gen->counter = offset;
-        return 0;
-    } else if (gate <= -1.0f && prev_gate > -1.0f) {
-        // forced release: jump to last segment overriding its duration
-        double dur = -gate - 1.0f;
-        envelope_gen->counter = (int)(dur * samplerate);
-        envelope_gen->counter = modules_math_sc_max(1, envelope_gen->counter) + offset;
-        envelope_gen->stage = envelope_gen->num_stages - 1;
-        envelope_gen->released = 1;
-        _init_segment(samplerate, parameters, dur);
-        return 0;
-    } else if (prev_gate > 0.0f && gate <= 0.0f && envelope_gen->release_node >= 0 && !envelope_gen->released) {
-        envelope_gen->counter = offset;
-        envelope_gen->stage = envelope_gen->release_node - 1;
-        envelope_gen->released = 1;
-        return 0;
-    }
-    return 1;
+  printf("_check_gate::after variable instantiation\n");
+  if (parameters->float32_type[7] <= 0.f && parameters->float32_type[0] > 0.f) {
+    parameters->int8_type[5] = -1;
+    parameters->int8_type[8] = 0;
+    parameters->int8_type[9] = 0;
+    parameters->int8_type[4] = parameters->int8_type[2];
+    return 0;
+  } else if (parameters->float32_type[0] <= -1.f && parameters->float32_type[7] > -1.f) {
+    // forced release: jump to last segment overriding its duration
+    double dur = -parameters->float32_type[0] - 1.f;
+    parameters->int8_type[4] = (int)(dur * samplerate);
+    parameters->int8_type[4] = modules_math_sc_max(1, parameters->int8_type[4]) + parameters->int8_type[2];
+    parameters->int8_type[5] = parameters->int8_type[3] - 1;
+    parameters->int8_type[8] = 1;
+    _init_segment(samplerate, parameters, dur);
+    return 0;
+  } else if (parameters->float32_type[7] > 0.f && parameters->float32_type[0] <= 0.f && parameters->int8_type[7] >= 0 && !parameters->int8_type[8]) {
+    parameters->int8_type[4] = parameters->int8_type[2];
+    parameters->int8_type[5] = parameters->int8_type[7] - 1;
+    parameters->int8_type[8] = 1;
+    return 0;
+  }
+  return 1;
 }
 
 int _check_gate_ar(int samplerate, dsp_module_parameters_t *parameters) {
   const int result = _check_gate(samplerate, parameters);
   if (!result) {
-    env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
-    --(envelope_gen->gate);
+    --parameters->float32_type[0];
   }
   return result;
 }
 
 int _next_segment(int samplerate, dsp_module_parameters_t *parameters) {
   // Print("stage %d rel %d\n", parameters->bytes_type->stage, (int)ZIN0(kEnvGen_release_node));
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
   
-  int numstages = (int)envelope_gen->num_stages;
+  int numstages = (int)parameters->int8_type[3];
 
   // Print("stage %d   numstages %d\n", envelope_gen->stage, numstages);
-  if (envelope_gen->stage + 1 >= numstages) { // num stages
+  if (parameters->int8_type[5] + 1 >= numstages) { // num stages
     // Print("stage+1 > num stages\n");
-    envelope_gen->counter = INT_MAX;
-    envelope_gen->shape = 0;
-    envelope_gen->level = envelope_gen->end_level;
-    envelope_gen->done = 1;
+    parameters->int8_type[4] = INT_MAX;
+    parameters->int8_type[6] = 0;
+    parameters->float32_type[6] = parameters->double_type[6];
+    parameters->int8_type[9] = 1;
     
     /* done logic here */
     
-  } else if (envelope_gen->stage == ENVGEN_NOT_STARTED) {
-    envelope_gen->counter = INT_MAX;
+  } else if (parameters->int8_type[5] == ENVGEN_NOT_STARTED) {
+    parameters->int8_type[4] = INT_MAX;
     return 1;
-  } else if (envelope_gen->stage + 1 == (envelope_gen->release_node) && !envelope_gen->released) { // sustain stage
-    int loop_node = (int)envelope_gen->envelope->loop_node;
+  } else if (parameters->int8_type[5] + 1 == (parameters->int8_type[7]) && !parameters->int8_type[8]) { // sustain stage
+    int loop_node = (int)parameters->int8_type[1];
     if (loop_node >= 0 && loop_node < numstages) {
-      envelope_gen->stage = loop_node;
+      parameters->int8_type[5] = loop_node;
       return _init_segment(samplerate, parameters, -1);
     } else {
-      envelope_gen->counter = INT_MAX;
-      envelope_gen->shape = shape_Sustain;
-      envelope_gen->level = envelope_gen->end_level;
+      parameters->int8_type[4] = INT_MAX;
+      parameters->int8_type[6] = shape_Sustain;
+      parameters->float32_type[6] = parameters->double_type[6];
     }
     // Print("sustain\n");
   } else {
-    envelope_gen->stage++;
+    parameters->int8_type[5]++;
     return _init_segment(samplerate, parameters, -1);
   }
   return 1;
@@ -199,19 +201,14 @@ int _next_segment(int samplerate, dsp_module_parameters_t *parameters) {
 
 float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_check_func) (int, dsp_module_parameters_t*), int check_gate_on_sustain) {
   float out;
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
-
-  printf("_perform::got envelope_gen\n");
-
-  printf("_perform::envelope_gen->shape: %d\n", (int)envelope_gen->shape);
-  printf("_perform::envelope_gen->stage: %d\n", envelope_gen->stage);
   
   double grow, a2, b1, y0, y1, y2;
-  float level = envelope_gen->envelope->levels[envelope_gen->stage];
+  
+  float level = parameters->float32_arr_type[0][parameters->int8_type[5]];
 
   printf("_perform::about to run the switch\n");
   
-  switch (envelope_gen->shape) {
+  switch (parameters->int8_type[6]) {
   case shape_Step:
     break;
   case shape_Hold:
@@ -220,24 +217,24 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     out = level;
     break;
   case shape_Linear:
-    grow = envelope_gen->grow;
+    grow = parameters->double_type[5];
     if (!gate_check_func(samplerate, parameters))
       break;
     out = level;
     level += grow;
     break;
   case shape_Exponential:
-    grow = envelope_gen->grow;      
+    grow = parameters->double_type[5];      
     if (!gate_check_func(samplerate, parameters))
       break;
     out = level;
     level *= grow;
     break;
   case shape_Sine:
-    a2 = envelope_gen->a2;
-    b1 = envelope_gen->b1;
-    y2 = envelope_gen->y2;
-    y1 = envelope_gen->y1;
+    a2 = parameters->double_type[1];
+    b1 = parameters->double_type[2];
+    y2 = parameters->double_type[4];
+    y1 = parameters->double_type[3];
     if (!gate_check_func(samplerate, parameters))
       break;
     out = level;
@@ -245,14 +242,14 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     level = a2 - y0;
     y2 = y1;
     y1 = y0;
-    envelope_gen->y1 = y1;
-    envelope_gen->y2 = y2;
+    parameters->double_type[3] = y1;
+    parameters->double_type[4] = y2;
     break;
   case shape_Welch:
-    a2 = envelope_gen->a2;
-    b1 = envelope_gen->b1;
-    y2 = envelope_gen->y2;
-    y1 = envelope_gen->y1;
+    a2 = parameters->double_type[1];
+    b1 = parameters->double_type[2];
+    y2 = parameters->double_type[4];
+    y1 = parameters->double_type[3];
     if (!gate_check_func(samplerate, parameters))
       break;
     out = level;
@@ -260,40 +257,40 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     level = a2 + y0;
     y2 = y1;
     y1 = y0;
-    envelope_gen->y1 = y1;
-    envelope_gen->y2 = y2;
+    parameters->double_type[3] = y1;
+    parameters->double_type[4] = y2;
     break;
   case shape_Curve:
-    a2 = envelope_gen->a2;
-    b1 = envelope_gen->b1;
-    grow = envelope_gen->grow;
+    a2 = parameters->double_type[1];
+    b1 = parameters->double_type[2];
+    grow = parameters->double_type[5];
     if (!gate_check_func(samplerate, parameters))
       break;
     out = level;
     b1 *= grow;
     level = a2 - b1;
-    envelope_gen->b1 = b1;
+    parameters->double_type[2] = b1;
     break;
   case shape_Squared:
-    grow = envelope_gen->grow;
-    y1 = envelope_gen->y1;
+    grow = parameters->double_type[5];
+    y1 = parameters->double_type[3];
     if (!gate_check_func(samplerate, parameters))
       break;
     out = level;
     y1 += grow;
     level = y1 * y1;
-    envelope_gen->y1 = y1;
+    parameters->double_type[3] = y1;
     break;
   case shape_Cubed:
-    grow = envelope_gen->grow;
-    y1 = envelope_gen->y1;
+    grow = parameters->double_type[5];
+    y1 = parameters->double_type[3];
     if (!gate_check_func(samplerate, parameters))
       break;
     out = level;
     y1 += grow;
     y1 = modules_math_sc_max(y1, 0);
     level = y1 * y1 * y1;
-    envelope_gen->y1 = y1;
+    parameters->double_type[3] = y1;
     break;
   case shape_Sustain:
     if (check_gate_on_sustain) {
@@ -306,8 +303,7 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     printf("_perform::WARNING: uknown shape!\n");
   }
   
-  envelope_gen->level = level;
-
+  parameters->float32_type[6] = level;
   printf("_perform::returning\n");
   
   return out;
@@ -315,17 +311,15 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
 
 float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
   float out;
-
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
   
-  float gate = envelope_gen->gate;
+  float gate = parameters->float32_type[0];
   // Print("->EnvGen_next_k gate %g\n", gate);
-  int counter = envelope_gen->counter;
-  double level = envelope_gen->level;
+  int counter = parameters->int8_type[4];
+  double level = parameters->float32_type[6];
 
   printf("about to run _check_gate()\n");
   _check_gate(samplerate, parameters);
-  envelope_gen->prev_gate = gate;
+  parameters->float32_type[7] = gate;
 
   // gate = 1.0, levelScale = 1.0, levelBias = 0.0, timeScale
   // level0, numstages, release_node, loop_node,
@@ -334,25 +328,23 @@ float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
   if (counter <= 0) {
     int success = _next_segment(samplerate, parameters);
     if (!success)
-      return envelope_gen->level;
+      return parameters->float32_type[6];
   }
 
   printf("about to run _perform\n");
   out = _perform(samplerate, parameters, &_check_gate_passthru, 0);
 
   // Print("x %d %d %d %g\n", envelope_gen->stage, counter, envelope_gen->shape, *out);
-  envelope_gen->level = level;
-  envelope_gen->counter = counter - 1;
+  parameters->int8_type[4] = counter - 1;
 
   return out;
 }
 
 float _next_aa(int samplerate, dsp_module_parameters_t *parameters) {
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
-  if (envelope_gen->counter <= 0) {
+  if (parameters->int8_type[4] <= 0) {
     int success = _next_segment(samplerate, parameters);
     if (!success)
-      return envelope_gen->level;
+      return parameters->float32_type[6];
   }
   return _perform(samplerate, parameters, &_check_gate_ar, 1);
 }
@@ -366,27 +358,24 @@ void math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parame
   // level0, numstages, release_node, loop_node,
   // [level, dur, shape, curve]
 
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)parameters->bytes_type;
-  
-  envelope_gen->end_level = \
-    envelope_gen->level = \
-    envelope_gen->init_level * \
-    envelope_gen->level_scale + envelope_gen->level_bias;
-  
-  envelope_gen->counter = 0;
-  envelope_gen->stage = ENVGEN_NOT_STARTED;
-  envelope_gen->shape = shape_Hold;
-  envelope_gen->prev_gate = 0.0f;
-  envelope_gen->released = 0;
+  parameters->double_type[6] = parameters->float32_type[6] = \
+    parameters->float32_type[5] * parameters->float32_type[1] + \
+    parameters->float32_type[2];
+
+  parameters->int8_type[4] = 0;
+  parameters->int8_type[5] = ENVGEN_NOT_STARTED;
+  parameters->int8_type[6] = shape_Hold;
+  parameters->float32_type[7] = 0.0f;
+  parameters->int8_type[8] = 0;
 
   printf("math_modules_movement_envelope_segment_init::envelope_gen->shape: %d, shape_Hold: %d\n",
-         envelope_gen->shape,
+         parameters->int8_type[6],
          shape_Hold);
   
-  const int initial_shape = (int)envelope_gen->envelope->shape;
+  const int initial_shape = (int)parameters->int8_type[6];
   
   if (initial_shape == shape_Hold)
-    envelope_gen->level = envelope_gen->envelope->levels[0]; // we start at the end level;
+    parameters->float32_type[6] = parameters->float32_arr_type[0][0]; // we start at the end level;
 
   printf("about to run _next_k()\n");
   

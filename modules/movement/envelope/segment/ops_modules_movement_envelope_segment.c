@@ -46,44 +46,84 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
   
-  env_gen_params_t *envelope_gen = (env_gen_params_t*)malloc(sizeof(env_gen_params_t));
-  
-  envelope_gen->envelope = malloc(sizeof(env_params_t));
+  params.parameters->float32_arr_type = malloc(sizeof(float*) * 4);
+  params.parameters->float32_type = malloc(sizeof(float) * 6);
+  params.parameters->double_type = malloc(sizeof(double) * 7);
+  params.parameters->int8_type = malloc(sizeof(int) * 4);
+
+  printf("about to assign envelope parameters\n");
   
   /* envelope parameters */
-  envelope_gen->envelope->levels = malloc(sizeof(levels));
-  envelope_gen->envelope->levels=malloc(sizeof(levels));
-  memcpy(envelope_gen->envelope->levels, &levels, sizeof(levels));
-  envelope_gen->envelope->times = malloc(sizeof(times));
-  memcpy(envelope_gen->envelope->times, &times, sizeof(times));
+
+  printf(" ?? levels[0]: %f\n", levels[0]);
+  printf(" ?? levels[1]: %f\n", levels[1]);
+  printf(" ?? levels[2]: %f\n", levels[2]);
+  
+  params.parameters->float32_arr_type[0] = malloc(sizeof(levels));
+  memcpy(params.parameters->float32_arr_type[0], &levels, sizeof(levels));
+
+  printf("levels[0]: %f\n: ", levels[0]);
+  
+  params.parameters->float32_arr_type[1] = malloc(sizeof(times));
+  memcpy(params.parameters->float32_arr_type[1], &times, sizeof(times));
+
+  printf("about to assign optional envelope parameters\n");
   
   if(shape) {
-    envelope_gen->envelope->shape = malloc(sizeof(shape));
-    memcpy(envelope_gen->envelope->shape, &shape, sizeof(shape));
+    params.parameters->float32_arr_type[2] = malloc(sizeof(shape));
+    memcpy(params.parameters->float32_arr_type[2], &shape, sizeof(shape));
   } else
-    envelope_gen->envelope->shape = NULL;
+    params.parameters->float32_arr_type[2] = NULL;
   
   if(curve) {
-    envelope_gen->envelope->curve = malloc(sizeof(curve));
-    memcpy(envelope_gen->envelope->curve, &curve, sizeof(curve));
+    params.parameters->float32_arr_type[3] = malloc(sizeof(curve));
+    memcpy(params.parameters->float32_arr_type[3], &curve, sizeof(curve));
   } else
-    envelope_gen->envelope->curve = NULL;
-  envelope_gen->envelope->release_node = release_node;  
-  envelope_gen->envelope->loop_node = loop_node;
-  envelope_gen->envelope->offset = offset;
+    params.parameters->float32_arr_type[3] = NULL;
+  
+  params.parameters->int8_type[0] = release_node;  
+  params.parameters->int8_type[1] = loop_node;
+  params.parameters->int8_type[2] = offset;
 
   /* envelope generator parameters */  
-  envelope_gen->gate = gate;
-  envelope_gen->level_scale = level_scale;
-  envelope_gen->level_bias = level_bias;
-  envelope_gen->time_scale = time_scale;
-  envelope_gen->release_node = release_node;
-  envelope_gen->init_level = init_level;  
-  envelope_gen->num_stages = num_stages;
+  params.parameters->float32_type[0] = gate;
+  params.parameters->float32_type[1] = level_scale;
+  params.parameters->float32_type[2] = level_bias;
+  params.parameters->float32_type[3] = time_scale;
+  params.parameters->float32_type[4] = release_node;
+  params.parameters->float32_type[5] = init_level;  
+  params.parameters->int8_type[3] = num_stages;
+
+  printf("about to assign internal parameters\n");
   
-  params.parameters->bytes_type = malloc(sizeof(envelope_gen));
-  memcpy(params.parameters->bytes_type, &envelope_gen, sizeof(envelope_gen));  
+  /* internal parameters */
+  params.parameters->double_type[0] = 0.0; /* a1; */
+  params.parameters->double_type[1] = 0.0; /* a2; */
+  params.parameters->double_type[2] = 0.0; /* b1; */
+  params.parameters->double_type[3] = 0.0; /* y1; */
+  params.parameters->double_type[4] = 0.0; /* y2; */
+  params.parameters->double_type[5] = 0.0; /* grow; */
+  params.parameters->double_type[6] = 0.0; /* end_level; */
+
+  printf("about to assign internal parameters a\n");
+  
+  params.parameters->int8_type[4] = 0; /* counter; */
+  params.parameters->int8_type[5] = 0; /* stage; */
+  params.parameters->int8_type[6] = 0; /* shape; */
+  params.parameters->int8_type[7] = 0; /* release_node; */
+  params.parameters->int8_type[8] = 0; /* released; */
+  params.parameters->int8_type[9] = 0; /* done; */
+
+  printf("about to assign internal parameters b\n");
+  
+  params.parameters->float32_type[6] = 0.0f; /* level; */
+  params.parameters->float32_type[7] = 0.0f; /* prev_gate; */
+
+  printf("about to call init()\n");
+  
   math_modules_movement_envelope_segment_init(params.parameters);
+
+  printf("instantiated\n");
   
   ins = dsp_port_in_init("param_gate", 512);
   ins->next = dsp_port_in_init("param_level_scale", 512);
