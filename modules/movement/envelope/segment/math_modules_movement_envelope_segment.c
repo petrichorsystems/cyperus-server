@@ -400,13 +400,14 @@ float _next_aa(int samplerate, dsp_module_parameters_t *parameters) {
     if (!success)
       return parameters->float32_type[6];
   }
+
   out = _perform(samplerate, parameters, &_check_gate_ar, 1);
 
   /* decrement counter */
   parameters->int8_type[4] = parameters->int8_type[4] - 1;
 
   printf(" ^^^^^^ counter/parameters->int8_type[4]: %d\n", parameters->int8_type[4]);
-  
+
   return out;
 }
 
@@ -458,5 +459,9 @@ void math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parame
 
 extern
 float math_modules_movement_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos) {
-  return _next_aa(samplerate, parameters);
+  float out = _next_aa(samplerate, parameters);
+  if( !parameters->int8_type[9] && !parameters->int8_type[1])
+    return out;
+  else
+    return parameters->float32_arr_type[0][parameters->int8_type[5]];
 } /* math_modules_movement_envelope_segment */
