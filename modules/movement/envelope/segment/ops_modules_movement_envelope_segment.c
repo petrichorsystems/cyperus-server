@@ -73,8 +73,6 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
     memcpy(&params.parameters->float32_arr_type[3], &curve, sizeof(curve));
   } else
     params.parameters->float32_arr_type[3] = NULL;
-
-  printf(" >> num_stages: %d\n", num_stages);
   
   params.parameters->int8_type[0] = release_node;  
   params.parameters->int8_type[1] = loop_node;
@@ -156,6 +154,9 @@ dsp_movement_envelope_segment(struct dsp_operation *envelope_segment, int jack_s
 
 void
 dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
+                                   int release_node,
+                                   int loop_node,
+                                   int offset,
                                    float gate,
                                    float level_scale,
                                    float level_bias,
@@ -164,6 +165,9 @@ dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
                                    int num_stages) {
   
   math_modules_movement_envelope_segment_edit(envelope_segment->dsp_param.parameters,
+                                              release_node,
+                                              loop_node,
+                                              offset,
                                               gate,
                                               level_scale,
                                               level_bias,

@@ -71,6 +71,9 @@ math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parameters)
 
 extern void
 math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parameters,
+                                            int release_node,
+                                            int loop_node,
+                                            int offset,
                                             float gate,
                                             float level_scale,
                                             float level_bias,

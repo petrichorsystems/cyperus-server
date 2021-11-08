@@ -55,6 +55,9 @@ dsp_movement_envelope_segment(struct dsp_operation *envelope_segment,
                               int pos);
 void
 dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
+                                   int release_node,
+                                   int loop_noe,
+                                   int offset,
                                    float gate,
                                    float level_scale,
                                    float level_bias,

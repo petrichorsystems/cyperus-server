@@ -40,15 +40,16 @@ void _parse_envelope_segments(lo_arg **argv,
                               int *num_stages) {
   int num_levels = argv[1]->i;
   int idx = 0;
+
   levels = malloc(sizeof(float) * num_levels);
-  for(idx=2; idx < num_levels + 2; idx++)
-    levels[idx - 2] = argv[idx]->f;
+    for(idx=2; idx < num_levels + 2; idx++)
+      levels[idx - 2] = argv[idx]->f;
 
   int num_times = argv[idx]->i;  
   times = malloc(sizeof(float)*num_times);
   for(idx=idx+1; idx < num_levels + 2 + num_times + 1; idx++)
     times[idx - 2 - num_times - 1] = argv[idx]->f;
-  
+
   int num_shape = argv[idx]->i;  
   shape = malloc(sizeof(float)*num_shape);
   for(idx=idx+1; idx < num_levels + 2 + num_times + 1 + num_shape + 1; idx++)
@@ -86,6 +87,46 @@ void _parse_envelope_segments(lo_arg **argv,
   idx += 1;
   memcpy(num_stages, &argv[idx]->i, sizeof(int));
 } /* _parse_envelope_segments */
+
+void _parse_edit_envelope_segments(lo_arg **argv,
+                                   int *release_node,
+                                   int *loop_node,
+                                   int *offset,
+                                   float *gate,
+                                   float *level_scale,
+                                   float *level_bias,
+                                   float *time_scale,
+                                   float *init_level,
+                                   int *num_stages) {
+  int num_levels = argv[1]->i;
+  int idx = 0;
+
+  memcpy(release_node, &argv[idx]->i, sizeof(int));
+
+  idx += 1;
+  memcpy(loop_node, &argv[idx]->i, sizeof(int));
+
+  idx += 1;
+  memcpy(offset, &argv[idx]->i, sizeof(int));
+
+  idx += 1;
+  memcpy(gate, &argv[idx]->f, sizeof(float));
+
+  idx += 1;
+  memcpy(level_scale, &argv[idx]->f, sizeof(float));
+
+  idx += 1;
+  memcpy(level_bias, &argv[idx]->f, sizeof(float));
+
+  idx += 1;
+  memcpy(time_scale, &argv[idx]->f, sizeof(float));
+
+  idx += 1;
+  memcpy(init_level, &argv[idx]->f, sizeof(float));
+
+  idx += 1;
+  memcpy(num_stages, &argv[idx]->i, sizeof(int));
+} /* _parse_edit_envelope_segments */
 
 void _parse_envelope_stdshapes(lo_arg **argv,
                               float **levels,
@@ -232,28 +273,22 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
 
-  float *levels, *times, *shape, *curve;
   int release_node, loop_node, offset, num_stages;
   float gate, level_scale, level_bias, time_scale, init_level;
-
+  
   printf("path: <%s>\n", path);
   
   module_path = (char *)argv[0];
-  _parse_envelope_segments(argv,
-                           levels,
-                           times,
-                           shape,
-                           curve,
-                           &release_node,
-                           &loop_node,
-                           &offset,
-                           &gate,
-                           &level_scale,
-                           &level_bias,
-                           &time_scale,
-                           &init_level,
-                           &num_stages);
-
+  _parse_edit_envelope_segments(argv,
+                                &release_node,
+                                &loop_node,
+                                &offset,
+                                &gate,
+                                &level_scale,
+                                &level_bias,
+                                &time_scale,
+                                &init_level,
+                                &num_stages);
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
@@ -263,6 +298,9 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   dsp_edit_movement_envelope_segment(target_module,
+                                     release_node,
+                                     loop_node,
+                                     offset,
                                      gate,
                                      level_scale,
                                      level_bias,
