@@ -70,8 +70,6 @@ Copyright 2021 murray foster */
 // - dur: if supplied and >= 0, stretch segment to last dur seconds (used in forced release)
 int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double dur) {
 
-  printf("math_modules_movement_envelope_segment.c::_init_segment()\n");
-  printf("math_modules_movement_envelope_segment.c::_init_segment(), stage: %d\n", parameters->int8_type[5]);  
   // Print("stage %d\n", unit->m_stage);
   // Print("initSegment\n");
   // out = unit->m_level;
@@ -96,10 +94,6 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
 
   counter = (int)(dur * samplerate);
   counter = modules_math_sc_max(1, counter);
-
-  printf("math_modules_movement_envelope_segment.c::_init_segment(), dur: %d\n", (int)dur);
-  printf("math_modules_movement_envelope_segment.c::_init_segment(), level: %f\n", level);
-  printf("math_modules_movement_envelope_segment.c::_init_segment(), end_level: %f\n", end_level);
   
   // Print("counter %d stageOffset %d   level %g   end_level %g   dur %g   shape %d   curve %g\n", counter,
   // stageOffset, level, end_level, dur, unit->m_shape, curve); Print("SAMPLERATE %g\n", SAMPLERATE);
@@ -177,11 +171,6 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
   parameters->int8_type[4] = counter;  
   parameters->int8_type[6] = shape;
   parameters->float32_type[6] = level;
-
-
-  printf("math_modules_movement_envelope_segment.c::_init_segment(), counter: %d\n", (int)counter);
-  printf("math_modules_movement_envelope_segment.c::_init_segment(), level: %f\n", level);
-
   
   return 1;
 } /* _init_segment */
@@ -193,14 +182,14 @@ int _check_gate_passthru(int samplerate, dsp_module_parameters_t *parameters) {
 int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
   
   if (parameters->float32_type[7] <= 0.f && parameters->float32_type[0] > 0.f) {
-    printf("math_modules_movement_envelope_segment.c::_check_gate(), first condition\n");
+    /* printf("math_modules_movement_envelope_segment.c::_check_gate(), first condition\n"); */
     parameters->int8_type[5] = -1;
     parameters->int8_type[8] = 0;
     parameters->int8_type[9] = 0;
     parameters->int8_type[4] = 1 + parameters->int8_type[2];
     return 0;
   } else if (parameters->float32_type[0] <= -1.f && parameters->float32_type[7] > -1.f) {
-    printf("math_modules_movement_envelope_segment.c::_check_gate(), second condition\n");    
+    /* printf("math_modules_movement_envelope_segment.c::_check_gate(), second condition\n");     */
     // forced release: jump to last segment overriding its duration
     double dur = -parameters->float32_type[0] - 1.f;
     parameters->int8_type[4] = (int)(dur * samplerate);
@@ -210,7 +199,7 @@ int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
     _init_segment(samplerate, parameters, dur);
     return 0;
   } else if (parameters->float32_type[7] > 0.f && parameters->float32_type[0] <= 0.f && parameters->int8_type[7] >= 0 && !parameters->int8_type[8]) {
-    printf("math_modules_movement_envelope_segment.c::_check_gate(), third condition\n");
+    /* printf("math_modules_movement_envelope_segment.c::_check_gate(), third condition\n"); */
     parameters->int8_type[4] = parameters->int8_type[2];
 
     parameters->int8_type[5] = parameters->int8_type[7] - 1;
@@ -232,18 +221,11 @@ int _check_gate_ar(int samplerate, dsp_module_parameters_t *parameters) {
 int _next_segment(int samplerate, dsp_module_parameters_t *parameters) {
   // Print("stage %d rel %d\n", parameters->bytes_type->stage, (int)ZIN0(kEnvGen_release_node));
 
-  printf("math_modules_movement_envelope_segment.c::_next_segment(), parameters->int8_type[5]: %d\n", parameters->int8_type[5]);
-  printf("math_modules_movement_envelope_segment.c::_next_segment(), parameters->int8_type[3]: %d\n", parameters->int8_type[3]);
-  printf("math_modules_movement_envelope_segment.c::_next_segment(), parameters->int8_type[7]: %d\n", parameters->int8_type[7]);
-  printf("math_modules_movement_envelope_segment.c::_next_segment(), parameters->int8_type[8]: %d\n", parameters->int8_type[8]);    
   int numstages = (int)parameters->int8_type[3];
 
   // Print("stage %d   numstages %d\n", envelope_gen->stage, numstages);
   if (parameters->int8_type[5] + 1 >= numstages) { // num stages
-    printf("entered done logic\n");
-    
-    // Print("stage+1 > num stages\n");
-    
+    /* printf("entered done logic\n"); */    
     parameters->int8_type[4] = INT_MAX;
     parameters->int8_type[6] = 0;
     parameters->float32_type[6] = parameters->double_type[6];
@@ -414,8 +396,6 @@ float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
 float _next_aa(int samplerate, dsp_module_parameters_t *parameters) {
   float out;
   if (parameters->int8_type[4] <= 0) {
-
-    printf(" !!!! HELLO! !!!!\n");
     
     int success = _next_segment(samplerate, parameters);
     if (!success)
@@ -478,11 +458,9 @@ void math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parame
 extern
 float math_modules_movement_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos) {
   float out = _next_aa(samplerate, parameters);
-  printf("counter: %d\n", parameters->int8_type[4]);
   if(!parameters->int8_type[9])
     return out;
   else {
-    printf("out: %f\n", out);
     return parameters->float32_arr_type[0][parameters->int8_type[5]];
   }
 } /* math_modules_movement_envelope_segment */
