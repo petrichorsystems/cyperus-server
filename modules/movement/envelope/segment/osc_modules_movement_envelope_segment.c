@@ -112,6 +112,17 @@ void _parse_edit_envelope_segments(lo_arg **argv,
 
   idx += 1;
   memcpy(time_scale, &argv[idx]->f, sizeof(float));
+
+  printf("osc_modules_movement_envelope_segment.c::_parse_edit_envelope_segments()\n");
+  printf("release_node: %d\n", *release_node);
+  printf("loop_node: %d\n", *loop_node);
+  printf("offset: %d\n", *offset);
+  printf("gate: %f\n", *gate);
+  printf("level_scale: %f\n", *level_scale);
+  printf("level_bias: %f\n", *level_bias);
+  printf("time_scale: %f\n", *time_scale);
+  printf("\n\n");
+  
 } /* _parse_edit_envelope_segments */
 
 void _parse_envelope_stdshapes(lo_arg **argv,
@@ -159,7 +170,7 @@ void _parse_envelope_stdshapes(lo_arg **argv,
     
     *release_node = -1;
     *loop_node = 0;
-    *gate = 1.0f;
+    *gate = -1.0f;
     *level_scale = 1.0f;
     *level_bias = 0.0f;
     *time_scale = 1.0f;
@@ -269,6 +280,16 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
                                 &level_scale,
                                 &level_bias,
                                 &time_scale);
+
+  printf("osc_modules_movement_envelope_segment.c::osc_edit_module_movement_envelope_segment_handler()\n");
+  printf("release_node: %d\n", release_node);
+  printf("loop_node: %d\n", loop_node);
+  printf("offset: %d\n", offset);
+  printf("gate: %f\n", gate);
+  printf("level_scale: %f\n", level_scale);
+  printf("level_bias: %f\n", level_bias);
+  printf("time_scale: %f\n", time_scale);
+  printf("\n\n");
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);

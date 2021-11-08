@@ -173,7 +173,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
               2, # release_node
               -1, # loop_node
               0, # offset
-              -1.0, # gate
+              1.0, # gate
               1.0, # level_scale
               0.0, # level_bias
               1.0) # time_scale
@@ -183,20 +183,20 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
                    -1,
                    -1,
                    0,
-                   -1.0,
+                   1.0,
                    1.0,
                    0.0,
                    1.0)
         response = responses.get()
 
-        time.sleep(1.0)
-
+        time.sleep(0.05)
+        
         print("/cyperus/edit/module/movement/envelope/segment",
               "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
               -1, # release_node
               -1, # loop_node
               0, # offset
-              1.0, # gate
+              -1.0, # gate
               1.0, # level_scale
               0.0, # level_bias
               1.0) # time_scale
@@ -212,7 +212,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
                    1.0)
         response = responses.get()
         
-        time.sleep(5.0)
+        time.sleep(0.5)
 
 if __name__ == '__main__':
     #outgoing connection
