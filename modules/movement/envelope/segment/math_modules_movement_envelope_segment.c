@@ -46,8 +46,9 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
     printf("assigned dur: %f\n", dur);
   }
 
-  shape = (int)parameters->float32_arr_type[2][stage - 1];
-  double curve = (double)parameters->float32_arr_type[3][stage - 1];
+  shape = (int)parameters->float32_arr_type[2][0];
+    
+  double curve = (double)parameters->float32_arr_type[3][0];
   parameters->double_type[6] = end_level;
 
   counter = (int)(dur * samplerate);
@@ -103,7 +104,13 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
     printf(" |||||| level: %f\n", level);
     printf(" |||||| end_level: %f\n", end_level);
     printf(" |||||| counter: %f\n", counter);
-     
+
+    printf("before!\n");
+      printf(" !!!!!! a1: %f\n", a1);
+      printf(" !!!!!! a2: %f\n", a2);
+      printf(" !!!!!! b1: %f\n", b1);
+      printf(" !!!!! grow: %f\n", grow);
+    
     if (fabs(curve) < 0.001) {
       shape = 1; // shape_Linear
       grow = (end_level - level) / counter;
@@ -113,6 +120,7 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
       b1 = a1;
       grow = exp(curve / counter);
 
+      printf("after!\n");
       printf(" !!!!!! a1: %f\n", a1);
       printf(" !!!!!! a2: %f\n", a2);
       printf(" !!!!!! b1: %f\n", b1);
@@ -300,15 +308,20 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     a2 = parameters->double_type[1];
     b1 = parameters->double_type[2];
     grow = parameters->double_type[5];
-
-    printf(" ?????? _perform::grow: %f\n", grow);
     
-    if (!gate_check_func(samplerate, parameters))
+    if (!gate_check_func(samplerate, parameters)) {
       break;
+    }
+    printf(" ?????? _perform::level: %f\n", level);
+    printf(" ?????? _perform::grow: %f\n", grow);
+    printf(" ?????? _perform:: b1: %f\n", b1);
+    printf(" ?????? _perform:: a2: %f\n", a2);
+    
     out = level;
     b1 *= grow;
     level = a2 - b1;
     parameters->double_type[2] = b1;
+    
     break;
   case shape_Squared:
     grow = parameters->double_type[5];
