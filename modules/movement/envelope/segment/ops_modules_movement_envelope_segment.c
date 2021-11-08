@@ -140,9 +140,11 @@ dsp_movement_envelope_segment(struct dsp_operation *envelope_segment, int jack_s
   float insample = 0.0f;
   float outsample = 0.0f;
 
+  printf("before dsp_movement_envelope_segment\n");
   outsample = math_modules_movement_envelope_segment(envelope_segment->module->dsp_param.parameters,
                                                   jack_samplerate,
                                                   pos);
+  printf("after dsp_movement_envelope_segment\n");
 
   printf("outsample: %f\n", outsample);
   
@@ -159,8 +161,7 @@ dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
                                    float gate,
                                    float level_scale,
                                    float level_bias,
-                                   float time_scale) {
-  
+                                   float time_scale) {  
   math_modules_movement_envelope_segment_edit(envelope_segment->dsp_param.parameters,
                                               release_node,
                                               loop_node,
@@ -168,6 +169,7 @@ dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
                                               gate,
                                               level_scale,
                                               level_bias,
-                                              time_scale);  
+                                              time_scale);
+
   printf("dsp_edit_movement_envelope_segment::returning\n");
 } /* dsp_edit_movement_envelope_segment */

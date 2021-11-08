@@ -41,9 +41,7 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
   double end_level = parameters->float32_arr_type[0][stage] * parameters->float32_type[1] + parameters->float32_type[2]; // scale levels
   
   if (dur < 0) {
-    printf("about to assign duration\n");
     dur = parameters->float32_arr_type[1][stage - 1] * parameters->float32_type[3];
-    printf("assigned dur: %f\n", dur);
   }
 
   shape = (int)parameters->float32_arr_type[2][0];
@@ -98,19 +96,7 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
     }
     level = a2 + y1;
   } break;
-  case shape_Curve: {
-    printf(" !!!!!! in shape_Curve\n");
-    printf(" |||||| curve: %f\n", curve);
-    printf(" |||||| level: %f\n", level);
-    printf(" |||||| end_level: %f\n", end_level);
-    printf(" |||||| counter: %f\n", counter);
-
-    printf("before!\n");
-      printf(" !!!!!! a1: %f\n", a1);
-      printf(" !!!!!! a2: %f\n", a2);
-      printf(" !!!!!! b1: %f\n", b1);
-      printf(" !!!!! grow: %f\n", grow);
-    
+  case shape_Curve: {    
     if (fabs(curve) < 0.001) {
       shape = 1; // shape_Linear
       grow = (end_level - level) / counter;
@@ -119,13 +105,6 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
       a2 = level + a1;
       b1 = a1;
       grow = exp(curve / counter);
-
-      printf("after!\n");
-      printf(" !!!!!! a1: %f\n", a1);
-      printf(" !!!!!! a2: %f\n", a2);
-      printf(" !!!!!! b1: %f\n", b1);
-      printf(" !!!!! grow: %f\n", grow);
-      
     }
   } break;
   case shape_Squared: {
@@ -158,7 +137,6 @@ int _check_gate_passthru(int samplerate, dsp_module_parameters_t *parameters) {
 }
 
 int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
-  printf("_check_gate::after variable instantiation\n");
   if (parameters->float32_type[7] <= 0.f && parameters->float32_type[0] > 0.f) {
     parameters->int8_type[5] = -1;
     parameters->int8_type[8] = 0;
@@ -166,7 +144,6 @@ int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
     parameters->int8_type[4] = parameters->int8_type[2];
     return 0;
   } else if (parameters->float32_type[0] <= -1.f && parameters->float32_type[7] > -1.f) {
-    printf("forced release\n");
     // forced release: jump to last segment overriding its duration
     double dur = -parameters->float32_type[0] - 1.f;
     parameters->int8_type[4] = (int)(dur * samplerate);
@@ -177,13 +154,12 @@ int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
     return 0;
   } else if (parameters->float32_type[7] > 0.f && parameters->float32_type[0] <= 0.f && parameters->int8_type[7] >= 0 && !parameters->int8_type[8]) {
     parameters->int8_type[4] = parameters->int8_type[2];
+
     parameters->int8_type[5] = parameters->int8_type[7] - 1;
+
     parameters->int8_type[8] = 1;
     return 0;
   }
-
-  printf("math_modules_movement_enveleope_segment.c::_check_gate(), parameters->int8_type[5]: %d, parameters->int8_type[3] - 1: %d\n", parameters->int8_type[5], parameters->int8_type[3] - 1);
-  
   return 1;
 }
 
@@ -196,10 +172,6 @@ int _check_gate_ar(int samplerate, dsp_module_parameters_t *parameters) {
 }
 
 int _next_segment(int samplerate, dsp_module_parameters_t *parameters) {
-  printf("math_modules_movement_envelope_segment.c::_next_segment()\n");
-  printf("math_modules_movement_envelope_segment.c::next_segment(), parameters->int8_type[5]: %d\n", parameters->int8_type[5]);
-  printf("math_modules_movement_envelope_segment.c::next_segment(), parameters->int8_type[3]: %d\n", parameters->int8_type[3]);
-  
   // Print("stage %d rel %d\n", parameters->bytes_type->stage, (int)ZIN0(kEnvGen_release_node));
   
   int numstages = (int)parameters->int8_type[3];
@@ -218,7 +190,6 @@ int _next_segment(int samplerate, dsp_module_parameters_t *parameters) {
     /* done logic here */
     
   } else if (parameters->int8_type[5] == ENVGEN_NOT_STARTED) {
-    printf("entered not started\n");
     parameters->int8_type[4] = INT_MAX;
     return 1;
   } else if (parameters->int8_type[5] + 1 == parameters->int8_type[7] && !parameters->int8_type[8]) { // sustain stage
@@ -233,9 +204,7 @@ int _next_segment(int samplerate, dsp_module_parameters_t *parameters) {
     }
     // Print("sustain\n");
   } else {
-    printf("hello?\n");
     parameters->int8_type[5]++;
-    printf("new stage: %d\n", parameters->int8_type[5]);
     return _init_segment(samplerate, parameters, -1);
   }
   return 1;
@@ -245,12 +214,7 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
   float out;
   
   double grow, a2, b1, y0, y1, y2;
-
-  printf("shape_Curve: %d\n", (int)shape_Curve);
-  printf("parameters->float32_arr_type[2][0]: %f\n", parameters->float32_arr_type[2][0]);
   float level = parameters->float32_type[6];
-  
-  printf("_perform::about to run the switch\n");
   
   switch ((int)parameters->float32_arr_type[2][0]) {
   case shape_Step:
@@ -312,10 +276,6 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     if (!gate_check_func(samplerate, parameters)) {
       break;
     }
-    printf(" ?????? _perform::level: %f\n", level);
-    printf(" ?????? _perform::grow: %f\n", grow);
-    printf(" ?????? _perform:: b1: %f\n", b1);
-    printf(" ?????? _perform:: a2: %f\n", a2);
     
     out = level;
     b1 *= grow;
@@ -356,7 +316,6 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
   }
   
   parameters->float32_type[6] = level;
-  printf("_perform::returning\n");
   
   return out;
 }
@@ -369,7 +328,6 @@ float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
   int counter = parameters->int8_type[4];
   double level = parameters->float32_type[6];
 
-  printf("about to run _check_gate()\n");
   _check_gate(samplerate, parameters);
   parameters->float32_type[7] = gate;
 
@@ -377,14 +335,12 @@ float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
   // level0, numstages, release_node, loop_node,
   // [level, dur, shape, curve]
 
-  printf("about to run _next_segment()\n");
   if (counter <= 0) {
     int success = _next_segment(samplerate, parameters);
     if (!success)
       return parameters->float32_type[6];
   }
 
-  printf("about to run _perform\n");
   out = _perform(samplerate, parameters, &_check_gate_passthru, 0);
 
   // Print("x %d %d %d %g\n", envelope_gen->stage, counter, envelope_gen->shape, *out);
@@ -406,16 +362,11 @@ float _next_aa(int samplerate, dsp_module_parameters_t *parameters) {
   /* decrement counter */
   parameters->int8_type[4] = parameters->int8_type[4] - 1;
 
-  printf(" ^^^^^^ counter/parameters->int8_type[4]: %d\n", parameters->int8_type[4]);
-
   return out;
 }
 
 extern
-void math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parameters) {
-  printf("math_modules_movement_envelope_segment::math_modules_movement_envelope_segment_init()\n");
-
-  
+void math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parameters) {  
   // gate = 1.0, levelScale = 1.0, levelBias = 0.0, timeScale
   // level0, numstages, release_node, loop_node,
   // [level, dur, shape, curve]
@@ -429,18 +380,12 @@ void math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parame
   parameters->int8_type[6] = shape_Hold;
   parameters->float32_type[7] = 0.0f;
   parameters->int8_type[8] = 0;
-
-  printf("math_modules_movement_envelope_segment_init::envelope_gen->shape: %d, shape_Hold: %d\n",
-         parameters->int8_type[6],
-         shape_Hold);
   
   const int initial_shape = (int)parameters->int8_type[6];
   
   if (initial_shape == shape_Hold)
     parameters->float32_type[6] = parameters->float32_arr_type[0][1]; // we start at the end level;
-
-  printf("about to run _next_k()\n");
-  
+ 
   /* calculate first sample */
   _next_k(jackcli_samplerate, parameters);
 
@@ -462,7 +407,6 @@ void math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parame
   parameters->float32_type[1] = level_scale;
   parameters->float32_type[2] = level_bias;
   parameters->float32_type[3] = time_scale;
-  
 
 } /* math_modules_movement_envelope_segment_edit */
 

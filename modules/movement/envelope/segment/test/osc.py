@@ -188,6 +188,20 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
                    1.0,
                    1.0)
         response = responses.get()
+
+        time.sleep(0.5)
+        
+        liblo.send(dest, "/cyperus/edit/module/movement/envelope/segment",
+                   "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
+                   -1,
+                   -1,
+                   0,
+                   1.0,
+                   1.0,
+                   1.0,
+                   1.0)
+        response = responses.get()
+        
         time.sleep(5.0)
 
 if __name__ == '__main__':

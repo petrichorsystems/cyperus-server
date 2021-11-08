@@ -92,8 +92,7 @@ void _parse_edit_envelope_segments(lo_arg **argv,
                                    float *level_scale,
                                    float *level_bias,
                                    float *time_scale) {
-  int num_levels = argv[1]->i;
-  int idx = 0;
+  int idx = 1;
 
   memcpy(release_node, &argv[idx]->i, sizeof(int));
 
