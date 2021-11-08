@@ -77,9 +77,7 @@ math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parameters,
                                             float gate,
                                             float level_scale,
                                             float level_bias,
-                                            float time_scale,
-                                            float init_level,
-                                            int num_stages);
+                                            float time_scale);
 
 extern float
 math_modules_movement_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos);

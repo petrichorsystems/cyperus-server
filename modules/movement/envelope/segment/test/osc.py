@@ -49,9 +49,9 @@ class OscServer(ServerThread):
         print("received '/cyperus/add/module/movement/envelope/stdshape'")
         responses.put(args)
 
-    @make_method('/cyperus/edit/module/movement/envelope/stdshape', 'siffff')
+    @make_method('/cyperus/edit/module/movement/envelope/segment', 'siiiffff')
     def osc_edit_module_sine(self, path, args):
-        print("received '/cyperus/edit/module/movement/envelope/stdshape'")
+        print("received '/cyperus/edit/module/movement/envelope/segment'")
         responses.put(args)
 
     @make_method('/cyperus/list/module_port', 'ss')
@@ -165,31 +165,28 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
 
     response = responses.get()
 
-    exit(0)
+    time.sleep(1.0)
     
-    for num in range(0,2):
-        print("/cyperus/edit/module/movement/envelope/stdshape",
+    for num in range(0,1):
+        print("/cyperus/edit/module/movement/envelope/segment",
               "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
-              1, # gate
-              4.0, # attack_rate (seconds)
-              4.0, # decay_rate (seconds)
-              0.9, # release_rate (seconds)
-              1.0, # sustain_level
-              0.5, # target_ratio_a, attack ratio - less is exponential and more is linear
-              0.5, # target_ratio_dr, decay-release ratio - like above
-              1.0, # mul
-              0.0) # add
-        liblo.send(dest, "/cyperus/edit/module/movement/envelope/stdshape",
+              -1, # release_node
+              -1, # loop_node
+              0, # offset
+              0.0, # gate
+              1.0, # level_scale
+              1.0, # level_bias
+              1.0) # time_scale
+
+        liblo.send(dest, "/cyperus/edit/module/movement/envelope/segment",
                    "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
-                   1,
-                   4.0,
-                   4.0,
-                   0.9,
+                   -1,
+                   -1,
+                   0,
+                   0.0,
                    1.0,
-                   0.3,
-                   0.0001,
                    1.0,
-                   0.0)
+                   1.0)
         response = responses.get()
         time.sleep(5.0)
 

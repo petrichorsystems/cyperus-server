@@ -454,9 +454,15 @@ void math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parame
                                                  float gate,
                                                  float level_scale,
                                                  float level_bias,
-                                                 float time_scale,
-                                                 float init_level,
-                                                 int num_stages) {
+                                                 float time_scale) {
+  parameters->int8_type[7] = release_node;
+  parameters->int8_type[1] = loop_node;
+  parameters->int8_type[2] = offset;
+  parameters->float32_type[0] = gate;
+  parameters->float32_type[1] = level_scale;
+  parameters->float32_type[2] = level_bias;
+  parameters->float32_type[3] = time_scale;
+  
 
 } /* math_modules_movement_envelope_segment_edit */
 

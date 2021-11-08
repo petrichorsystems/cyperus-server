@@ -45,7 +45,6 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
                                      float level_scale,
                                      float level_bias,
                                      float time_scale,
-                                     float init_level,
                                      int num_stages);
 
 
@@ -61,7 +60,5 @@ dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
                                    float gate,
                                    float level_scale,
                                    float level_bias,
-                                   float time_scale,
-                                   float init_level,
-                                   int num_stages);
+                                   float time_scale);
 #endif

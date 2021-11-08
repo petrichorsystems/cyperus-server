@@ -36,7 +36,6 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
                                      float level_scale,
                                      float level_bias,
                                      float time_scale,
-                                     float init_level,
                                      int num_stages) {
   dsp_parameter params;
   struct dsp_port_in *ins;
@@ -84,7 +83,7 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   params.parameters->float32_type[2] = level_bias;
   params.parameters->float32_type[3] = time_scale;
   params.parameters->float32_type[4] = release_node;
-  params.parameters->float32_type[5] = init_level;  
+  params.parameters->float32_type[5] = 0.0f; /* init_level */
   params.parameters->int8_type[3] = num_stages;
 
   printf("about to assign internal parameters\n");
@@ -103,7 +102,7 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   params.parameters->int8_type[4] = 0; /* counter; */
   params.parameters->int8_type[5] = 0; /* stage; */
   params.parameters->int8_type[6] = 0; /* shape; */
-  params.parameters->int8_type[7] = 0; /* release_node; */
+  params.parameters->int8_type[7] = -1; /* release_node; */
   params.parameters->int8_type[8] = 0; /* released; */
   params.parameters->int8_type[9] = 0; /* done; */
 
@@ -160,9 +159,7 @@ dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
                                    float gate,
                                    float level_scale,
                                    float level_bias,
-                                   float time_scale,
-                                   float init_level,
-                                   int num_stages) {
+                                   float time_scale) {
   
   math_modules_movement_envelope_segment_edit(envelope_segment->dsp_param.parameters,
                                               release_node,
@@ -171,8 +168,6 @@ dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
                                               gate,
                                               level_scale,
                                               level_bias,
-                                              time_scale,
-                                              init_level,
-                                              num_stages);  
+                                              time_scale);  
   printf("dsp_edit_movement_envelope_segment::returning\n");
 } /* dsp_edit_movement_envelope_segment */

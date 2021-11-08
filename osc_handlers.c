@@ -1528,10 +1528,6 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 
   else if(strcmp(path, "/cyperus/add/module/movement/envelope/stdshape") == 0)
     handler_ptr = osc_add_module_movement_envelope_stdshape_handler;
-
-  /* to-be-implemented */
-  /* else if(strcmp(path, "/cyperus/edit/module/movement/envelope/stdshape") == 0) */
-  /*   handler_ptr = osc_edit_module_movement_envelope_stdshape_handler;  */
   
   if(handler_ptr)
     handler_ptr(path, types, argv, argc, data, user_data);
