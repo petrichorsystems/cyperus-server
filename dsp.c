@@ -188,88 +188,68 @@ dsp_parse_path(char* result[], const char *path) {
 
 struct dsp_bus*
 dsp_parse_bus_path(char *target_path) {
-  char target_bus_path[256];
-  strcpy(target_bus_path, target_path);
-  char *output_token;
-  char *path_elem;
-  char *last_bus_id;
+  /* printf("dsp.c::dsp_parse_bus_path()\n"); */
+  /* printf("target_path: %s\n", target_path); */
   struct dsp_bus *temp_bus, *target_bus, *temp_bus_head, *deep_bus;
-  temp_bus = dsp_global_bus_head;
-  char *p = target_path;
-  char *path_index[256];
   int bus_count = 0;
   int path_count = 0;
-
-  p = target_path;
-  while (*p)                      /* while not end of string */
-    {
-      char *sp = p;                  /* set a start pointer */
-      while (*p && *p != '/') p++;   /* advance to '/'    */
-      output_token = malloc (p - sp + 1); /* allocate */
-      strncpy (output_token, sp, p - sp);         /* copy   */
-      output_token[p - sp] = 0;   /* force null-termination */
-      if( output_token != NULL ) {
-	if( strcmp(output_token, "") != 0 ) {
-	  path_index[bus_count] = output_token;
-          bus_count += 1;
-          free(output_token);
-         }
-       }
-       while (*p && *p == '/') p++;   /* find next non-space */
-     }
-
-   last_bus_id = path_index[bus_count - 1];
-   p = target_path;
-   while (*p)                      /* while not end of string */
-     {
-       char *sp = p;                  /* set a start pointer */
-       while (*p && *p != '/') p++;   /* advance to space    */
-       
-       output_token = malloc (p - sp + 1); /* allocate */
-
-       strncpy (output_token, sp, p - sp);         /* copy   */
-       
-       output_token[p - sp] = 0;   /* force null-termination */
-       
-       if( output_token != NULL ) {
-         if( strcmp(output_token, "") != 0 ) {
-           while( temp_bus != NULL ) {
-            path_index[path_count][36] = '\0'; /* force null-termination */
-	    printf("path_index[path_count: '%s'\n", path_index[path_count]);
-	    printf("temp_bus->id:          '%s'\n", temp_bus->id);
-	    printf("strcmp: %d\n", strcmp(path_index[path_count], temp_bus->id));
-	    printf("strlen(path_index[path_count]): %d\n", (int)strlen(path_index[path_count]));
-	    printf("strlen(temp_bus->id): %d\n", (int)strlen(temp_bus->id)); 
-	    if( strcmp(path_index[path_count], temp_bus->id) == 0) {
-	      printf("path_count += 1\n");
-	      path_count += 1;
-	      target_bus = temp_bus;
-	      printf("last_bus_id: %s\n", last_bus_id);
-	      if( (strcmp(temp_bus->id, last_bus_id) == 0) &&
-		  (bus_count == path_count) ) {
-		printf("returning\n");
-		return temp_bus;
-	      } else
-		if(temp_bus->down != NULL) {
-		  temp_bus = temp_bus->down;
-		  break;
-		} else {
-		  printf("ain't no bus existin': %s!\n", temp_bus->id);
-		  return NULL;
-		}
-	    }
-            printf("temp_bus = temp_bus->next\n");
-	    temp_bus = temp_bus->next;
-            printf("after temp_bus->next\n");
-	  }
-          printf("free(output_token)");
-	  free(output_token);
-          printf("after free(output_token)");
-	}
+  char *temp_count_path = NULL;
+  char *temp_copy_path = NULL;
+  char **paths;
+  char *token = NULL;
+  int idx;
+  
+  temp_count_path = malloc(sizeof(char)*(strlen(target_path)+1));
+  temp_copy_path = malloc(sizeof(char)*(strlen(target_path)+1));
+    
+  strncpy(temp_count_path, target_path, strlen(target_path) + 1);
+  strncpy(temp_copy_path, target_path, strlen(target_path) + 1);
+  
+  while ((token = strsep(&temp_count_path, "/"))) {
+    if(strcmp(token, "") != 0) {
+      path_count++;
+    }
+  }
+  free(temp_count_path);
+  
+  idx = 0;
+  paths = malloc(sizeof(char*) * path_count);
+  while ((token = strsep(&temp_copy_path, "/"))) {
+    if(strcmp(token, "") != 0) {
+      paths[idx] = malloc(sizeof(char)*strlen(token));
+      strncpy(paths[idx], token, strlen(token) + 1);
+      idx++;
+    }
+  }
+  free(temp_copy_path);
+  
+  bus_count = 0;
+  temp_bus = dsp_global_bus_head;  
+  for(idx=0; idx<path_count; idx++) {
+    while(temp_bus != NULL) {
+      if(strcmp(paths[idx], temp_bus->id) == 0) {
+        bus_count++;
+        if(temp_bus->down) {
+          /* printf("dsp.c::dsp_parse_bus_path()::DEBUG - descending to bus\n"); */
+          temp_bus = temp_bus->down;
+        }
+        break;
       }
-      while (*p && *p == '/') p++;   /* find next non-space */
-     }
-  return NULL;
+      temp_bus = temp_bus->next;
+    }
+  }
+  
+  if(bus_count == path_count) {
+    target_bus = temp_bus;    
+    /* printf("dsp.c::dsp_parse_bus_path()::DEBUG - found bus '%s'\n", target_bus->id);     */
+  }
+  
+  for(idx=0; idx<path_count; idx++) {
+    free(paths[idx]);
+  }
+  free(paths);
+  
+  return target_bus;
 } /* dsp_parse_bus_path */
 
 struct dsp_bus_port*
