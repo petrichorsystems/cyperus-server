@@ -188,8 +188,8 @@ dsp_parse_path(char* result[], const char *path) {
 
 struct dsp_bus*
 dsp_parse_bus_path(char *target_path) {
-  /* printf("dsp.c::dsp_parse_bus_path()\n"); */
-  /* printf("target_path: %s\n", target_path); */
+  printf("dsp.c::dsp_parse_bus_path()\n");
+  printf("target_path: %s\n", target_path);
   struct dsp_bus *temp_bus, *target_bus, *temp_bus_head, *deep_bus;
   int bus_count = 0;
   int path_count = 0;
@@ -202,8 +202,10 @@ dsp_parse_bus_path(char *target_path) {
   temp_count_path = malloc(sizeof(char)*(strlen(target_path)+1));
   temp_copy_path = malloc(sizeof(char)*(strlen(target_path)+1));
     
-  strncpy(temp_count_path, target_path, strlen(target_path) + 1);
-  strncpy(temp_copy_path, target_path, strlen(target_path) + 1);
+  strncpy(temp_count_path, target_path, strlen(target_path));
+  temp_count_path[strlen(target_path)] = '\0';
+  strncpy(temp_copy_path, target_path, strlen(target_path));
+  temp_copy_path[strlen(target_path)] = '\0';
   
   while ((token = strsep(&temp_count_path, "/"))) {
     if(strcmp(token, "") != 0) {
@@ -217,7 +219,8 @@ dsp_parse_bus_path(char *target_path) {
   while ((token = strsep(&temp_copy_path, "/"))) {
     if(strcmp(token, "") != 0) {
       paths[idx] = malloc(sizeof(char)*strlen(token));
-      strncpy(paths[idx], token, strlen(token) + 1);
+      strncpy(paths[idx], token, strlen(token));
+      paths[idx][36] = '\0';
       idx++;
     }
   }
@@ -230,7 +233,7 @@ dsp_parse_bus_path(char *target_path) {
       if(strcmp(paths[idx], temp_bus->id) == 0) {
         bus_count++;
         if(temp_bus->down) {
-          /* printf("dsp.c::dsp_parse_bus_path()::DEBUG - descending to bus\n"); */
+          printf("dsp.c::dsp_parse_bus_path()::DEBUG - descending to bus\n");
           temp_bus = temp_bus->down;
         }
         break;
@@ -241,7 +244,7 @@ dsp_parse_bus_path(char *target_path) {
   
   if(bus_count == path_count) {
     target_bus = temp_bus;    
-    /* printf("dsp.c::dsp_parse_bus_path()::DEBUG - found bus '%s'\n", target_bus->id);     */
+    printf("dsp.c::dsp_parse_bus_path()::DEBUG - found bus '%s'\n", target_bus->id);
   }
   
   for(idx=0; idx<path_count; idx++) {
