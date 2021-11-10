@@ -463,9 +463,9 @@ void math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parame
 extern
 float math_modules_movement_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos) {
   float out = _next_aa(samplerate, parameters);
-  printf("out: %f\n", out);
-  printf("counter: %d\n", parameters->int8_type[4]);
-  printf("parameters->int8_type[9]: %d\n", parameters->int8_type[9]);
+  /* printf("out: %f\n", out); */
+  /* printf("counter: %d\n", parameters->int8_type[4]); */
+  /* printf("parameters->int8_type[9]: %d\n", parameters->int8_type[9]); */
   if(!parameters->int8_type[9])
     return out;
   else {
