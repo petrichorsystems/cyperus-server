@@ -75,7 +75,7 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
   // out = unit->m_level;
   int stage = parameters->int8_type[5];
   float counter;
-  float level = parameters->float32_type[6];
+  double level  = parameters->float32_arr_type[0][stage - 1];
   float shape;
   float a1, a2, b1, y1, y2, grow;
   float previous_end_level = parameters->double_type[6];
@@ -149,6 +149,7 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
       b1 = a1;
       grow = exp(curve / counter);
     }
+    printf("parameters->float32_type[6]: %f, end_level: %f, level: %f, a2: %f, a1: %f, b1: %f, grow: %f\n", parameters->float32_type[6], end_level, level, a2, a1, b1, grow);
   } break;
   case shape_Squared: {
     y1 = sqrt(level);
@@ -171,7 +172,7 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
   parameters->int8_type[4] = counter;  
   parameters->int8_type[6] = shape;
   parameters->float32_type[6] = level;
-  
+
   return 1;
 } /* _init_segment */
 
@@ -182,26 +183,28 @@ int _check_gate_passthru(int samplerate, dsp_module_parameters_t *parameters) {
 int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
   
   if (parameters->float32_type[7] <= 0.f && parameters->float32_type[0] > 0.f) {
-    /* printf("math_modules_movement_envelope_segment.c::_check_gate(), first condition\n"); */
+    printf("math_modules_movement_envelope_segment.c::_check_gate(), first condition\n");
     parameters->int8_type[5] = -1;
     parameters->int8_type[8] = 0;
     parameters->int8_type[9] = 0;
     parameters->int8_type[4] = 1 + parameters->int8_type[2];
     return 0;
   } else if (parameters->float32_type[0] <= -1.f && parameters->float32_type[7] > -1.f) {
-    /* printf("math_modules_movement_envelope_segment.c::_check_gate(), second condition\n");     */
+    printf("math_modules_movement_envelope_segment.c::_check_gate(), second condition\n");
     // forced release: jump to last segment overriding its duration
     double dur = -parameters->float32_type[0] - 1.f;
     parameters->int8_type[4] = (int)(dur * samplerate);
     parameters->int8_type[4] = modules_math_sc_max(1, parameters->int8_type[4]) + parameters->int8_type[2];
     parameters->int8_type[5] = 1; //parameters->int8_type[3] - 1;
-    parameters->int8_type[8] = 1; 
+    parameters->int8_type[8] = 1;
+
+    printf("math_modules_movement_envelope_segment.c::_check_gate(), second condition, dur: %f\n", dur);
+    
     _init_segment(samplerate, parameters, dur);
     return 0;
   } else if (parameters->float32_type[7] > 0.f && parameters->float32_type[0] <= 0.f && parameters->int8_type[7] >= 0 && !parameters->int8_type[8]) {
-    /* printf("math_modules_movement_envelope_segment.c::_check_gate(), third condition\n"); */
+    printf("math_modules_movement_envelope_segment.c::_check_gate(), third condition\n");
     parameters->int8_type[4] = parameters->int8_type[2];
-
     parameters->int8_type[5] = parameters->int8_type[7] - 1;
     parameters->int8_type[8] = 1;
     return 0;
@@ -358,8 +361,10 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
   default:
     printf("_perform::WARNING: uknown shape!\n");
   }
-  
   parameters->float32_type[6] = level;
+
+  if(parameters->int8_type[9])
+    return parameters->float32_arr_type[0][parameters->int8_type[5]] * parameters->float32_type[1] + parameters->float32_type[2];
   
   return out;
 } /* _perform */
@@ -458,6 +463,9 @@ void math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parame
 extern
 float math_modules_movement_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos) {
   float out = _next_aa(samplerate, parameters);
+  printf("out: %f\n", out);
+  printf("counter: %d\n", parameters->int8_type[4]);
+  printf("parameters->int8_type[9]: %d\n", parameters->int8_type[9]);
   if(!parameters->int8_type[9])
     return out;
   else {

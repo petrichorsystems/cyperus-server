@@ -218,7 +218,7 @@ dsp_parse_bus_path(char *target_path) {
   paths = malloc(sizeof(char*) * path_count);
   while ((token = strsep(&temp_copy_path, "/"))) {
     if(strcmp(token, "") != 0) {
-      paths[idx] = malloc(sizeof(char)*strlen(token));
+      paths[idx] = malloc(sizeof(char)*strlen(token)+1);
       strncpy(paths[idx], token, strlen(token));
       paths[idx][36] = '\0';
       idx++;
