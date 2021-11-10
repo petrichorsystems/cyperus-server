@@ -84,8 +84,12 @@ osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
+  bus_path[strlen(module_path)-37] = 0;
+  
   module_id = malloc(sizeof(char) * 37);
   strncpy(module_id, module_path + strlen(module_path) - 36, 37);
+  module_id[strlen(module_path) - 36] = 0;
+  
   target_bus = dsp_parse_bus_path(bus_path);
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);

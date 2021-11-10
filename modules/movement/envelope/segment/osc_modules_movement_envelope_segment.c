@@ -367,8 +367,8 @@ int osc_add_module_movement_envelope_stdshape_handler(const char *path, const ch
     target_module = temp_module;
     temp_module = temp_module->next;
   }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
+  module_id = malloc(sizeof(char) * 37); 
+  snprintf(module_id, strlen(target_module->id)+1, "%s", target_module->id);
   
   printf("about to send msg\n");
   
