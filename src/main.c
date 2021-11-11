@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include "cyperus.h"
+#include "main.h"
 
 void print_usage() {
   printf("Usage: cyperus [options] [arg]\n\n");
