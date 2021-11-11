@@ -32,6 +32,9 @@ Copyright 2021 murray foster */
 #include "../../../../jackcli.h"
 #include "../../../math_utils.h"
 
+#include "math_modules_movement_envelope_segment.h"
+#include "ops_modules_movement_envelope_segment.h"
+
 int
 dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
                                      float *levels,

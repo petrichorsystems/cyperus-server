@@ -53,63 +53,61 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
   printf("about to assign envelope parameters\n");
   
   /* envelope parameters */  
-  params.parameters->float32_arr_type[0] = malloc(sizeof(*levels));
-  memcpy(&params.parameters->float32_arr_type[0], &levels, sizeof(params.parameters->float32_arr_type[0]));
+  params.parameters->float32_arr_type[PARAM_LEVELS] = malloc(sizeof(*levels));
+  memcpy(&params.parameters->float32_arr_type[PARAM_LEVELS], &levels, sizeof(params.parameters->float32_arr_type[PARAM_LEVELS]));
   
-  params.parameters->float32_arr_type[1] = malloc(sizeof(times));
-  memcpy(&params.parameters->float32_arr_type[1], &times, sizeof(params.parameters->float32_arr_type[1]));
+  params.parameters->float32_arr_type[PARAM_TIMES] = malloc(sizeof(times));
+  memcpy(&params.parameters->float32_arr_type[PARAM_TIMES], &times, sizeof(params.parameters->float32_arr_type[PARAM_TIMES]));
 
   printf("about to assign optional envelope parameters\n");
   
   if(shape) {
-    params.parameters->float32_arr_type[2] = malloc(sizeof(shape));
-    memcpy(&params.parameters->float32_arr_type[2], &shape, sizeof(params.parameters->float32_arr_type[2]));
+    params.parameters->float32_arr_type[PARAM_SHAPE] = malloc(sizeof(shape));
+    memcpy(&params.parameters->float32_arr_type[PARAM_SHAPE], &shape, sizeof(params.parameters->float32_arr_type[PARAM_SHAPE]));
   } else
-    params.parameters->float32_arr_type[2] = NULL;
+    params.parameters->float32_arr_type[PARAM_SHAPE] = NULL;
   
   if(curve) {
-    params.parameters->float32_arr_type[3] = malloc(sizeof(params.parameters->float32_arr_type[3]));
-    memcpy(&params.parameters->float32_arr_type[3], &curve, sizeof(curve));
+    params.parameters->float32_arr_type[PARAM_CURVE] = malloc(sizeof(params.parameters->float32_arr_type[PARAM_CURVE]));
+    memcpy(&params.parameters->float32_arr_type[PARAM_CURVE], &curve, sizeof(curve));
   } else
-    params.parameters->float32_arr_type[3] = NULL;
+    params.parameters->float32_arr_type[PARAM_CURVE] = NULL;
   
-  params.parameters->int8_type[0] = release_node;  
-  params.parameters->int8_type[1] = loop_node;
-  params.parameters->int8_type[2] = offset;
+  params.parameters->int8_type[PARAM_RELEASE_NODE] = release_node;  
+  params.parameters->int8_type[PARAM_LOOP_NODE] = loop_node;
+  params.parameters->int8_type[PARAM_OFFSET] = offset;
 
   /* envelope generator parameters */  
-  params.parameters->float32_type[0] = gate;
-  params.parameters->float32_type[1] = level_scale;
-  params.parameters->float32_type[2] = level_bias;
-  params.parameters->float32_type[3] = time_scale;
-  params.parameters->float32_type[4] = release_node;
-  params.parameters->float32_type[5] = 0.0f; /* init_level */
-  params.parameters->int8_type[3] = num_stages;
+  params.parameters->float32_type[PARAM_GATE]         = gate;
+  params.parameters->float32_type[PARAM_LEVEL_SCALE]  = level_scale;
+  params.parameters->float32_type[PARAM_LEVEL_BIAS]   = level_bias;
+  params.parameters->float32_type[PARAM_TIME_SCALE]   = time_scale;
+  params.parameters->float32_type[PARAM_INIT_LEVEL]   = 0.0f; /* init_level */
+  params.parameters->int8_type[PARAM_NUM_STAGES]      = num_stages;
 
   printf("about to assign internal parameters\n");
   
   /* internal parameters */
-  params.parameters->double_type[0] = 0.0; /* a1; */
-  params.parameters->double_type[1] = 0.0; /* a2; */
-  params.parameters->double_type[2] = 0.0; /* b1; */
-  params.parameters->double_type[3] = 0.0; /* y1; */
-  params.parameters->double_type[4] = 0.0; /* y2; */
-  params.parameters->double_type[5] = 0.0; /* grow; */
-  params.parameters->double_type[6] = 0.0; /* end_level; */
+  params.parameters->double_type[STATE_A1]        = 0.0; /* a1; */
+  params.parameters->double_type[STATE_A2]        = 0.0; /* a2; */
+  params.parameters->double_type[STATE_B1]        = 0.0; /* b1; */
+  params.parameters->double_type[STATE_Y1]        = 0.0; /* y1; */
+  params.parameters->double_type[STATE_Y2]        = 0.0; /* y2; */
+  params.parameters->double_type[STATE_GROW]      = 0.0; /* grow; */
+  params.parameters->double_type[STATE_END_LEVEL] = 0.0; /* end_level; */
 
   printf("about to assign internal parameters a\n");
   
-  params.parameters->int8_type[4] = 0; /* counter; */
-  params.parameters->int8_type[5] = 0; /* stage; */
-  params.parameters->int8_type[6] = 0; /* shape; */
-  params.parameters->int8_type[7] = -1; /* release_node; */
-  params.parameters->int8_type[8] = 0; /* released; */
-  params.parameters->int8_type[9] = 0; /* done; */
+  params.parameters->int8_type[STATE_COUNTER]      = 0; /* counter; */
+  params.parameters->int8_type[STATE_STAGE]        = 0; /* stage; */
+  params.parameters->int8_type[STATE_SHAPE]        = 0; /* shape; */
+  params.parameters->int8_type[STATE_RELEASED]     = 0; /* released; */
+  params.parameters->int8_type[STATE_DONE]         = 0; /* done; */
 
   printf("about to assign internal parameters b\n");
   
-  params.parameters->float32_type[6] = 0.0f; /* level; */
-  params.parameters->float32_type[7] = 0.0f; /* prev_gate; */
+  params.parameters->float32_type[STATE_LEVEL]     = 0.0f; /* level; */
+  params.parameters->float32_type[STATE_PREV_GATE] = 0.0f; /* prev_gate; */
 
   printf("about to call init()\n");
   

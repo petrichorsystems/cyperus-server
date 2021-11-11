@@ -244,15 +244,11 @@ struct dsp_operation {
 struct dsp_translation_connection {
   char *id_out;
   char *id_in;
-
   struct dsp_connection *connection;  
-  
   struct dsp_operation *operation_out;
   struct dsp_operation *operation_in;
-
   struct dsp_operation_sample *sample_out;
   struct dsp_operation_sample *sample_in;
-  
   struct dsp_translation_connection *next;
   struct dsp_translation_connection *prev;
 };
@@ -260,11 +256,9 @@ struct dsp_translation_connection {
 struct dsp_translation_sample {
   char *id_in;
   char *id_out;
-
   struct dsp_operation_sample *sample_in;
   struct dsp_operation_sample *sample_out;
 };
-
 
 struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size);
 void dsp_port_in_insert_head(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
@@ -278,6 +272,7 @@ struct dsp_connection* dsp_connection_init(const char *id_out,
 					   const char *id_in,
 					   struct dsp_port_out *port_out,
 					   struct dsp_port_in *port_in);
+
 void dsp_connection_insert_head(struct dsp_connection *head_connection, struct dsp_connection *connection);
 void dsp_connection_insert_tail(struct dsp_connection *head_connection, struct dsp_connection *connection);
 void dsp_connection_list(struct dsp_connection *head_connection, void (*func)(struct dsp_connection*) );
