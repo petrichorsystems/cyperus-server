@@ -271,9 +271,11 @@ osc_edit_module_motion_envelope_segment_handler(const char *path, const char *ty
                                 &time_scale);
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
+  snprintf(bus_path, strlen(module_path)-37+1, "%s", module_path);
+
   module_id = malloc(sizeof(char) * 37);
   strncpy(module_id, module_path + strlen(module_path) - 36, 37);
+  
   target_bus = dsp_parse_bus_path(bus_path);
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
