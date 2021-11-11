@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include "ops_modules_movement_osc_osc_metronome.h"
+#include "ops_modules_motion_osc_osc_metronome.h"
 
 void*
 _osc_metronome_thread(void *arg) {

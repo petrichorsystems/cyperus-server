@@ -1511,23 +1511,23 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/audio/oscillator/pulse") == 0)
     handler_ptr = osc_edit_module_oscillator_pulse_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/movement/envelope/adsr") == 0)
-    handler_ptr = osc_add_module_movement_envelope_adsr_handler;
-  else if(strcmp(path, "/cyperus/edit/module/movement/envelope/adsr") == 0)
-    handler_ptr = osc_edit_module_movement_envelope_adsr_handler;
+  else if(strcmp(path, "/cyperus/add/module/motion/envelope/adsr") == 0)
+    handler_ptr = osc_add_module_motion_envelope_adsr_handler;
+  else if(strcmp(path, "/cyperus/edit/module/motion/envelope/adsr") == 0)
+    handler_ptr = osc_edit_module_motion_envelope_adsr_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/movement/envelope/segment") == 0)
-    handler_ptr = osc_add_module_movement_envelope_segment_handler;
-  else if(strcmp(path, "/cyperus/edit/module/movement/envelope/segment") == 0)
-    handler_ptr = osc_edit_module_movement_envelope_segment_handler;
+  else if(strcmp(path, "/cyperus/add/module/motion/envelope/segment") == 0)
+    handler_ptr = osc_add_module_motion_envelope_segment_handler;
+  else if(strcmp(path, "/cyperus/edit/module/motion/envelope/segment") == 0)
+    handler_ptr = osc_edit_module_motion_envelope_segment_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/movement/osc/osc_metronome") == 0)
+  else if(strcmp(path, "/cyperus/add/module/motion/osc/osc_metronome") == 0)
     handler_ptr = osc_add_module_osc_osc_metronome_handler;
-  else if(strcmp(path, "/cyperus/edit/module/movement/envelope/segment") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/motion/envelope/segment") == 0)
     handler_ptr = osc_edit_module_osc_osc_metronome_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/movement/envelope/stdshape") == 0)
-    handler_ptr = osc_add_module_movement_envelope_stdshape_handler;
+  else if(strcmp(path, "/cyperus/add/module/motion/envelope/stdshape") == 0)
+    handler_ptr = osc_add_module_motion_envelope_stdshape_handler;
   
   if(handler_ptr)
     handler_ptr(path, types, argv, argc, data, user_data);

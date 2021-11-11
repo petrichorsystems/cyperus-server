@@ -34,10 +34,10 @@ int osc_change_address(char *new_host_out, char *new_port_out);
 #include "modules/audio/filter/moogff/osc_modules_audio_filter_moogff.h"
 #include "modules/audio/filter/varslope_lowpass/osc_modules_audio_filter_varslope_lowpass.h"
 #include "modules/audio/oscillator/pulse/osc_modules_audio_oscillator_pulse.h"
-#include "modules/movement/envelope/adsr/osc_modules_movement_envelope_adsr.h"
-#include "modules/movement/envelope/segment/osc_modules_movement_envelope_segment.h"
-#include "modules/movement/osc/osc_metronome/osc_modules_movement_osc_osc_metronome.h"
-#include "modules/movement/envelope/segment/osc_modules_movement_envelope_segment.h"
+#include "modules/motion/envelope/adsr/osc_modules_motion_envelope_adsr.h"
+#include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
+#include "modules/motion/osc/osc_metronome/osc_modules_motion_osc_osc_metronome.h"
+#include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
 
 
 #endif

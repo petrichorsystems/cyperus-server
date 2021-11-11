@@ -44,14 +44,14 @@ class OscServer(ServerThread):
         print('args', args)
         responses.put(args)
         
-    @make_method('/cyperus/add/module/movement/envelope/stdshape', 'siffff')
+    @make_method('/cyperus/add/module/motion/envelope/stdshape', 'siffff')
     def osc_add_module_sine(self, path, args):
-        print("received '/cyperus/add/module/movement/envelope/stdshape'")
+        print("received '/cyperus/add/module/motion/envelope/stdshape'")
         responses.put(args)
 
-    @make_method('/cyperus/edit/module/movement/envelope/segment', 'siiiffff')
+    @make_method('/cyperus/edit/module/motion/envelope/segment', 'siiiffff')
     def osc_edit_module_sine(self, path, args):
-        print("received '/cyperus/edit/module/movement/envelope/segment'")
+        print("received '/cyperus/edit/module/motion/envelope/segment'")
         responses.put(args)
 
     @make_method('/cyperus/list/module_port', 'ss')
@@ -118,7 +118,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
 
     print(bus_main0_uuid)
 
-    liblo.send(dest, "/cyperus/add/module/movement/envelope/stdshape",
+    liblo.send(dest, "/cyperus/add/module/motion/envelope/stdshape",
                "/{}".format(bus_main0_uuid),
                3,     # stdshape (perc=3)
                0.01,  # attack_time
@@ -168,7 +168,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
     time.sleep(1.0)
     
     for num in range(0,1):
-        print("/cyperus/edit/module/movement/envelope/segment",
+        print("/cyperus/edit/module/motion/envelope/segment",
               "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
               2, # release_node
               -1, # loop_node
@@ -178,7 +178,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
               0.0, # level_bias
               1.0) # time_scale
 
-        liblo.send(dest, "/cyperus/edit/module/movement/envelope/segment",
+        liblo.send(dest, "/cyperus/edit/module/motion/envelope/segment",
                    "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
                    -1,
                    -1,
@@ -191,7 +191,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
 
         time.sleep(0.05)
         
-        print("/cyperus/edit/module/movement/envelope/segment",
+        print("/cyperus/edit/module/motion/envelope/segment",
               "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
               -1, # release_node
               -1, # loop_node
@@ -201,7 +201,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
               0.0, # level_bias
               1.0) # time_scale
         
-        liblo.send(dest, "/cyperus/edit/module/movement/envelope/segment",
+        liblo.send(dest, "/cyperus/edit/module/motion/envelope/segment",
                    "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
                    -1,
                    -1,

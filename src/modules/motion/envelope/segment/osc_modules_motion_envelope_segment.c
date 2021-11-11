@@ -1,4 +1,4 @@
-/* osc_modules_movement_envelope_segment.c
+/* osc_modules_motion_envelope_segment.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ Copyright 2015 murray foster */
 
 #include <math.h>
 
-#include "osc_modules_movement_envelope_segment.h"
+#include "osc_modules_motion_envelope_segment.h"
 
 void _parse_envelope_segments(lo_arg **argv,
                               float *levels,
@@ -171,7 +171,7 @@ void _parse_envelope_stdshapes(lo_arg **argv,
 } /* _parse_envelope_stdshapes */
 
 
-int osc_add_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_module_motion_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
   printf("osc_add_module_envelope_segment_handler()..\n");
@@ -201,7 +201,7 @@ int osc_add_module_movement_envelope_segment_handler(const char *path, const cha
                            &num_stages);
   
   target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_movement_envelope_segment(target_bus,
+  dsp_create_motion_envelope_segment(target_bus,
                                        levels,
                                        times,
                                        shape,
@@ -227,7 +227,7 @@ int osc_add_module_movement_envelope_segment_handler(const char *path, const cha
   
   /* lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); */
   /* lo_send(lo_addr_send, */
-  /*         "/cyperus/add/module/movement/envelope/segment", */
+  /*         "/cyperus/add/module/motion/envelope/segment", */
   /*         "siffffffff", */
   /*         module_id, */
   /*         gate, */
@@ -244,10 +244,10 @@ int osc_add_module_movement_envelope_segment_handler(const char *path, const cha
   printf("free'd\n");
   
   return 0;
-} /* osc_add_module_movement_envelope_segment_handler */
+} /* osc_add_module_motion_envelope_segment_handler */
 
 int
-osc_edit_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_module_motion_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
                                                int argc, void *data, void *user_data)
 {  
   char *module_path, *module_id;
@@ -277,7 +277,7 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
   target_bus = dsp_parse_bus_path(bus_path);
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  dsp_edit_movement_envelope_segment(target_module,
+  dsp_edit_motion_envelope_segment(target_module,
                                      release_node,
                                      loop_node,
                                      offset,
@@ -290,7 +290,7 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); 
   lo_send(lo_addr_send, 
-          "/cyperus/edit/module/movement/envelope/segment", 
+          "/cyperus/edit/module/motion/envelope/segment", 
           "siiiffff", 
           module_id, 
           release_node,
@@ -306,9 +306,9 @@ osc_edit_module_movement_envelope_segment_handler(const char *path, const char *
   printf("free'd\n");
   
   return 0;
-} /* osc_edit_module_movement_envelope_segment_handler */
+} /* osc_edit_module_motion_envelope_segment_handler */
 
-int osc_add_module_movement_envelope_stdshape_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_module_motion_envelope_stdshape_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data)
 {
   printf("osc_add_module_envelope_stdshape_handler()..\n");
@@ -346,7 +346,7 @@ int osc_add_module_movement_envelope_stdshape_handler(const char *path, const ch
   printf("bus_path: %s\n", bus_path); 
   target_bus = dsp_parse_bus_path(bus_path);
   
-  dsp_create_movement_envelope_segment(target_bus,
+  dsp_create_motion_envelope_segment(target_bus,
                                        levels,
                                        times,
                                        shape,
@@ -374,7 +374,7 @@ int osc_add_module_movement_envelope_stdshape_handler(const char *path, const ch
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
-          "/cyperus/add/module/movement/envelope/stdshape",
+          "/cyperus/add/module/motion/envelope/stdshape",
           "siffff",
           module_id,
           argv[1]->i,
@@ -387,4 +387,4 @@ int osc_add_module_movement_envelope_stdshape_handler(const char *path, const ch
   printf("free'd\n");
   
   return 0;
-} /* osc_add_module_movement_envelope_stdshape_handler */
+} /* osc_add_module_motion_envelope_stdshape_handler */

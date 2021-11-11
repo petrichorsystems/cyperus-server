@@ -21,7 +21,7 @@ void _set_target_ratio_a(dsp_module_parameters_t *parameters, float target_ratio
 void _set_target_ratio_dr(dsp_module_parameters_t *parameters, float target_ratio);
 
 extern void
-math_modules_movement_envelope_adsr_init(dsp_module_parameters_t *parameters,
+math_modules_motion_envelope_adsr_init(dsp_module_parameters_t *parameters,
                                          float attack_rate,
                                          float decay_rate,
                                          float release_rate,
@@ -32,7 +32,7 @@ math_modules_movement_envelope_adsr_init(dsp_module_parameters_t *parameters,
                                          float add);
 
 extern void
-math_modules_movement_envelope_adsr_edit(dsp_module_parameters_t *parameters,
+math_modules_motion_envelope_adsr_edit(dsp_module_parameters_t *parameters,
                                          int gate,
                                          float attack_rate,
                                          float decay_rate,
@@ -44,7 +44,7 @@ math_modules_movement_envelope_adsr_edit(dsp_module_parameters_t *parameters,
                                          float add);
 
 extern float
-math_modules_movement_envelope_adsr(dsp_module_parameters_t *parameters, int samplerate, int pos);
+math_modules_motion_envelope_adsr(dsp_module_parameters_t *parameters, int samplerate, int pos);
 
 
 #endif

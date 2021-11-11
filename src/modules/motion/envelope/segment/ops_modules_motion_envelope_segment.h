@@ -1,4 +1,4 @@
-/* osp_modules_movement_envelope_segment.h
+/* osp_modules_motion_envelope_segment.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -32,11 +32,11 @@ Copyright 2021 murray foster */
 #include "../../../../jackcli.h"
 #include "../../../math_utils.h"
 
-#include "math_modules_movement_envelope_segment.h"
-#include "ops_modules_movement_envelope_segment.h"
+#include "math_modules_motion_envelope_segment.h"
+#include "ops_modules_motion_envelope_segment.h"
 
 int
-dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
+dsp_create_motion_envelope_segment(struct dsp_bus *target_bus,
                                      float *levels,
                                      float *times,
                                      float *shape,
@@ -52,11 +52,11 @@ dsp_create_movement_envelope_segment(struct dsp_bus *target_bus,
 
 
 void
-dsp_movement_envelope_segment(struct dsp_operation *envelope_segment,
+dsp_motion_envelope_segment(struct dsp_operation *envelope_segment,
                               int jack_samplerate,
                               int pos);
 void
-dsp_edit_movement_envelope_segment(struct dsp_module *envelope_segment,
+dsp_edit_motion_envelope_segment(struct dsp_module *envelope_segment,
                                    int release_node,
                                    int loop_noe,
                                    int offset,

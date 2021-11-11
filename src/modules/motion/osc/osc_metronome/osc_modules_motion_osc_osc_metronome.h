@@ -32,7 +32,7 @@ Copyright 2015 murray foster */
 /* #include "../../../../jackcli.h" */
 /* #include "../../../../osc.h" */
 
-#include "ops_modules_movement_osc_osc_metronome.h"
+#include "ops_modules_motion_osc_osc_metronome.h"
 
 int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types, lo_arg ** argv,
                                              int argc, void *data, void *user_data);

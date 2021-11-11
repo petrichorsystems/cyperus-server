@@ -1,4 +1,4 @@
-/* osp_modules_movement_envelope_adsr.h
+/* osp_modules_motion_envelope_adsr.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ Copyright 2021 murray foster */
 #include "../../../../jackcli.h"
 
 int
-dsp_create_movement_envelope_adsr(struct dsp_bus *target_bus,
+dsp_create_motion_envelope_adsr(struct dsp_bus *target_bus,
                                   int gate,
                                   float attack_rate,
                                   float decay_rate,
@@ -44,12 +44,12 @@ dsp_create_movement_envelope_adsr(struct dsp_bus *target_bus,
                                   float mul,
                                   float add);
 void
-dsp_movement_envelope_adsr(struct dsp_operation *envelope_adsr,
+dsp_motion_envelope_adsr(struct dsp_operation *envelope_adsr,
                            int jack_samplerate,
                            int pos);
 
 void
-dsp_edit_movement_envelope_adsr(struct dsp_module *envelope_adsr,
+dsp_edit_motion_envelope_adsr(struct dsp_module *envelope_adsr,
                                      int gate,
                                      float attack_rate,
                                      float decay_rate,

@@ -59,10 +59,10 @@ enum {
 };
 
 extern void
-math_modules_movement_envelope_segment_init(dsp_module_parameters_t *parameters);
+math_modules_motion_envelope_segment_init(dsp_module_parameters_t *parameters);
 
 extern void
-math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parameters,
+math_modules_motion_envelope_segment_edit(dsp_module_parameters_t *parameters,
                                             int release_node,
                                             int loop_node,
                                             int offset,
@@ -72,7 +72,7 @@ math_modules_movement_envelope_segment_edit(dsp_module_parameters_t *parameters,
                                             float time_scale);
 
 extern float
-math_modules_movement_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos);
+math_modules_motion_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos);
 
 
 #endif

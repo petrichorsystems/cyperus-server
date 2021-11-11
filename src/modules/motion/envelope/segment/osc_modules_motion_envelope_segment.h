@@ -1,4 +1,4 @@
-/* osc_modules_movement_envelope_segment.h
+/* osc_modules_motion_envelope_segment.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,8 +30,8 @@ Copyright 2021 murray foster */
 #include "../../../../osc.h"
 #include "../../../../osc_handlers.h"
 
-#include "ops_modules_movement_envelope_segment.h"
-#include "math_modules_movement_envelope_segment.h"
+#include "ops_modules_motion_envelope_segment.h"
+#include "math_modules_motion_envelope_segment.h"
 
 enum {
     segment_stdshape_Linen=0,
@@ -42,11 +42,11 @@ enum {
     segment_stdshape_Xyc
 };
 
-int osc_add_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_module_motion_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
                                                      int argc, void *data, void *user_data);
-int osc_edit_module_movement_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_edit_module_motion_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data);
 
-int osc_add_module_movement_envelope_stdshape_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_module_motion_envelope_stdshape_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data);
 #endif

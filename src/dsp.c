@@ -1006,7 +1006,7 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
 	 that matches the 'out' port path */
       
       if(strcmp(current_path, temp_connection->id_out) == 0) {
-	/* commented out data movement logic */
+	/* commented out data motion logic */
 	/* rtqueue_enq(temp_connection->in_values, temp_sample_in); */
         
 	dsp_optimize_connections_input(current_path,

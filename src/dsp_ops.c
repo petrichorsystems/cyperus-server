@@ -153,7 +153,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  strcat(current_path, temp_out->id);
 	}
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
-	  /* commented out data movement logic */
+	  /* commented out data motion logic */
 	  /* rtqueue_enq(temp_connection->in_values, temp_outsample); */
 
 	  /* BEGIN OPTIMIZATION LOGIC */	  

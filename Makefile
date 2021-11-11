@@ -4,4 +4,5 @@ core = src/cyperus.c src/dsp.c src/dsp_types.c src/dsp_ops.c src/dsp_math.c src/
 module_utils = src/modules/math_utils.c
 
 all:
+	mkdir -p build/
 	gcc -o build/cyperus $(core) $(module_utils) $(dsp_module_sources) -lm -lpthread -ljack -llo -luuid

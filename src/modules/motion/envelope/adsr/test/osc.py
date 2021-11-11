@@ -44,14 +44,14 @@ class OscServer(ServerThread):
         print('args', args)
         responses.put(args)
         
-    @make_method('/cyperus/add/module/movement/envelope/adsr', 'siffffffff')
+    @make_method('/cyperus/add/module/motion/envelope/adsr', 'siffffffff')
     def osc_add_module_sine(self, path, args):
-        print("received '/cyperus/add/module/movement/envelope/adsr'")
+        print("received '/cyperus/add/module/motion/envelope/adsr'")
         responses.put(args)
 
-    @make_method('/cyperus/edit/module/movement/envelope/adsr', 'siffffffff')
+    @make_method('/cyperus/edit/module/motion/envelope/adsr', 'siffffffff')
     def osc_edit_module_sine(self, path, args):
-        print("received '/cyperus/edit/module/movement/envelope/adsr'")
+        print("received '/cyperus/edit/module/motion/envelope/adsr'")
         responses.put(args)
 
     @make_method('/cyperus/list/module_port', 'ss')
@@ -118,7 +118,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
 
     print(bus_main0_uuid)
 
-    liblo.send(dest, "/cyperus/add/module/movement/envelope/adsr",
+    liblo.send(dest, "/cyperus/add/module/motion/envelope/adsr",
                "/{}".format(bus_main0_uuid),
                0, # gate
                0.5, # attack_rate (seconds)
@@ -187,7 +187,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
     response = responses.get()
     
     for num in range(0,2):
-        print("/cyperus/edit/module/movement/envelope/adsr",
+        print("/cyperus/edit/module/motion/envelope/adsr",
               "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
               1, # gate
               4.0, # attack_rate (seconds)
@@ -198,7 +198,7 @@ def test_single_channel_single_bus_sine_follower_sine(dest):
               0.5, # target_ratio_dr, decay-release ratio - like above
               1.0, # mul
               0.0) # add
-        liblo.send(dest, "/cyperus/edit/module/movement/envelope/adsr",
+        liblo.send(dest, "/cyperus/edit/module/motion/envelope/adsr",
                    "/{}?{}".format(bus_main0_uuid, sine_module_uuid),
                    1,
                    4.0,
