@@ -139,14 +139,14 @@ int _check_gate_passthru(int samplerate, dsp_module_parameters_t *parameters) {
 int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
   
   if (parameters->float32_type[STATE_PREV_GATE] <= 0.f && parameters->float32_type[PARAM_GATE] > 0.f) {
-    printf("math_modules_motion_envelope_segment.c::_check_gate(), first condition\n");
+    /* printf("math_modules_motion_envelope_segment.c::_check_gate(), first condition\n"); */
     parameters->int8_type[STATE_STAGE] = -1;
     parameters->int8_type[STATE_RELEASED] = 0;
     parameters->int8_type[STATE_DONE] = 0;
     parameters->int8_type[STATE_COUNTER] = 1 + parameters->int8_type[PARAM_OFFSET];
     return 0;
   } else if (parameters->float32_type[PARAM_GATE] <= -1.f && parameters->float32_type[STATE_PREV_GATE] > -1.f) {
-    printf("math_modules_motion_envelope_segment.c::_check_gate(), second condition\n");
+    /* printf("math_modules_motion_envelope_segment.c::_check_gate(), second condition\n"); */
     // forced release: jump to last segment overriding its duration
     double dur = -parameters->float32_type[PARAM_GATE] - 1.f;
     parameters->int8_type[STATE_COUNTER] = (int)(dur * samplerate);
@@ -154,12 +154,12 @@ int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
     parameters->int8_type[STATE_STAGE] = 1; //parameters->int8_type[PARAM_NUM_STAGES] - 1;
     parameters->int8_type[STATE_RELEASED] = 1;
 
-    printf("math_modules_motion_envelope_segment.c::_check_gate(), second condition, dur: %f\n", dur);
+    /* printf("math_modules_motion_envelope_segment.c::_check_gate(), second condition, dur: %f\n", dur); */
     
     _init_segment(samplerate, parameters, dur);
     return 0;
   } else if (parameters->float32_type[STATE_PREV_GATE] > 0.f && parameters->float32_type[PARAM_GATE] <= 0.f && parameters->int8_type[PARAM_RELEASE_NODE] >= 0 && !parameters->int8_type[STATE_RELEASED]) {
-    printf("math_modules_motion_envelope_segment.c::_check_gate(), third condition\n");
+    /* printf("math_modules_motion_envelope_segment.c::_check_gate(), third condition\n"); */
     parameters->int8_type[STATE_COUNTER] = parameters->int8_type[PARAM_OFFSET];
     parameters->int8_type[STATE_STAGE] = parameters->int8_type[PARAM_RELEASE_NODE] - 1;
     parameters->int8_type[STATE_RELEASED] = 1;
@@ -279,9 +279,9 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     grow = parameters->double_type[STATE_GROW];
     /* printf("math_modules_motion_envelope_segment.c::_perform(), parameters->float32_type[STATE_LEVEL]: %f, a2: %f, b1: %f, grow: %f\n", parameters->float32_type[STATE_LEVEL], a2, b1, grow); */
     if (!gate_check_func(samplerate, parameters)) {
+      out = parameters->float32_arr_type[PARAM_LEVELS][parameters->int8_type[STATE_STAGE]];
       break;
     }
-    
     out = level;
     b1 *= grow;
     level = a2 - b1;
@@ -321,9 +321,9 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
   }
   parameters->float32_type[STATE_LEVEL] = level;
 
-  if(parameters->int8_type[STATE_DONE])
+  if(parameters->int8_type[STATE_DONE]) {
     return parameters->float32_arr_type[PARAM_LEVELS][parameters->int8_type[STATE_STAGE]] * parameters->float32_type[PARAM_LEVEL_SCALE] + parameters->float32_type[PARAM_LEVEL_BIAS];
-  
+  }
   return out;
 } /* _perform */
 
@@ -367,13 +367,11 @@ float _next_aa(int samplerate, dsp_module_parameters_t *parameters) {
     }
   }
 
-  /* printf("math_modules_motion_envelope_segment.c::_next_aa(), about to run perform()\n"); */
   out = _perform(samplerate, parameters, &_check_gate_ar, 1);
-
+  
   /* decrement counter */
   parameters->int8_type[STATE_COUNTER] = parameters->int8_type[STATE_COUNTER] - 1;
 
-  /* printf("math_modules_motion_envelope_segment.c::_next_aa(), returning out: '%f'\n", out);; */
   return out;
 } /* _next_aa */
 
