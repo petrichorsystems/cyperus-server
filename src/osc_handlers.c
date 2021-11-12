@@ -180,8 +180,8 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   int current_index, last_break, last_cutoff, copy_index = 0;
 
   request_id = (char *)argv[0];
-  list_type = argv[1]->i;
-  path_str = (char *)argv[2];
+  path_str = (char *)argv[1];
+  list_type = argv[2]->i;
 
   printf("path: <%s>\n", path);
   printf("path_str: %s\n", path_str);
