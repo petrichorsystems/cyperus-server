@@ -25,12 +25,12 @@ void osc_error(int num, const char *msg, const char *path)
 }
 
 int osc_address_handler(const char *path, const char *types, lo_arg **argv,
-			int argc, void *data, void *user_data)
-{
-  char *new_host_out = (char *)argv[0];
-  char *new_port_out = (char *)argv[1];
+			int argc, void *data, void *user_data) {
+  char *request_id = (char *) argv[0];
+  char *new_host_out = (char *)argv[1];
+  char *new_port_out = (char *)argv[2];
   printf("hit osc_address_handler\n");
-  osc_change_address(new_host_out, new_port_out);
+  osc_change_address(request_id, new_host_out, new_port_out);
 
   return 0;
 } /* osc_address_handler */
@@ -67,7 +67,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   }
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/main", "s", mains_str);
+  lo_send(lo_addr_send,"/cyperus/list/main", "ss", (char *)argv[0], mains_str);
   free(mains_str);
   free(lo_addr_send);
   return 0;
@@ -161,6 +161,7 @@ char *build_bus_list_str(struct dsp_bus *head_bus,
 int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
+  char *request_id = NULL;
   char *path_str, *result_str = NULL;
   int list_type = 0;
   size_t result_str_size = 0;
@@ -177,9 +178,10 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   char *part_result_str = NULL;
   int more = 0;
   int current_index, last_break, last_cutoff, copy_index = 0;
-  
-  path_str = (char *)argv[0];
-  list_type = argv[1]->i;
+
+  request_id = (char *)argv[0];
+  path_str = (char *)argv[1];
+  list_type = argv[2]->i;
 
   printf("path: <%s>\n", path);
   printf("path_str: %s\n", path_str);
@@ -251,7 +253,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
     }
     result_str[current_index - last_cutoff] = '\0';
   }
-  lo_send(lo_addr_send,"/cyperus/list/bus", "siis", path_str, list_type, 0, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/bus", "ssiis", request_id, path_str, list_type, 0, result_str);
   free(lo_addr_send);
   if(strcmp(result_str, "\n"))
     free(result_str);
@@ -263,11 +265,12 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
 			   int argc, void *data, void *user_data)
 {
   struct dsp_bus *temp_bus = NULL;
-  char *path_str, *result_str = NULL;
+  char *request_id, *path_str, *result_str = NULL;
   size_t result_str_size = 0;
   struct dsp_bus_port *temp_bus_port = NULL;
 
-  path_str = (char *)argv[0];
+  request_id = (char *)argv[0];
+  path_str = (char *)argv[1];
 
   printf("path: <%s>\n", path);
   printf("path_str: %s\n", path_str);
@@ -304,7 +307,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
     temp_bus_port = temp_bus_port->next;
   }
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/bus_port", "ss", path_str, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/bus_port", "sss", request_id, path_str, result_str);
   free(lo_addr_send);
 
   free(result_str);
@@ -316,16 +319,17 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 {
   int i;
   struct dsp_bus *temp_bus;
-  char *path_str, *bus_str, *ins_str, *outs_str, *new_id = NULL;
+  char *request_id, *path_str, *bus_str, *ins_str, *outs_str, *new_id = NULL;
 
   struct dsp_bus *new_bus;
   
   printf("path: <%s>\n", path);
 
-  path_str = (char *)argv[0];
-  bus_str = (char *)argv[1];
-  ins_str = (char *)argv[2];
-  outs_str = (char *)argv[3];
+  request_id = (char *)argv[0];
+  path_str = (char *)argv[1];
+  bus_str = (char *)argv[2];
+  ins_str = (char *)argv[3];
+  outs_str = (char *)argv[4];
   
   printf("path_str: %s\n", path_str);
   printf("bus_str: %s\n", bus_str);
@@ -355,7 +359,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
     if(outs_str[i] == ',')
       outs_str[i] = '|';
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/bus", "sssssi", path_str, bus_str, ins_str, outs_str, new_id,
+  lo_send(lo_addr_send,"/cyperus/add/bus", "ssssssi", request_id, path_str, bus_str, ins_str, outs_str, new_id,
 	  strcmp(new_bus->name, bus_str));
   free(lo_addr_send);
   free(new_id);
@@ -383,18 +387,19 @@ int osc_remove_module_handler(const char *path, const char *types, lo_arg ** arg
 int osc_add_connection_handler(const char *path, const char *types, lo_arg **argv,
                                       int argc, void *data, void *user_data)
 {
-  char *path_out, *path_in;
+  char *request_id, *path_out, *path_in;
   int failed = 0;
   
   printf("path: <%s>\n", path);
 
-  path_out = (char *)argv[0];
-  path_in = (char *)argv[1];
+  request_id = (char *)argv[0];
+  path_out = (char *)argv[1];
+  path_in = (char *)argv[2];
 
   failed = dsp_add_connection(path_out, path_in);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/connection", "ssi", path_out, path_in, failed);
+  lo_send(lo_addr_send,"/cyperus/add/connection", "sssi", request_id, path_out, path_in, failed);
   lo_address_free(lo_addr_send);
 
   printf("done osc_add_connection_handler()\n");
@@ -405,18 +410,19 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 int osc_remove_connection_handler(const char *path, const char *types, lo_arg **argv,
                                          int argc, void *data, void *user_data)
 {
-  char *path_out, *path_in;
+  char *request_id, *path_out, *path_in;
   int failed = 0;
   
   printf("path: <%s>\n", path);
 
-  path_out = (char *)argv[0];
-  path_in = (char *)argv[1];
+  request_id = (char *)argv[0];
+  path_out = (char *)argv[1];
+  path_in = (char *)argv[2];
 
   failed = dsp_remove_connection(path_out, path_in);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/remove/connection", "ssi", path_out, path_in, failed);
+  lo_send(lo_addr_send,"/cyperus/remove/connection", "sssi", request_id, path_out, path_in, failed);
   lo_address_free(lo_addr_send);
 
   printf("done osc_remove_connection_handler()\n");
@@ -429,12 +435,14 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 {
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *target_module = NULL;
+  char *request_id = NULL;
   char *path_str = NULL;
   char *module_list = NULL;
   char *result_str = NULL;
   printf("path: <%s>\n", path);
 
-  path_str = (char *)argv[0];
+  request_id = (char *)argv[0];
+  path_str = (char *)argv[1];
   
   target_bus = dsp_parse_bus_path(path_str);
   target_module = target_bus->dsp_module_head;
@@ -459,7 +467,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/module","s", result_str);
+  lo_send(lo_addr_send,"/cyperus/list/module","ss", request_id, result_str);
   free(lo_addr_send);
   if( !strcmp(result_str, "") )
     free(result_str);
@@ -473,13 +481,14 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   int count;
   struct dsp_bus *temp_bus;
   struct dsp_module *temp_module = NULL;
-  char *bus_path, *module_id, *result_str = NULL;
+  char *request_id, *bus_path, *module_id, *result_str = NULL;
   size_t result_str_size = 0;
   struct dsp_port_in *temp_port_in;
   struct dsp_port_out *temp_port_out;
   char *module_path;
-  
-  module_path = (char *)argv[0];
+
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
 
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
@@ -534,7 +543,7 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   }
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/module_port", "ss", module_path, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/module_port", "sss", request_id, module_path, result_str);
   lo_address_free(lo_addr_send);
   free(result_str);
   
@@ -545,12 +554,13 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 int osc_add_module_block_processor_handler(const char *path, const char *types, lo_arg ** argv,
                                                   int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
   
   target_bus = dsp_parse_bus_path(bus_path);
   dsp_create_block_processor(target_bus);
@@ -563,7 +573,7 @@ int osc_add_module_block_processor_handler(const char *path, const char *types, 
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/block_processor","s", module_id);
+  lo_send(lo_addr_send,"/cyperus/add/module/block_processor","ss", request_id, module_id);
   free(lo_addr_send);
   return 0;
 } /* osc_add_module_block_processor_handler */
@@ -573,7 +583,7 @@ int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** 
                                         int argc, void *data, void *user_data)
 {
   printf("osc_add_module_delay_handler()..\n");
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -583,10 +593,11 @@ int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** 
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  amt=argv[1]->f;
-  time=argv[2]->f;
-  feedback=argv[3]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  amt=argv[2]->f;
+  time=argv[3]->f;
+  feedback=argv[4]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_delay(target_bus, amt, time, feedback);
@@ -601,7 +612,7 @@ int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** 
 
   printf("add_module_delay_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/delay","sfff", module_id, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/add/module/delay","ssfff", request_id, module_id, amt, time, feedback);
   free(lo_addr_send);
   return 0;
 } /* osc_add_module_delay_handler */
@@ -611,7 +622,7 @@ int
 osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
 {
-  char *module_path, *module_id;
+  char *request_id, *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
@@ -620,10 +631,11 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
   float feedback;
   int count;
 
-  module_path = (char *)argv[0];
-  amt=argv[1]->f;
-  time=argv[2]->f;
-  feedback=argv[3]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  amt=argv[2]->f;
+  time=argv[3]->f;
+  feedback=argv[4]->f;
 
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
@@ -637,7 +649,7 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
   dsp_edit_delay(target_module, amt, time, feedback);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/delay","sfff", module_id, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/edit/module/delay","ssfff", request_id, module_id, amt, time, feedback);
   free(lo_addr_send);
   
   return 0;
@@ -646,7 +658,7 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
 int osc_add_module_sawtooth_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -655,9 +667,10 @@ int osc_add_module_sawtooth_handler(const char *path, const char *types, lo_arg 
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  freq=argv[1]->f;
-  amp=argv[2]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  freq=argv[2]->f;
+  amp=argv[3]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_sawtooth(target_bus, freq, amp);
@@ -673,7 +686,7 @@ int osc_add_module_sawtooth_handler(const char *path, const char *types, lo_arg 
   printf("add_module_sawtooth_handler, module_id: %s\n", module_id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sawtooth","sfff", module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/add/module/sawtooth","ssfff", request_id, module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -684,6 +697,7 @@ int
 osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
 {
+  char *request_id = NULL;
   char *module_path = NULL;
   char *module_id = NULL;
   char *bus_path;
@@ -695,9 +709,10 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
 
   printf("path: <%s>\n", path);
 
-  module_path = (char *)argv[0];
-  freq=argv[1]->f;
-  amp=argv[2]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  freq=argv[2]->f;
+  amp=argv[3]->f;
   
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
@@ -720,7 +735,7 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
   printf("finished editin\n");
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/sawtooth","sff", module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/edit/module/sawtooth","ssff", request_id, module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -729,7 +744,7 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
 int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -739,10 +754,11 @@ int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** a
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  freq=argv[1]->f;
-  amp=argv[2]->f;
-  phase=argv[3]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  freq=argv[2]->f;
+  amp=argv[3]->f;
+  phase=argv[4]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_sine(target_bus, freq, amp, phase);
@@ -759,7 +775,7 @@ int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** a
   printf("add_module_sine_handler, module_id: %s\n", module_id);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, freq, amp, phase);
+  lo_send(lo_addr_send,"/cyperus/add/module/sine","ssfff", request_id, module_id, freq, amp, phase);
   free(lo_addr_send);
 
   return 0;
@@ -770,6 +786,7 @@ int
 osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
 {
+  char *request_id = NULL;
   char *module_path = NULL;
   char *module_id = NULL;
   char *bus_path;
@@ -782,10 +799,11 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
 
   printf("path: <%s>\n", path);
 
-  module_path = (char *)argv[0];
-  freq=argv[1]->f;
-  amp=argv[2]->f;
-  phase=argv[3]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  freq=argv[2]->f;
+  amp=argv[3]->f;
+  phase=argv[4]->f;
   
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
@@ -800,7 +818,7 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
   dsp_edit_sine(target_module, freq, amp, phase);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sine","sfff", module_id, freq, amp, phase);
+  lo_send(lo_addr_send,"/cyperus/add/module/sine","ssfff", request_id, module_id, freq, amp, phase);
   free(lo_addr_send);
 
   return 0;
@@ -809,7 +827,7 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
 int osc_add_module_triangle_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -818,9 +836,10 @@ int osc_add_module_triangle_handler(const char *path, const char *types, lo_arg 
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  freq=argv[1]->f;
-  amp=argv[2]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  freq=argv[2]->f;
+  amp=argv[3]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_triangle(target_bus, freq, amp);
@@ -836,7 +855,7 @@ int osc_add_module_triangle_handler(const char *path, const char *types, lo_arg 
   printf("add_module_triangle_handler, module_id: %s\n", module_id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/triangle","sfff", module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/add/module/triangle","ssfff", request_id, module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -847,6 +866,7 @@ int
 osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
 {
+  char *request_id = NULL;
   char *module_path = NULL;
   char *module_id = NULL;
   char *bus_path;
@@ -858,9 +878,10 @@ osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** 
 
   printf("path: <%s>\n", path);
 
-  module_path = (char *)argv[0];
-  freq=argv[1]->f;
-  amp=argv[2]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  freq=argv[2]->f;
+  amp=argv[3]->f;
   
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
@@ -882,7 +903,7 @@ osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** 
   printf("post-edit triangle\n");
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/triangle","sfff", module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/add/module/triangle","ssfff", request_id, module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -892,7 +913,7 @@ osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** 
 int osc_add_module_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
                                                     int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -902,10 +923,11 @@ int osc_add_module_envelope_follower_handler(const char *path, const char *types
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  attack=argv[1]->f;
-  decay=argv[2]->f;
-  scale=argv[3]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  attack=argv[2]->f;
+  decay=argv[3]->f;
+  scale=argv[4]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_envelope_follower(target_bus, attack, decay, scale);
@@ -920,7 +942,7 @@ int osc_add_module_envelope_follower_handler(const char *path, const char *types
 
   printf("add_module_envelope_follower_handler, module_id: %s\n", module_id);
     lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/envelope_follower","sfff", module_id, attack, decay, scale);
+    lo_send(lo_addr_send,"/cyperus/add/module/envelope_follower","ssfff", request_id, module_id, attack, decay, scale);
   free(lo_addr_send);
   
   return 0;
@@ -931,7 +953,7 @@ int
 osc_edit_module_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
 {
-  char *module_path, *module_id;
+  char *module_path, *module_id, *request_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
@@ -941,10 +963,11 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
   int count;
   printf("path: <%s>\n", path);
 
-  module_path = (char *)argv[0];
-  attack=argv[1]->f;
-  decay=argv[2]->f;
-  scale=argv[3]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  attack=argv[2]->f;
+  decay=argv[3]->f;
+  scale=argv[4]->f;
   
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
@@ -963,7 +986,7 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
 
   dsp_edit_envelope_follower(target_module, attack, decay, scale);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/envelope_follower","sfff", module_id, attack, decay, scale);
+  lo_send(lo_addr_send,"/cyperus/edit/module/envelope_follower","ssfff", request_id, module_id, attack, decay, scale);
   free(lo_addr_send);
   return 0;
 } /* osc_edit_module_envelope_follower_handler */
@@ -971,7 +994,7 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
 int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -981,10 +1004,11 @@ int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg 
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  amp=argv[1]->f;
-  freq=argv[2]->f;
-  q=argv[3]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  amp=argv[2]->f;
+  freq=argv[3]->f;
+  q=argv[4]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_bandpass(target_bus, amp, freq, q);
@@ -998,7 +1022,7 @@ int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg 
   strcpy(module_id, target_module->id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/bandpass","sfff", module_id, amp, freq, q);
+  lo_send(lo_addr_send,"/cyperus/add/module/bandpass","ssfff", request_id, module_id, amp, freq, q);
   free(lo_addr_send);
 
   free(module_id);
@@ -1009,7 +1033,7 @@ int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg 
 int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
                                             int argc, void *data, void *user_data)
 {
-  char *module_path, *module_id = NULL;
+  char *request_id, *module_path, *module_id = NULL;
   char *bus_path = NULL;
   struct dsp_bus *target_bus = NULL;;
   struct dsp_module *target_module = NULL;
@@ -1018,11 +1042,11 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
   float q = 0.0;
   int count = 0;
 
-  
-  module_path = (char *)argv[0];
-  amt=argv[1]->f;
-  freq=argv[2]->f;
-  q=argv[3]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  amt=argv[2]->f;
+  freq=argv[3]->f;
+  q=argv[4]->f;
 
   
   /* split up path */
@@ -1040,7 +1064,7 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
   dsp_edit_bandpass(target_module, amt, freq, q);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/bandpass","sfff", module_id, amt, freq, q);
+  lo_send(lo_addr_send,"/cyperus/edit/module/bandpass","ssfff", request_id, module_id, amt, freq, q);
   free(lo_addr_send);
 
   
@@ -1053,7 +1077,7 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
 int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
                                            int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -1062,9 +1086,10 @@ int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg 
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  amp=argv[1]->f;
-  freq=argv[2]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  amp=argv[2]->f;
+  freq=argv[3]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_highpass(target_bus, amp, freq);
@@ -1078,7 +1103,7 @@ int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg 
   strcpy(module_id, target_module->id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/highpass","sfff", module_id, amp, freq);
+  lo_send(lo_addr_send,"/cyperus/add/module/highpass","ssfff", request_id, module_id, amp, freq);
   free(lo_addr_send);
 
   free(module_id);
@@ -1089,17 +1114,18 @@ int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg 
 int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
                                             int argc, void *data, void *user_data)
 {
-  char *module_path, *module_id = NULL;
+  char *request_id, *module_path, *module_id = NULL;
   char *bus_path = NULL;
   struct dsp_bus *target_bus = NULL;;
   struct dsp_module *target_module = NULL;
   float amt = 0.0;
   float freq = 0.0;
   int count = 0;
-  
-  module_path = (char *)argv[0];
-  amt=argv[1]->f;
-  freq=argv[2]->f;
+
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  amt=argv[2]->f;
+  freq=argv[3]->f;
 
   
   /* split up path */
@@ -1117,7 +1143,7 @@ int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg
   dsp_edit_highpass(target_module, amt, freq);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/highpass","sff", module_id, amt, freq);
+  lo_send(lo_addr_send,"/cyperus/edit/module/highpass","ssff", request_id, module_id, amt, freq);
   free(lo_addr_send);
 
   
@@ -1131,7 +1157,7 @@ int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg
 int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
                                               int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -1139,11 +1165,11 @@ int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_a
   float shift;
   float mix;
   
-  
-  bus_path = (char *)argv[0];
-  amt=argv[1]->f;
-  shift=argv[2]->f;
-  mix=argv[3]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  amt=argv[2]->f;
+  shift=argv[3]->f;
+  mix=argv[4]->f;
   
   printf("creating pitch shift with amount %f, shift %f, and mix %f..\n",amt,shift,mix);
   
@@ -1160,7 +1186,7 @@ int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_a
 
   printf("add_module_pitch_shift_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","sfff", module_id, amt, shift, mix);
+  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","ssfff", request_id, module_id, amt, shift, mix);
   free(lo_addr_send);
   
   return 0;
@@ -1170,7 +1196,7 @@ int
 osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
 {
-  char *module_path, *module_id;
+  char *request_id, *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
@@ -1181,11 +1207,11 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
 
   int count;
   
-  
-  module_path = (char *)argv[0];
-  amt=argv[1]->f;
-  shift=argv[2]->f;
-  mix=argv[3]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  amt=argv[2]->f;
+  shift=argv[3]->f;
+  mix=argv[4]->f;
 
   
   /* split up path */
@@ -1203,7 +1229,7 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
   dsp_edit_pitch_shift(target_module, amt, shift, mix);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","sfff", module_id, amt, shift, mix);
+  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","ssfff", request_id, module_id, amt, shift, mix);
   free(lo_addr_send);
   
   return 0;
@@ -1214,7 +1240,7 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
 int osc_add_module_karlsen_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
                                                   int argc, void *data, void *user_data)
 {
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -1222,11 +1248,11 @@ int osc_add_module_karlsen_lowpass_handler(const char *path, const char *types, 
   float freq;
   float res;
   
-  
-  bus_path = (char *)argv[0];
-  amt=argv[1]->f;
-  freq=argv[2]->f;
-  res=argv[3]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  amt=argv[2]->f;
+  freq=argv[3]->f;
+  res=argv[4]->f;
   
   printf("creating pitch freq with amount %f, freq %f, and res %f..\n",amt,freq,res);
   
@@ -1243,7 +1269,7 @@ int osc_add_module_karlsen_lowpass_handler(const char *path, const char *types, 
 
   printf("add_module_karlsen_lowpass_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","sfff", module_id, amt, freq, res);
+  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","ssfff", request_id, module_id, amt, freq, res);
   free(lo_addr_send);
   
   return 0;
@@ -1253,7 +1279,7 @@ int
 osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 		     int argc, void *data, void *user_data)
 {
-  char *module_path, *module_id;
+  char *request_id, *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
@@ -1263,11 +1289,12 @@ osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_
   float res;
 
   int count;
-  
-  module_path = (char *)argv[0];
-  amt=argv[1]->f;
-  freq=argv[2]->f;
-  res=argv[3]->f;
+
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  amt=argv[2]->f;
+  freq=argv[3]->f;
+  res=argv[4]->f;
 
   
   /* split up path */
@@ -1285,7 +1312,7 @@ osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_
   dsp_edit_karlsen_lowpass(target_module, amt, freq, res);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","sfff", module_id, amt, freq, res);
+  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","ssfff", request_id, module_id, amt, freq, res);
   free(lo_addr_send);
   
   return 0;
@@ -1299,6 +1326,7 @@ int osc_add_module_osc_transmit_handler(const char *path, const char *types, lo_
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
+  char *request_id;
   char *host;
   char *port;
   char *osc_path;
@@ -1306,12 +1334,13 @@ int osc_add_module_osc_transmit_handler(const char *path, const char *types, lo_
   int samplerate_divisor;
   
   printf("path: <%s>\n", path);
-  
-  bus_path = (char *)argv[0];
-  host = (char *)argv[1];
-  port = (char *)argv[2];
-  osc_path = (char *)argv[3];
-  samplerate_divisor = argv[4]->i;
+
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  host = (char *)argv[2];
+  port = (char *)argv[3];
+  osc_path = (char *)argv[4];
+  samplerate_divisor = argv[5]->i;
 
   printf("bus_path: %s\n", bus_path);
   printf("host: %s\n", host);
@@ -1330,7 +1359,7 @@ int osc_add_module_osc_transmit_handler(const char *path, const char *types, lo_
   strcpy(module_id, target_module->id);
   printf("add_module_osc_transmit_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_transmit","ssssi", module_id, host, port, osc_path, samplerate_divisor);
+  lo_send(lo_addr_send,"/cyperus/add/module/osc_transmit","sssssi", request_id, module_id, host, port, osc_path, samplerate_divisor);
   free(lo_addr_send);
 
   printf("done\n");
@@ -1348,6 +1377,7 @@ osc_edit_module_osc_transmit_handler(const char *path, const char *types, lo_arg
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
 
+  char *request_id;
   char *host;
   char *port;
   char *osc_path;
@@ -1356,11 +1386,12 @@ osc_edit_module_osc_transmit_handler(const char *path, const char *types, lo_arg
   
   printf("path: <%s>\n", path);
 
-  module_path = (char *)argv[0];
-  host = (char *)argv[1];
-  port = (char *)argv[2];
-  osc_path = (char *)argv[3];
-  samplerate_divisor = argv[4]->i;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  host = (char *)argv[2];
+  port = (char *)argv[3];
+  osc_path = (char *)argv[4];
+  samplerate_divisor = argv[5]->i;
 
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
@@ -1379,7 +1410,7 @@ osc_edit_module_osc_transmit_handler(const char *path, const char *types, lo_arg
 
   dsp_edit_osc_transmit(target_module, host, port, osc_path, samplerate_divisor);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/osc_transmit","ssssi", module_id, host, port, osc_path, samplerate_divisor);
+  lo_send(lo_addr_send,"/cyperus/edit/module/osc_transmit","sssssi", request_id, module_id, host, port, osc_path, samplerate_divisor);
   free(lo_addr_send);
   return 0;
 } /* osc_edit_module_osc_transmit_handler */

@@ -28,7 +28,7 @@ extern char *send_port_out;
 extern lo_server_thread lo_thread;
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
-int osc_change_address(char *new_host_out, char *new_port_out);
+int osc_change_address(char *request_id, char *new_host_out, char *new_port_out);
 
 #include "modules/audio/analysis/transient_detector/osc_modules_audio_analysis_transient_detector.h"
 #include "modules/audio/filter/moogff/osc_modules_audio_filter_moogff.h"

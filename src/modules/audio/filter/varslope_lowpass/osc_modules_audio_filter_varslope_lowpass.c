@@ -22,7 +22,7 @@ int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char 
 						   int argc, void *data, void *user_data)
 {
   printf("osc_add_module_filter_varslope_lowpass_handler()..\n");
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -32,10 +32,11 @@ int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char 
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  amplitude=argv[1]->f;
-  slope=argv[2]->f;
-  cutoff_frequency=argv[3]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  amplitude=argv[2]->f;
+  slope=argv[3]->f;
+  cutoff_frequency=argv[4]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_filter_varslope_lowpass(target_bus, amplitude, slope, cutoff_frequency);
@@ -50,7 +51,7 @@ int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char 
 
   printf("add_module_filter_varslope_lowpass_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/filter_varslope_lowpass","sfff", module_id, amplitude, slope, cutoff_frequency);
+  lo_send(lo_addr_send,"/cyperus/add/module/filter_varslope_lowpass","ssfff", request_id, module_id, amplitude, slope, cutoff_frequency);
   free(lo_addr_send);
   return 0;
 } /* osc_add_module_filter_varslope_lowpass_handler */
@@ -60,7 +61,7 @@ int
 osc_edit_module_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {
-  char *module_path, *module_id;
+  char *request_id, *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
@@ -69,10 +70,11 @@ osc_edit_module_filter_varslope_lowpass_handler(const char *path, const char *ty
   float cutoff_frequency;
   int count;
 
-  module_path = (char *)argv[0];
-  amplitude=argv[1]->f;
-  slope=argv[2]->f;
-  cutoff_frequency=argv[3]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  amplitude=argv[2]->f;
+  slope=argv[3]->f;
+  cutoff_frequency=argv[4]->f;
 
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
