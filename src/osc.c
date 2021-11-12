@@ -22,7 +22,7 @@ char *send_host_out;
 char *send_port_out;
 lo_server_thread lo_thread;
         
-int osc_change_address(char *new_host_out, char *new_port_out) {
+int osc_change_address(char *request_id, char *new_host_out, char *new_port_out) {
   free(send_host_out);
   free(send_port_out);
 
@@ -33,7 +33,7 @@ int osc_change_address(char *new_host_out, char *new_port_out) {
   strcpy(send_port_out, new_port_out);
   
   lo_address lo_addr_send = lo_address_new((const char*)new_host_out, (const char*)new_port_out);
-  lo_send(lo_addr_send,"/cyperus/address", "ss", new_host_out, new_port_out);
+  lo_send(lo_addr_send,"/cyperus/address", "sss", request_id, new_host_out, new_port_out);
   free(lo_addr_send);
   printf("changed osc server and port to: %s:%s\n", new_host_out, new_port_out);
   return 0;

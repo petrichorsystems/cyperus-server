@@ -28,7 +28,7 @@ int osc_add_module_oscillator_pulse_handler(const char *path, const char *types,
 						   int argc, void *data, void *user_data)
 {
   printf("osc_add_module_oscillator_pulse_handler()..\n");
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -36,12 +36,13 @@ int osc_add_module_oscillator_pulse_handler(const char *path, const char *types,
   
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
 
-  frequency = argv[1]->f;
-  pulse_width = argv[2]->f;
-  mul = argv[3]->f;
-  add = argv[4]->f;
+  frequency = argv[2]->f;
+  pulse_width = argv[3]->f;
+  mul = argv[4]->f;
+  add = argv[5]->f;
   
   target_bus = dsp_parse_bus_path(bus_path);
   
@@ -56,7 +57,7 @@ int osc_add_module_oscillator_pulse_handler(const char *path, const char *types,
   strcpy(module_id, target_module->id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/audio/oscillator/pulse","sffff", module_id, frequency, pulse_width, mul, add);
+  lo_send(lo_addr_send,"/cyperus/add/module/audio/oscillator/pulse","ssffff", request_id, module_id, frequency, pulse_width, mul, add);
   free(lo_addr_send);
 
   return 0;
@@ -67,7 +68,7 @@ int
 osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {  
-  char *module_path, *module_id;
+  char *request_id, *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
@@ -75,12 +76,13 @@ osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo
   int count;
   
   printf("path: <%s>\n", path);
-  
-  module_path = (char *)argv[0];
-  frequency = argv[1]->f;
-  pulse_width = argv[2]->f;
-  mul = argv[3]->f;
-  add = argv[4]->f;
+
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  frequency = argv[2]->f;
+  pulse_width = argv[3]->f;
+  mul = argv[4]->f;
+  add = argv[5]->f;
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);

@@ -22,7 +22,7 @@ int osc_add_module_analysis_transient_detector_handler(const char *path, const c
 						       int argc, void *data, void *user_data)
 {
   printf("osc_add_module_transient_detector_handler()..\n");
-  char *bus_path, *module_id = NULL;
+  char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -30,11 +30,12 @@ int osc_add_module_analysis_transient_detector_handler(const char *path, const c
    
   printf("path: <%s>\n", path);
 
-  bus_path = (char *)argv[0];
-  sensitivity = argv[1]->f;
-  attack_ms = argv[2]->f;
-  decay_ms = argv[3]->f;
-  scale = argv[4]->f;
+  request_id = (char *)argv[0];
+  bus_path = (char *)argv[1];
+  sensitivity = argv[2]->f;
+  attack_ms = argv[3]->f;
+  decay_ms = argv[4]->f;
+  scale = argv[5]->f;
 
   target_bus = dsp_parse_bus_path(bus_path);  
   dsp_create_transient_detector(target_bus,
@@ -55,7 +56,8 @@ int osc_add_module_analysis_transient_detector_handler(const char *path, const c
   printf("add_module_transient_detector_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/transient_detector",
-	  "sffff",
+	  "ssffff",
+          request_id,
 	  module_id,
 	  sensitivity,
 	  attack_ms,
@@ -71,18 +73,19 @@ int
 osc_edit_module_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
 						    int argc, void *data, void *user_data)
 {
-  char *module_path, *module_id;
+  char *request_id, *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
   float sensitivity, attack_ms, decay_ms, scale = 0.0f;
   int count;
 
-  module_path = (char *)argv[0];
-  sensitivity = argv[1]->f;
-  attack_ms = argv[2]->f;
-  decay_ms = argv[3]->f;
-  scale = argv[4]->f;
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  sensitivity = argv[2]->f;
+  attack_ms = argv[3]->f;
+  decay_ms = argv[4]->f;
+  scale = argv[5]->f;
 
   printf("osc_edit_module_analysis_transient_detector_handler::sensitivity: %f\n", sensitivity);
   
