@@ -58,7 +58,7 @@ int osc_add_module_filter_moogff_handler(const char *path, const char *types, lo
   strcpy(module_id, target_module->id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/audio/filter/moogff","ssfffff", request_id, module_id, frequency, gain, reset, mul, add);
+  lo_send(lo_addr_send,"/cyperus/add/module/audio/filter/moogff","sisfffff", request_id, 0, module_id, frequency, gain, reset, mul, add);
   free(lo_addr_send);
 
   return 0;
@@ -96,7 +96,7 @@ osc_edit_module_filter_moogff_handler(const char *path, const char *types, lo_ar
   dsp_edit_filter_moogff(target_module, frequency, gain, reset, mul, add);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/audio/filter/moogff","ssfffff", request_id, module_id, frequency, gain, reset, mul, add);
+  lo_send(lo_addr_send,"/cyperus/edit/module/audio/filter/moogff","sisfffff", request_id, 0, module_id, frequency, gain, reset, mul, add);
   free(lo_addr_send);
   
   return 0;

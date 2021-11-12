@@ -51,7 +51,7 @@ int osc_add_module_filter_varslope_lowpass_handler(const char *path, const char 
 
   printf("add_module_filter_varslope_lowpass_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/filter_varslope_lowpass","ssfff", request_id, module_id, amplitude, slope, cutoff_frequency);
+  lo_send(lo_addr_send,"/cyperus/add/module/filter_varslope_lowpass","sisfff", request_id, 0, module_id, amplitude, slope, cutoff_frequency);
   free(lo_addr_send);
   return 0;
 } /* osc_add_module_filter_varslope_lowpass_handler */
@@ -88,7 +88,7 @@ osc_edit_module_filter_varslope_lowpass_handler(const char *path, const char *ty
   dsp_edit_filter_varslope_lowpass(target_module, amplitude, slope, cutoff_frequency);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/filter_varslope_lowpass","sfff", module_id, amplitude, slope, cutoff_frequency);
+  lo_send(lo_addr_send,"/cyperus/edit/module/filter_varslope_lowpass","sisfff", request_id, 0, module_id, amplitude, slope, cutoff_frequency);
   free(lo_addr_send);
   
   return 0;

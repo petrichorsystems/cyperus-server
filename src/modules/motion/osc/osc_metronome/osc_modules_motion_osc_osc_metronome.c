@@ -60,7 +60,7 @@ int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types
 
   printf("add_module_osc_metronome_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","ssf", request_id, module_id, beats_per_minute);
+  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute);
   free(lo_addr_send);
   return 0;
 } /* osc_add_module_osc_osc_metronome_handler */
@@ -95,7 +95,7 @@ osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, l
   dsp_edit_osc_metronome(target_module, beats_per_minute);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/osc_metronome","ssf", request_id, module_id, beats_per_minute);
+  lo_send(lo_addr_send,"/cyperus/edit/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute);
   free(lo_addr_send);
   
   return 0;

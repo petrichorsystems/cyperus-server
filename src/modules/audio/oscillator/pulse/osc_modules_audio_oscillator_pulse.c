@@ -57,7 +57,7 @@ int osc_add_module_oscillator_pulse_handler(const char *path, const char *types,
   strcpy(module_id, target_module->id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/audio/oscillator/pulse","ssffff", request_id, module_id, frequency, pulse_width, mul, add);
+  lo_send(lo_addr_send,"/cyperus/add/module/audio/oscillator/pulse","sisffff", request_id, 0, module_id, frequency, pulse_width, mul, add);
   free(lo_addr_send);
 
   return 0;
@@ -98,7 +98,7 @@ osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo
   dsp_edit_oscillator_pulse(target_module, frequency, pulse_width, mul, add);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/audio/oscillator/pulse","ssffff", request_id, module_id, frequency, pulse_width, mul, add);
+  lo_send(lo_addr_send,"/cyperus/edit/module/audio/oscillator/pulse","sisffff", request_id, 0, module_id, frequency, pulse_width, mul, add);
   free(lo_addr_send);
   
   return 0;

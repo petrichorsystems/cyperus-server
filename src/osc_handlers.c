@@ -67,7 +67,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   }
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/main", "ss", (char *)argv[0], mains_str);
+  lo_send(lo_addr_send,"/cyperus/list/main", "sis", (char *)argv[0], 0, mains_str);
   free(mains_str);
   free(lo_addr_send);
   return 0;
@@ -242,7 +242,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	last_cutoff = last_break;
 	if(last_cutoff == strlen(result_str - 1))
 	   more = 0;
-	lo_send(lo_addr_send,"/cyperus/list/bus", "siis", path_str, list_type, more, part_result_str);
+	lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, path_str, list_type, more, part_result_str);
 	free(part_result_str);
       }
     }
@@ -253,7 +253,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
     }
     result_str[current_index - last_cutoff] = '\0';
   }
-  lo_send(lo_addr_send,"/cyperus/list/bus", "ssiis", request_id, path_str, list_type, 0, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, path_str, list_type, 0, result_str);
   free(lo_addr_send);
   if(strcmp(result_str, "\n"))
     free(result_str);
@@ -307,7 +307,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
     temp_bus_port = temp_bus_port->next;
   }
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/bus_port", "sss", request_id, path_str, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/bus_port", "siss", request_id, 0, path_str, result_str);
   free(lo_addr_send);
 
   free(result_str);
@@ -359,7 +359,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
     if(outs_str[i] == ',')
       outs_str[i] = '|';
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/bus", "ssssssi", request_id, path_str, bus_str, ins_str, outs_str, new_id,
+  lo_send(lo_addr_send,"/cyperus/add/bus", "sisssssi", request_id, 0, path_str, bus_str, ins_str, outs_str, new_id,
 	  strcmp(new_bus->name, bus_str));
   free(lo_addr_send);
   free(new_id);
@@ -399,7 +399,7 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
   failed = dsp_add_connection(path_out, path_in);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/connection", "sssi", request_id, path_out, path_in, failed);
+  lo_send(lo_addr_send,"/cyperus/add/connection", "sissi", request_id, 0, path_out, path_in, failed);
   lo_address_free(lo_addr_send);
 
   printf("done osc_add_connection_handler()\n");
@@ -422,7 +422,7 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
   failed = dsp_remove_connection(path_out, path_in);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/remove/connection", "sssi", request_id, path_out, path_in, failed);
+  lo_send(lo_addr_send,"/cyperus/remove/connection", "sissi", request_id, 0, path_out, path_in, failed);
   lo_address_free(lo_addr_send);
 
   printf("done osc_remove_connection_handler()\n");
@@ -467,7 +467,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/module","ss", request_id, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/module","sis", request_id, 0, result_str);
   free(lo_addr_send);
   if( !strcmp(result_str, "") )
     free(result_str);
@@ -543,7 +543,7 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   }
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/module_port", "sss", request_id, module_path, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/module_port", "siss", request_id, 0, module_path, result_str);
   lo_address_free(lo_addr_send);
   free(result_str);
   
@@ -573,7 +573,7 @@ int osc_add_module_block_processor_handler(const char *path, const char *types, 
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/block_processor","ss", request_id, module_id);
+  lo_send(lo_addr_send,"/cyperus/add/module/block_processor","sis", request_id, 0, module_id);
   free(lo_addr_send);
   return 0;
 } /* osc_add_module_block_processor_handler */
@@ -612,7 +612,7 @@ int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** 
 
   printf("add_module_delay_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/delay","ssfff", request_id, module_id, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/add/module/delay","sisfff", request_id, 0, module_id, amt, time, feedback);
   free(lo_addr_send);
   return 0;
 } /* osc_add_module_delay_handler */
@@ -649,7 +649,7 @@ osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** arg
   dsp_edit_delay(target_module, amt, time, feedback);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/delay","ssfff", request_id, module_id, amt, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/edit/module/delay","sisfff", request_id, 0, module_id, amt, time, feedback);
   free(lo_addr_send);
   
   return 0;
@@ -686,7 +686,7 @@ int osc_add_module_sawtooth_handler(const char *path, const char *types, lo_arg 
   printf("add_module_sawtooth_handler, module_id: %s\n", module_id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sawtooth","ssfff", request_id, module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/add/module/sawtooth","sisfff", request_id, 0, module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -735,7 +735,7 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
   printf("finished editin\n");
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/sawtooth","ssff", request_id, module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/edit/module/sawtooth","sisff", request_id, 0, module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -775,7 +775,7 @@ int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** a
   printf("add_module_sine_handler, module_id: %s\n", module_id);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sine","ssfff", request_id, module_id, freq, amp, phase);
+  lo_send(lo_addr_send,"/cyperus/add/module/sine","sisfff", request_id, 0, module_id, freq, amp, phase);
   free(lo_addr_send);
 
   return 0;
@@ -818,7 +818,7 @@ osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv
   dsp_edit_sine(target_module, freq, amp, phase);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sine","ssfff", request_id, module_id, freq, amp, phase);
+  lo_send(lo_addr_send,"/cyperus/add/module/sine","sisfff", request_id, 0, module_id, freq, amp, phase);
   free(lo_addr_send);
 
   return 0;
@@ -855,7 +855,7 @@ int osc_add_module_triangle_handler(const char *path, const char *types, lo_arg 
   printf("add_module_triangle_handler, module_id: %s\n", module_id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/triangle","ssfff", request_id, module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/add/module/triangle","sisfff", request_id, 0, module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -903,7 +903,7 @@ osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** 
   printf("post-edit triangle\n");
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/triangle","ssfff", request_id, module_id, freq, amp);
+  lo_send(lo_addr_send,"/cyperus/add/module/triangle","sisfff", request_id, 0, module_id, freq, amp);
   free(lo_addr_send);
 
   return 0;
@@ -941,8 +941,8 @@ int osc_add_module_envelope_follower_handler(const char *path, const char *types
   strcpy(module_id, target_module->id);
 
   printf("add_module_envelope_follower_handler, module_id: %s\n", module_id);
-    lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-    lo_send(lo_addr_send,"/cyperus/add/module/envelope_follower","ssfff", request_id, module_id, attack, decay, scale);
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/add/module/envelope_follower","sisfff", request_id, 0, module_id, attack, decay, scale);
   free(lo_addr_send);
   
   return 0;
@@ -986,7 +986,7 @@ osc_edit_module_envelope_follower_handler(const char *path, const char *types, l
 
   dsp_edit_envelope_follower(target_module, attack, decay, scale);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/envelope_follower","ssfff", request_id, module_id, attack, decay, scale);
+  lo_send(lo_addr_send,"/cyperus/edit/module/envelope_follower","sisfff", request_id, 0, module_id, attack, decay, scale);
   free(lo_addr_send);
   return 0;
 } /* osc_edit_module_envelope_follower_handler */
@@ -1022,7 +1022,7 @@ int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg 
   strcpy(module_id, target_module->id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/bandpass","ssfff", request_id, module_id, amp, freq, q);
+  lo_send(lo_addr_send,"/cyperus/add/module/bandpass","sisfff", request_id, 0, module_id, amp, freq, q);
   free(lo_addr_send);
 
   free(module_id);
@@ -1064,7 +1064,7 @@ int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg
   dsp_edit_bandpass(target_module, amt, freq, q);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/bandpass","ssfff", request_id, module_id, amt, freq, q);
+  lo_send(lo_addr_send,"/cyperus/edit/module/bandpass","sisfff", request_id, 0, module_id, amt, freq, q);
   free(lo_addr_send);
 
   
@@ -1103,7 +1103,7 @@ int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg 
   strcpy(module_id, target_module->id);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/highpass","ssfff", request_id, module_id, amp, freq);
+  lo_send(lo_addr_send,"/cyperus/add/module/highpass","sisfff", request_id, 0, module_id, amp, freq);
   free(lo_addr_send);
 
   free(module_id);
@@ -1143,7 +1143,7 @@ int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg
   dsp_edit_highpass(target_module, amt, freq);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/highpass","ssff", request_id, module_id, amt, freq);
+  lo_send(lo_addr_send,"/cyperus/edit/module/highpass","sisff", request_id, 0, module_id, amt, freq);
   free(lo_addr_send);
 
   
@@ -1186,7 +1186,7 @@ int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_a
 
   printf("add_module_pitch_shift_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","ssfff", request_id, module_id, amt, shift, mix);
+  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","sisfff", request_id, 0, module_id, amt, shift, mix);
   free(lo_addr_send);
   
   return 0;
@@ -1229,7 +1229,7 @@ osc_edit_module_pitch_shift_handler(const char *path, const char *types, lo_arg 
   dsp_edit_pitch_shift(target_module, amt, shift, mix);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","ssfff", request_id, module_id, amt, shift, mix);
+  lo_send(lo_addr_send,"/cyperus/add/module/pitch_shift","sisfff", request_id, 0, module_id, amt, shift, mix);
   free(lo_addr_send);
   
   return 0;
@@ -1269,7 +1269,7 @@ int osc_add_module_karlsen_lowpass_handler(const char *path, const char *types, 
 
   printf("add_module_karlsen_lowpass_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","ssfff", request_id, module_id, amt, freq, res);
+  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","sisfff", request_id, 0, module_id, amt, freq, res);
   free(lo_addr_send);
   
   return 0;
@@ -1312,7 +1312,7 @@ osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_
   dsp_edit_karlsen_lowpass(target_module, amt, freq, res);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","ssfff", request_id, module_id, amt, freq, res);
+  lo_send(lo_addr_send,"/cyperus/add/module/karlsen_lowpass","sisfff", request_id, 0, module_id, amt, freq, res);
   free(lo_addr_send);
   
   return 0;
@@ -1359,7 +1359,7 @@ int osc_add_module_osc_transmit_handler(const char *path, const char *types, lo_
   strcpy(module_id, target_module->id);
   printf("add_module_osc_transmit_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_transmit","sssssi", request_id, module_id, host, port, osc_path, samplerate_divisor);
+  lo_send(lo_addr_send,"/cyperus/add/module/osc_transmit","sissssi", request_id, 0, module_id, host, port, osc_path, samplerate_divisor);
   free(lo_addr_send);
 
   printf("done\n");
@@ -1410,7 +1410,7 @@ osc_edit_module_osc_transmit_handler(const char *path, const char *types, lo_arg
 
   dsp_edit_osc_transmit(target_module, host, port, osc_path, samplerate_divisor);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/osc_transmit","sssssi", request_id, module_id, host, port, osc_path, samplerate_divisor);
+  lo_send(lo_addr_send,"/cyperus/edit/module/osc_transmit","sissssi", request_id, 0, module_id, host, port, osc_path, samplerate_divisor);
   free(lo_addr_send);
   return 0;
 } /* osc_edit_module_osc_transmit_handler */

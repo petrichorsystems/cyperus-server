@@ -56,8 +56,9 @@ int osc_add_module_analysis_transient_detector_handler(const char *path, const c
   printf("add_module_transient_detector_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/transient_detector",
-	  "ssffff",
+	  "sisffff",
           request_id,
+          0,
 	  module_id,
 	  sensitivity,
 	  attack_ms,
@@ -107,7 +108,9 @@ osc_edit_module_analysis_transient_detector_handler(const char *path, const char
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/edit/module/audio/analysis/transient_detector",
-	  "sffff",
+	  "sisffff",
+          request_id,
+          0,
 	  module_id,
 	  sensitivity,
 	  attack_ms,

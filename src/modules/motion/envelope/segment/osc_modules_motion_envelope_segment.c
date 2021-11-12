@@ -296,8 +296,9 @@ osc_edit_module_motion_envelope_segment_handler(const char *path, const char *ty
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); 
   lo_send(lo_addr_send, 
           "/cyperus/edit/module/motion/envelope/segment", 
-          "ssiiiffff",
+          "sisiiiffff",
           request_id,
+          0,
           module_id, 
           release_node,
           loop_node,
@@ -382,8 +383,9 @@ int osc_add_module_motion_envelope_stdshape_handler(const char *path, const char
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
           "/cyperus/add/module/motion/envelope/stdshape",
-          "ssiffff",
+          "sisiffff",
           request_id,
+          0,
           module_id,
           argv[1]->i,
           argv[2]->f,
