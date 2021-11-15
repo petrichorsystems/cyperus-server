@@ -510,7 +510,6 @@ dsp_add_connection(char *id_out, char *id_in) {
 			       new_connection);
 
   /* TODO: check that the current processing graph isn't the same as this new one,
-           replace the actual processing graph if it's not (on the last sample cycle),
   */
   
   dsp_build_optimized_graph(NULL);
