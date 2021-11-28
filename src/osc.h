@@ -38,7 +38,6 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 #include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
 #include "modules/motion/osc/osc_metronome/osc_modules_motion_osc_osc_metronome.h"
 #include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
-
-
+#include "modules/motion/osc/parameter_assignment/osc_modules_motion_osc_parameter_assignment.h"
 #endif
 
