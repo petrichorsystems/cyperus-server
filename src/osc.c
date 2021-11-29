@@ -21,7 +21,36 @@ Copyright 2015 murray foster */
 char *send_host_out;
 char *send_port_out;
 lo_server_thread lo_thread;
-        
+
+osc_handler_user_defined_t* osc_handler_user_defined_init(char *osc_path, char *type_str, int num_module_ports, char **module_ports) {
+  osc_handler_user_defined_t *new_handler = (osc_handler_user_defined_t *)malloc(sizeof(osc_handler_user_defined_t));
+
+  new_handler->osc_path = malloc(sizeof(char) * (strlen(osc_path) + 1));
+  snprintf(new_handler->osc_path, strlen(osc_path)+1, "%s", osc_path);
+  
+  new_handler->type_str = malloc(sizeof(char) * (strlen(type_str) + 1));
+  snprintf(new_handler->type_str, strlen(type_str)+1, "%s", type_str);
+
+  /* populate module_ports */
+  
+  new_handler->module_ports = module_ports;
+
+  return new_handler;
+} /* osc_handler_user_defined_init */
+
+void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handler, osc_handler_user_defined_t *new_handler) {
+  osc_handler_user_defined_t *temp_handler = head_handler;
+  if(temp_handler == NULL) {
+    head_handler = new_handler;
+    return;
+  }
+  while(temp_handler->next != NULL) {
+    temp_handler = temp_handler->next;
+  }
+  temp_handler->next = new_handler;
+  new_handler->prev = temp_handler;
+} /* osc_handler_user_defined_insert_tail */
+
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out) {
   free(send_host_out);
   free(send_port_out);
@@ -37,7 +66,7 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
   free(lo_addr_send);
   printf("changed osc server and port to: %s:%s\n", new_host_out, new_port_out);
   return 0;
-}
+} /* osc_hange_address */
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   send_host_out = malloc(sizeof(char) * 10);
@@ -50,4 +79,4 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, NULL, NULL, cyperus_osc_handler, NULL);
 
   lo_server_thread_start(lo_thread);
-}
+} /* osc_setup */
