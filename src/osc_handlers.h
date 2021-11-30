@@ -65,6 +65,10 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 int osc_add_module_block_processor_handler(const char *path, const char *types, lo_arg ** argv,
 					   int argc, void *data, void *user_data);
 
+int osc_add_module_motion_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data);
+int osc_edit_module_motion_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data);
+
+
 int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data);
 int osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** argv,

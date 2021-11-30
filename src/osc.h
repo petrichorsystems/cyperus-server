@@ -39,6 +39,7 @@ typedef struct osc_handler_user_defined_type {
 extern osc_handler_user_defined_t *global_osc_handlers_user_defined;
 
 osc_handler_user_defined_t* osc_handler_user_defined_init(char *osc_path, char *type_str, int num_module_ports, char **module_ports);
+
 void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handler, osc_handler_user_defined_t *new_handler);
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
@@ -52,6 +53,5 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 #include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
 #include "modules/motion/osc/osc_metronome/osc_modules_motion_osc_osc_metronome.h"
 #include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
-#include "modules/motion/osc/parameter_assignment/osc_modules_motion_osc_parameter_assignment.h"
 #endif
 
