@@ -27,8 +27,6 @@ extern char *send_host_out;
 extern char *send_port_out;
 extern lo_server_thread lo_thread;
 
-extern char **global_osc_handlers_user_defined;
-
 typedef struct osc_handler_user_defined_type {
   char *osc_path;
   char *type_str;
@@ -37,6 +35,8 @@ typedef struct osc_handler_user_defined_type {
   struct osc_handler_user_defined_type *next;
   struct osc_handler_user_defined_type *prev;  
 } osc_handler_user_defined_t;
+
+extern osc_handler_user_defined_t *global_osc_handlers_user_defined;
 
 osc_handler_user_defined_t* osc_handler_user_defined_init(char *osc_path, char *type_str, int num_module_ports, char **module_ports);
 void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handler, osc_handler_user_defined_t *new_handler);

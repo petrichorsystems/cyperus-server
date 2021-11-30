@@ -29,7 +29,7 @@ Copyright 2021 murray foster */
 #include "../../../../dsp_types.h"
 /* #include "../../../../dsp_ops.h" */
 /* #include "../../../../jackcli.h" */
-/* #include "../../../../osc.h" */
+#include "../../../../osc.h"
 
 int osc_add_module_motion_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv,
                                                     int argc, void *data, void *user_data);

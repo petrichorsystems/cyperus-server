@@ -22,7 +22,10 @@ char *send_host_out;
 char *send_port_out;
 lo_server_thread lo_thread;
 
+osc_handler_user_defined_t *global_osc_handlers_user_defined;
+
 osc_handler_user_defined_t* osc_handler_user_defined_init(char *osc_path, char *type_str, int num_module_ports, char **module_ports) {
+  int idx;
   osc_handler_user_defined_t *new_handler = (osc_handler_user_defined_t *)malloc(sizeof(osc_handler_user_defined_t));
 
   new_handler->osc_path = malloc(sizeof(char) * (strlen(osc_path) + 1));
@@ -31,10 +34,12 @@ osc_handler_user_defined_t* osc_handler_user_defined_init(char *osc_path, char *
   new_handler->type_str = malloc(sizeof(char) * (strlen(type_str) + 1));
   snprintf(new_handler->type_str, strlen(type_str)+1, "%s", type_str);
 
+  new_handler->module_ports = malloc(sizeof(char*) * num_module_ports);
   /* populate module_ports */
-  
-  new_handler->module_ports = module_ports;
-
+  for(idx=0; idx<num_module_ports; idx++) {
+    new_handler->module_ports[idx] = malloc(sizeof(char) * (strlen(module_ports[idx]) + 1));
+    snprintf(new_handler->module_ports[idx], strlen(module_ports[idx])+1, "%s", module_ports[idx]);
+  }
   return new_handler;
 } /* osc_handler_user_defined_init */
 
@@ -69,6 +74,8 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 } /* osc_hange_address */
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
+  global_osc_handlers_user_defined = NULL;
+  
   send_host_out = malloc(sizeof(char) * 10);
   strcpy(send_host_out, "127.0.0.1");
 

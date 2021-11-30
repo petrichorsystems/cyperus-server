@@ -26,7 +26,11 @@ Copyright 2021 murray foster */
 int osc_add_module_motion_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data)
 {
   printf("osc_add_module_motion_osc_parameter_assignment()..\n");
-  char *request_id, *osc_path, *type_str, *temp_port_path = NULL;
+
+  int idx, num_params, temp_port_path_len;
+  char *request_id, *osc_path, *type_str, *temp_port_path = NULL, **port_paths;
+  osc_handler_user_defined_t* new_handler;
+  
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
   
@@ -36,7 +40,21 @@ int osc_add_module_motion_osc_parameter_assignment_handler(const char *path, con
   osc_path = (char *)argv[1];
   type_str = (char *)argv[2];
   
-  
+  num_params = strlen(type_str);
+
+  port_paths = malloc(sizeof(char*)*num_params);
+  for(idx=0; idx<num_params; idx++) {
+    temp_port_path = (char *)argv[3+idx];
+    temp_port_path_len = strlen(temp_port_path);
+    snprintf(port_paths[idx], temp_port_path_len+1, "%s", temp_port_path);
+  }
+
+  new_handler = osc_handler_user_defined_init(osc_path, type_str, num_params, port_paths);
+  /* osc_handler_user_defined_insert_tail(&global_osc_handlers_user_defined,
+                                          &new_handler); */
+
+
+
   
   /* target_bus = dsp_parse_bus_path(bus_path);   */
   /* dsp_create_osc_metronome(target_bus, beats_per_minute); */
@@ -54,6 +72,9 @@ int osc_add_module_motion_osc_parameter_assignment_handler(const char *path, con
   /* lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute); */
   /* free(lo_addr_send); */
 
+
+
+  
   return 0;
 } /* osc_add_module_motion_osc_parameter_assigment_handler */
 
