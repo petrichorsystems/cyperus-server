@@ -47,7 +47,7 @@ dsp_create_osc_metronome(struct dsp_bus *target_bus,
   osc_metronome_param.parameters->char_type[0] = malloc(sizeof(char) * 37); /* len(uuid4) + len('\n') */
   strcpy(osc_metronome_param.parameters->char_type[0], osc_metronome_param.parameters->char_type[0]);  
 
-  ins = dsp_port_in_init("beats_per_minute", 512);
+  ins = dsp_port_in_init("beats_per_minute", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "osc_metronome",

@@ -59,11 +59,12 @@ void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handl
 
 
 struct dsp_operation_sample *parse_module_port_in(char *port_path) {
-  char *bus_path, *module_path, *module_id, *temp_port_path;
+  char *bus_path, *module_path, *module_id, *temp_port_path, *port_id;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *target_module = NULL;
-  struct dsp_port_in *temp_port_in = NULL, *target_port_in = NULL;
-  struct dsp_operation_sample *target_sample;
+
+  struct dsp_operation *temp_operation, *target_operation;
+  struct dsp_operation_sample *temp_sample, *target_sample;
   
   bus_path = malloc(sizeof(char) * (strlen(port_path) - 36 - 1 - 36));
   strncpy(bus_path, port_path, strlen(port_path) - 37 - 37);
@@ -71,23 +72,38 @@ struct dsp_operation_sample *parse_module_port_in(char *port_path) {
   module_path = malloc(sizeof(char) * (strlen(port_path) - 36));
   strncpy(module_path, port_path, strlen(port_path) - 37);
 
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  
-  target_bus = dsp_parse_bus_path(bus_path);
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  port_id = malloc(sizeof(char) * (36 + 1)); /* 36 character uuid4 + terminator */
+  strncpy(port_id, port_path + (strlen(port_path) - 36), 36);
 
-  temp_port_path = malloc(sizeof(char) * (strlen(port_path)+1));
-  temp_port_in = target_module->ins;
-  while(temp_port_in != NULL) {
-    temp_port_in = temp_port_in->next;
-    snprintf(temp_port_path, strlen(port_path)+1, "%s<%s", module_path, temp_port_in->id);
-    if(strcmp(port_path, temp_port_path) == 0) {
-      target_port_in = temp_port_in;
+  temp_operation = dsp_global_operation_head;
+  while(temp_operation != NULL) {
+    if(strcmp(temp_operation->dsp_id, module_path) == 0) {
+      target_operation = temp_operation;
+      break;
     }
+    temp_operation = temp_operation->next;
   }
 
+  if(strstr(port_path, ">") != NULL)
+    temp_sample = target_operation->outs;
+  else if(strstr(port_path, "<") != NULL)
+    temp_sample = target_operation->ins;
+  else {
+    printf("osc.c::parse_module_port_in(), invalid port_path. exiting..\n");
+    exit(0);
+  }
+
+  while(temp_sample != NULL) {
+    if(strcmp(temp_sample->dsp_id, port_id) == 0) {
+      target_sample = temp_sample;
+      break;
+    }
+    temp_sample = temp_sample->next;
+  }
+
+  /* insert new value into target port's summands */
   
+    
   return target_sample;
 } /* parse_module_port_in */
 

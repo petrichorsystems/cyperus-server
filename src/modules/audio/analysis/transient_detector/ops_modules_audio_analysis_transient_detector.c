@@ -63,7 +63,7 @@ dsp_create_transient_detector(struct dsp_bus *target_bus,
   transient_detector_param.parameters->float32_type[4] = 0.0f; /* last sample storage */
   transient_detector_param.parameters->float32_type[5] = 0.0f; /* last last sample storage */
 
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "transient_detector",

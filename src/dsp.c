@@ -283,7 +283,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 
   if(!multi_port) {
     temp_bus_port = dsp_bus_port_init(target_bus_ports, out);
-    port_in = dsp_port_in_init("in", 512);
+    port_in = dsp_port_in_init("in", 512, NULL);
     port_out = dsp_port_out_init("out", 1);
     temp_bus_port->in = port_in;
     temp_bus_port->out = port_out;
@@ -306,7 +306,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 	if( output_token != NULL ) {
 	  if( strcmp(output_token, "") != 0 ) {
 	    temp_bus_port = dsp_bus_port_init(output_token, out);
-	    port_in = dsp_port_in_init("in", 512);
+	    port_in = dsp_port_in_init("in", 512, NULL);
 	    port_out = dsp_port_out_init("out", 1);
 	    temp_bus_port->in = port_in;
 	    temp_bus_port->out = port_out;
@@ -1119,7 +1119,7 @@ dsp_build_mains(int channels_in, int channels_out) {
 
   for(i=0; i<channels_out; i++) {
     if( i == 0 ) {
-      temp_port_in = dsp_port_in_init("main_out", fifo_size);
+      temp_port_in = dsp_port_in_init("main_out", fifo_size, NULL);
       dsp_main_outs = temp_port_in;
 
       formal_main_name = (char *)malloc(44);
@@ -1129,7 +1129,7 @@ dsp_build_mains(int channels_in, int channels_out) {
 	strcat(formal_main_name, temp_port_in->id);
       }
     } else {
-      temp_port_in->next = dsp_port_in_init("main_out", fifo_size);
+      temp_port_in->next = dsp_port_in_init("main_out", fifo_size, NULL);
       temp_port_in = temp_port_in->next;
 
       formal_main_name = (char *)malloc(44);

@@ -61,12 +61,12 @@ dsp_create_filter_moogff(struct dsp_bus *target_bus,
   params.parameters->double_type[4] = 0.0f; /* m_s3 */
   params.parameters->double_type[5] = 0.0f; /* m_s4 */
 
-  ins = dsp_port_in_init("in", 512);
-  ins->next = dsp_port_in_init("param_frequency", 512);
-  ins->next->next = dsp_port_in_init("param_gain", 512);
-  ins->next->next = dsp_port_in_init("param_reset", 512);  
-  ins->next->next->next = dsp_port_in_init("param_mul", 512);
-  ins->next->next->next->next = dsp_port_in_init("param_add", 512);  
+  ins = dsp_port_in_init("in", 512, NULL);
+  ins->next = dsp_port_in_init("param_frequency", 512, &(params.parameters->float32_type[0]));
+  ins->next->next = dsp_port_in_init("param_gain", 512, &(params.parameters->float32_type[1]));
+  ins->next->next = dsp_port_in_init("param_reset", 512, &(params.parameters->float32_type[2]));  
+  ins->next->next->next = dsp_port_in_init("param_mul", 512, &(params.parameters->float32_type[3]));
+  ins->next->next->next->next = dsp_port_in_init("param_add", 512, &(params.parameters->float32_type[4]));  
   outs = dsp_port_out_init("out", 1);
 
   dsp_add_module(target_bus,
@@ -92,9 +92,9 @@ dsp_filter_moogff(struct dsp_operation *filter_moogff, int jack_samplerate, int 
     /* come back to this -- we need to figure out how to perform input calculations
        with the large coefficient calculations. */
     
-    /* dsp_param.filter_moogff- = dsp_sum_summands(filter_moogff->ins->next->summands) * jack_samplerate; */
-    
+    /* dsp_param.filter_moogff- = dsp_sum_summands(filter_moogff->ins->next->summands) * jack_samplerate; */    
   }
+  
   outsample = math_modules_audio_filter_moogff(&filter_moogff->module->dsp_param,
                                                jack_samplerate,
                                                pos);

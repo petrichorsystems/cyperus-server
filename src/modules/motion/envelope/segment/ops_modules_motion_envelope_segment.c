@@ -115,10 +115,10 @@ dsp_create_motion_envelope_segment(struct dsp_bus *target_bus,
 
   printf("instantiated\n");
   
-  ins = dsp_port_in_init("param_gate", 512);
-  ins->next = dsp_port_in_init("param_level_scale", 512);
-  ins->next->next = dsp_port_in_init("param_level_time_scale", 512);
-  ins->next->next->next = dsp_port_in_init("param_init_level", 512);  
+  ins = dsp_port_in_init("param_gate", 512, &(params.parameters->float32_type[PARAM_GATE]));
+  ins->next = dsp_port_in_init("param_level_scale", 512, &(params.parameters->float32_type[PARAM_LEVEL_SCALE]));
+  ins->next->next = dsp_port_in_init("param_level_time_scale", 512, &(params.parameters->float32_type[PARAM_TIME_SCALE]));
+  ins->next->next->next = dsp_port_in_init("param_init_level", 512, &(params.parameters->float32_type[PARAM_INIT_LEVEL]));  
   outs = dsp_port_out_init("out", 1);
 
   dsp_add_module(target_bus,

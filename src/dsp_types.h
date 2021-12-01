@@ -154,6 +154,7 @@ struct dsp_port_in {
   struct dsp_port_in *next;
   struct dsp_port_in *prev;
   rtqueue_t *values;
+  float *parameter_value_ptr;
   int remove; /* boolean remove flag */
 };
 
@@ -260,7 +261,7 @@ struct dsp_translation_sample {
   struct dsp_operation_sample *sample_out;
 };
 
-struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size);
+struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size, float *parameter_value_ptr);
 void dsp_port_in_insert_head(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
 void dsp_port_in_insert_tail(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
 

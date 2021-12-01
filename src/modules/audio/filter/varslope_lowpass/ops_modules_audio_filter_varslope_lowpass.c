@@ -1,4 +1,4 @@
-/* ops_modules_filter_varslope_lowpass.c
+ /* ops_modules_filter_varslope_lowpass.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -40,8 +40,8 @@ dsp_create_filter_varslope_lowpass(struct dsp_bus *target_bus,
 
   math_modules_dsp_filter_varslope_lowpass_init(filter_varslope_lowpass_param.parameters, jackcli_samplerate);
   
-  ins = dsp_port_in_init("in", 512);
-  ins->next = dsp_port_in_init("param_cutoff", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
+  ins->next = dsp_port_in_init("param_cutoff", 512, &(filter_varslope_lowpass_param.parameters->float32_type[2]));
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "filter_varslope_lowpass",

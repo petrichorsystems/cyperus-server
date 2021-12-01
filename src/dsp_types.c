@@ -48,7 +48,13 @@ char* dsp_generate_object_id() {
   return id;
 }
 
-struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size) {
+struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size, float *parameter_value_ptr) {
+
+  if(parameter_value_ptr)
+    if(strstr(port_name, "param_") == NULL) {
+      printf("dsp_types.c::dsp_port_in_init():ERROR, parameter_value_ptr arg not NULL, but port_name not prefixed by 'param_', returning null\n");
+      return NULL;
+    }
   struct dsp_port_in *new_port = (struct dsp_port_in*)malloc(sizeof(struct dsp_port_in));
   new_port->prev = NULL;
   new_port->next = NULL;
@@ -57,6 +63,12 @@ struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size) {
   new_port->id = dsp_generate_object_id();
   new_port->remove = 0;
   new_port->values = rtqueue_init(fifo_size);
+
+  if(parameter_value_ptr) {
+    new_port->parameter_value_ptr = malloc(sizeof(float));
+    new_port->parameter_value_ptr = &parameter_value_ptr;
+  }
+  
   return new_port;
 }
 

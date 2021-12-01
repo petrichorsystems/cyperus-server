@@ -302,7 +302,7 @@ dsp_create_block_processor(struct dsp_bus *target_bus) {
   block_processor_param.block_processor.cyperus_params->pos = 0;
   block_processor_param.block_processor.cyperus_params->avg = 0.0;
 
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "block_processor",
@@ -390,8 +390,8 @@ dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedba
   delay_param.delay.cyperus_params[0].pos = 0;
   delay_param.delay.cyperus_params[0].delay_pos = 0;
   
-  ins = dsp_port_in_init("in", 512);
-  ins->next = dsp_port_in_init("param_time", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
+  ins->next = dsp_port_in_init("param_time", 512, &(delay_param.delay.time));
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "delay",
@@ -465,7 +465,7 @@ int dsp_create_sawtooth(struct dsp_bus *target_bus, float freq, float amp) {
   sawtooth_param.sawtooth.freq = freq;
   sawtooth_param.sawtooth.amp = amp;
 
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "sawtooth",
@@ -518,7 +518,7 @@ int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float pha
   sine_param.sine.cyperus_params[0].last_freq = freq;
   sine_param.sine.cyperus_params[0].phase_delta = 0.0;
 
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "sine",
@@ -568,7 +568,7 @@ int dsp_create_triangle(struct dsp_bus *target_bus, float freq, float amp) {
   triangle_param.triangle.freq = freq;
   triangle_param.triangle.amp = amp;
 
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "triangle",
@@ -620,7 +620,7 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float dec
   envelope_follower_param.envelope_follower.scale = scale;
   envelope_follower_param.envelope_follower.cyperus_params[0].signal_buffer = (float *)calloc(1, sizeof(float));
 
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
 		 "envelope_follower",
@@ -698,7 +698,7 @@ int dsp_create_highpass(struct dsp_bus *target_bus, float amt, float freq) {
    
   cyperus_highpass_init(filter_param.highpass.cyperus_params, jackcli_samplerate);
 
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   
   dsp_add_module(target_bus,
@@ -757,7 +757,7 @@ int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, 
   osc_transmitter_param.osc_transmit.samplerate_divisor = samplerate_divisor;
   osc_transmitter_param.osc_transmit.count = 0;
   
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
 
   dsp_add_module(target_bus,
                  "osc transmitter",
@@ -835,8 +835,8 @@ int dsp_create_bandpass(struct dsp_bus *target_bus, float amt, float freq, float
 
   cyperus_bandpass_init(filter_param.bandpass.cyperus_params, jackcli_samplerate);
 
-  ins = dsp_port_in_init("in", 512);
-  ins->next = dsp_port_in_init("param_cutoff_freq", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
+  ins->next = dsp_port_in_init("param_cutoff_freq", 512, &(filter_param.bandpass.freq));
     
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
@@ -877,7 +877,7 @@ dsp_create_pitch_shift(struct dsp_bus *target_bus, float amp, float shift, float
   pitch_shift_param.pitch_shift.shift = shift;
   pitch_shift_param.pitch_shift.mix = mix;
 
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
                  "pitch shift",
@@ -945,7 +945,7 @@ dsp_create_karlsen_lowpass(struct dsp_bus *target_bus, float amp, float freq, fl
   karlsen_lowpass_param.karlsen_lowpass.cyperus_params[0].state3 = 0.0;
 
   
-  ins = dsp_port_in_init("in", 512);
+  ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
   dsp_add_module(target_bus,
                  "apple biquad lowpass filter",
