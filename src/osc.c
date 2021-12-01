@@ -57,41 +57,13 @@ void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handl
   new_handler->prev = temp_handler;
 } /* osc_handler_user_defined_insert_tail */
 
-struct dsp_port_out *parse_module_port_out(char *port_path) {
-  char *bus_path, *module_path, *module_id, *temp_port_path;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *target_module = NULL;
-  struct dsp_port_out *temp_port_out = NULL, *target_port_out = NULL;
-  
-  bus_path = malloc(sizeof(char) * (strlen(port_path) - 36 - 1 - 36));
-  strncpy(bus_path, port_path, strlen(port_path) - 37 - 37);
 
-  module_path = malloc(sizeof(char) * (strlen(port_path) - 36));
-  strncpy(module_path, port_path, strlen(port_path) - 37);
-
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  
-  target_bus = dsp_parse_bus_path(bus_path);
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-
-  temp_port_path = malloc(sizeof(char) * (strlen(port_path)+1));
-  temp_port_out = target_module->outs;
-  while(temp_port_out != NULL) {
-    temp_port_out = temp_port_out->next;
-    snprintf(temp_port_path, strlen(port_path)+1, "%s>%s", module_path, temp_port_out->id);
-    if(strcmp(port_path, temp_port_path) == 0) {
-      target_port_out = temp_port_out;
-    }
-  }
-  return target_port_out;
-} /* parse_module_port_out */
-
-struct dsp_port_in *parse_module_port_in(char *port_path) {
+struct dsp_operation_sample *parse_module_port_in(char *port_path) {
   char *bus_path, *module_path, *module_id, *temp_port_path;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *target_module = NULL;
   struct dsp_port_in *temp_port_in = NULL, *target_port_in = NULL;
+  struct dsp_operation_sample *target_sample;
   
   bus_path = malloc(sizeof(char) * (strlen(port_path) - 36 - 1 - 36));
   strncpy(bus_path, port_path, strlen(port_path) - 37 - 37);
@@ -114,7 +86,9 @@ struct dsp_port_in *parse_module_port_in(char *port_path) {
       target_port_in = temp_port_in;
     }
   }
-  return target_port_in;
+
+  
+  return target_sample;
 } /* parse_module_port_in */
 
 void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handler, lo_arg** argv) {
@@ -123,29 +97,45 @@ void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handle
 
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
+  struct dsp_port_out *temp_port_out;
+  struct dsp_port_in *temp_port_in;
   
   request_id = (char *)argv[0];
   for(idx=0; idx<handler->num_ports; idx++) {
     temp_port_path = handler->ports[idx];
+
+    /* get temp_port_in or temp_port_path */
     if(strstr(temp_port_path, ":") != NULL) {
       /* print message, error out */      
     } else if((strstr(temp_port_path, "}") != NULL) ||
               (strstr(temp_port_path, "{") != NULL)) {
       /* print message, error out */
-    } else if((strstr(temp_port_path, ">") != NULL) ||
-             (strstr(temp_port_path, "<") != NULL)) {
-      
+    } else if(strstr(temp_port_path, ">") != NULL) {
+      /* temp_port_out = parse_module_port_out(temp_port_path); */
+    } else if(strstr(temp_port_path, "<") != NULL) {
+      /* temp_port_in = parse_module_port_in(temp_port_path); */
     } else {
       /* throw message and error out,
          we shouldn't get here */
     }
-    
+
+    /* assign parameter value from osc message */
     switch(handler->type_str[idx]) {
     case 'f':
       /* perform assignment of argv[idx + 1] */
+      if(strstr(temp_port_path, ">") != NULL) {
+        /* temp_port_out = parse_module_port_out(temp_port_path); */
+      } else if(strstr(temp_port_path, "<") != NULL) {
+        /* temp_port_in = parse_module_port_in(temp_port_path); */
+      }
       break;
     case 'i':
       /* perform assignment of (int)argv[idx + 1] */
+      if(strstr(temp_port_path, ">") != NULL) {
+        /* temp_port_out = parse_module_port_out(temp_port_path); */
+      } else if(strstr(temp_port_path, "<") != NULL) {
+        /* temp_port_in = parse_module_port_in(temp_port_path); */
+      }
       break;
     default:
       printf("not implemented.\n");
