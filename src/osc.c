@@ -23,8 +23,9 @@ char *send_port_out;
 lo_server_thread lo_thread;
 
 osc_handler_user_defined_t *global_osc_handlers_user_defined;
+pthread_mutex_t global_osc_handlers_user_defined_lock;
 
-osc_handler_user_defined_t* osc_handler_user_defined_init(char *osc_path, char *type_str, int num_module_ports, char **module_ports) {
+osc_handler_user_defined_t* osc_handler_user_defined_init(char *osc_path, char *type_str, int num_ports, char **ports) {
   int idx;
   osc_handler_user_defined_t *new_handler = (osc_handler_user_defined_t *)malloc(sizeof(osc_handler_user_defined_t));
 
@@ -34,11 +35,11 @@ osc_handler_user_defined_t* osc_handler_user_defined_init(char *osc_path, char *
   new_handler->type_str = malloc(sizeof(char) * (strlen(type_str) + 1));
   snprintf(new_handler->type_str, strlen(type_str)+1, "%s", type_str);
 
-  new_handler->module_ports = malloc(sizeof(char*) * num_module_ports);
-  /* populate module_ports */
-  for(idx=0; idx<num_module_ports; idx++) {
-    new_handler->module_ports[idx] = malloc(sizeof(char) * (strlen(module_ports[idx]) + 1));
-    snprintf(new_handler->module_ports[idx], strlen(module_ports[idx])+1, "%s", module_ports[idx]);
+  new_handler->ports = malloc(sizeof(char*) * num_ports);
+  /* populate ports */
+  for(idx=0; idx<num_ports; idx++) {
+    new_handler->ports[idx] = malloc(sizeof(char) * (strlen(ports[idx]) + 1));
+    snprintf(new_handler->ports[idx], strlen(ports[idx])+1, "%s", ports[idx]);
   }
   return new_handler;
 } /* osc_handler_user_defined_init */
@@ -56,6 +57,46 @@ void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handl
   new_handler->prev = temp_handler;
 } /* osc_handler_user_defined_insert_tail */
 
+void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handler, lo_arg** argv) {
+  int idx, error_code;
+  char *request_id, *temp_port_path;
+
+  struct dsp_bus *target_bus = NULL;
+  struct dsp_module *temp_module, *target_module = NULL;
+  
+  request_id = (char *)argv[0];
+  for(idx=0; idx<handler->num_ports; idx++) {
+    temp_port_path = handler->ports[idx];
+    if(strstr(temp_port_path, ":") != NULL) {
+      /* print message, error out */      
+    } else if((strstr(temp_port_path, "}") != NULL) ||
+              (strstr(temp_port_path, "{") != NULL)) {
+      /* print message, error out */
+    } else if((strstr(temp_port_path, ">") != NULL) ||
+             (strstr(temp_port_path, "<") != NULL)) {
+      
+    } else {
+      /* throw message and error out,
+         we shouldn't get here */
+    }
+    
+    switch(handler->type_str[idx]) {
+    case 'f':
+      /* perform assignment of argv[idx + 1] */
+      break;
+    case 'i':
+      /* perform assignment of (int)argv[idx + 1] */
+      break;
+    default:
+      printf("not implemented.\n");
+      break;
+    }
+  }
+
+  /* send osc message reply */
+  
+} /* osc_execute_handler_parameter_assignment */
+
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out) {
   free(send_host_out);
   free(send_port_out);
@@ -71,10 +112,15 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
   free(lo_addr_send);
   printf("changed osc server and port to: %s:%s\n", new_host_out, new_port_out);
   return 0;
-} /* osc_hange_address */
+} /* osc_change_address */
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   global_osc_handlers_user_defined = NULL;
+
+  if(pthread_mutex_init(&global_osc_handlers_user_defined_lock, NULL) != 0) {
+      printf("\n mutex init failed\n");
+      return 1;
+  }
   
   send_host_out = malloc(sizeof(char) * 10);
   strcpy(send_host_out, "127.0.0.1");
