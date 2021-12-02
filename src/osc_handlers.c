@@ -611,7 +611,7 @@ int osc_add_module_motion_osc_parameter_assignment_handler(const char *path, con
   pthread_mutex_unlock(&global_osc_handlers_user_defined_lock);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","si", request_id, 0);
+  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","siss", request_id, 0, osc_path, type_str);
   free(lo_addr_send);
   return 0;
 } /* osc_add_module_motion_osc_parameter_assigment_handler */

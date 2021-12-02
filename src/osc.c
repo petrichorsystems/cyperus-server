@@ -125,7 +125,6 @@ void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handle
       /* throw message and error out,
          we shouldn't get here */
     }
-
     /* assign parameter value from osc message */
     switch(handler->type_str[idx]) {
     case 'f':
@@ -140,8 +139,29 @@ void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handle
       break;
     }
   }
+
+  /* build and send response */
+  lo_message msg = lo_message_new();
+  lo_message_add_string(msg, request_id);
+  lo_message_add_int32(msg, 0);
+  for(int idx=0; idx<handler->num_ports; idx++) {
+    /* assign parameter value from osc message */
+    switch(handler->type_str[idx]) {
+    case 'f':
+      lo_message_add_float(msg, argv[1 + idx]->f);
+      break;
+    case 'i':
+      lo_message_add_int32(msg, argv[1 + idx]->i);
+      break;
+    default:
+      printf("osc.c::osc_execute_handler_parameter_assignment():ERROR, we should never get here. exiting..\n");
+      exit(1);
+      break;
+    }
+  }
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,handler->osc_path,"si", request_id, 0);
+  lo_send_message(lo_addr_send, "/cyperus/add/module/osc/parameter_assignment", msg);
+  lo_message_free(msg);
   free(lo_addr_send);
 } /* osc_execute_handler_parameter_assignment */
 
