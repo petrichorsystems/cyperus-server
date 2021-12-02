@@ -66,7 +66,7 @@ struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size, float
 
   if(parameter_value_ptr) {
     new_port->parameter_value_ptr = malloc(sizeof(float));
-    new_port->parameter_value_ptr = &parameter_value_ptr;
+    new_port->parameter_value_ptr = parameter_value_ptr;
   }
   
   return new_port;

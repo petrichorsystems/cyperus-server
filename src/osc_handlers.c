@@ -603,34 +603,16 @@ int osc_add_module_motion_osc_parameter_assignment_handler(const char *path, con
     temp_port_path_len = strlen(temp_port_path);
     snprintf(port_paths[idx], temp_port_path_len+1, "%s", temp_port_path);
   }
-
   new_handler = osc_handler_user_defined_init(osc_path, type_str, num_params, port_paths);
-
-  /* target_bus = dsp_parse_bus_path(bus_path);   */
-  /* dsp_create_osc_metronome(target_bus, beats_per_minute); */
-
-  /* temp_module = target_bus->dsp_module_head; */
-  /* while(temp_module != NULL) { */
-  /*   target_module = temp_module; */
-  /*   temp_module = temp_module->next; */
-  /* } */
-  /* module_id = malloc(sizeof(char) * 37); */
-  /* strcpy(module_id, target_module->id); */
-
   
   pthread_mutex_lock(&global_osc_handlers_user_defined_lock);
   osc_handler_user_defined_insert_tail(global_osc_handlers_user_defined,
                                        new_handler);
   pthread_mutex_unlock(&global_osc_handlers_user_defined_lock);
   
-  /* printf("add_module_osc_metronome_handler, module_id: %s\n", module_id); */
-  /* lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); */
-  /* lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute); */
-  /* free(lo_addr_send); */
-
-
-
-  
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","si", request_id, 0);
+  free(lo_addr_send);
   return 0;
 } /* osc_add_module_motion_osc_parameter_assigment_handler */
 

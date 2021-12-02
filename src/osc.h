@@ -21,6 +21,7 @@ Copyright 2015 murray foster */
 
 #include <lo/lo.h>
 
+#include "dsp.h"
 #include "osc_handlers.h"
 
 extern char *send_host_out;

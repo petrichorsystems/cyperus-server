@@ -58,53 +58,44 @@ void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handl
 } /* osc_handler_user_defined_insert_tail */
 
 
-struct dsp_operation_sample *parse_module_port_in(char *port_path) {
+struct dsp_port_in *parse_module_port_in(char *port_path) {
   char *bus_path, *module_path, *module_id, *temp_port_path, *port_id;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *target_module = NULL;
-
-  struct dsp_operation *temp_operation, *target_operation;
-  struct dsp_operation_sample *temp_sample, *target_sample;
+  struct dsp_port_in *temp_port_in = NULL, *target_port_in = NULL;
   
-  bus_path = malloc(sizeof(char) * (strlen(port_path) - 36 - 1 - 36));
-  strncpy(bus_path, port_path, strlen(port_path) - 37 - 37);
-
-  module_path = malloc(sizeof(char) * (strlen(port_path) - 36));
-  strncpy(module_path, port_path, strlen(port_path) - 37);
-
+  module_path = malloc(sizeof(char) * (strlen(port_path) - 36 - 1));
+  strncpy(module_path, port_path + (strlen(port_path) - 36 - 1 - 36 - 1), strlen(port_path) - 36 - 1);
+  printf("osc.c::parse_module_port_in(), module_path: %s\n", module_path);
+  
+  port_id = malloc(sizeof(char) * 37);
+  strncpy(port_id, port_path + (strlen(port_path) - 37), 37);
+  printf("osc.c::parse_module_port_in(), port_id: %s\n", port_id);
+  
+  module_id = malloc(sizeof(char) * 37);
+  strncpy(module_id, port_path + (strlen(port_path) - 36 - 1 - 36 - 1), 37); 
+  printf("osc.c::parse_module_port_in(), module_id: %s\n", module_id);
+  
   port_id = malloc(sizeof(char) * (36 + 1)); /* 36 character uuid4 + terminator */
   strncpy(port_id, port_path + (strlen(port_path) - 36), 36);
+  printf("osc.c::parse_module_port_in(), port_id: %s\n", port_id);
 
-  temp_operation = dsp_global_operation_head;
-  while(temp_operation != NULL) {
-    if(strcmp(temp_operation->dsp_id, module_path) == 0) {
-      target_operation = temp_operation;
-      break;
-    }
-    temp_operation = temp_operation->next;
-  }
-
-  if(strstr(port_path, ">") != NULL)
-    temp_sample = target_operation->outs;
-  else if(strstr(port_path, "<") != NULL)
-    temp_sample = target_operation->ins;
-  else {
-    printf("osc.c::parse_module_port_in(), invalid port_path. exiting..\n");
-    exit(0);
-  }
-
-  while(temp_sample != NULL) {
-    if(strcmp(temp_sample->dsp_id, port_id) == 0) {
-      target_sample = temp_sample;
-      break;
-    }
-    temp_sample = temp_sample->next;
-  }
-
-  /* insert new value into target port's summands */
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  strncpy(bus_path, module_path, strlen(module_path) - 37);
+  printf("bus_path: %s\n", bus_path);
   
-    
-  return target_sample;
+  target_bus = dsp_parse_bus_path(bus_path);
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+
+  temp_port_in = target_module->ins;
+  while(temp_port_in != NULL) {
+    if(strcmp(temp_port_in->id, port_id) == 0) {
+      target_port_in = temp_port_in;
+      break;
+    }
+    temp_port_in = temp_port_in->next;
+  }
+  return target_port_in;
 } /* parse_module_port_in */
 
 void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handler, lo_arg** argv) {
@@ -113,10 +104,10 @@ void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handle
 
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
-  struct dsp_port_out *temp_port_out;
-  struct dsp_port_in *temp_port_in;
+  struct dsp_port_in *temp_port_in, *target_port_in = NULL;
   
   request_id = (char *)argv[0];
+
   for(idx=0; idx<handler->num_ports; idx++) {
     temp_port_path = handler->ports[idx];
 
@@ -127,9 +118,9 @@ void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handle
               (strstr(temp_port_path, "{") != NULL)) {
       /* print message, error out */
     } else if(strstr(temp_port_path, ">") != NULL) {
-      /* temp_port_out = parse_module_port_out(temp_port_path); */
+      /* print message, error out */
     } else if(strstr(temp_port_path, "<") != NULL) {
-      /* temp_port_in = parse_module_port_in(temp_port_path); */
+      target_port_in = parse_module_port_in(temp_port_path);
     } else {
       /* throw message and error out,
          we shouldn't get here */
@@ -138,29 +129,20 @@ void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handle
     /* assign parameter value from osc message */
     switch(handler->type_str[idx]) {
     case 'f':
-      /* perform assignment of argv[idx + 1] */
-      if(strstr(temp_port_path, ">") != NULL) {
-        /* temp_port_out = parse_module_port_out(temp_port_path); */
-      } else if(strstr(temp_port_path, "<") != NULL) {
-        /* temp_port_in = parse_module_port_in(temp_port_path); */
-      }
+      *(temp_port_in->parameter_value_ptr) = argv[1 + idx]->f;
       break;
     case 'i':
-      /* perform assignment of (int)argv[idx + 1] */
-      if(strstr(temp_port_path, ">") != NULL) {
-        /* temp_port_out = parse_module_port_out(temp_port_path); */
-      } else if(strstr(temp_port_path, "<") != NULL) {
-        /* temp_port_in = parse_module_port_in(temp_port_path); */
-      }
+      *(temp_port_in->parameter_value_ptr) = (float)argv[1 + idx]->i; 
       break;
     default:
-      printf("not implemented.\n");
+      printf("osc.c::osc_execute_handler_parameter_assignment():ERROR, we should never get here. exiting..\n");
+      exit(1);
       break;
     }
   }
-
-  /* send osc message reply */
-  
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,handler->osc_path,"si", request_id, 0);
+  free(lo_addr_send);
 } /* osc_execute_handler_parameter_assignment */
 
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out) {
