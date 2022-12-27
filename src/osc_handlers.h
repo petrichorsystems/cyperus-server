@@ -69,11 +69,6 @@ int osc_add_module_motion_osc_parameter_assignment_handler(const char *path, con
 int osc_edit_module_motion_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data);
 
 
-int osc_add_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
-				 int argc, void *data, void *user_data);
-int osc_edit_module_delay_handler(const char *path, const char *types, lo_arg ** argv,
-				  int argc, void *data, void *user_data);
-
 int osc_add_module_sawtooth_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data);
 int osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** argv,

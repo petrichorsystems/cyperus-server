@@ -418,25 +418,6 @@ float cyperus_moog_vcf(struct cyperus_parameters *filter, int jack_sr, int pos) 
   return filter->lastoutval3;
 }
 
-
-float cyperus_delay(struct cyperus_parameters *delay, int jack_sr, int pos) {
-  float outsample = 0.0f;
-
-  
-  if( delay->pos >= delay->delay_time )
-    delay->pos = 0;
-
-  delay->delay_pos = delay->pos - delay->delay_time;
-
-  if( delay->delay_pos < 0 )
-    delay->delay_pos += delay->delay_time;
-
-  outsample = delay->signal_buffer[delay->pos] = delay->in + (delay->signal_buffer[delay->delay_pos] * delay->fb);
-  delay->pos += 1;
-
-  return outsample * delay->delay_amt;
-}
-
 void smbPitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata)
 /*
 	Routine smbPitchShift(). See top of file for explanation
