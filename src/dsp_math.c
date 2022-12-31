@@ -81,14 +81,6 @@ float cyperus_level_detector(struct cyperus_parameters *level_detector, int jack
   return outsample;
 }
 
-float cyperus_sine(struct cyperus_parameters *sinewav, int jack_sr, int pos)
-{
-  sinewav->phase_delta += 2.0f * M_PI * sinewav->freq * (1.0f/jack_sr) + sinewav->phase;
-  while( sinewav->phase_delta > 2.0f * M_PI ) sinewav->phase_delta -= 2 * M_PI;
-  return sin(sinewav->phase_delta) * sinewav->amp;
-}
-
-
 float cyperus_sawtooth(struct cyperus_parameters *sawtoothwav, int jack_sr, int pos) {
   float  *sin_val, *cos_val = NULL;
   sincosf(pos * M_PI / (jack_sr / sawtoothwav->freq), sin_val, cos_val);

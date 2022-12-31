@@ -46,10 +46,6 @@ int dsp_create_sawtooth(struct dsp_bus *target_bus, float freq, float amp);
 void dsp_edit_sawtooth(struct dsp_module *sawtooth, float freq, float amp);
 void dsp_sawtooth(struct dsp_operation *sawtooth, int jack_samplerate, int pos);
 
-int dsp_create_sine(struct dsp_bus *target_bus, float freq, float amp, float phase);
-void dsp_edit_sine(struct dsp_module *sine, float freq, float amp, float phase);
-void dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos);
-
 int dsp_create_triangle(struct dsp_bus *target_bus, float freq, float amp);
 void dsp_edit_triangle(struct dsp_module *triangle, float freq, float amp);
 void dsp_triangle(struct dsp_operation *triangle, int jack_samplerate, int pos);

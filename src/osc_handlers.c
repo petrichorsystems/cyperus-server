@@ -738,89 +738,6 @@ osc_edit_module_sawtooth_handler(const char *path, const char *types, lo_arg ** 
   return 0;
 } /* osc_edit_module_sawtooth_handler */
 
-int osc_add_module_sine_handler(const char *path, const char *types, lo_arg ** argv,
-				 int argc, void *data, void *user_data)
-{
-  char *request_id, *bus_path, *module_id = NULL;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *temp_module, *target_module = NULL;
-
-  float freq;
-  float amp;
-  float phase;
-  
-  printf("path: <%s>\n", path);
-
-  request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
-  freq=argv[2]->f;
-  amp=argv[3]->f;
-  phase=argv[4]->f;
-
-  target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_sine(target_bus, freq, amp, phase);
-  
-  temp_module = target_bus->dsp_module_head;
-  while(temp_module != NULL) {
-    target_module = temp_module;
-    temp_module = temp_module->next;
-  }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
-
-  
-  printf("add_module_sine_handler, module_id: %s\n", module_id);
-  
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sine","sisfff", request_id, 0, module_id, freq, amp, phase);
-  free(lo_addr_send);
-
-  return 0;
-} /* osc_add_module_sine_handler */
-
-
-int
-osc_edit_module_sine_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  char *request_id = NULL;
-  char *module_path = NULL;
-  char *module_id = NULL;
-  char *bus_path;
-  struct dsp_bus *target_bus;
-  struct dsp_module *target_module;
-  float freq;
-  float amp;
-  float phase;
-  int count;
-
-  printf("path: <%s>\n", path);
-
-  request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
-  freq=argv[2]->f;
-  amp=argv[3]->f;
-  phase=argv[4]->f;
-  
-  /* split up path */
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
-
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  
-  target_bus = dsp_parse_bus_path(bus_path);
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  
-  dsp_edit_sine(target_module, freq, amp, phase);
-
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/sine","sisfff", request_id, 0, module_id, freq, amp, phase);
-  free(lo_addr_send);
-
-  return 0;
-} /* osc_edit_module_sine_handler */
-
 int osc_add_module_triangle_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data)
 {
@@ -1397,11 +1314,6 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/sawtooth") == 0)
     handler_ptr = osc_edit_module_sawtooth_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/sine") == 0)
-    handler_ptr = osc_add_module_sine_handler;
-  else if(strcmp(path, "/cyperus/edit/module/sine") == 0)
-    handler_ptr = osc_edit_module_sine_handler;
-  
   else if(strcmp(path, "/cyperus/add/module/triangle") == 0)
     handler_ptr = osc_add_module_triangle_handler;
   else if(strcmp(path, "/cyperus/edit/module/triangle") == 0)
@@ -1451,6 +1363,11 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
     handler_ptr = osc_add_module_filter_varslope_lowpass_handler;
   else if(strcmp(path, "/cyperus/edit/module/audio/filter/varslope_lowpass") == 0)
     handler_ptr = osc_edit_module_filter_varslope_lowpass_handler;
+
+  else if(strcmp(path, "/cyperus/add/module/audio/oscillator/sine") == 0)
+    handler_ptr = osc_add_module_oscillator_sine_handler;
+  else if(strcmp(path, "/cyperus/edit/module/audio/oscillator/sine") == 0)
+    handler_ptr = osc_edit_module_oscillator_sine_handler;
   
   else if(strcmp(path, "/cyperus/add/module/audio/oscillator/pulse") == 0)
     handler_ptr = osc_add_module_oscillator_pulse_handler;
