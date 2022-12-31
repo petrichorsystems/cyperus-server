@@ -525,67 +525,6 @@ dsp_triangle(struct dsp_operation *triangle, int jack_samplerate, int pos) {
   return;
 } /* dsp_triangle */
 
-int
-dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale) {
-  dsp_parameter envelope_follower_param;
-  struct dsp_port_in *ins;
-  struct dsp_port_out *outs;
-
-  envelope_follower_param.pos = 0;
-  envelope_follower_param.envelope_follower.name = "envelope_follower";
-  envelope_follower_param.envelope_follower.cyperus_params = malloc(sizeof(struct cyperus_parameters));
-  envelope_follower_param.envelope_follower.attack = attack;
-  envelope_follower_param.envelope_follower.decay = decay;
-  envelope_follower_param.envelope_follower.scale = scale;
-  envelope_follower_param.envelope_follower.cyperus_params[0].signal_buffer = (float *)calloc(1, sizeof(float));
-
-  ins = dsp_port_in_init("in", 512, NULL);
-  outs = dsp_port_out_init("out", 1);
-  dsp_add_module(target_bus,
-		 "envelope_follower",
-		 dsp_envelope_follower,
-		 dsp_optimize_module,
-		 envelope_follower_param,
-		 ins,
-		 outs);
-  return 0;
-} /* dsp_create_envelope_follower */
-
-void
-dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos) {
-
-  float insample = 0.0;
-  float outsample = 0.0;
-  dsp_parameter dsp_param = envelope_follower->module->dsp_param;
-
-  
-  /* sum audio inputs */
-  insample = dsp_sum_summands(envelope_follower->ins->summands);
-  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->in = insample;
-  
-  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->attack = dsp_param.envelope_follower.attack;
-  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->decay = dsp_param.envelope_follower.decay;
-  envelope_follower->module->dsp_param.envelope_follower.cyperus_params->scale = dsp_param.envelope_follower.scale;
-
-  outsample = cyperus_envelope_follower(envelope_follower->module->dsp_param.envelope_follower.cyperus_params,
-			    jack_samplerate, pos);
-  
-  /* drive audio outputs */
-  envelope_follower->outs->sample->value = outsample;
-
-  return;
-} /* dsp_envelope_follower */
-
-void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale) {
-  int i = 0;
-  dsp_parameter dsp_param = envelope_follower->dsp_param;
-  
-  dsp_param.envelope_follower.attack = attack;
-  dsp_param.envelope_follower.decay = decay;
-  dsp_param.envelope_follower.scale = scale;
-  
-} /* dsp_edit_envelope_follower */
-
 void dsp_highpass(struct dsp_operation *highpass, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;

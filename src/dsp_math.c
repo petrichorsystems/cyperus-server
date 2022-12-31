@@ -81,25 +81,6 @@ float cyperus_level_detector(struct cyperus_parameters *level_detector, int jack
   return outsample;
 }
 
-float cyperus_envelope_follower(struct cyperus_parameters *envelope_follower, int jack_sr, int pos)
-{
-  float attack_ms = envelope_follower->attack;
-  float decay_ms = envelope_follower->decay;
-  float coeff_attack = exp(log(0.01f) / (attack_ms * jack_sr * 0.001f));
-  float coeff_decay = exp(log(0.01f) / (decay_ms * jack_sr * 0.001f));
-  
-  float insample = envelope_follower->in;
-  float outsample, absin = 0.0f;
-  
-  absin = fabs(insample);
-  if(absin > envelope_follower->signal_buffer[0])
-    outsample = coeff_attack * (outsample - absin) + outsample;
-  else
-    outsample = coeff_decay * (outsample - absin) + outsample;
-  envelope_follower->signal_buffer[0] = outsample;
-  return fabs(outsample) * envelope_follower->scale;
-}
-
 float cyperus_sine(struct cyperus_parameters *sinewav, int jack_sr, int pos)
 {
   sinewav->phase_delta += 2.0f * M_PI * sinewav->freq * (1.0f/jack_sr) + sinewav->phase;

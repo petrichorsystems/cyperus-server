@@ -56,6 +56,7 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 #include "modules/audio/filter/varslope_lowpass/osc_modules_audio_filter_varslope_lowpass.h"
 #include "modules/audio/oscillator/pulse/osc_modules_audio_oscillator_pulse.h"
 #include "modules/motion/envelope/adsr/osc_modules_motion_envelope_adsr.h"
+#include "modules/motion/envelope/follower/osc_modules_motion_envelope_follower.h"
 #include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
 #include "modules/motion/osc/osc_metronome/osc_modules_motion_osc_osc_metronome.h"
 #include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"

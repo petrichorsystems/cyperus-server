@@ -906,88 +906,6 @@ osc_edit_module_triangle_handler(const char *path, const char *types, lo_arg ** 
   return 0;
 } /* osc_edit_module_triangle_handler */
 
-
-int osc_add_module_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
-                                                    int argc, void *data, void *user_data)
-{
-  char *request_id, *bus_path, *module_id = NULL;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *temp_module, *target_module = NULL;
-
-  float attack;
-  float decay;
-  float scale;
-  
-  printf("path: <%s>\n", path);
-
-  request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
-  attack=argv[2]->f;
-  decay=argv[3]->f;
-  scale=argv[4]->f;
-
-  target_bus = dsp_parse_bus_path(bus_path);  
-  dsp_create_envelope_follower(target_bus, attack, decay, scale);
-  
-  temp_module = target_bus->dsp_module_head;
-  while(temp_module != NULL) {
-    target_module = temp_module;
-    temp_module = temp_module->next;
-  }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
-
-  printf("add_module_envelope_follower_handler, module_id: %s\n", module_id);
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/envelope_follower","sisfff", request_id, 0, module_id, attack, decay, scale);
-  free(lo_addr_send);
-  
-  return 0;
-} /* osc_add_module_envelope_follower_handler */
-
-
-int
-osc_edit_module_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  char *module_path, *module_id, *request_id;
-  char *bus_path;
-  struct dsp_bus *target_bus;
-  struct dsp_module *target_module;
-  float attack;
-  float decay;
-  float scale;
-  int count;
-  printf("path: <%s>\n", path);
-
-  request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
-  attack=argv[2]->f;
-  decay=argv[3]->f;
-  scale=argv[4]->f;
-  
-  /* split up path */
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
-
-  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
-  printf("bus_path: %s\n", bus_path);
-  
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-
-  printf("module_id: %s\n", module_id);
-  
-  target_bus = dsp_parse_bus_path(bus_path);  
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-
-  dsp_edit_envelope_follower(target_module, attack, decay, scale);
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/envelope_follower","sisfff", request_id, 0, module_id, attack, decay, scale);
-  free(lo_addr_send);
-  return 0;
-} /* osc_edit_module_envelope_follower_handler */
-
 int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
                                                       int argc, void *data, void *user_data)
 {
@@ -1489,10 +1407,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/triangle") == 0)
     handler_ptr = osc_edit_module_triangle_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/envelope_follower") == 0)
-    handler_ptr = osc_add_module_envelope_follower_handler;
-  else if(strcmp(path, "/cyperus/edit/module/envelope_follower") == 0)
-    handler_ptr = osc_edit_module_envelope_follower_handler;
+  else if(strcmp(path, "/cyperus/add/module/motion/envelope/follower") == 0)
+    handler_ptr = osc_add_module_motion_envelope_follower_handler;
+  else if(strcmp(path, "/cyperus/edit/module/motion/envelope/follower") == 0)
+    handler_ptr = osc_edit_module_motion_envelope_follower_handler;
   
   else if(strcmp(path, "/cyperus/add/module/highpass") == 0)
     handler_ptr = osc_add_module_highpass_handler;

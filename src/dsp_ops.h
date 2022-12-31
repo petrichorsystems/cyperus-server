@@ -42,10 +42,6 @@ struct dsp_operation *dsp_optimize_module(char *bus_path, struct dsp_module *mod
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos);
 
-int dsp_create_delay(struct dsp_bus *target_bus, float amt, float time, float feedback);
-void dsp_edit_delay(struct dsp_module *delay, float amt, float time, float feedback);
-void dsp_delay(struct dsp_operation *delay, int jack_samplerate, int pos);
-
 int dsp_create_sawtooth(struct dsp_bus *target_bus, float freq, float amp);
 void dsp_edit_sawtooth(struct dsp_module *sawtooth, float freq, float amp);
 void dsp_sawtooth(struct dsp_operation *sawtooth, int jack_samplerate, int pos);
@@ -57,10 +53,6 @@ void dsp_sine(struct dsp_operation *sine, int jack_samplerate, int pos);
 int dsp_create_triangle(struct dsp_bus *target_bus, float freq, float amp);
 void dsp_edit_triangle(struct dsp_module *triangle, float freq, float amp);
 void dsp_triangle(struct dsp_operation *triangle, int jack_samplerate, int pos);
-
-int dsp_create_envelope_follower(struct dsp_bus *target_bus, float attack, float decay, float scale);
-void dsp_edit_envelope_follower(struct dsp_module *envelope_follower, float attack, float decay, float scale);
-void dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos);
 
 int dsp_create_highpass(struct dsp_bus *target_bus, float amt, float freq);
 void dsp_edit_highpass(struct dsp_module *highpass, float amt, float freq);
