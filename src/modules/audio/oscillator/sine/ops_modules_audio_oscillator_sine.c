@@ -35,7 +35,7 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
   params.name = "oscillator_sine";  
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));  
-  params.parameters->float32_type = malloc(sizeof(float) * 11);
+  params.parameters->float32_type = malloc(sizeof(float) * 4);
 
   /* user-facing parameters */
   params.parameters->float32_type[0] = frequency;

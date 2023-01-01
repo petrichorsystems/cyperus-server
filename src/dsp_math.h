@@ -131,7 +131,6 @@ float cyperus_block_processor(struct cyperus_parameters *block_processor, int ja
 float cyperus_level_detector(struct cyperus_parameters *level_detector, int jack_sr, int pos);
 
 /* signal generators */
-float cyperus_sawtooth(struct cyperus_parameters *sawtoothwav, int jack_sr, int pos);
 float cyperus_triangle(struct cyperus_parameters *triwav, int jack_sr, int pos);
 float cyperus_whitenoise(struct cyperus_parameters *noiz, int jack_sr, int pos);
 float cyperus_pinknoise(struct cyperus_parameters *noiz, int jack_sr, int pos);
