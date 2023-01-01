@@ -373,54 +373,6 @@ struct dsp_operation
   return new_op;
 } /* dsp_optimize_module */
 
-int dsp_create_triangle(struct dsp_bus *target_bus, float freq, float amp) {
-  dsp_parameter triangle_param;
-  struct dsp_port_in *ins;
-  struct dsp_port_out *outs;
-  triangle_param.pos = 0;
-  triangle_param.triangle.name = "triangle";
-  triangle_param.triangle.cyperus_params = malloc(sizeof(struct cyperus_parameters));
-  triangle_param.triangle.freq = freq;
-  triangle_param.triangle.amp = amp;
-
-  ins = dsp_port_in_init("in", 512, NULL);
-  outs = dsp_port_out_init("out", 1);
-  dsp_add_module(target_bus,
-		 "triangle",
-		 dsp_triangle,
-		 dsp_optimize_module,
-		 triangle_param,
-		 ins,
-		 outs);
-  
-  return 0;
-} /* dsp_create_triangle */
-
-void
-dsp_edit_triangle(struct dsp_module *triangle, float freq, float amp) {
-  triangle->dsp_param.triangle.freq = freq;
-  triangle->dsp_param.triangle.amp = amp;
-  
-  return;
-} /* dsp_edit_triangle */
-
-void
-dsp_triangle(struct dsp_operation *triangle, int jack_samplerate, int pos) {
-  float outsample = 0.0;
-  dsp_parameter dsp_param = triangle->module->dsp_param;
-
-  triangle->module->dsp_param.triangle.cyperus_params->freq = triangle->module->dsp_param.triangle.freq;
-  triangle->module->dsp_param.triangle.cyperus_params->amp = triangle->module->dsp_param.triangle.amp;
-  
-  outsample = cyperus_triangle(triangle->module->dsp_param.triangle.cyperus_params,
-			   jack_samplerate, pos);
-  
-  /* drive audio outputs */
-  triangle->outs->sample->value = outsample;
-  
-  return;
-} /* dsp_triangle */
-
 void dsp_highpass(struct dsp_operation *highpass, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;

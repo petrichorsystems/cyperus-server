@@ -81,10 +81,6 @@ float cyperus_level_detector(struct cyperus_parameters *level_detector, int jack
   return outsample;
 }
 
-float cyperus_triangle(struct cyperus_parameters *triwav, int jack_sr, int pos) {
-  return 2 * triwav->amp / M_PI * asinf( sinf( (2 * M_PI / (jack_sr/triwav->freq)) * pos ) );
-}
-
 float cyperus_whitenoise(struct cyperus_parameters *noise, int jack_sr, int pos) {
   if( pos == jack_sr )
     srand(time(NULL));

@@ -42,10 +42,6 @@ struct dsp_operation *dsp_optimize_module(char *bus_path, struct dsp_module *mod
 void dsp_create_block_processor(struct dsp_bus *target_bus);
 void dsp_block_processor(struct dsp_operation *block_processor, int jack_samplerate, int pos);
 
-int dsp_create_triangle(struct dsp_bus *target_bus, float freq, float amp);
-void dsp_edit_triangle(struct dsp_module *triangle, float freq, float amp);
-void dsp_triangle(struct dsp_operation *triangle, int jack_samplerate, int pos);
-
 int dsp_create_highpass(struct dsp_bus *target_bus, float amt, float freq);
 void dsp_edit_highpass(struct dsp_module *highpass, float amt, float freq);
 void dsp_highpass(struct dsp_operation *highpass, int jack_samplerate, int pos);
