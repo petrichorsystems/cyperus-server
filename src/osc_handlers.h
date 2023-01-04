@@ -74,12 +74,6 @@ int osc_add_module_highpass_handler(const char *path, const char *types, lo_arg 
 int osc_edit_module_highpass_handler(const char *path, const char *types, lo_arg ** argv,
                                      int argc, void *data, void *user_data);
 
-int osc_add_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                    int argc, void *data, void *user_data);
-
-int osc_edit_module_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
-                                     int argc, void *data, void *user_data);
-
 
 int osc_add_module_pitch_shift_handler(const char *path, const char *types, lo_arg ** argv,
                                        int argc, void *data, void *user_data);
