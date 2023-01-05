@@ -1,4 +1,4 @@
-2o/* osc_modules_dsp_filter_bandpass.h
+/* osc_modules_dsp_filter_bandpass.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
