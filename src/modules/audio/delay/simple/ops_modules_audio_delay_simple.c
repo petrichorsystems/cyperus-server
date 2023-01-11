@@ -109,7 +109,7 @@ void dsp_edit_delay_simple(struct dsp_module *delay_simple,
   printf("assigned delay_simple->dsp_param.parameters->float32_type[0]: %f\n",
 	 delay_simple->dsp_param.parameters->float32_type[0]);
   printf("about to assign time\n");
-  delay_simple->dsp_param.parameters->float32_type[1] = time;
+  delay_simple->dsp_param.parameters->float32_type[1] = time * jackcli_samplerate;
   printf("assigned delay_simple->dsp_param.parameters->float32_type[1]: %f\n",
 	 delay_simple->dsp_param.parameters->float32_type[1]);
   printf("about to assign reset\n");
