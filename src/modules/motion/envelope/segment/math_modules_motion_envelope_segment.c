@@ -27,13 +27,13 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
   // Print("stage %d\n", unit->m_stage);
   // Print("initSegment\n");
   // out = unit->m_level;
-  int stage = parameters->int8_type[STATE_STAGE];
+  int stage = parameters->int32_type[STATE_STAGE];
   float counter;
   double level  = parameters->float32_arr_type[PARAM_LEVELS][stage - 1];
   float shape;
   float a1, a2, b1, y1, y2, grow;
   float previous_end_level = parameters->double_type[STATE_END_LEVEL];
-  if (parameters->int8_type[STATE_SHAPE] == shape_Hold)
+  if (parameters->int32_type[STATE_SHAPE] == shape_Hold)
     level = previous_end_level;
   double end_level = parameters->float32_arr_type[PARAM_LEVELS][stage] * parameters->float32_type[PARAM_LEVEL_SCALE] + parameters->float32_type[PARAM_LEVEL_BIAS]; // scale levels
   
@@ -125,8 +125,8 @@ int _init_segment(int samplerate, dsp_module_parameters_t *parameters, double du
   parameters->double_type[STATE_Y1] = y1;
   parameters->double_type[STATE_Y2] = y2;
   parameters->double_type[STATE_GROW] = grow;
-  parameters->int8_type[STATE_COUNTER] = counter;  
-  parameters->int8_type[STATE_SHAPE] = shape;
+  parameters->int32_type[STATE_COUNTER] = counter;  
+  parameters->int32_type[STATE_SHAPE] = shape;
   parameters->float32_type[STATE_LEVEL] = level;
 
   return 1;
@@ -140,29 +140,29 @@ int _check_gate(int samplerate, dsp_module_parameters_t *parameters) {
   
   if (parameters->float32_type[STATE_PREV_GATE] <= 0.f && parameters->float32_type[PARAM_GATE] > 0.f) {
     /* printf("math_modules_motion_envelope_segment.c::_check_gate(), first condition\n"); */
-    parameters->int8_type[STATE_STAGE] = -1;
-    parameters->int8_type[STATE_RELEASED] = 0;
-    parameters->int8_type[STATE_DONE] = 0;
-    parameters->int8_type[STATE_COUNTER] = 1 + parameters->int8_type[PARAM_OFFSET];
+    parameters->int32_type[STATE_STAGE] = -1;
+    parameters->int32_type[STATE_RELEASED] = 0;
+    parameters->int32_type[STATE_DONE] = 0;
+    parameters->int32_type[STATE_COUNTER] = 1 + parameters->int32_type[PARAM_OFFSET];
     return 0;
   } else if (parameters->float32_type[PARAM_GATE] <= -1.f && parameters->float32_type[STATE_PREV_GATE] > -1.f) {
     /* printf("math_modules_motion_envelope_segment.c::_check_gate(), second condition\n"); */
     // forced release: jump to last segment overriding its duration
     double dur = -parameters->float32_type[PARAM_GATE] - 1.f;
-    parameters->int8_type[STATE_COUNTER] = (int)(dur * samplerate);
-    parameters->int8_type[STATE_COUNTER] = modules_math_sc_max(1, parameters->int8_type[STATE_COUNTER]) + parameters->int8_type[PARAM_OFFSET];
-    parameters->int8_type[STATE_STAGE] = 1; //parameters->int8_type[PARAM_NUM_STAGES] - 1;
-    parameters->int8_type[STATE_RELEASED] = 1;
+    parameters->int32_type[STATE_COUNTER] = (int)(dur * samplerate);
+    parameters->int32_type[STATE_COUNTER] = modules_math_sc_max(1, parameters->int32_type[STATE_COUNTER]) + parameters->int32_type[PARAM_OFFSET];
+    parameters->int32_type[STATE_STAGE] = 1; //parameters->int32_type[PARAM_NUM_STAGES] - 1;
+    parameters->int32_type[STATE_RELEASED] = 1;
 
     /* printf("math_modules_motion_envelope_segment.c::_check_gate(), second condition, dur: %f\n", dur); */
     
     _init_segment(samplerate, parameters, dur);
     return 0;
-  } else if (parameters->float32_type[STATE_PREV_GATE] > 0.f && parameters->float32_type[PARAM_GATE] <= 0.f && parameters->int8_type[PARAM_RELEASE_NODE] >= 0 && !parameters->int8_type[STATE_RELEASED]) {
+  } else if (parameters->float32_type[STATE_PREV_GATE] > 0.f && parameters->float32_type[PARAM_GATE] <= 0.f && parameters->int32_type[PARAM_RELEASE_NODE] >= 0 && !parameters->int32_type[STATE_RELEASED]) {
     /* printf("math_modules_motion_envelope_segment.c::_check_gate(), third condition\n"); */
-    parameters->int8_type[STATE_COUNTER] = parameters->int8_type[PARAM_OFFSET];
-    parameters->int8_type[STATE_STAGE] = parameters->int8_type[PARAM_RELEASE_NODE] - 1;
-    parameters->int8_type[STATE_RELEASED] = 1;
+    parameters->int32_type[STATE_COUNTER] = parameters->int32_type[PARAM_OFFSET];
+    parameters->int32_type[STATE_STAGE] = parameters->int32_type[PARAM_RELEASE_NODE] - 1;
+    parameters->int32_type[STATE_RELEASED] = 1;
     return 0;
   }
   return 1;
@@ -180,34 +180,34 @@ int _check_gate_ar(int samplerate, dsp_module_parameters_t *parameters) {
 int _next_segment(int samplerate, dsp_module_parameters_t *parameters) {
   // Print("stage %d rel %d\n", parameters->bytes_type->stage, (int)ZIN0(kEnvGen_release_node));
   /* printf("math_modules_motion_envelope_segment.c::_next_segment()\n"); */
-  int numstages = (int)parameters->int8_type[PARAM_NUM_STAGES];
+  int numstages = (int)parameters->int32_type[PARAM_NUM_STAGES];
 
   // Print("stage %d   numstages %d\n", envelope_gen->stage, numstages);
-  if (parameters->int8_type[STATE_STAGE] + 1 >= numstages) { // num stages
+  if (parameters->int32_type[STATE_STAGE] + 1 >= numstages) { // num stages
     /* printf("entered done logic\n"); */    
-    parameters->int8_type[STATE_COUNTER] = INT_MAX;
-    parameters->int8_type[STATE_SHAPE] = 0;
+    parameters->int32_type[STATE_COUNTER] = INT_MAX;
+    parameters->int32_type[STATE_SHAPE] = 0;
     parameters->float32_type[STATE_LEVEL] = parameters->double_type[STATE_END_LEVEL];
-    parameters->int8_type[STATE_DONE] = 1;
+    parameters->int32_type[STATE_DONE] = 1;
     
     /* done logic here */
 
-  } else if (parameters->int8_type[STATE_STAGE] == ENVGEN_NOT_STARTED) {
-    parameters->int8_type[STATE_COUNTER] = INT_MAX;
+  } else if (parameters->int32_type[STATE_STAGE] == ENVGEN_NOT_STARTED) {
+    parameters->int32_type[STATE_COUNTER] = INT_MAX;
     return 1;
-  } else if (parameters->int8_type[STATE_STAGE] + 1 == parameters->int8_type[PARAM_RELEASE_NODE] && !parameters->int8_type[STATE_RELEASED]) { // sustain stage
-    int loop_node = (int)parameters->int8_type[PARAM_LOOP_NODE];
+  } else if (parameters->int32_type[STATE_STAGE] + 1 == parameters->int32_type[PARAM_RELEASE_NODE] && !parameters->int32_type[STATE_RELEASED]) { // sustain stage
+    int loop_node = (int)parameters->int32_type[PARAM_LOOP_NODE];
     if (loop_node >= 0 && loop_node < numstages) {
-      parameters->int8_type[STATE_STAGE] = loop_node;
+      parameters->int32_type[STATE_STAGE] = loop_node;
       return _init_segment(samplerate, parameters, -1);
     } else {
-      parameters->int8_type[STATE_COUNTER] = INT_MAX;
-      parameters->int8_type[STATE_SHAPE] = shape_Sustain;
+      parameters->int32_type[STATE_COUNTER] = INT_MAX;
+      parameters->int32_type[STATE_SHAPE] = shape_Sustain;
       parameters->float32_type[STATE_LEVEL] = parameters->double_type[STATE_END_LEVEL];
     }
     // Print("sustain\n");
   } else {
-    parameters->int8_type[STATE_STAGE]++;
+    parameters->int32_type[STATE_STAGE]++;
     return _init_segment(samplerate, parameters, -1);
   }
   return 1;
@@ -279,7 +279,7 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
     grow = parameters->double_type[STATE_GROW];
     /* printf("math_modules_motion_envelope_segment.c::_perform(), parameters->float32_type[STATE_LEVEL]: %f, a2: %f, b1: %f, grow: %f\n", parameters->float32_type[STATE_LEVEL], a2, b1, grow); */
     if (!gate_check_func(samplerate, parameters)) {
-      out = parameters->float32_arr_type[PARAM_LEVELS][parameters->int8_type[STATE_STAGE]];
+      out = parameters->float32_arr_type[PARAM_LEVELS][parameters->int32_type[STATE_STAGE]];
       break;
     }
     out = level;
@@ -321,8 +321,8 @@ float _perform(int samplerate, dsp_module_parameters_t *parameters, int (*gate_c
   }
   parameters->float32_type[STATE_LEVEL] = level;
 
-  if(parameters->int8_type[STATE_DONE]) {
-    return parameters->float32_arr_type[PARAM_LEVELS][parameters->int8_type[STATE_STAGE]] * parameters->float32_type[PARAM_LEVEL_SCALE] + parameters->float32_type[PARAM_LEVEL_BIAS];
+  if(parameters->int32_type[STATE_DONE]) {
+    return parameters->float32_arr_type[PARAM_LEVELS][parameters->int32_type[STATE_STAGE]] * parameters->float32_type[PARAM_LEVEL_SCALE] + parameters->float32_type[PARAM_LEVEL_BIAS];
   }
   return out;
 } /* _perform */
@@ -332,7 +332,7 @@ float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
   
   float gate = parameters->float32_type[PARAM_GATE];
   // Print("->EnvGen_next_k gate %g\n", gate);
-  int counter = parameters->int8_type[STATE_COUNTER];
+  int counter = parameters->int32_type[STATE_COUNTER];
   double level = parameters->float32_type[STATE_LEVEL];
 
   _check_gate(samplerate, parameters);
@@ -351,14 +351,14 @@ float _next_k(int samplerate, dsp_module_parameters_t *parameters) {
   out = _perform(samplerate, parameters, &_check_gate_passthru, 0);
 
   // Print("x %d %d %d %g\n", envelope_gen->stage, counter, envelope_gen->shape, *out);
-  parameters->int8_type[STATE_COUNTER] = counter - 1;
+  parameters->int32_type[STATE_COUNTER] = counter - 1;
 
   return out;
 } /* _next_k */
 
 float _next_aa(int samplerate, dsp_module_parameters_t *parameters) {
   float out;
-  if (parameters->int8_type[STATE_COUNTER] <= 0) {
+  if (parameters->int32_type[STATE_COUNTER] <= 0) {
     
     int success = _next_segment(samplerate, parameters);
     if (!success) {
@@ -370,7 +370,7 @@ float _next_aa(int samplerate, dsp_module_parameters_t *parameters) {
   out = _perform(samplerate, parameters, &_check_gate_ar, 1);
   
   /* decrement counter */
-  parameters->int8_type[STATE_COUNTER] = parameters->int8_type[STATE_COUNTER] - 1;
+  parameters->int32_type[STATE_COUNTER] = parameters->int32_type[STATE_COUNTER] - 1;
 
   return out;
 } /* _next_aa */
@@ -385,13 +385,13 @@ void math_modules_motion_envelope_segment_init(dsp_module_parameters_t *paramete
     parameters->float32_type[PARAM_INIT_LEVEL]* parameters->float32_type[PARAM_LEVEL_SCALE] + \
     parameters->float32_type[PARAM_LEVEL_BIAS];
 
-  parameters->int8_type[STATE_COUNTER] = 0;
-  parameters->int8_type[STATE_STAGE] = ENVGEN_NOT_STARTED;
-  parameters->int8_type[STATE_SHAPE] = shape_Hold;
+  parameters->int32_type[STATE_COUNTER] = 0;
+  parameters->int32_type[STATE_STAGE] = ENVGEN_NOT_STARTED;
+  parameters->int32_type[STATE_SHAPE] = shape_Hold;
   parameters->float32_type[STATE_PREV_GATE] = 0.0f;
-  parameters->int8_type[STATE_RELEASED] = 0;
+  parameters->int32_type[STATE_RELEASED] = 0;
   
-  const int initial_shape = (int)parameters->int8_type[STATE_SHAPE];
+  const int initial_shape = (int)parameters->int32_type[STATE_SHAPE];
   
   if (initial_shape == shape_Hold)
     parameters->float32_type[STATE_LEVEL] = parameters->float32_arr_type[PARAM_LEVELS][1]; // we start at the end level;
@@ -410,9 +410,9 @@ void math_modules_motion_envelope_segment_edit(dsp_module_parameters_t *paramete
                                                  float level_scale,
                                                  float level_bias,
                                                  float time_scale) {
-  parameters->int8_type[PARAM_RELEASE_NODE] = release_node;
-  parameters->int8_type[PARAM_LOOP_NODE] = loop_node;
-  parameters->int8_type[PARAM_OFFSET] = offset;
+  parameters->int32_type[PARAM_RELEASE_NODE] = release_node;
+  parameters->int32_type[PARAM_LOOP_NODE] = loop_node;
+  parameters->int32_type[PARAM_OFFSET] = offset;
   parameters->float32_type[PARAM_GATE] = gate;
   parameters->float32_type[PARAM_LEVEL_SCALE] = level_scale;
   parameters->float32_type[PARAM_LEVEL_BIAS] = level_bias;
@@ -424,11 +424,11 @@ extern
 float math_modules_motion_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos) {
   float out = _next_aa(samplerate, parameters);
   /* printf("out: %f\n", out); */
-  /* printf("counter: %d\n", parameters->int8_type[STATE_COUNTER]); */
-  /* printf("parameters->int8_type[STATE_DONE]: %d\n", parameters->int8_type[STATE_DONE]); */
-  if(!parameters->int8_type[STATE_DONE])
+  /* printf("counter: %d\n", parameters->int32_type[STATE_COUNTER]); */
+  /* printf("parameters->int32_type[STATE_DONE]: %d\n", parameters->int32_type[STATE_DONE]); */
+  if(!parameters->int32_type[STATE_DONE])
     return out;
   else {
-    return parameters->float32_arr_type[PARAM_LEVELS][parameters->int8_type[STATE_STAGE]];
+    return parameters->float32_arr_type[PARAM_LEVELS][parameters->int32_type[STATE_STAGE]];
   }
 } /* math_modules_motion_envelope_segment */

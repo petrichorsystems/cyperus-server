@@ -48,7 +48,7 @@ dsp_create_motion_envelope_segment(struct dsp_bus *target_bus,
   params.parameters->float32_arr_type = malloc(sizeof(float*) * 4);
   params.parameters->float32_type = malloc(sizeof(float) * 8);
   params.parameters->double_type = malloc(sizeof(double) * 7);
-  params.parameters->int8_type = malloc(sizeof(int) * 10);
+  params.parameters->int32_type = malloc(sizeof(int) * 10);
 
   printf("about to assign envelope parameters\n");
   
@@ -73,9 +73,9 @@ dsp_create_motion_envelope_segment(struct dsp_bus *target_bus,
   } else
     params.parameters->float32_arr_type[PARAM_CURVE] = NULL;
   
-  params.parameters->int8_type[PARAM_RELEASE_NODE] = release_node;  
-  params.parameters->int8_type[PARAM_LOOP_NODE] = loop_node;
-  params.parameters->int8_type[PARAM_OFFSET] = offset;
+  params.parameters->int32_type[PARAM_RELEASE_NODE] = release_node;  
+  params.parameters->int32_type[PARAM_LOOP_NODE] = loop_node;
+  params.parameters->int32_type[PARAM_OFFSET] = offset;
 
   /* envelope generator parameters */  
   params.parameters->float32_type[PARAM_GATE]         = gate;
@@ -83,7 +83,7 @@ dsp_create_motion_envelope_segment(struct dsp_bus *target_bus,
   params.parameters->float32_type[PARAM_LEVEL_BIAS]   = level_bias;
   params.parameters->float32_type[PARAM_TIME_SCALE]   = time_scale;
   params.parameters->float32_type[PARAM_INIT_LEVEL]   = 0.0f; /* init_level */
-  params.parameters->int8_type[PARAM_NUM_STAGES]      = num_stages;
+  params.parameters->int32_type[PARAM_NUM_STAGES]      = num_stages;
 
   printf("about to assign internal parameters\n");
   
@@ -98,11 +98,11 @@ dsp_create_motion_envelope_segment(struct dsp_bus *target_bus,
 
   printf("about to assign internal parameters a\n");
   
-  params.parameters->int8_type[STATE_COUNTER]      = 0; /* counter; */
-  params.parameters->int8_type[STATE_STAGE]        = 0; /* stage; */
-  params.parameters->int8_type[STATE_SHAPE]        = 0; /* shape; */
-  params.parameters->int8_type[STATE_RELEASED]     = 0; /* released; */
-  params.parameters->int8_type[STATE_DONE]         = 0; /* done; */
+  params.parameters->int32_type[STATE_COUNTER]      = 0; /* counter; */
+  params.parameters->int32_type[STATE_STAGE]        = 0; /* stage; */
+  params.parameters->int32_type[STATE_SHAPE]        = 0; /* shape; */
+  params.parameters->int32_type[STATE_RELEASED]     = 0; /* released; */
+  params.parameters->int32_type[STATE_DONE]         = 0; /* done; */
 
   printf("about to assign internal parameters b\n");
   

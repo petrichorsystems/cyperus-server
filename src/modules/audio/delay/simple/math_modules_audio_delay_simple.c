@@ -20,6 +20,8 @@ Copyright 2021 murray foster */
 
 extern
 float math_modules_audio_delay_simple(dsp_parameter *delay, int samplerate, int pos) {
+  /* printf("math_modules_audio_delay_simple.c::math_modules_audio_delay_simple()\n"); */
+  
   float out = 0.0f;
 
   /* user-facing parameters */
@@ -28,20 +30,22 @@ float math_modules_audio_delay_simple(dsp_parameter *delay, int samplerate, int 
   float feedback = delay->parameters->float32_type[2];
 
   /* internal parameters */
-  uint8_t delay_pos = delay->parameters->uint8_type[0];
-  uint8_t delay_time_pos = delay->parameters->uint8_type[1];
-  float* signal_buffer = delay->parameters->float32_arr_type[3];
-  
-  if( pos >= time )
+  int delay_pos = delay->parameters->int32_type[0];
+  int delay_time_pos = delay->parameters->int32_type[1];
+
+  if( delay_pos >= time )
     delay_pos = 0;
 
-  delay_time_pos = pos - time;
+  delay_time_pos = delay_pos - time;
 
   if( delay_time_pos < 0 )
-    delay_time_pos += time;
-
-  out = signal_buffer[delay_pos] = delay->in + (signal_buffer[delay_time_pos] * feedback);
+    delay_time_pos = delay_time_pos + (unsigned int)time;
+  
+  out = delay->parameters->float32_arr_type[0][delay_pos] = delay->in + (delay->parameters->float32_arr_type[0][delay_time_pos] * feedback);
   delay_pos += 1;
-
+  
+  delay->parameters->int32_type[0] = delay_pos;
+  delay->parameters->int32_type[1] = delay_time_pos;
+  
   return out * amount;
 }

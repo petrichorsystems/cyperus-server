@@ -29,6 +29,9 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
                         float time,
                         float feedback
                          ) {
+
+  printf("ops_modules_audio_delay_simple.c::dsp_create_delay_simple()\n");
+  
   dsp_parameter params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
@@ -37,7 +40,8 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   params.pos = 0;  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));  
   params.parameters->float32_type = malloc(sizeof(float) * 3);
-  params.parameters->uint8_type = malloc(sizeof(uint8_t) * 2);
+  params.parameters->int32_type = malloc(sizeof(unsigned int) * 2);
+  params.parameters->float32_arr_type = malloc(sizeof(float *) * 1);
   
   /* user-facing parameters */
   params.parameters->float32_type[0] = amount;
@@ -45,18 +49,18 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   params.parameters->float32_type[2] = feedback; 
 
   /* internal parameters */
-  params.parameters->uint8_type[0] = 0; /* delay_pos */
-  params.parameters->uint8_type[1] = 0; /* delay_time_pos */
+  params.parameters->int32_type[0] = 0; /* delay_pos */
+  params.parameters->int32_type[1] = 0; /* delay_time_pos */
   
-  params.parameters->float32_arr_type = calloc(time * jackcli_samplerate * 30, sizeof(float));
+  params.parameters->float32_arr_type[0] = calloc(time * jackcli_samplerate * 30, sizeof(float));
 
   
   ins = dsp_port_in_init("in", 512, NULL);
   ins->next = dsp_port_in_init("param_amount", 512, &(params.parameters->float32_type[0]));
   ins->next->next = dsp_port_in_init("param_time", 512, &(params.parameters->float32_type[1]));
-  ins->next->next = dsp_port_in_init("param_feedback", 512, &(params.parameters->float32_type[2]));  
+  ins->next->next->next = dsp_port_in_init("param_feedback", 512, &(params.parameters->float32_type[2]));  
   outs = dsp_port_out_init("out", 1);
-
+  
   dsp_add_module(target_bus,
 		 "delay_simple",
 		 dsp_delay_simple,
@@ -69,23 +73,25 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
 
 void
 dsp_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate, int pos) {
+  /* printf("ops_modules_audio_delay_simple.c::dsp_delay_simple()\n"); */
+  
   float insample = 0.0;
   float outsample = 0.0;
 
   insample = dsp_sum_summands(delay_simple->ins->summands);
   delay_simple->module->dsp_param.in = insample;
 
-  if( delay_simple->ins->next->summands != NULL ) {
+  /* if( delay_simple->ins->next->summands != NULL ) { */
 
-    /* come back to this -- we need to figure out how to perform input calculations
-       with the large coefficient calculations. */
+  /*   /\* come back to this -- we need to figure out how to perform input calculations */
+  /*      with the large coefficient calculations. *\/ */
     
-    /* dsp_param.delay_simple- = dsp_sum_summands(delay_simple->ins->next->summands) * jack_samplerate; */    
-  }
+  /*   /\* dsp_param.delay_simple- = dsp_sum_summands(delay_simple->ins->next->summands) * jack_samplerate; *\/     */
+  /* } */
   
   outsample = math_modules_audio_delay_simple(&delay_simple->module->dsp_param,
-                                               jack_samplerate,
-                                               pos);
+                                              jack_samplerate,
+                                              pos);
   
   /* drive audio outputs */
   delay_simple->outs->sample->value = outsample;

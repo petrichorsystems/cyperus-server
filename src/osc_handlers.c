@@ -39,14 +39,16 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
   printf("osc_list_main_handler..\n");
+  char *request_id = NULL;
   struct dsp_port_out *temp_port_out;
   struct dsp_port_in *temp_port_in;
+
+  request_id = (char *)argv[0];
   char *mains_str = malloc(sizeof(char) * ((44 * (jackcli_channels_in +
 						  jackcli_channels_out)) +
 					   4 + /* strlen("in:\n") */
 					   5 + /* strlen("out:\n") */
 					   1));
-
   strcpy(mains_str, "in:\n");
   /* process main inputs */
   temp_port_out = dsp_main_ins;
@@ -65,9 +67,9 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
     strcat(mains_str, "\n");
     temp_port_in = temp_port_in->next;
   }
-  
+   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/main", "sis", (char *)argv[0], 0, mains_str);
+  lo_send(lo_addr_send,"/cyperus/list/main", "sis", request_id, 0, mains_str);
   free(mains_str);
   free(lo_addr_send);
   return 0;
@@ -478,6 +480,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
                                         int argc, void *data, void *user_data)
 {
+  printf("cyperus::osc_handlers.c::osc_list_module_port_handler()\n");
   int count;
   struct dsp_bus *temp_bus;
   struct dsp_module *temp_module = NULL;
@@ -490,6 +493,8 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   request_id = (char *)argv[0];
   module_path = (char *)argv[1];
 
+  printf("module_path: <%s>\n", module_path);
+  
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
@@ -516,7 +521,13 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 
   printf("in\n");
   
+  if(temp_module == NULL)
+    printf(" NULL DUDE \n");
+
   temp_port_in = temp_module->ins;
+  
+  printf("iterating over ins\n");
+  
   while(temp_port_in != NULL) {
     result_str_size += strlen(temp_port_in->id) + 1 + strlen(temp_port_in->name) + 2;
     result_str = realloc(result_str, sizeof(char) * result_str_size);
@@ -733,6 +744,7 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   /* } */
   int (*handler_ptr)(const char *path, const char *types, lo_arg ** argv,
                      int argc, void *data, void *user_data);
+  printf("types: %s\n", types);
   handler_ptr = NULL;
   if(strcmp(path, "/cyperus/address") == 0)
     handler_ptr = osc_address_handler;

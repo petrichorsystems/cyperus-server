@@ -44,9 +44,9 @@ You may modify and use this source code to create binary code for your own purpo
 #define ENV_STATE_RELEASE 4
 
 void _reset(dsp_module_parameters_t *parameters) {
-  parameters->int8_type[0] = 0;
-  parameters->int8_type[1] = ENV_STATE_IDLE;
-  parameters->int8_type[2] = 0;  
+  parameters->int32_type[0] = 0;
+  parameters->int32_type[1] = ENV_STATE_IDLE;
+  parameters->int32_type[2] = 0;  
   parameters->float32_type[14] = 0.0f;
 } /* _reset */
 
@@ -202,7 +202,7 @@ void math_modules_motion_envelope_adsr_edit(dsp_module_parameters_t *parameters,
   _set_sustain_level(parameters, sustain_level);
   _set_target_ratio_a(parameters, target_ratio_a);
   _set_target_ratio_dr(parameters, target_ratio_dr);
-  parameters->int8_type[0] = gate;
+  parameters->int32_type[0] = gate;
   parameters->float32_type[6] = mul;
   parameters->float32_type[7] = add;
 }
@@ -211,13 +211,13 @@ extern
 float math_modules_motion_envelope_adsr(dsp_module_parameters_t *parameters, int samplerate, int pos) {
   float out = 0.0f;
 
-  int gate = parameters->int8_type[0];
+  int gate = parameters->int32_type[0];
   float sustain_level = parameters->float32_type[3];
   float mul = parameters->float32_type[6];
   float add = parameters->float32_type[7];
   
-  int state = parameters->int8_type[1];
-  int gate_state = parameters->int8_type[2];
+  int state = parameters->int32_type[1];
+  int gate_state = parameters->int32_type[2];
   float attack_coeff = parameters->float32_type[8];
   float decay_coeff = parameters->float32_type[9];
   float release_coeff = parameters->float32_type[10];
@@ -267,9 +267,9 @@ float math_modules_motion_envelope_adsr(dsp_module_parameters_t *parameters, int
     }
   }
          
-  parameters->int8_type[0] = gate;
-  parameters->int8_type[1] = state;
-  parameters->int8_type[2] = gate_state;
+  parameters->int32_type[0] = gate;
+  parameters->int32_type[1] = state;
+  parameters->int32_type[2] = gate_state;
   parameters->float32_type[14] = out;
   
   return out;

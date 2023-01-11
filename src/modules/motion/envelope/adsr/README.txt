@@ -1,6 +1,6 @@
     envelope_adsr_params
       # USER
-        int8_type[0] = gate;
+        int32_type[0] = gate;
         float32_type[0] = attack_rate; 
         float32_type[1] = decay_rate;
         float32_type[2] = release_rate;
@@ -10,8 +10,8 @@
         float32_type[6] = mul;
         float32_type[7] = add;      
       # INTERNAL
-        int8_type[1] = state;
-        int8_type[2] = gate_state;
+        int32_type[1] = state;
+        int32_type[2] = gate_state;
         float32_type[8] = attack_coeff;
         float32_type[9] = decay_coeff;
         float32_type[10] = release_coeff;

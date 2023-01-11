@@ -44,10 +44,10 @@ dsp_create_motion_envelope_adsr(struct dsp_bus *target_bus,
   printf("malloc() float32\n");
   params.parameters->float32_type = malloc(sizeof(float) * 15);
   printf("malloc() int8\n");
-  params.parameters->int8_type = malloc(sizeof(int) * 3);
+  params.parameters->int32_type = malloc(sizeof(int) * 3);
   
   /* user-facing parameters
-  params.parameters->int8_type[0] = gate;
+  params.parameters->int32_type[0] = gate;
   params.parameters->float32_type[0] = attack_rate; 
   params.parameters->float32_type[1] = decay_rate;
   params.parameters->float32_type[2] = release_rate;
@@ -58,8 +58,8 @@ dsp_create_motion_envelope_adsr(struct dsp_bus *target_bus,
   params.parameters->float32_type[7] = add; */
   
   /* internal parameters
-  params.parameters->int8_type[1] = state
-  params.parameters->int8_type[2] = gate_state
+  params.parameters->int32_type[1] = state
+  params.parameters->int32_type[2] = gate_state
   params.parameters->float32_type[8] = attack_coeff;
   params.parameters->float32_type[9] = decay_coeff;
   params.parameters->float32_type[10] = release_coeff;
