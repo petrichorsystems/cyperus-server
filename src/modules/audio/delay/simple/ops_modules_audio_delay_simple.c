@@ -81,13 +81,9 @@ dsp_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate, int po
   insample = dsp_sum_summands(delay_simple->ins->summands);
   delay_simple->module->dsp_param.in = insample;
 
-  /* if( delay_simple->ins->next->summands != NULL ) { */
-
-  /*   /\* come back to this -- we need to figure out how to perform input calculations */
-  /*      with the large coefficient calculations. *\/ */
-    
-  /*   /\* dsp_param.delay_simple- = dsp_sum_summands(delay_simple->ins->next->summands) * jack_samplerate; *\/     */
-  /* } */
+  if( delay_simple->ins->next->next->summands != NULL ) {    
+    delay_simple->module->dsp_param.parameters->float32_type[1] = dsp_sum_summands(delay_simple->ins->next->next->summands) * jack_samplerate;
+  }
   
   outsample = math_modules_audio_delay_simple(&delay_simple->module->dsp_param,
                                               jack_samplerate,
