@@ -1,4 +1,4 @@
-/* math_modules_audio_delay_simple.c
+/* math_modules_delay_simple.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -16,36 +16,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#include "math_modules_audio_delay_simple.h"
+#include "math_modules_delay_simple.h"
 
 extern
-float math_modules_audio_delay_simple(dsp_parameter *delay, int samplerate, int pos) {
-  /* printf("math_modules_audio_delay_simple.c::math_modules_audio_delay_simple()\n"); */
+float math_modules_delay_simple(dsp_parameter *delay, int samplerate, int pos) {
+  /* printf("math_modules_delay_simple.c::math_modules_delay_simple()\n"); */
   
   float out = 0.0f;
 
   /* user-facing parameters */
   float amount = delay->parameters->float32_type[0];
-  float time = delay->parameters->float32_type[1];
   float feedback = delay->parameters->float32_type[2];
 
   /* internal parameters */
-  int delay_pos = delay->parameters->int32_type[0];
-  int delay_time_pos = delay->parameters->int32_type[1];
+  int time_samples = delay->parameters->int32_type[0];
+  int delay_pos = delay->parameters->int32_type[1];
+  int delay_time_pos = delay->parameters->int32_type[2];
 
-  if( delay_pos >= time )
+  if( delay_pos >= time_samples )
     delay_pos = 0;
 
-  delay_time_pos = delay_pos - time;
+  delay_time_pos = delay_pos - time_samples;
 
   if( delay_time_pos < 0 )
-    delay_time_pos = delay_time_pos + (unsigned int)time;
+    delay_time_pos = delay_time_pos + time_samples;
   
   out = delay->parameters->float32_arr_type[0][delay_pos] = delay->in + (delay->parameters->float32_arr_type[0][delay_time_pos] * feedback);
   delay_pos += 1;
   
-  delay->parameters->int32_type[0] = delay_pos;
-  delay->parameters->int32_type[1] = delay_time_pos;
+  delay->parameters->int32_type[1] = delay_pos;
+  delay->parameters->int32_type[2] = delay_time_pos;
   
   return out * amount;
 }

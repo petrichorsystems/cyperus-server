@@ -8,10 +8,10 @@
 #include <math.h>
 #include <limits.h>
 
-#include "../../../../jackcli.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp_types.h"
-#include "../../../math_utils.h"
+#include "../../../jackcli.h"
+#include "../../../dsp_math.h"
+#include "../../../dsp_types.h"
+#include "../../math_utils.h"
 
 #define ENVGEN_NOT_STARTED 1000000000
 

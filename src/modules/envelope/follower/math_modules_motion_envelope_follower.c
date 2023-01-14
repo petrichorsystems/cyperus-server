@@ -29,13 +29,16 @@ float math_modules_motion_envelope_follower(dsp_parameter *follower, int sampler
   float scale = follower->parameters->float32_type[2];
   
   float insample = follower->in;
-  float outsample, absin = 0.0f;
+  float outsample = 0.0f;
+  float absin = 0.0f;
   
   absin = fabs(insample);
-  if(absin > *follower->parameters->float32_arr_type[0])
-    outsample = coeff_attack * (outsample - absin) + outsample;
+  if(absin > follower->parameters->float32_type[3])
+    outsample = coeff_attack * ( follower->parameters->float32_type[3] - absin) + absin;
   else
-    outsample = coeff_decay * (outsample - absin) + outsample;
-  *follower->parameters->float32_arr_type[0] = outsample;
+    outsample = coeff_decay * ( follower->parameters->float32_type[3] - absin) + absin;
+  
+  follower->parameters->float32_type[3] = outsample;
+
   return fabs(outsample) * scale;
 }

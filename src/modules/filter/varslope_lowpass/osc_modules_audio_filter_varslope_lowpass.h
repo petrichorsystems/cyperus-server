@@ -26,13 +26,13 @@ Copyright 2015 murray foster */
 
 #include <lo/lo.h>
  
-/* #include "../../../../dsp.h" */
-/* #include "../../../../dsp_types.h" */
-/* #include "../../../../osc.h" */
-/* #include "../../../../osc_handlers.h" */
+/* #include "../../../dsp.h" */
+/* #include "../../../dsp_types.h" */
+/* #include "../../../osc.h" */
+/* #include "../../../osc_handlers.h" */
 
-#include "../../../../dsp.h"
-#include "../../../../osc.h"
+#include "../../../dsp.h"
+#include "../../../osc.h"
 
 #include "ops_modules_audio_filter_varslope_lowpass.h"
 

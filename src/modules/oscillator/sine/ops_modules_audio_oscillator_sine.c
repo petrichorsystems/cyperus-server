@@ -72,7 +72,8 @@ dsp_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate, 
   
   outsample = math_modules_audio_oscillator_sine(oscillator_sine->module->dsp_param.parameters,
                                                   jack_samplerate,
-                                                  pos);  
+                                                  pos);
+  
   /* drive audio outputs */
   oscillator_sine->outs->sample->value = outsample;
   

@@ -767,9 +767,9 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/list/module_port") == 0)
     handler_ptr = osc_list_module_port_handler;
     
-  else if(strcmp(path, "/cyperus/add/module/audio/delay/simple") == 0)
+  else if(strcmp(path, "/cyperus/add/module/delay/simple") == 0)
     handler_ptr = osc_add_module_delay_simple_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/delay/simple") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/delay/simple") == 0)
     handler_ptr = osc_edit_module_delay_simple_handler;
   
   else if(strcmp(path, "/cyperus/add/module/motion/envelope/follower") == 0)

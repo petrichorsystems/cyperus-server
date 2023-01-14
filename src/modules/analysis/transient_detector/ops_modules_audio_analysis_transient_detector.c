@@ -22,12 +22,12 @@ Copyright 2018 murray foster */
 
 #include <lo/lo.h>
 
-#include "../../../../jackcli.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
-#include "../../../threadsync.h"
-#include "../../../../osc.h"
+#include "../../../jackcli.h"
+#include "../../../dsp_math.h"
+#include "../../../dsp.h"
+#include "../../../dsp_ops.h"
+#include "../../threadsync.h"
+#include "../../../osc.h"
 
 #include "ops_modules_audio_analysis_transient_detector.h"
 

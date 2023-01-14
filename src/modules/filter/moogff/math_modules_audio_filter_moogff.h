@@ -15,9 +15,9 @@
 #    include <smmintrin.h>
 #endif
 
-#include "../../../../jackcli.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp_types.h"
+#include "../../../jackcli.h"
+#include "../../../dsp_math.h"
+#include "../../../dsp_types.h"
 
 extern float
 math_modules_audio_filter_moogff(dsp_parameter *filter, int samplerate, int pos);

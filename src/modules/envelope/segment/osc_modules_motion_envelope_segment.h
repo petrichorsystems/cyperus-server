@@ -23,12 +23,12 @@ Copyright 2021 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
-#include "../../../../dsp_types.h"
-#include "../../../../dsp_math.h"
-#include "../../../../osc.h"
-#include "../../../../osc_handlers.h"
+#include "../../../dsp.h"
+#include "../../../dsp_ops.h"
+#include "../../../dsp_types.h"
+#include "../../../dsp_math.h"
+#include "../../../osc.h"
+#include "../../../osc_handlers.h"
 
 #include "ops_modules_motion_envelope_segment.h"
 #include "math_modules_motion_envelope_segment.h"

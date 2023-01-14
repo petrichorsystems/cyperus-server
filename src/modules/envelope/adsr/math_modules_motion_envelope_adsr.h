@@ -7,9 +7,9 @@
 #include <string.h>
 #include <stddef.h>
 
-#include "../../../../jackcli.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp_types.h"
+#include "../../../jackcli.h"
+#include "../../../dsp_math.h"
+#include "../../../dsp_types.h"
 
 void _reset(dsp_module_parameters_t *parameters);
 float _calc_coeff(float rate, float target_ratio);

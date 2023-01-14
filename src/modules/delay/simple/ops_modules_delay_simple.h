@@ -14,21 +14,21 @@
  * Validation result: Not run
  */
 
-#ifndef OPS_MODULES_AUDIO_DELAY_SIMPLE_H
-#define OPS_MODULES_AUDIO_DELAY_SIMPLE_H
+#ifndef OPS_MODULES_DELAY_SIMPLE_H
+#define OPS_MODULES_DELAY_SIMPLE_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
-#include "../../../../dsp_types.h"
-#include "../../../../dsp_math.h"
-#include "../../../../osc.h"
-#include "../../../../osc_handlers.h"
+#include "../../../dsp.h"
+#include "../../../dsp_ops.h"
+#include "../../../dsp_types.h"
+#include "../../../dsp_math.h"
+#include "../../../osc.h"
+#include "../../../osc_handlers.h"
 
-#include "../../../../jackcli.h"
+#include "../../../jackcli.h"
 
 int
 dsp_create_delay_simple(struct dsp_bus *target_bus,

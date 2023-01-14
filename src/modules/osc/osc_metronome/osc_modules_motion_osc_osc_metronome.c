@@ -20,13 +20,13 @@ Copyright 2015 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
 
-#include "../../../../rtqueue.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp.h"
-#include "../../../../dsp_types.h"
-#include "../../../../dsp_ops.h"
-#include "../../../../jackcli.h"
-#include "../../../../osc.h"
+#include "../../../rtqueue.h"
+#include "../../../dsp_math.h"
+#include "../../../dsp.h"
+#include "../../../dsp_types.h"
+#include "../../../dsp_ops.h"
+#include "../../../jackcli.h"
+#include "../../../osc.h"
 
 #include "ops_modules_motion_osc_osc_metronome.h"
 #include "osc_modules_motion_osc_osc_metronome.h"

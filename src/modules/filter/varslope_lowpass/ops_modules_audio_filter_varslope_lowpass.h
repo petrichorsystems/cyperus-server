@@ -22,7 +22,7 @@
 #include <stdlib.h> //exit(0)
 
 #include <lo/lo.h>
-#include "../../../../dsp.h"
+#include "../../../dsp.h"
 
 #include "math_modules_audio_filter_varslope_lowpass.h"
 

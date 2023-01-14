@@ -50,19 +50,19 @@ void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handle
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out);
 
-#include "modules/audio/delay/simple/osc_modules_audio_delay_simple.h"
-#include "modules/audio/analysis/transient_detector/osc_modules_audio_analysis_transient_detector.h"
-#include "modules/audio/filter/bandpass/osc_modules_audio_filter_bandpass.h"
-#include "modules/audio/filter/moogff/osc_modules_audio_filter_moogff.h"
-#include "modules/audio/filter/varslope_lowpass/osc_modules_audio_filter_varslope_lowpass.h"
-#include "modules/audio/oscillator/sine/osc_modules_audio_oscillator_sine.h"
-#include "modules/audio/oscillator/sawtooth/osc_modules_audio_oscillator_sawtooth.h"
-#include "modules/audio/oscillator/triangle/osc_modules_audio_oscillator_triangle.h"
-#include "modules/audio/oscillator/pulse/osc_modules_audio_oscillator_pulse.h"
-#include "modules/motion/envelope/adsr/osc_modules_motion_envelope_adsr.h"
-#include "modules/motion/envelope/follower/osc_modules_motion_envelope_follower.h"
-#include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
-#include "modules/motion/osc/osc_metronome/osc_modules_motion_osc_osc_metronome.h"
-#include "modules/motion/envelope/segment/osc_modules_motion_envelope_segment.h"
+#include "modules/delay/simple/osc_modules_delay_simple.h"
+#include "modules/analysis/transient_detector/osc_modules_audio_analysis_transient_detector.h"
+#include "modules/filter/bandpass/osc_modules_audio_filter_bandpass.h"
+#include "modules/filter/moogff/osc_modules_audio_filter_moogff.h"
+#include "modules/filter/varslope_lowpass/osc_modules_audio_filter_varslope_lowpass.h"
+#include "modules/oscillator/sine/osc_modules_audio_oscillator_sine.h"
+#include "modules/oscillator/sawtooth/osc_modules_audio_oscillator_sawtooth.h"
+#include "modules/oscillator/triangle/osc_modules_audio_oscillator_triangle.h"
+#include "modules/oscillator/pulse/osc_modules_audio_oscillator_pulse.h"
+#include "modules/envelope/adsr/osc_modules_motion_envelope_adsr.h"
+#include "modules/envelope/follower/osc_modules_motion_envelope_follower.h"
+#include "modules/envelope/segment/osc_modules_motion_envelope_segment.h"
+#include "modules/osc/osc_metronome/osc_modules_motion_osc_osc_metronome.h"
+#include "modules/envelope/segment/osc_modules_motion_envelope_segment.h"
 #endif
 

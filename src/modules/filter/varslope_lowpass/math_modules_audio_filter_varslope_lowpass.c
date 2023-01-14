@@ -16,8 +16,8 @@
 
 #include <math.h>
 
-#include "../../../../dsp_math.h"
-#include "../../../math_utils.h"
+#include "../../../dsp_math.h"
+#include "../../math_utils.h"
 #include "math_modules_audio_filter_varslope_lowpass.h"
 
 

@@ -21,10 +21,10 @@
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include "../../../../dsp_types.h"
-#include "../../../../dsp_ops.h"
-#include "../../../../jackcli.h"
-#include "../../../../osc.h"
+#include "../../../dsp_types.h"
+#include "../../../dsp_ops.h"
+#include "../../../jackcli.h"
+#include "../../../osc.h"
 
 #include <lo/lo.h>
 

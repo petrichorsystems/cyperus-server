@@ -16,21 +16,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#ifndef OSC_MODULES_AUDIO_DELAY_SIMPLE_H
-#define OSC_MODULES_AUDIO_DELAY_SIMPLE_H
+#ifndef OSC_MODULES_DELAY_SIMPLE_H
+#define OSC_MODULES_DELAY_SIMPLE_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
-#include "../../../../dsp_types.h"
-#include "../../../../dsp_math.h"
-#include "../../../../osc.h"
-#include "../../../../osc_handlers.h"
+#include "../../../dsp.h"
+#include "../../../dsp_ops.h"
+#include "../../../dsp_types.h"
+#include "../../../dsp_math.h"
+#include "../../../osc.h"
+#include "../../../osc_handlers.h"
 
-#include "ops_modules_audio_delay_simple.h"
+#include "ops_modules_delay_simple.h"
 
 int osc_add_module_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data);

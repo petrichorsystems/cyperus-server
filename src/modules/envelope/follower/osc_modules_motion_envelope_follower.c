@@ -109,8 +109,8 @@ osc_edit_module_motion_envelope_follower_handler(const char *path, const char *t
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   dsp_edit_motion_envelope_follower(target_module,
                                     attack,
-                                    scale,
-                                    decay);                                          
+                                    decay,
+                                    scale);                                          
 
   printf("about to send osc msg\n");
   

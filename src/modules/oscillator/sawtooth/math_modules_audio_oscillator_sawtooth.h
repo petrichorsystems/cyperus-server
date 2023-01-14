@@ -7,9 +7,9 @@
 #include <string.h>
 #include <stddef.h>
 
-#include "../../../../jackcli.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp_types.h"
+#include "../../../jackcli.h"
+#include "../../../dsp_math.h"
+#include "../../../dsp_types.h"
 
 extern float
 math_modules_audio_oscillator_sawtooth(dsp_module_parameters_t *parameters, int samplerate, int pos);

@@ -22,10 +22,10 @@
 #include <string.h>
 #include <stddef.h>
 
-#include "../../../../jackcli.h"
-#include "../../../../dsp_math.h"
-#include "../../../../dsp_types.h"
-#include "../../../math_utils.h"
+#include "../../../jackcli.h"
+#include "../../../dsp_math.h"
+#include "../../../dsp_types.h"
+#include "../../math_utils.h"
 
 #define RT_PI 3.14159265358979323846
 

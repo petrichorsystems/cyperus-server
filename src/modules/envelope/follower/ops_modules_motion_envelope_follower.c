@@ -36,9 +36,7 @@ dsp_create_motion_envelope_follower(struct dsp_bus *target_bus,
   envelope_follower_param.pos = 0;  
   envelope_follower_param.parameters = malloc(sizeof(dsp_module_parameters_t));
   printf("malloc() float32\n");
-  envelope_follower_param.parameters->float32_type = malloc(sizeof(float) * 3);
-  printf("malloc() float32_arr\n");
-  envelope_follower_param.parameters->float32_arr_type = malloc(sizeof(float));
+  envelope_follower_param.parameters->float32_type = malloc(sizeof(float) * 4);
   
   /* user-facing parameters */
   envelope_follower_param.parameters->float32_type[0] = attack; 
@@ -46,8 +44,8 @@ dsp_create_motion_envelope_follower(struct dsp_bus *target_bus,
   envelope_follower_param.parameters->float32_type[2] = scale;
   
   /* internal parameters */
-  envelope_follower_param.parameters->float32_arr_type[0] = (float *)calloc(1, sizeof(float)); 
-
+  envelope_follower_param.parameters->float32_type[3] = 0.0f; /* last output sample */
+  
   ins = dsp_port_in_init("in", 512, NULL);
   outs = dsp_port_out_init("out", 1);
 

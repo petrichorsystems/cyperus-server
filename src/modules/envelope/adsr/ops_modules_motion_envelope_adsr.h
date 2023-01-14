@@ -23,14 +23,14 @@ Copyright 2021 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
-#include "../../../../dsp_types.h"
-#include "../../../../dsp_math.h"
-#include "../../../../osc.h"
-#include "../../../../osc_handlers.h"
+#include "../../../dsp.h"
+#include "../../../dsp_ops.h"
+#include "../../../dsp_types.h"
+#include "../../../dsp_math.h"
+#include "../../../osc.h"
+#include "../../../osc_handlers.h"
 
-#include "../../../../jackcli.h"
+#include "../../../jackcli.h"
 
 int
 dsp_create_motion_envelope_adsr(struct dsp_bus *target_bus,

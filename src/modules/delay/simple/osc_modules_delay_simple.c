@@ -22,7 +22,7 @@ Copyright 2015 murray foster */
 
 #include <math.h>
 
-#include "osc_modules_audio_delay_simple.h"
+#include "osc_modules_delay_simple.h"
 
 int osc_add_module_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)

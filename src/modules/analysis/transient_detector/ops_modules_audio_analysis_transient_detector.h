@@ -23,11 +23,11 @@
 
 #include <lo/lo.h>
 
-#include "../../../../dsp_types.h"
-#include "../../../../jackcli.h"
-#include "../../../../dsp.h"
-#include "../../../../dsp_ops.h"
-#include "../../../threadsync.h"
+#include "../../../dsp_types.h"
+#include "../../../jackcli.h"
+#include "../../../dsp.h"
+#include "../../../dsp_ops.h"
+#include "../../threadsync.h"
 
 
 extern int

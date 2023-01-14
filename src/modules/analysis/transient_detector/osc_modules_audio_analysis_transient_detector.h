@@ -24,8 +24,8 @@ Copyright 2015 murray foster */
 
 #include <lo/lo.h>
 
-#include "../../../../dsp_types.h"
-#include "../../../../osc.h"
+#include "../../../dsp_types.h"
+#include "../../../osc.h"
 
 #include "ops_modules_audio_analysis_transient_detector.h"
 
