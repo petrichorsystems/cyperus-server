@@ -772,9 +772,9 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/delay/simple") == 0)
     handler_ptr = osc_edit_module_delay_simple_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/motion/envelope/follower") == 0)
+  else if(strcmp(path, "/cyperus/add/module/envelope/follower") == 0)
     handler_ptr = osc_add_module_motion_envelope_follower_handler;
-  else if(strcmp(path, "/cyperus/edit/module/motion/envelope/follower") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/envelope/follower") == 0)
     handler_ptr = osc_edit_module_motion_envelope_follower_handler;
   
   else if(strcmp(path, "/cyperus/add/module/osc_transmit") == 0)
@@ -782,62 +782,62 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/osc_transmit") == 0)
     handler_ptr = osc_edit_module_osc_transmit_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/audio/analysis/transient_detector") == 0)
+  else if(strcmp(path, "/cyperus/add/module/analysis/transient_detector") == 0)
     handler_ptr = osc_add_module_analysis_transient_detector_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/analysis/transient_detector") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/analysis/transient_detector") == 0)
     handler_ptr = osc_edit_module_analysis_transient_detector_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/audio/filter/bandpass") == 0)
+  else if(strcmp(path, "/cyperus/add/module/filter/bandpass") == 0)
     handler_ptr = osc_add_module_filter_bandpass_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/filter/bandpass") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/filter/bandpass") == 0)
     handler_ptr = osc_edit_module_filter_bandpass_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/audio/filter/moogff") == 0)
+  else if(strcmp(path, "/cyperus/add/module/filter/moogff") == 0)
     handler_ptr = osc_add_module_filter_moogff_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/filter/moogff") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/filter/moogff") == 0)
     handler_ptr = osc_edit_module_filter_moogff_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/audio/filter/varslope_lowpass") == 0)
+  else if(strcmp(path, "/cyperus/add/module/filter/varslope_lowpass") == 0)
     handler_ptr = osc_add_module_filter_varslope_lowpass_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/filter/varslope_lowpass") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/filter/varslope_lowpass") == 0)
     handler_ptr = osc_edit_module_filter_varslope_lowpass_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/audio/oscillator/sine") == 0)
+  else if(strcmp(path, "/cyperus/add/module/oscillator/sine") == 0)
     handler_ptr = osc_add_module_oscillator_sine_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/oscillator/sine") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/oscillator/sine") == 0)
     handler_ptr = osc_edit_module_oscillator_sine_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/audio/oscillator/sawtooth") == 0)
+  else if(strcmp(path, "/cyperus/add/module/oscillator/sawtooth") == 0)
     handler_ptr = osc_add_module_oscillator_sawtooth_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/oscillator/sawtooth") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/oscillator/sawtooth") == 0)
     handler_ptr = osc_edit_module_oscillator_sawtooth_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/audio/oscillator/triangle") == 0)
+  else if(strcmp(path, "/cyperus/add/module/oscillator/triangle") == 0)
     handler_ptr = osc_add_module_oscillator_triangle_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/oscillator/triangle") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/oscillator/triangle") == 0)
     handler_ptr = osc_edit_module_oscillator_triangle_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/audio/oscillator/pulse") == 0)
+  else if(strcmp(path, "/cyperus/add/module/oscillator/pulse") == 0)
     handler_ptr = osc_add_module_oscillator_pulse_handler;
-  else if(strcmp(path, "/cyperus/edit/module/audio/oscillator/pulse") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/oscillator/pulse") == 0)
     handler_ptr = osc_edit_module_oscillator_pulse_handler;
   
-  else if(strcmp(path, "/cyperus/add/module/motion/envelope/adsr") == 0)
+  else if(strcmp(path, "/cyperus/add/module/envelope/adsr") == 0)
     handler_ptr = osc_add_module_motion_envelope_adsr_handler;
-  else if(strcmp(path, "/cyperus/edit/module/motion/envelope/adsr") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/envelope/adsr") == 0)
     handler_ptr = osc_edit_module_motion_envelope_adsr_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/motion/envelope/segment") == 0)
+  else if(strcmp(path, "/cyperus/add/module/envelope/segment") == 0)
     handler_ptr = osc_add_module_motion_envelope_segment_handler;
-  else if(strcmp(path, "/cyperus/edit/module/motion/envelope/segment") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0)
     handler_ptr = osc_edit_module_motion_envelope_segment_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/motion/osc/osc_metronome") == 0)
+  else if(strcmp(path, "/cyperus/add/module/osc/osc_metronome") == 0)
     handler_ptr = osc_add_module_osc_osc_metronome_handler;
-  else if(strcmp(path, "/cyperus/edit/module/motion/envelope/segment") == 0)
+  else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0)
     handler_ptr = osc_edit_module_osc_osc_metronome_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/motion/envelope/stdshape") == 0)
+  else if(strcmp(path, "/cyperus/add/module/envelope/stdshape") == 0)
     handler_ptr = osc_add_module_motion_envelope_stdshape_handler;
 
   if(handler_ptr)
