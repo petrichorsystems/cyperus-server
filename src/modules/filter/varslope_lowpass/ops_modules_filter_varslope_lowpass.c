@@ -38,7 +38,7 @@ dsp_create_filter_varslope_lowpass(struct dsp_bus *target_bus,
   filter_varslope_lowpass_param.parameters->float32_type[2] = cutoff_frequency;
   filter_varslope_lowpass_param.parameters->float32_type[3] = cutoff_frequency / (jackcli_samplerate / 2.0f);
 
-  math_modules_dsp_filter_varslope_lowpass_init(filter_varslope_lowpass_param.parameters, jackcli_samplerate);
+  math_modules_filter_varslope_lowpass_init(filter_varslope_lowpass_param.parameters, jackcli_samplerate);
   
   ins = dsp_port_in_init("in", 512, NULL);
   ins->next = dsp_port_in_init("param_cutoff", 512, &(filter_varslope_lowpass_param.parameters->float32_type[2]));
@@ -70,9 +70,9 @@ dsp_filter_varslope_lowpass(struct dsp_operation *filter_varslope_lowpass, int j
     
   }
 
-  outsample = math_modules_dsp_filter_varslope_lowpass(&filter_varslope_lowpass->module->dsp_param,
-						       jack_samplerate,
-						       pos);
+  outsample = math_modules_filter_varslope_lowpass(&filter_varslope_lowpass->module->dsp_param,
+                                                   jack_samplerate,
+                                                   pos);
   
   /* drive audio outputs */
   filter_varslope_lowpass->outs->sample->value = outsample;
@@ -100,8 +100,8 @@ void dsp_edit_filter_varslope_lowpass(struct dsp_module *filter_varslope_lowpass
   filter_varslope_lowpass->dsp_param.parameters->float32_type[3] = cutoff_frequency / (jackcli_samplerate / 2.0f);
   printf("assigned filter_varslope_lowpass->dsp_param.parameters->float32_type[3]: %f\n", filter_varslope_lowpass->dsp_param.parameters->float32_type[3]);
 
-  math_modules_dsp_filter_varslope_lowpass_edit(filter_varslope_lowpass->dsp_param.parameters);
-
+  math_modules_filter_varslope_lowpass_edit(filter_varslope_lowpass->dsp_param.parameters);
+  
   printf("returning\n");
   
 } /* dsp_edit_filter_varslope_lowpass */

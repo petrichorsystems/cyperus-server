@@ -216,7 +216,7 @@ int osc_add_modules_envelope_segment_handler(const char *path, const char *types
                                        time_scale,
                                        num_stages);
   
-  temp_module = target_bus->dsp_modules_head;
+  temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
     target_module = temp_module;
     temp_module = temp_module->next;
@@ -281,7 +281,7 @@ osc_edit_modules_envelope_segment_handler(const char *path, const char *types, l
   
   target_bus = dsp_parse_bus_path(bus_path);
   
-  target_module = dsp_find_module(target_bus->dsp_modules_head, module_id);
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   dsp_edit_modules_envelope_segment(target_module,
                                      release_node,
                                      loop_node,
@@ -370,7 +370,7 @@ int osc_add_modules_envelope_stdshape_handler(const char *path, const char *type
   
   printf("now doing module stuff\n");
   
-  temp_module = target_bus->dsp_modules_head;
+  temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
     target_module = temp_module;
     temp_module = temp_module->next;
