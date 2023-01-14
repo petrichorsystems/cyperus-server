@@ -1,4 +1,4 @@
-/* math_modules_motion_envelope_adsr.c
+/* math_modules_envelope_adsr.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ You may copy and distribute verbatim copies of this document.
 You may modify and use this source code to create binary code for your own purposes, free or commercial.
 */
 
-#include "math_modules_motion_envelope_adsr.h"
+#include "math_modules_envelope_adsr.h"
 
 #define ENV_STATE_IDLE 0
 #define ENV_STATE_ATTACK 1
@@ -68,7 +68,7 @@ void _set_attack_rate(dsp_module_parameters_t *parameters, float rate) {
   parameters->float32_type[8] = attack_coeff;
   parameters->float32_type[11] = attack_base;
 
-  printf("math_modules_motion_envelope_adsr.c::_set_attack_rate - assigned attack rate %f\n", rate);
+  printf("math_modules_envelope_adsr.c::_set_attack_rate - assigned attack rate %f\n", rate);
 } /* _set_attack_rate */
 
 void _set_decay_rate(dsp_module_parameters_t *parameters, float rate) {
@@ -86,7 +86,7 @@ void _set_decay_rate(dsp_module_parameters_t *parameters, float rate) {
   parameters->float32_type[9] = decay_coeff;
   parameters->float32_type[12] = decay_base;
 
-  printf("math_modules_motion_envelope_adsr.c::_set_decay_rate - assigned decay rate %f\n", rate);
+  printf("math_modules_envelope_adsr.c::_set_decay_rate - assigned decay rate %f\n", rate);
 } /* _set_decay_rate */
 
 void _set_release_rate(dsp_module_parameters_t *parameters, float rate) {
@@ -103,7 +103,7 @@ void _set_release_rate(dsp_module_parameters_t *parameters, float rate) {
   parameters->float32_type[10] = release_coeff;
   parameters->float32_type[13] = release_base;
 
-  printf("math_modules_motion_envelope_adsr.c::_set_release_rate - assigned release rate %f\n", rate);
+  printf("math_modules_envelope_adsr.c::_set_release_rate - assigned release rate %f\n", rate);
 } /* _set_release_rate */
 
 void _set_sustain_level(dsp_module_parameters_t *parameters, float level) {
@@ -119,7 +119,7 @@ void _set_sustain_level(dsp_module_parameters_t *parameters, float level) {
   parameters->float32_type[3] = level;
   parameters->float32_type[12] = decay_base;
 
-  printf("math_modules_motion_envelope_adsr.c::_set_sustain_level - assigned sustain level %f\n", level);
+  printf("math_modules_envelope_adsr.c::_set_sustain_level - assigned sustain level %f\n", level);
 } /* _set_sustain_level */
 
 void _set_target_ratio_a(dsp_module_parameters_t *parameters, float target_ratio) {
@@ -138,7 +138,7 @@ void _set_target_ratio_a(dsp_module_parameters_t *parameters, float target_ratio
   parameters->float32_type[4] = target_ratio;
   parameters->float32_type[11] = attack_base;
 
-  printf("math_modules_motion_envelope_adsr.c::_set_target_ratio_a - assigned attack target ratio %f\n", target_ratio);
+  printf("math_modules_envelope_adsr.c::_set_target_ratio_a - assigned attack target ratio %f\n", target_ratio);
 } /* _set_target_ratio_a */
 
 void _set_target_ratio_dr(dsp_module_parameters_t *parameters, float target_ratio) {
@@ -160,11 +160,11 @@ void _set_target_ratio_dr(dsp_module_parameters_t *parameters, float target_rati
   parameters->float32_type[12] = decay_base;
   parameters->float32_type[13] = release_base;
   
-  printf("math_modules_motion_envelope_adsr.c::_set_target_ratio_dr - assigned decay-release target ratio %f\n", target_ratio);
+  printf("math_modules_envelope_adsr.c::_set_target_ratio_dr - assigned decay-release target ratio %f\n", target_ratio);
 } /* _set_target_ratio_dr */
 
 extern
-void math_modules_motion_envelope_adsr_init(dsp_module_parameters_t *parameters,
+void math_modules_envelope_adsr_init(dsp_module_parameters_t *parameters,
                                               float attack_rate,
                                               float decay_rate,
                                               float release_rate,
@@ -183,10 +183,10 @@ void math_modules_motion_envelope_adsr_init(dsp_module_parameters_t *parameters,
   parameters->float32_type[6] = 1.0f;
   parameters->float32_type[7] = 0.0f;
   parameters->float32_type[14] = 0.0f;
-} /* math_modules_motion_envelope_adsr_init */
+} /* math_modules_envelope_adsr_init */
 
 extern
-void math_modules_motion_envelope_adsr_edit(dsp_module_parameters_t *parameters,
+void math_modules_envelope_adsr_edit(dsp_module_parameters_t *parameters,
                                               int gate,
                                               float attack_rate,
                                               float decay_rate,
@@ -208,7 +208,7 @@ void math_modules_motion_envelope_adsr_edit(dsp_module_parameters_t *parameters,
 }
 
 extern
-float math_modules_motion_envelope_adsr(dsp_module_parameters_t *parameters, int samplerate, int pos) {
+float math_modules_envelope_adsr(dsp_module_parameters_t *parameters, int samplerate, int pos) {
   float out = 0.0f;
 
   int gate = parameters->int32_type[0];

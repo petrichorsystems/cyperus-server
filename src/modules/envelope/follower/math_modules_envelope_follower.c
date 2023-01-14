@@ -1,4 +1,4 @@
-/* math_modules_motion_envelope_follower.c
+/* math_modules_envelope_follower.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#include "math_modules_motion_envelope_follower.h"
+#include "math_modules_envelope_follower.h"
 
 extern
-float math_modules_motion_envelope_follower(dsp_parameter *follower, int samplerate, int pos) {
+float math_modules_envelope_follower(dsp_parameter *follower, int samplerate, int pos) {
 
   float attack_ms = follower->parameters->float32_type[0];
   float decay_ms = follower->parameters->float32_type[1];

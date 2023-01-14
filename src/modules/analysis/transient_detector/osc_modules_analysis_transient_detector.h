@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#ifndef OSC_MODULES_AUDIO_ANALYSIS_TRANSIENT_DETECTOR_H
-#define OSC_MODULES_AUDIO_ANALYSIS_TRANSIENT_DETECTOR_H
+#ifndef OSC_MODULES_ANALYSIS_TRANSIENT_DETECTOR_H
+#define OSC_MODULES_ANALYSIS_TRANSIENT_DETECTOR_H
 #include <stdio.h> //printf
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
@@ -27,11 +27,11 @@ Copyright 2015 murray foster */
 #include "../../../dsp_types.h"
 #include "../../../osc.h"
 
-#include "ops_modules_audio_analysis_transient_detector.h"
+#include "ops_modules_analysis_transient_detector.h"
 
-int osc_add_module_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
 						       int argc, void *data, void *user_data);
-int osc_edit_module_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_edit_modules_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
 							int argc, void *data, void *user_data);
 
 #endif

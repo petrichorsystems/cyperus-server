@@ -27,7 +27,7 @@ Copyright 2015 murray foster */
 int osc_add_modules_filter_moogff_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_filter_moogff_handler()..\n");
+  printf("osc_add_modules_filter_moogff_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -66,7 +66,7 @@ int osc_add_modules_filter_moogff_handler(const char *path, const char *types, l
 
 
 int
-osc_edit_module_filter_moogff_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_modules_filter_moogff_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {  
   char *request_id, *module_path, *module_id;
@@ -100,5 +100,5 @@ osc_edit_module_filter_moogff_handler(const char *path, const char *types, lo_ar
   free(lo_addr_send);
   
   return 0;
-} /* osc_edit_module_filter_moogff_handler */
+} /* osc_edit_modules_filter_moogff_handler */
 

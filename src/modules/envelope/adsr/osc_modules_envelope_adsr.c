@@ -1,4 +1,4 @@
-/* osc_modules_motion_envelope_adsr.c
+/* osc_modules_envelope_adsr.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@ Copyright 2015 murray foster */
 
 #include <math.h>
 
-#include "osc_modules_motion_envelope_adsr.h"
+#include "osc_modules_envelope_adsr.h"
 
-int osc_add_module_motion_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_envelope_adsr_handler()..\n");
+  printf("osc_add_modules_envelope_adsr_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -52,16 +52,16 @@ int osc_add_module_motion_envelope_adsr_handler(const char *path, const char *ty
   
   target_bus = dsp_parse_bus_path(bus_path);
   
-  dsp_create_motion_envelope_adsr(target_bus,
-                                    gate,
-                                    attack_rate,
-                                    decay_rate,
-                                    release_rate,
-                                    sustain_level,
-                                    target_ratio_a,
-                                    target_ratio_dr,
-                                    mul,
-                                    add);          
+  dsp_create_envelope_adsr(target_bus,
+                           gate,
+                           attack_rate,
+                           decay_rate,
+                           release_rate,
+                           sustain_level,
+                           target_ratio_a,
+                           target_ratio_dr,
+                           mul,
+                           add);          
 
   printf("now doing module stuff\n");
   
@@ -96,11 +96,11 @@ int osc_add_module_motion_envelope_adsr_handler(const char *path, const char *ty
   printf("free'd\n");
   
   return 0;
-} /* osc_add_module_motion_envelope_adsr_handler */
+} /* osc_add_modules_envelope_adsr_handler */
 
 
 int
-osc_edit_module_motion_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_modules_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
                                                int argc, void *data, void *user_data)
 {  
   char *request_id, *module_path, *module_id;
@@ -135,16 +135,16 @@ osc_edit_module_motion_envelope_adsr_handler(const char *path, const char *types
   target_bus = dsp_parse_bus_path(bus_path);
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  dsp_edit_motion_envelope_adsr(target_module,
-                                  gate,
-                                  attack_rate,
-                                  decay_rate,
-                                  release_rate,
-                                  sustain_level,
-                                  target_ratio_a,
-                                  target_ratio_dr,
-                                  mul,
-                                  add);                                          
+  dsp_edit_envelope_adsr(target_module,
+                         gate,
+                         attack_rate,
+                         decay_rate,
+                         release_rate,
+                         sustain_level,
+                         target_ratio_a,
+                         target_ratio_dr,
+                         mul,
+                         add);                                          
 
   printf("about to send osc msg\n");
   
@@ -170,5 +170,5 @@ osc_edit_module_motion_envelope_adsr_handler(const char *path, const char *types
   printf("free'd\n");
   
   return 0;
-} /* osc_edit_module_motion_envelope_adsr_handler */
+} /* osc_edit_modules_envelope_adsr_handler */
 

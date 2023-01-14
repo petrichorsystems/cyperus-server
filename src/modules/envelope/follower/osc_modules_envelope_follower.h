@@ -1,4 +1,4 @@
-/* osc_modules_motion_envelope_follower.h
+/* osc_modules_envelope_follower.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#ifndef OSC_MODULES_MOVEMENT_ENVELOPE_FOLLOWER_H
-#define OSC_MODULES_MOVEMENT_ENVELOPE_FOLLOWER_H
+#ifndef OSC_MODULES_ENVELOPE_FOLLOWER_H
+#define OSC_MODULES_ENVELOPE_FOLLOWER_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
@@ -30,11 +30,11 @@ Copyright 2021 murray foster */
 #include "../../../osc.h"
 #include "../../../osc_handlers.h"
 
-#include "ops_modules_motion_envelope_follower.h"
+#include "ops_modules_envelope_follower.h"
 
-int osc_add_module_motion_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
                                                     int argc, void *data, void *user_data);
-int osc_edit_module_motion_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_edit_modules_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
                                                      int argc, void *data, void *user_data);
 
 #endif

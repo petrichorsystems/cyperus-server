@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#ifndef OSC_MODULES_AUDIO_FILTER_MOOGFF_H
-#define OSC_MODULES_AUDIO_FILTER_MOOGFF_H
+#ifndef OSC_MODULES_FILTER_MOOGFF_H
+#define OSC_MODULES_FILTER_MOOGFF_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
@@ -30,11 +30,11 @@ Copyright 2015 murray foster */
 #include "../../../osc.h"
 #include "../../../osc_handlers.h"
 
-#include "ops_modules_audio_filter_moogff.h"
+#include "ops_modules_filter_moogff.h"
 
-int osc_add_module_filter_moogff_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_filter_moogff_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data);
-int osc_edit_module_filter_moogff_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_edit_modules_filter_moogff_handler(const char *path, const char *types, lo_arg ** argv,
 						    int argc, void *data, void *user_data);
 
 #endif

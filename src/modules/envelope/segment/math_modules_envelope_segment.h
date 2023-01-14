@@ -1,6 +1,6 @@
 
-#ifndef MATH_MODULES_MOVEMENT_ENVELOPE_SEGMENT_H
-#define MATH_MODULES_MOVEMENT_ENVELOPE_SEGMENT_H
+#ifndef MATH_MODULES_ENVELOPE_SEGMENT_H
+#define MATH_MODULES_ENVELOPE_SEGMENT_H
 
 #include <float.h>
 #include <string.h>
@@ -59,20 +59,20 @@ enum {
 };
 
 extern void
-math_modules_motion_envelope_segment_init(dsp_module_parameters_t *parameters);
+math_modules_envelope_segment_init(dsp_module_parameters_t *parameters);
 
 extern void
-math_modules_motion_envelope_segment_edit(dsp_module_parameters_t *parameters,
-                                            int release_node,
-                                            int loop_node,
-                                            int offset,
-                                            float gate,
-                                            float level_scale,
-                                            float level_bias,
-                                            float time_scale);
+math_modules_envelope_segment_edit(dsp_module_parameters_t *parameters,
+                                   int release_node,
+                                   int loop_node,
+                                   int offset,
+                                   float gate,
+                                   float level_scale,
+                                   float level_bias,
+                                   float time_scale);
 
 extern float
-math_modules_motion_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos);
+math_modules_envelope_segment(dsp_module_parameters_t *parameters, int samplerate, int pos);
 
 
 #endif

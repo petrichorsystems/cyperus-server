@@ -12,9 +12,9 @@
 #include "../../../dsp_types.h"
 
 extern float
-math_modules_audio_filter_bandpass(dsp_parameter *filter, int samplerate, int pos);
+math_modules_filter_bandpass(dsp_parameter *filter, int samplerate, int pos);
 
 extern float
-math_modules_audio_filter_bandpass_init(dsp_parameter *filter);
+math_modules_filter_bandpass_init(dsp_parameter *filter);
 
 #endif

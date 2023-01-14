@@ -29,7 +29,7 @@ Copyright 2018 murray foster */
 #include "../../threadsync.h"
 #include "../../../osc.h"
 
-#include "ops_modules_audio_analysis_transient_detector.h"
+#include "ops_modules_analysis_transient_detector.h"
 
 void*
 _transient_detector_thread(void *arg) {

@@ -1,4 +1,4 @@
-/* osp_modules_motion_envelope_segment.h
+/* osp_modules_envelope_segment.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by

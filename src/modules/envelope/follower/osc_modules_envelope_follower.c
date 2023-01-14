@@ -1,4 +1,4 @@
-/* osc_modules_motion_envelope_follower.c
+/* osc_modules_envelope_follower.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@ Copyright 2015 murray foster */
 
 #include <math.h>
 
-#include "osc_modules_motion_envelope_follower.h"
+#include "osc_modules_envelope_follower.h"
 
-int osc_add_module_motion_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
                                                     int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_envelope_follower_handler()..\n");
+  printf("osc_add_modules_envelope_follower_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -44,7 +44,7 @@ int osc_add_module_motion_envelope_follower_handler(const char *path, const char
   
   target_bus = dsp_parse_bus_path(bus_path);
   
-  dsp_create_motion_envelope_follower(target_bus,
+  dsp_create_envelope_follower(target_bus,
                                       attack,
                                       decay,
                                       scale);          
@@ -76,11 +76,11 @@ int osc_add_module_motion_envelope_follower_handler(const char *path, const char
   printf("free'd\n");
   
   return 0;
-} /* osc_add_module_motion_envelope_follower_handler */
+} /* osc_add_modules_envelope_follower_handler */
 
 
 int
-osc_edit_module_motion_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_modules_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
                                                int argc, void *data, void *user_data)
 {  
   char *request_id, *module_path, *module_id;
@@ -107,7 +107,7 @@ osc_edit_module_motion_envelope_follower_handler(const char *path, const char *t
   target_bus = dsp_parse_bus_path(bus_path);
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  dsp_edit_motion_envelope_follower(target_module,
+  dsp_edit_envelope_follower(target_module,
                                     attack,
                                     decay,
                                     scale);                                          
@@ -130,5 +130,5 @@ osc_edit_module_motion_envelope_follower_handler(const char *path, const char *t
   printf("free'd\n");
   
   return 0;
-} /* osc_edit_module_motion_envelope_follower_handler */
+} /* osc_edit_modules_envelope_follower_handler */
 

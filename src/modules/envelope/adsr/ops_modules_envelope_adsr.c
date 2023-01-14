@@ -1,4 +1,4 @@
-/* ops_modules_motion_envelope_adsr.c
+/* ops_modules_envelope_adsr.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@ Copyright 2021 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include "math_modules_motion_envelope_adsr.h"
-#include "ops_modules_motion_envelope_adsr.h"
+#include "math_modules_envelope_adsr.h"
+#include "ops_modules_envelope_adsr.h"
 
 int
-dsp_create_motion_envelope_adsr(struct dsp_bus *target_bus,
+dsp_create_envelope_adsr(struct dsp_bus *target_bus,
                                   int gate,
                                   float attack_rate,
                                   float decay_rate,
@@ -69,7 +69,7 @@ dsp_create_motion_envelope_adsr(struct dsp_bus *target_bus,
   params.parameters->float32_type[14] = last_output_value; */
 
   
-  math_modules_motion_envelope_adsr_init(params.parameters,
+  math_modules_envelope_adsr_init(params.parameters,
                                            attack_rate * (float)jackcli_samplerate,
                                            decay_rate * (float)jackcli_samplerate,
                                            release_rate * (float)jackcli_samplerate,
@@ -83,30 +83,30 @@ dsp_create_motion_envelope_adsr(struct dsp_bus *target_bus,
 
   dsp_add_module(target_bus,
 		 "envelope_adsr",
-		 dsp_motion_envelope_adsr,
+		 dsp_envelope_adsr,
 		 dsp_optimize_module,
 		 params,
 		 ins,
 		 outs);
   
   return 0;
-} /* dsp_create_motion_envelope_adsr */
+} /* dsp_create_envelope_adsr */
 
 void
-dsp_motion_envelope_adsr(struct dsp_operation *envelope_adsr, int jack_samplerate, int pos) {
+dsp_envelope_adsr(struct dsp_operation *envelope_adsr, int jack_samplerate, int pos) {
   float insample = 0.0f;
   float outsample = 0.0f;
 
-  outsample = math_modules_motion_envelope_adsr(envelope_adsr->module->dsp_param.parameters,
+  outsample = math_modules_envelope_adsr(envelope_adsr->module->dsp_param.parameters,
                                                   jack_samplerate,
                                                   pos);
   /* drive audio outputs */
   envelope_adsr->outs->sample->value = outsample;
-} /* dsp_motion_envelope_adsr */
+} /* dsp_envelope_adsr */
 
 
 void
-dsp_edit_motion_envelope_adsr(struct dsp_module *envelope_adsr,
+dsp_edit_envelope_adsr(struct dsp_module *envelope_adsr,
                                 int gate,
                                 float attack_rate,
                                 float decay_rate,
@@ -117,7 +117,7 @@ dsp_edit_motion_envelope_adsr(struct dsp_module *envelope_adsr,
                                 float mul,
                                 float add) {
   
-  math_modules_motion_envelope_adsr_edit(envelope_adsr->dsp_param.parameters,
+  math_modules_envelope_adsr_edit(envelope_adsr->dsp_param.parameters,
                                            gate,
                                            attack_rate * (float)jackcli_samplerate,
                                            decay_rate * (float)jackcli_samplerate,
@@ -128,5 +128,5 @@ dsp_edit_motion_envelope_adsr(struct dsp_module *envelope_adsr,
                                            mul,
                                            add);
   
-  printf("dsp_edit_motion_envelope_adsr::returning\n");
-} /* dsp_edit_motion_envelope_adsr */
+  printf("dsp_edit_envelope_adsr::returning\n");
+} /* dsp_edit_envelope_adsr */

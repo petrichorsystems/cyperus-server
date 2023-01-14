@@ -24,10 +24,10 @@ Copyright 2015 murray foster */
 
 #include "osc_modules_delay_simple.h"
 
-int osc_add_module_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_delay_simple_handler()..\n");
+  printf("osc_add_modules_delay_simple_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -62,11 +62,11 @@ int osc_add_module_delay_simple_handler(const char *path, const char *types, lo_
   free(lo_addr_send);
 
   return 0;
-} /* osc_add_module_delay_simple_handler */
+} /* osc_add_modules_delay_simple_handler */
 
 
 int
-osc_edit_module_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_modules_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {  
   char *request_id, *module_path, *module_id;
@@ -98,5 +98,5 @@ osc_edit_module_delay_simple_handler(const char *path, const char *types, lo_arg
   free(lo_addr_send);
   
   return 0;
-} /* osc_edit_module_delay_simple_handler */
+} /* osc_edit_modules_delay_simple_handler */
 

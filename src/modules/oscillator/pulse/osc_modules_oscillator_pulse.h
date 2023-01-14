@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#ifndef OSC_MODULES_AUDIO_OSCILLATOR_PULSE_H
-#define OSC_MODULES_AUDIO_OSCILLATOR_PULSE_H
+#ifndef OSC_MODULES_OSCILLATOR_PULSE_H
+#define OSC_MODULES_OSCILLATOR_PULSE_H
 
 #include <stdio.h> //printf
 #include <string.h> //memset
@@ -30,11 +30,11 @@ Copyright 2015 murray foster */
 #include "../../../osc.h"
 #include "../../../osc_handlers.h"
 
-#include "ops_modules_audio_oscillator_pulse.h"
+#include "ops_modules_oscillator_pulse.h"
 
-int osc_add_module_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data);
-int osc_edit_module_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_edit_modules_oscillator_pulse_handler(const char *path, const char *types, lo_arg ** argv,
 						    int argc, void *data, void *user_data);
 
 #endif

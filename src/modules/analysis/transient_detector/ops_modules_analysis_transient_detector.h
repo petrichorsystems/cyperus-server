@@ -14,8 +14,8 @@
  * Validation result: Not run
  */
 
-#ifndef ops_modules_audio_analysis_transient_detector_h_
-#define ops_modules_audio_analysis_transient_detector_h_
+#ifndef ops_modules_analysis_transient_detector_h_
+#define ops_modules_analysis_transient_detector_h_
 
 #include <stdio.h> //printf
 #include <string.h> //memset

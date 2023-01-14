@@ -16,12 +16,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include "osc_modules_audio_analysis_transient_detector.h"
+#include "osc_modules_analysis_transient_detector.h"
 
-int osc_add_module_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
 						       int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_transient_detector_handler()..\n");
+  printf("osc_add_modules_analysis_transient_detector_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -53,9 +53,9 @@ int osc_add_module_analysis_transient_detector_handler(const char *path, const c
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
-  printf("add_module_transient_detector_handler, module_id: %s\n", module_id);
+  printf("osc_add_modules_analysis_transient_detector_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/transient_detector",
+  lo_send(lo_addr_send,"/cyperus/add/module/analysis/transient_detector",
 	  "sisffff",
           request_id,
           0,
@@ -67,11 +67,11 @@ int osc_add_module_analysis_transient_detector_handler(const char *path, const c
 	  );
   free(lo_addr_send);
   return 0;
-} /* osc_add_module_osc_transient_detector_handler */
+} /* osc_add_modules_analysis_transient_detector_handler */
 
 
 int
-osc_edit_module_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_modules_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
 						    int argc, void *data, void *user_data)
 {
   char *request_id, *module_path, *module_id;
@@ -88,7 +88,7 @@ osc_edit_module_analysis_transient_detector_handler(const char *path, const char
   decay_ms = argv[4]->f;
   scale = argv[5]->f;
 
-  printf("osc_edit_module_analysis_transient_detector_handler::sensitivity: %f\n", sensitivity);
+  printf("osc_edit_modules_analysis_transient_detector_handler::sensitivity: %f\n", sensitivity);
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
@@ -107,7 +107,7 @@ osc_edit_module_analysis_transient_detector_handler(const char *path, const char
 			      );
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/transient_detector",
+  lo_send(lo_addr_send,"/cyperus/edit/module/anlysis/transient_detector",
 	  "sisffff",
           request_id,
           0,
@@ -119,5 +119,5 @@ osc_edit_module_analysis_transient_detector_handler(const char *path, const char
   free(lo_addr_send);
   
   return 0;
-} /* osc_edit_module_osc_transient_detector_handler */
+} /* osc_edit_modules_osc_transient_detector_handler */
 

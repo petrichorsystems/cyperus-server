@@ -24,10 +24,10 @@ Copyright 2015 murray foster */
 
 #include "osc_modules_oscillator_triangle.h"
 
-int osc_add_module_oscillator_triangle_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_oscillator_triangle_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_oscillator_triangle_handler()..\n");
+  printf("osc_add_modules_oscillator_triangle_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -59,11 +59,11 @@ int osc_add_module_oscillator_triangle_handler(const char *path, const char *typ
   free(lo_addr_send);
 
   return 0;
-} /* osc_add_module_oscillator_triangle_handler */
+} /* osc_add_modules_oscillator_triangle_handler */
 
 
 int
-osc_edit_module_oscillator_triangle_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_modules_oscillator_triangle_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {  
   char *request_id, *module_path, *module_id;
@@ -99,5 +99,5 @@ osc_edit_module_oscillator_triangle_handler(const char *path, const char *types,
   free(lo_addr_send);
   
   return 0;
-} /* osc_edit_module_oscillator_triangle_handler */
+} /* osc_edit_modules_oscillator_triangle_handler */
 

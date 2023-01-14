@@ -34,7 +34,7 @@ Copyright 2015 murray foster */
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
-#include "ops_modules_audio_filter_varslope_lowpass.h"
+#include "ops_modules_filter_varslope_lowpass.h"
 
 int osc_add_modules_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data);

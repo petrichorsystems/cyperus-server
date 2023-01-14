@@ -1,4 +1,4 @@
-/* osc_modules_dsp_filter_varslope_lowpass.c
+/* osc_modules_osc_osc_metronome.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -28,13 +28,13 @@ Copyright 2015 murray foster */
 #include "../../../jackcli.h"
 #include "../../../osc.h"
 
-#include "ops_modules_motion_osc_osc_metronome.h"
-#include "osc_modules_motion_osc_osc_metronome.h"
+#include "ops_modules_osc_osc_metronome.h"
+#include "osc_modules_osc_osc_metronome.h"
 
-int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_osc_osc_metronome_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_osc_metronome_handler()..\n");
+  printf("osc_add_modules_osc_metronome_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -58,16 +58,16 @@ int osc_add_module_osc_osc_metronome_handler(const char *path, const char *types
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
-  printf("add_module_osc_metronome_handler, module_id: %s\n", module_id);
+  printf("osc_add_modules_osc_metronome_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute);
   free(lo_addr_send);
   return 0;
-} /* osc_add_module_osc_osc_metronome_handler */
+} /* osc_add_modules_osc_osc_metronome_handler */
 
 
 int
-osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_modules_osc_osc_metronome_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {
   char *request_id, *module_path, *module_id;
@@ -81,7 +81,7 @@ osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, l
   module_path = (char *)argv[1];
   beats_per_minute=argv[2]->f;
 
-  printf("osc_edit_module_osc_osc_metronome_handler::beats_per_minute: %f\n", beats_per_minute);
+  printf("osc_edit_modules_osc_osc_metronome_handler::beats_per_minute: %f\n", beats_per_minute);
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
@@ -99,5 +99,5 @@ osc_edit_module_osc_osc_metronome_handler(const char *path, const char *types, l
   free(lo_addr_send);
   
   return 0;
-} /* osc_edit_module_osc_osc_metronome_handler */
+} /* osc_edit_modules_osc_osc_metronome_handler */
 

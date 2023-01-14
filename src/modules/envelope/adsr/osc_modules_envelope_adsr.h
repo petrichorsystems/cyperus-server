@@ -1,4 +1,4 @@
-/* osc_modules_motion_envelope_adsr.h
+/* osc_modules_envelope_adsr.h
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,11 +30,11 @@ Copyright 2021 murray foster */
 #include "../../../osc.h"
 #include "../../../osc_handlers.h"
 
-#include "ops_modules_motion_envelope_adsr.h"
+#include "ops_modules_envelope_adsr.h"
 
-int osc_add_module_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
                                                   int argc, void *data, void *user_data);
-int osc_edit_module_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_edit_modules_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
                                                    int argc, void *data, void *user_data);
 
 #endif

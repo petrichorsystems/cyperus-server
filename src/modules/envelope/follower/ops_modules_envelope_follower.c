@@ -1,4 +1,4 @@
- /* ops_modules_motion_envelope_follower.c
+ /* ops_modules_envelope_follower.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@ Copyright 2021 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0)
 
-#include "math_modules_motion_envelope_follower.h"
-#include "ops_modules_motion_envelope_follower.h"
+#include "math_modules_envelope_follower.h"
+#include "ops_modules_envelope_follower.h"
 
 int
-dsp_create_motion_envelope_follower(struct dsp_bus *target_bus,
+dsp_create_envelope_follower(struct dsp_bus *target_bus,
                                     float attack,
                                     float decay,
                                     float scale) {
@@ -51,33 +51,33 @@ dsp_create_motion_envelope_follower(struct dsp_bus *target_bus,
 
   dsp_add_module(target_bus,
 		 "envelope_follower",
-		 dsp_motion_envelope_follower,
+		 dsp_envelope_follower,
 		 dsp_optimize_module,
 		 envelope_follower_param,
 		 ins,
 		 outs);
   
   return 0;
-} /* dsp_create_motion_envelope_follower */
+} /* dsp_create_envelope_follower */
 
 void
-dsp_motion_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos) {
+dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos) {
   float insample = 0.0f;
   float outsample = 0.0f;
 
   insample = dsp_sum_summands(envelope_follower->ins->summands);
   envelope_follower->module->dsp_param.in = insample;
 
-  outsample = math_modules_motion_envelope_follower(&envelope_follower->module->dsp_param,
+  outsample = math_modules_envelope_follower(&envelope_follower->module->dsp_param,
                                                   jack_samplerate,
                                                   pos);
   /* drive audio outputs */
   envelope_follower->outs->sample->value = outsample;
-} /* dsp_motion_envelope_follower */
+} /* dsp_envelope_follower */
 
 
 void
-dsp_edit_motion_envelope_follower(struct dsp_module *envelope_follower,
+dsp_edit_envelope_follower(struct dsp_module *envelope_follower,
                                   float attack,
                                   float decay,
                                   float scale) {
@@ -93,5 +93,5 @@ dsp_edit_motion_envelope_follower(struct dsp_module *envelope_follower,
   printf("assigned envelope_follower->dsp_param.parameters->float32_type[2]: %f\n",
 	 envelope_follower->dsp_param.parameters->float32_type[2]);
     
-  printf("dsp_edit_motion_envelope_follower::returning\n");
-} /* dsp_edit_motion_envelope_follower */
+  printf("dsp_edit_envelope_follower::returning\n");
+} /* dsp_edit_envelope_follower */
