@@ -1,4 +1,4 @@
-/* osc_modules_dsp_filter_varslope_lowpass.c
+/* osc_modules_motion_envelope_follower.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -22,32 +22,34 @@ Copyright 2015 murray foster */
 
 #include <math.h>
 
-#include "osc_modules_delay_simple.h"
+#include "osc_modules_motion_envelope_follower.h"
 
-int osc_add_module_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
-						   int argc, void *data, void *user_data)
+int osc_add_module_motion_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
+                                                    int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_delay_simple_handler()..\n");
+  printf("osc_add_module_envelope_follower_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
-  float amount;
-  float time;
-  float feedback;
+  float attack, decay, scale;
   
   printf("path: <%s>\n", path);
-
   request_id = (char *)argv[0];
   bus_path = (char *)argv[1];
 
-  amount = argv[2]->f;
-  time = argv[3]->f;
-  feedback = argv[4]->f;
+  attack = argv[2]->f;
+  decay = argv[3]->f;
+  scale = argv[4]->f;
   
   target_bus = dsp_parse_bus_path(bus_path);
   
-  dsp_create_delay_simple(target_bus, amount, time, feedback);
+  dsp_create_motion_envelope_follower(target_bus,
+                                      attack,
+                                      decay,
+                                      scale);          
+
+  printf("now doing module stuff\n");
   
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -57,32 +59,46 @@ int osc_add_module_delay_simple_handler(const char *path, const char *types, lo_
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
+  printf("about to send msg\n");
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/delay/simple","sisfff", request_id, 0, module_id, amount, time, feedback);
+  lo_send(lo_addr_send,
+          "/cyperus/add/module/envelope/follower",
+          "sisfff",
+          request_id,
+          0,
+          module_id,
+          attack,
+          decay,
+          scale);
   free(lo_addr_send);
 
+  printf("free'd\n");
+  
   return 0;
-} /* osc_add_module_delay_simple_handler */
+} /* osc_add_module_motion_envelope_follower_handler */
 
 
 int
-osc_edit_module_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
-						int argc, void *data, void *user_data)
+osc_edit_module_motion_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
+                                               int argc, void *data, void *user_data)
 {  
   char *request_id, *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
-  float amount, time, feedback, mul, add;
-  int count;
+
+  float attack, decay, scale;
+
   
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
   module_path = (char *)argv[1];
-  amount = argv[2]->f;
-  time = argv[3]->f;
-  feedback = argv[4]->f;
+
+  attack = argv[2]->f;
+  decay = argv[3]->f;
+  scale = argv[4]->f;
 
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
@@ -91,12 +107,28 @@ osc_edit_module_delay_simple_handler(const char *path, const char *types, lo_arg
   target_bus = dsp_parse_bus_path(bus_path);
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  dsp_edit_delay_simple(target_module, amount, time, feedback);
+  dsp_edit_motion_envelope_follower(target_module,
+                                    attack,
+                                    decay,
+                                    scale);                                          
+
+  printf("about to send osc msg\n");
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/delay/simple","sisfff", request_id, 0, module_id, amount, time, feedback);
+  lo_send(lo_addr_send,
+          "/cyperus/edit/module/envelope/follower",
+          "sisfff",
+          request_id,
+          0,
+          module_id,
+          attack,
+          decay,
+          scale);
+
+  printf("send osc msg\n");
   free(lo_addr_send);
+  printf("free'd\n");
   
   return 0;
-} /* osc_edit_module_delay_simple_handler */
+} /* osc_edit_module_motion_envelope_follower_handler */
 

@@ -16,39 +16,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
+#include "osc_modules_audio_analysis_transient_detector.h"
 
-#include <math.h>
-
-#include "osc_modules_delay_simple.h"
-
-int osc_add_module_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
-						   int argc, void *data, void *user_data)
+int osc_add_module_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
+						       int argc, void *data, void *user_data)
 {
-  printf("osc_add_module_delay_simple_handler()..\n");
+  printf("osc_add_module_transient_detector_handler()..\n");
   char *request_id, *bus_path, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
-  float amount;
-  float time;
-  float feedback;
-  
+  float sensitivity, attack_ms, decay_ms, scale = 0.0f;
+   
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
   bus_path = (char *)argv[1];
+  sensitivity = argv[2]->f;
+  attack_ms = argv[3]->f;
+  decay_ms = argv[4]->f;
+  scale = argv[5]->f;
 
-  amount = argv[2]->f;
-  time = argv[3]->f;
-  feedback = argv[4]->f;
-  
-  target_bus = dsp_parse_bus_path(bus_path);
-  
-  dsp_create_delay_simple(target_bus, amount, time, feedback);
-  
+  target_bus = dsp_parse_bus_path(bus_path);  
+  dsp_create_transient_detector(target_bus,
+				sensitivity,
+				attack_ms,
+				decay_ms,
+				scale
+				);
+
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
     target_module = temp_module;
@@ -57,46 +53,71 @@ int osc_add_module_delay_simple_handler(const char *path, const char *types, lo_
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
+  printf("add_module_transient_detector_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/delay/simple","sisfff", request_id, 0, module_id, amount, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/add/module/transient_detector",
+	  "sisffff",
+          request_id,
+          0,
+	  module_id,
+	  sensitivity,
+	  attack_ms,
+	  decay_ms,
+	  scale
+	  );
   free(lo_addr_send);
-
   return 0;
-} /* osc_add_module_delay_simple_handler */
+} /* osc_add_module_osc_transient_detector_handler */
 
 
 int
-osc_edit_module_delay_simple_handler(const char *path, const char *types, lo_arg ** argv,
-						int argc, void *data, void *user_data)
-{  
+osc_edit_module_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
+						    int argc, void *data, void *user_data)
+{
   char *request_id, *module_path, *module_id;
   char *bus_path;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
-  float amount, time, feedback, mul, add;
+  float sensitivity, attack_ms, decay_ms, scale = 0.0f;
   int count;
-  
-  printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
   module_path = (char *)argv[1];
-  amount = argv[2]->f;
-  time = argv[3]->f;
-  feedback = argv[4]->f;
+  sensitivity = argv[2]->f;
+  attack_ms = argv[3]->f;
+  decay_ms = argv[4]->f;
+  scale = argv[5]->f;
 
+  printf("osc_edit_module_analysis_transient_detector_handler::sensitivity: %f\n", sensitivity);
+  
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  target_bus = dsp_parse_bus_path(bus_path);
-  
+
+  module_id = malloc(sizeof(char) * 37);  
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
+
+  target_bus = dsp_parse_bus_path(bus_path);  
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-  dsp_edit_delay_simple(target_module, amount, time, feedback);
-  
+
+  dsp_edit_transient_detector(target_module,
+			      sensitivity,
+			      attack_ms,
+			      decay_ms,
+			      scale
+			      );
+
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/delay/simple","sisfff", request_id, 0, module_id, amount, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/edit/module/transient_detector",
+	  "sisffff",
+          request_id,
+          0,
+	  module_id,
+	  sensitivity,
+	  attack_ms,
+	  decay_ms,
+	  scale);
   free(lo_addr_send);
   
   return 0;
-} /* osc_edit_module_delay_simple_handler */
+} /* osc_edit_module_osc_transient_detector_handler */
 
