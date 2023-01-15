@@ -72,8 +72,8 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
 
 void
 dsp_filter_bandpass(struct dsp_operation *filter_bandpass, int jack_samplerate, int pos) {
-  float insample = 0.0;
-  float outsample = 0.0;
+  float insample = 0.0f;
+  float outsample = 0.0f;
 
   insample = dsp_sum_summands(filter_bandpass->ins->summands);
   filter_bandpass->module->dsp_param.in = insample;

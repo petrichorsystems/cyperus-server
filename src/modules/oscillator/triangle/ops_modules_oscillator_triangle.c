@@ -58,11 +58,6 @@ void
 dsp_oscillator_triangle(struct dsp_operation *oscillator_triangle, int jack_samplerate, int pos) {
   float insample = 0.0;
   float outsample = 0.0;
-
-  /* phase input */
-  if( oscillator_triangle->ins->next->next->summands != NULL ) {
-     oscillator_triangle->module->dsp_param.parameters->float32_type[2] = dsp_sum_summands(oscillator_triangle->ins->next->next->summands);
-  }
   
   outsample = math_modules_oscillator_triangle(oscillator_triangle->module->dsp_param.parameters,
                                                   jack_samplerate,

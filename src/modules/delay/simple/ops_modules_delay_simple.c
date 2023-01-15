@@ -76,18 +76,16 @@ void
 dsp_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate, int pos) {
   /* printf("ops_modules_delay_simple.c::dsp_delay_simple()\n"); */
   
-  float insample = 0.0;
-  float outsample = 0.0;
+  float insample = 0.0f;
+  float outsample = 0.0f;
 
   insample = dsp_sum_summands(delay_simple->ins->summands);
   delay_simple->module->dsp_param.in = insample;
 
-  /* parm_time input */
+  /* param_time input */
   if( delay_simple->ins->next->next->summands != NULL ) {
-    if( (pos % 128) == 0 ) {
       delay_simple->module->dsp_param.parameters->float32_type[1] = dsp_sum_summands(delay_simple->ins->next->next->summands);
-      delay_simple->module->dsp_param.parameters->int32_type[0] = (int)(delay_simple->module->dsp_param.parameters->float32_type[1] * jack_samplerate);
-    }
+        delay_simple->module->dsp_param.parameters->int32_type[0] = (int)(delay_simple->module->dsp_param.parameters->float32_type[1] * jack_samplerate);
   }
   
   outsample = math_modules_delay_simple(&delay_simple->module->dsp_param,
