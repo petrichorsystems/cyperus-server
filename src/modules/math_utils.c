@@ -281,4 +281,3 @@ uint8_t rtIsNaNF(float value)
   return (uint8_t)( (tmp.wordL.wordLuint & 0x7F800000) == 0x7F800000 &&
                      (tmp.wordL.wordLuint & 0x007FFFFF) != 0 );
 }
-

@@ -16,10 +16,12 @@
  * Validation result: Not run
  */
 
-#ifndef MODULES_MATH_UTILS_H_
-#define MODULES_MATH_UTILS_H_
+#ifndef MATH_UTILS_H_
+#define MATH_UTILS_H_
 #include <stdint.h>
 #include <stddef.h>
+#include <math.h>
+#include <float.h>
 
 #define modules_math_sc_max(a, b) (((a) > (b)) ? (a) : (b))
 #define modules_math_sc_min(a, b) (((a) < (b)) ? (a) : (b))
@@ -65,4 +67,4 @@ typedef struct {
 } IEEESingle;
 
 
-#endif                                 /* RTW_HEADER_rtGetNaN_h_ */
+#endif
