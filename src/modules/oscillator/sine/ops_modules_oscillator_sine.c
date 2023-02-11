@@ -65,6 +65,16 @@ dsp_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate, 
   float insample = 0.0;
   float outsample = 0.0;
 
+  /* frequency input */
+  if( oscillator_sine->ins->summands != NULL ) {
+     oscillator_sine->module->dsp_param.parameters->float32_type[0] = dsp_sum_summands(oscillator_sine->ins->summands);
+  }
+
+  /* amplitude input */
+  if( oscillator_sine->ins->next->summands != NULL ) {
+     oscillator_sine->module->dsp_param.parameters->float32_type[1] = dsp_sum_summands(oscillator_sine->ins->next->summands);
+  }
+  
   /* phase input */
   if( oscillator_sine->ins->next->next->summands != NULL ) {
      oscillator_sine->module->dsp_param.parameters->float32_type[2] = dsp_sum_summands(oscillator_sine->ins->next->next->summands);

@@ -78,11 +78,11 @@ dsp_filter_bandpass(struct dsp_operation *filter_bandpass, int jack_samplerate, 
   insample = dsp_sum_summands(filter_bandpass->ins->summands);
   filter_bandpass->module->dsp_param.in = insample;
 
-  /*
-  if( filter_bandpass->ins->summands != NULL ) {
-    dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->summands) * jack_samplerate;
+  if( filter_bandpass->ins->next->summands != NULL ) {
+    filter_bandpass->module->dsp_param.parameters->float32_type[0]  = dsp_sum_summands(filter_bandpass->ins->next->summands);
   }
 
+  /*
   if( filter_bandpass->ins->next->summands != NULL ) {
     dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->summands) * jack_samplerate;
   }
