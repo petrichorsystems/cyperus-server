@@ -832,10 +832,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0)
     handler_ptr = osc_edit_modules_envelope_segment_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/osc/osc_metronome") == 0)
-    handler_ptr = osc_add_modules_osc_osc_metronome_handler;
-  else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0)
-    handler_ptr = osc_edit_modules_osc_osc_metronome_handler;
+  else if(strcmp(path, "/cyperus/add/module/osc/knob") == 0)
+    handler_ptr = osc_add_modules_osc_knob_handler;
+  else if(strcmp(path, "/cyperus/edit/module/osc/knob") == 0)
+    handler_ptr = osc_edit_modules_osc_knob_handler;
 
   else if(strcmp(path, "/cyperus/add/module/envelope/stdshape") == 0)
     handler_ptr = osc_add_modules_envelope_stdshape_handler;
