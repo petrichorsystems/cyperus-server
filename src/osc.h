@@ -63,7 +63,7 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 #include "modules/envelope/follower/osc_modules_envelope_follower.h"
 #include "modules/envelope/segment/osc_modules_envelope_segment.h"
 #include "modules/osc/osc_metronome/osc_modules_osc_osc_metronome.h"
-#include "modules/osc/knob/osc_modules_osc_knob.h"
+#include "modules/osc/float/osc_modules_osc_float.h"
 #include "modules/envelope/segment/osc_modules_envelope_segment.h"
 #endif
 
