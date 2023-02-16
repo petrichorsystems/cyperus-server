@@ -36,12 +36,13 @@ dsp_create_osc_float(struct dsp_bus *target_bus,
   
   osc_float_param.parameters = malloc(sizeof(dsp_module_parameters_t));
   osc_float_param.parameters->float32_type = malloc(sizeof(float) * 2);
-  osc_float_param.parameters->float32_type[0] = value;
-
+  osc_float_param.parameters->float32_type[0] = value; /* current value */
+  osc_float_param.parameters->float32_type[1] = value; /* last value */
+  
   /* sample position tracking */
   osc_float_param.parameters->int32_type = malloc(sizeof(int) * 2);
   osc_float_param.parameters->int32_type[0] = 0;
-  osc_float_param.parameters->int32_type[1] = (int)((float)1.0 / (osc_float_param.parameters->float32_type[0] / 60.0f) * (float)jackcli_samplerate);
+  osc_float_param.parameters->int32_type[1] = (int)((1.0f / 60.0f) * (float)jackcli_samplerate);
   
   osc_float_param.parameters->char_type = malloc(sizeof(char*));
   osc_float_param.parameters->char_type[0] = malloc(sizeof(char) * 37); /* len(uuid4) + len('\n') */
@@ -67,21 +68,34 @@ dsp_osc_float(struct dsp_operation *osc_float,
   char *path = NULL;
   int path_len = 0;
 
-  int samples_waited = osc_float->module->dsp_param.parameters->int32_type[0];
-  int samples_to_wait = osc_float->module->dsp_param.parameters->int32_type[1];
-  if( samples_waited == samples_to_wait - 1) {
-    path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
-    path = (char *)malloc(sizeof(char) * path_len);
-    snprintf(path, path_len, "%s%s", "/cyperus/listener/", osc_float->module->id);    
-    lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-    lo_send(lo_addr_send, path, "f", 1.0f);
-    free(lo_addr_send);
-    outsample = 1.0f;
-    osc_float->module->dsp_param.parameters->int32_type[0] = 0;
-  } else {
-    osc_float->module->dsp_param.parameters->int32_type[0] += 1;
-  }
+  
+  /* value input */
+  if( osc_float->ins->summands != NULL ) {  
+     osc_float->module->dsp_param.parameters->float32_type[0] = dsp_sum_summands(osc_float->ins->summands);
 
+     int samples_waited = osc_float->module->dsp_param.parameters->int32_type[0];
+     int samples_to_wait = osc_float->module->dsp_param.parameters->int32_type[1];
+     if( samples_waited == samples_to_wait - 1) {
+       /* if new value is different than old value, send osc messages */
+       if(osc_float->module->dsp_param.parameters->float32_type[0] != osc_float->module->dsp_param.parameters->float32_type[1]) {
+         path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
+         path = (char *)malloc(sizeof(char) * path_len);
+         snprintf(path, path_len, "%s%s", "/cyperus/listener/", osc_float->module->id);    
+         lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
+         lo_send(lo_addr_send, path, "f", osc_float->module->dsp_param.parameters->float32_type[0]);
+         free(lo_addr_send);
+         osc_float->module->dsp_param.parameters->float32_type[1] = osc_float->module->dsp_param.parameters->float32_type[0];
+       }
+       osc_float->module->dsp_param.parameters->int32_type[0] = 0;
+     } else {
+       osc_float->module->dsp_param.parameters->int32_type[0] += 1;
+     }
+
+  }
+  
+  outsample = osc_float->module->dsp_param.parameters->float32_type[0];
+  osc_float->outs->sample->value = outsample; 
+  
 } /* dsp_osc_float */
 
 
@@ -91,8 +105,6 @@ void dsp_edit_osc_float(struct dsp_module *osc_float,
   osc_float->dsp_param.parameters->float32_type[0] = value;
   printf("assigned osc_float.dsp_param.parameters->float32_type[0]: %f\n",
 	 osc_float->dsp_param.parameters->float32_type[0]);
-  osc_float->dsp_param.parameters->int32_type[0] = 0;
-  osc_float->dsp_param.parameters->int32_type[1] = (int)(1.0f / (osc_float->dsp_param.parameters->float32_type[0] / 60.0f) * (float)jackcli_samplerate);
   printf("returning\n");
   
 } /* dsp_edit_osc_float */
