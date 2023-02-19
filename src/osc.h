@@ -50,6 +50,8 @@ void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handle
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out);
 
+void *osc_listener_thread(void *arg);
+
 #include "modules/delay/simple/osc_modules_delay_simple.h"
 #include "modules/analysis/transient_detector/osc_modules_analysis_transient_detector.h"
 #include "modules/filter/bandpass/osc_modules_filter_bandpass.h"

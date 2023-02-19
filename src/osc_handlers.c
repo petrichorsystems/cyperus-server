@@ -562,6 +562,47 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   
 } /* osc_list_module_port_handler */
 
+int
+osc_enable_module_listener_handler(const char *path, const char *types, lo_arg ** argv,
+                                   int argc, void *data, void *user_data)
+{  
+  char *request_id, *module_path, *module_id;
+  char *bus_path;
+  struct dsp_bus *target_bus;
+  struct dsp_module *target_module;
+  float frequency, amplitude, phase;
+  int count;
+  
+  printf("path: <%s>\n", path);
+
+  request_id = (char *)argv[0];
+  module_path = (char *)argv[1];
+  
+  frequency = argv[2]->f;
+  amplitude = argv[3]->f;
+  phase = argv[4]->f;
+  
+  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+  strncpy(bus_path, module_path, strlen(module_path) - 37);
+  bus_path[strlen(module_path)-37] = 0;
+  
+  module_id = malloc(sizeof(char) * 37);
+  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
+  module_id[strlen(module_path) - 36] = 0;
+  
+  target_bus = dsp_parse_bus_path(bus_path);
+  
+  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  dsp_edit_oscillator_sine(target_module, frequency, amplitude, phase);
+  
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/sine","sisfff", request_id, 0, module_id, frequency, amplitude, phase);
+  free(lo_addr_send);
+  
+  return 0;
+} /* osc_add_module_listener_handler */
+
+
 int osc_add_modules_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data)
 {
   printf("osc_add_modules_osc_parameter_assignment()..\n");

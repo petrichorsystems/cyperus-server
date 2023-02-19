@@ -27,5 +27,6 @@ Copyright 2018 murray foster */
 #include "dsp.h"
 #include "jackcli.h"
 #include "osc.h"
+#include "threadsync.h"
 
 #endif

@@ -39,7 +39,7 @@ dsp_create_osc_float(struct dsp_bus *target_bus,
   osc_float_param.parameters->float32_type[0] = value; /* current value */
   osc_float_param.parameters->float32_type[1] = value; /* last value */
   
-  /* sample position tracking */
+  /* osc listener, sample position tracking */
   osc_float_param.parameters->int32_type = malloc(sizeof(int) * 2);
   osc_float_param.parameters->int32_type[0] = 0;
   osc_float_param.parameters->int32_type[1] = (int)((1.0f / 60.0f) * (float)jackcli_samplerate);
@@ -53,6 +53,7 @@ dsp_create_osc_float(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "osc_float",
 		 dsp_osc_float,
+                 NULL,
 		 dsp_optimize_module,
 		 osc_float_param,
 		 ins,
@@ -73,6 +74,7 @@ dsp_osc_float(struct dsp_operation *osc_float,
   if( osc_float->ins->summands != NULL ) {  
      osc_float->module->dsp_param.parameters->float32_type[0] = dsp_sum_summands(osc_float->ins->summands);
 
+     /* osc listener, 60hz */
      int samples_waited = osc_float->module->dsp_param.parameters->int32_type[0];
      int samples_to_wait = osc_float->module->dsp_param.parameters->int32_type[1];
      if( samples_waited == samples_to_wait - 1) {

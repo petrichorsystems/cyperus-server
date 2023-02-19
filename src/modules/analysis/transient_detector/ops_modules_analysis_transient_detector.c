@@ -26,7 +26,6 @@ Copyright 2018 murray foster */
 #include "../../../dsp_math.h"
 #include "../../../dsp.h"
 #include "../../../dsp_ops.h"
-#include "../../threadsync.h"
 #include "../../../osc.h"
 
 #include "ops_modules_analysis_transient_detector.h"
@@ -68,6 +67,7 @@ dsp_create_transient_detector(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "transient_detector",
 		 dsp_transient_detector,
+                 NULL,
 		 dsp_optimize_module,
 		 transient_detector_param,
 		 ins,

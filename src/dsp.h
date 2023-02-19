@@ -23,6 +23,8 @@ Copyright 2015 murray foster */
 #include "dsp_types.h"
 #include "dsp_ops.h"
 
+#include "threadsync.h"
+
 struct dsp_module*
 dsp_find_module(struct dsp_module *head_module, char *name);
 
@@ -48,6 +50,7 @@ struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (struct dsp_operation*, int, int),
+               void (*dsp_osc_listener_function) (struct dsp_operation*, int, int),
 	       struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,

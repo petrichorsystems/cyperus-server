@@ -201,3 +201,25 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 
   lo_server_thread_start(lo_thread);
 } /* osc_setup */
+
+void *
+osc_listener_thread(void *arg) {
+  struct dsp_operation *temp_op = NULL;
+  while(1) {
+    for(int pos=0; pos<jackcli_samplerate; pos++) {
+      temp_op = dsp_global_operation_head;
+      
+      while(temp_op != NULL) {
+        temp_op->module;
+
+        /* execute appropriate listener function */
+        /* temp_op->module->osc_listener_function(temp_op, jack_sr, pos); */
+        
+        temp_op = temp_op->next;
+      }
+      threadsync_wait_for_sync();
+    }
+  }
+
+
+} /* osc_listener_thread */

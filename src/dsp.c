@@ -368,12 +368,14 @@ struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (struct dsp_operation*, int, int),
+               void (*dsp_osc_listener_function) (struct dsp_operation*, int, int),
 	       struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
 	       struct dsp_port_out *outs) {
   struct dsp_module *new_module  = dsp_module_init(name,
 						   dsp_function,
+                                                   dsp_osc_listener_function,
 						   dsp_optimize,
 						   dsp_param,
 						   ins,
@@ -1208,7 +1210,6 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
 void*
 dsp_thread(void *arg) {
   int pos, i;
-  float outsample = (float)0.0;
 
   char current_path[2] = "/";
   struct dsp_bus *temp_bus;
@@ -1224,9 +1225,6 @@ dsp_thread(void *arg) {
   
   while(1) {
     for(pos=0; pos<jackcli_samplerate; pos++) {
- 
-      outsample = 0.0;
-
       /* process main inputs */
       temp_main_in = dsp_optimized_main_ins;
       i=0;
@@ -1239,7 +1237,6 @@ dsp_thread(void *arg) {
       dsp_process(dsp_global_operation_head, jackcli_samplerate, pos);
       
       temp_main_out = dsp_optimized_main_outs;
-
       i=0;
       while(temp_main_out != NULL) {
 	if(!rtqueue_isfull(jackcli_fifo_outs[i]))
@@ -1255,15 +1252,18 @@ dsp_thread(void *arg) {
         dsp_global_operation_head_processing = NULL;
         printf("assigned new graph\n");
         printf("operations in new graph: \n");
-	if(dsp_global_operation_head != NULL) {
-	  temp_op = dsp_global_operation_head;
-	  while(temp_op != NULL) {
-	    temp_op = temp_op->next;
-	  }
-	}
-        printf("done listing\n");
+
+        /* -- debug cruft */
+	/* if(dsp_global_operation_head != NULL) { */
+	/*   temp_op = dsp_global_operation_head; */
+	/*   while(temp_op != NULL) { */
+	/*     temp_op = temp_op->next; */
+	/*   } */
+	/* } */
+        /* printf("done listing\n"); */
+        
       }
-      
+      threadsync_sync();
     }
   }
   
