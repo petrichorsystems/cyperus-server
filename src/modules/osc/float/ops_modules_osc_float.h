@@ -40,4 +40,9 @@ dsp_osc_float(struct dsp_operation *osc_float,
 extern void
 dsp_edit_osc_float(struct dsp_module *osc_float,
                        float value);
+
+extern void
+dsp_osc_listener_osc_float(struct dsp_operation *osc_float,
+                           int jack_samplerate,
+                           int pos);
 #endif

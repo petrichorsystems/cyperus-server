@@ -53,7 +53,7 @@ dsp_create_osc_float(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "osc_float",
 		 dsp_osc_float,
-                 NULL,
+                 dsp_osc_listener_osc_float,
 		 dsp_optimize_module,
 		 osc_float_param,
 		 ins,
@@ -73,7 +73,35 @@ dsp_osc_float(struct dsp_operation *osc_float,
   /* value input */
   if( osc_float->ins->summands != NULL ) {  
      osc_float->module->dsp_param.parameters->float32_type[0] = dsp_sum_summands(osc_float->ins->summands);
+  }
+  
+  outsample = osc_float->module->dsp_param.parameters->float32_type[0];
+  osc_float->outs->sample->value = outsample; 
+  
+} /* dsp_osc_float */
 
+
+void dsp_edit_osc_float(struct dsp_module *osc_float,
+				      float value) {
+  printf("about to assign value\n");
+  osc_float->dsp_param.parameters->float32_type[0] = value;
+  printf("assigned osc_float.dsp_param.parameters->float32_type[0]: %f\n",
+	 osc_float->dsp_param.parameters->float32_type[0]);
+  printf("returning\n");
+  
+} /* dsp_edit_osc_float */
+
+void
+dsp_osc_listener_osc_float(struct dsp_operation *osc_float,
+                  int jack_samplerate,
+                  int pos) {
+  float outsample = 0.0f;
+  char *path = NULL;
+  int path_len = 0;
+
+  
+  /* value input */
+  if( osc_float->ins->summands != NULL ) {  
      /* osc listener, 60hz */
      int samples_waited = osc_float->module->dsp_param.parameters->int32_type[0];
      int samples_to_wait = osc_float->module->dsp_param.parameters->int32_type[1];
@@ -94,19 +122,4 @@ dsp_osc_float(struct dsp_operation *osc_float,
      }
 
   }
-  
-  outsample = osc_float->module->dsp_param.parameters->float32_type[0];
-  osc_float->outs->sample->value = outsample; 
-  
 } /* dsp_osc_float */
-
-
-void dsp_edit_osc_float(struct dsp_module *osc_float,
-				      float value) {
-  printf("about to assign value\n");
-  osc_float->dsp_param.parameters->float32_type[0] = value;
-  printf("assigned osc_float.dsp_param.parameters->float32_type[0]: %f\n",
-	 osc_float->dsp_param.parameters->float32_type[0]);
-  printf("returning\n");
-  
-} /* dsp_edit_osc_float */
