@@ -208,16 +208,14 @@ osc_listener_thread(void *arg) {
   while(1) {
     for(int pos=0; pos<jackcli_samplerate; pos++) {
       temp_op = dsp_global_operation_head;
-      
       while(temp_op != NULL) {
-        temp_op->module;
-
         /* execute appropriate listener function */
-        /* temp_op->module->osc_listener_function(temp_op, jack_sr, pos); */
-        
+        if( temp_op->module->dsp_osc_listener_function != NULL ) {
+          temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate, pos);
+        }
         temp_op = temp_op->next;
       }
-      threadsync_wait_for_sync();
+      threadsync_wait();
     }
   }
 

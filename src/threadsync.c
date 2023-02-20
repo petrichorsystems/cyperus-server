@@ -32,8 +32,8 @@ threadsync_sync() {
 } /* threadsync_sync */
 
 void
-threadsync_wait_for_sync() {
+threadsync_wait() {
   pthread_mutex_lock(&threadsync_is_waiting_mutex);
   pthread_cond_wait(&threadsync_is_waiting_cond, &threadsync_is_waiting_mutex);
   pthread_mutex_unlock(&threadsync_is_waiting_mutex); 
-} /* threadsync_wait_for_sync */
+} /* threadsync_wait */

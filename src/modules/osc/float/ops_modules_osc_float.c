@@ -74,6 +74,8 @@ dsp_osc_float(struct dsp_operation *osc_float,
   if( osc_float->ins->summands != NULL ) {  
      osc_float->module->dsp_param.parameters->float32_type[0] = dsp_sum_summands(osc_float->ins->summands);
   }
+
+  dsp_osc_listener_osc_float(osc_float, jack_samplerate, pos);
   
   outsample = osc_float->module->dsp_param.parameters->float32_type[0];
   osc_float->outs->sample->value = outsample; 

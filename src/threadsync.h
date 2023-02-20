@@ -26,6 +26,6 @@ extern pthread_cond_t threadsync_is_waiting_cond;
 
 void threadsync_init();
 void threadsync_sync();
-void threadsync_wait_for_sync();
+void threadsync_wait();
 
 #endif

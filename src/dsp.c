@@ -1260,10 +1260,8 @@ dsp_thread(void *arg) {
 	/*     temp_op = temp_op->next; */
 	/*   } */
 	/* } */
-        /* printf("done listing\n"); */
-        
+        /* printf("done listing\n");         */
       }
-      threadsync_sync();
     }
   }
   
