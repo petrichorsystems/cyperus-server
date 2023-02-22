@@ -596,7 +596,7 @@ osc_enable_module_listener_handler(const char *path, const char *types, lo_arg *
   dsp_edit_oscillator_sine(target_module, frequency, amplitude, phase);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/sine","sisfff", request_id, 0, module_id, frequency, amplitude, phase);
+  lo_send(lo_addr_send,"/cyperus/enable/module/listener","sisfff", request_id, 0, module_id, frequency, amplitude, phase);
   free(lo_addr_send);
   
   return 0;
@@ -807,7 +807,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
     handler_ptr = osc_list_modules_handler;
   else if(strcmp(path, "/cyperus/list/module_port") == 0)
     handler_ptr = osc_list_module_port_handler;
-    
+
+  else if(strcmp(path, "/cyperus/enable/module/listener") == 0)
+    handler_ptr = osc_enable_module_listener_handler;
+  
   else if(strcmp(path, "/cyperus/add/module/delay/simple") == 0)
     handler_ptr = osc_add_modules_delay_simple_handler;
   else if(strcmp(path, "/cyperus/edit/module/delay/simple") == 0)
@@ -862,6 +865,11 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
     handler_ptr = osc_add_modules_oscillator_pulse_handler;
   else if(strcmp(path, "/cyperus/edit/module/oscillator/pulse") == 0)
     handler_ptr = osc_edit_modules_oscillator_pulse_handler;
+
+  else if(strcmp(path, "/cyperus/add/module/oscillator/clock") == 0)
+    handler_ptr = osc_add_modules_oscillator_clock_handler;
+  else if(strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0)
+    handler_ptr = osc_edit_modules_oscillator_clock_handler;
   
   else if(strcmp(path, "/cyperus/add/module/envelope/adsr") == 0)
     handler_ptr = osc_add_modules_envelope_adsr_handler;

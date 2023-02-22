@@ -65,7 +65,6 @@ void
 dsp_osc_float(struct dsp_operation *osc_float,
                   int jack_samplerate,
                   int pos) {
-  float outsample = 0.0f;
   char *path = NULL;
   int path_len = 0;
 
@@ -76,10 +75,9 @@ dsp_osc_float(struct dsp_operation *osc_float,
   }
 
   dsp_osc_listener_osc_float(osc_float, jack_samplerate, pos);
-  
-  outsample = osc_float->module->dsp_param.parameters->float32_type[0];
-  osc_float->outs->sample->value = outsample; 
-  
+
+  /* drive outputs */
+  osc_float->outs->sample->value = osc_float->module->dsp_param.parameters->float32_type[0];
 } /* dsp_osc_float */
 
 
