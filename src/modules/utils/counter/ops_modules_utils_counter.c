@@ -25,6 +25,7 @@ Copyright 2023 murray foster */
 
 int
 dsp_create_utils_counter(struct dsp_bus *target_bus,
+                         float reset,
                          float start,
                          float step_size,
                          float min,
@@ -42,7 +43,7 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
   params.parameters->int32_type = malloc(sizeof(int) * 2);
 
   /* user-facing parameters */
-  params.parameters->float32_type[0] = 0.0f;  
+  params.parameters->float32_type[0] = reset;  
   params.parameters->float32_type[1] = start;
   params.parameters->float32_type[2] = step_size;
   params.parameters->float32_type[3] = min;
@@ -67,13 +68,13 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
   params.parameters->float32_type[13] = auto_reset; /* old auto_reset */
   
   ins = dsp_port_in_init("trigger", 512, NULL);
-  ins->next = dsp_port_in_init("reset", 512, &(params.parameters->float32_type[0]));
-  ins->next->next = dsp_port_in_init("start", 512, &(params.parameters->float32_type[1]));
-  ins->next->next->next = dsp_port_in_init("step_size", 512, &(params.parameters->float32_type[2]));
-  ins->next->next->next->next = dsp_port_in_init("min", 512, &(params.parameters->float32_type[3]));
-  ins->next->next->next->next->next = dsp_port_in_init("max", 512, &(params.parameters->float32_type[4]));
-  ins->next->next->next->next->next->next = dsp_port_in_init("direction", 512, &(params.parameters->float32_type[5]));
-  ins->next->next->next->next->next->next->next = dsp_port_in_init("auto_reset", 512, &(params.parameters->float32_type[6]));
+  ins->next = dsp_port_in_init("param_reset", 512, &(params.parameters->float32_type[0]));
+  ins->next->next = dsp_port_in_init("param_start", 512, &(params.parameters->float32_type[1]));
+  ins->next->next->next = dsp_port_in_init("param_step_size", 512, &(params.parameters->float32_type[2]));
+  ins->next->next->next->next = dsp_port_in_init("param_min", 512, &(params.parameters->float32_type[3]));
+  ins->next->next->next->next->next = dsp_port_in_init("param_max", 512, &(params.parameters->float32_type[4]));
+  ins->next->next->next->next->next->next = dsp_port_in_init("param_direction", 512, &(params.parameters->float32_type[5]));
+  ins->next->next->next->next->next->next->next = dsp_port_in_init("param_auto_reset", 512, &(params.parameters->float32_type[6]));
   
   outs = dsp_port_out_init("out", 1);
 
@@ -97,9 +98,10 @@ dsp_utils_counter(struct dsp_operation *utils_counter, int jack_samplerate, int 
   utils_counter->module->dsp_param.in = trigger;
 
   /* reset trigger */
-  reset = dsp_sum_summands(utils_counter->ins->next->summands);
-  utils_counter->module->dsp_param.parameters->float32_type[0] = reset;
-
+  if( utils_counter->ins->next->summands != NULL ) {
+     utils_counter->module->dsp_param.parameters->float32_type[0] = dsp_sum_summands(utils_counter->ins->next->summands);
+  }
+  
   /* start value */
   if( utils_counter->ins->next->next->summands != NULL ) {
      utils_counter->module->dsp_param.parameters->float32_type[1] = dsp_sum_summands(utils_counter->ins->next->next->summands);
@@ -144,6 +146,7 @@ dsp_utils_counter(struct dsp_operation *utils_counter, int jack_samplerate, int 
 
 
 void dsp_edit_utils_counter(struct dsp_module *utils_counter,
+                            float reset,
                             float start,
                             float step_size,
                             float min,
@@ -151,6 +154,11 @@ void dsp_edit_utils_counter(struct dsp_module *utils_counter,
                             float direction,
                             float auto_reset) {
 
+  printf("about to assign reset\n");
+  utils_counter->dsp_param.parameters->float32_type[0] = reset;
+  printf("assigned utils_counter->dsp_param.parameters->float32_type[0]: %f\n",
+         utils_counter->dsp_param.parameters->float32_type[0]);       
+  
   printf("about to assign start\n");
   utils_counter->dsp_param.parameters->float32_type[1] = start;
   printf("assigned utils_counter->dsp_param.parameters->float32_type[1]: %f\n",
@@ -190,8 +198,13 @@ void
 dsp_osc_listener_utils_counter(struct dsp_operation *utils_counter, int jack_samplerate, int pos) {
 
   unsigned short param_connected = 0;
-  if( (utils_counter->ins->summands != NULL) ||
-      (utils_counter->ins->next->summands != NULL) ) {
+  if( (utils_counter->ins->next->summands != NULL) ||
+      (utils_counter->ins->next->next->summands != NULL) ||
+      (utils_counter->ins->next->next->next->summands != NULL) ||
+      (utils_counter->ins->next->next->next->next->summands != NULL) ||
+      (utils_counter->ins->next->next->next->next->next->summands != NULL) ||
+      (utils_counter->ins->next->next->next->next->next->next->summands != NULL) ||
+      (utils_counter->ins->next->next->next->next->next->next->next->summands != NULL) ) {
      param_connected = 1;
   }
 

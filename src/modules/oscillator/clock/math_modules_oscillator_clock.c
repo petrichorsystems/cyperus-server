@@ -11,8 +11,10 @@ float math_modules_oscillator_clock(dsp_module_parameters_t *parameters, int sam
   
   float outsample = 0.0f;
 
-  if( samples_count == samples_clock ) {
+  if( samples_count >= (samples_clock - 1)) {
+    printf("samples_count: %d\n", samples_count);
     outsample = 1.0f;
+    printf("outsample: %f\n", outsample);
     samples_count = 0;
   }  else {
     samples_count += 1;

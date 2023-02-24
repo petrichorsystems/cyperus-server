@@ -192,6 +192,7 @@ struct dsp_module {
   struct dsp_port_out *outs;
   int remove; /* boolean remove flag */
   int bypass; /* boolean bypass flag */
+  unsigned short osc_listener; /* boolean osc listener flag */
 };
 
 struct dsp_bus_port {

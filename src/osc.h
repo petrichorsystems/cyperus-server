@@ -68,5 +68,6 @@ void *osc_listener_thread(void *arg);
 #include "modules/osc/osc_metronome/osc_modules_osc_osc_metronome.h"
 #include "modules/osc/float/osc_modules_osc_float.h"
 #include "modules/envelope/segment/osc_modules_envelope_segment.h"
+#include "modules/utils/counter/osc_modules_utils_counter.h"
 #endif
 

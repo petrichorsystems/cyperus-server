@@ -32,6 +32,7 @@
 
 int
 dsp_create_utils_counter(struct dsp_bus *target_bus,
+                         float reset,
                          float start,
                          float step_size,
                          float min,
@@ -44,6 +45,7 @@ dsp_utils_counter(struct dsp_operation *utils_counter,
 			    int pos);
 void
 dsp_edit_utils_counter(struct dsp_module *utils_counter,
+                       float reset,
                        float start,
                        float step_size,
                        float min,

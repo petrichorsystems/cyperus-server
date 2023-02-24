@@ -28,12 +28,16 @@ float math_modules_utils_counter(dsp_parameter *counter, int samplerate, int pos
       if( current_step > max ) {
         if( auto_reset ) {
           current_step = min;
+        } else {
+          current_step = max;
         }
       }
     } else if( direction < 0.0f ) {
       current_step -= step_size;
       if( current_step < min ) {
         if( auto_reset ) {
+          current_step = max;
+        } else {
           current_step = min;
         }
       }    

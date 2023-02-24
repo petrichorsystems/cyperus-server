@@ -257,8 +257,11 @@ struct dsp_module* dsp_module_init(const char *module_name,
   new_module->dsp_osc_listener_function = dsp_osc_listener_function;
   new_module->dsp_optimize = dsp_optimize;
   new_module->dsp_param = dsp_param;
+
   new_module->remove = 0;
   new_module->bypass = 0;
+  new_module->osc_listener = 0;
+
   new_module->ins = ins;
   new_module->outs = outs;
   return new_module;

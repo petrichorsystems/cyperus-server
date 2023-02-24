@@ -32,23 +32,25 @@ int osc_add_modules_utils_counter_handler(const char *path, const char *types, l
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
-  float start, step_size, min, max, direction, auto_reset;
+  float reset, start, step_size, min, max, direction, auto_reset;
   
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
   bus_path = (char *)argv[1];
 
-  start = argv[2]->f;
-  step_size = argv[3]->f;
-  min = argv[4]->f;
-  max = argv[5]->f;
-  direction = argv[6]->f;
-  auto_reset = argv[7]->f;
+  reset = argv[2]->f;
+  start = argv[3]->f;
+  step_size = argv[4]->f;
+  min = argv[5]->f;
+  max = argv[6]->f;
+  direction = argv[7]->f;
+  auto_reset = argv[8]->f;
   
   target_bus = dsp_parse_bus_path(bus_path);
   
   dsp_create_utils_counter(target_bus,
+                           reset,
                            start,
                            step_size,
                            min,
@@ -67,10 +69,11 @@ int osc_add_modules_utils_counter_handler(const char *path, const char *types, l
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(
           lo_addr_send,
-          "/cyperus/add/module/utils/counter","sisffffff",
+          "/cyperus/add/module/utils/counter","sisfffffff",
           request_id,
           0,
           module_id,
+          reset,
           start,
           step_size,
           min,
@@ -92,19 +95,20 @@ osc_edit_modules_utils_counter_handler(const char *path, const char *types, lo_a
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
 
-  float start, step_size, min, max, direction, auto_reset;
+  float reset, start, step_size, min, max, direction, auto_reset;
 
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
   module_path = (char *)argv[1];
-  
-  start = argv[2]->f;
-  step_size = argv[3]->f;
-  min = argv[4]->f;
-  max = argv[5]->f;
-  direction = argv[6]->f;
-  auto_reset = argv[7]->f;
+
+  reset = argv[2]->f;
+  start = argv[3]->f;
+  step_size = argv[4]->f;
+  min = argv[5]->f;
+  max = argv[6]->f;
+  direction = argv[7]->f;
+  auto_reset = argv[8]->f;
   
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   strncpy(bus_path, module_path, strlen(module_path) - 37);
@@ -118,6 +122,7 @@ osc_edit_modules_utils_counter_handler(const char *path, const char *types, lo_a
   
   target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   dsp_edit_utils_counter(target_module,
+                         reset,
                          start,
                          step_size,
                          min,
@@ -128,10 +133,11 @@ osc_edit_modules_utils_counter_handler(const char *path, const char *types, lo_a
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(
           lo_addr_send,
-          "/cyperus/edit/module/utils/counter","sisffffff",
+          "/cyperus/edit/module/utils/counter","sisfffffff",
           request_id,
           0,
           module_id,
+          reset,
           start,
           step_size,
           min,
