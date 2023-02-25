@@ -21,7 +21,6 @@ float math_modules_utils_counter(dsp_parameter *counter, int samplerate, int pos
     } else {
       /* direction is 0, so do nothing */
     }
-    counter->parameters->float32_type[0] = 0.0f; /* set reset back to 0 */
   } else if( counter->in ) {
     if( direction > 0.0f ) {
       current_step += step_size; 
