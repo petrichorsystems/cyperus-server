@@ -122,7 +122,7 @@ dsp_osc_listener_utils_spigot(struct dsp_operation *utils_spigot,
          lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
          lo_send(lo_addr_send, path, "ff", utils_spigot->module->dsp_param.parameters->float32_type[0], utils_spigot->module->dsp_param.parameters->float32_type[1]);
          free(lo_addr_send);
-         utils_spigot->module->dsp_param.parameters->float32_type[0] = utils_spigot->module->dsp_param.parameters->float32_type[1];
+         utils_spigot->module->dsp_param.parameters->float32_type[1] = utils_spigot->module->dsp_param.parameters->float32_type[0];
        }
        utils_spigot->module->dsp_param.parameters->int32_type[0] = 0;
      } else {
