@@ -899,6 +899,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/utils/equals") == 0)
     handler_ptr = osc_edit_modules_utils_equals_handler;
 
+  else if(strcmp(path, "/cyperus/add/module/utils/spigot") == 0)
+    handler_ptr = osc_add_modules_utils_spigot_handler;
+  else if(strcmp(path, "/cyperus/edit/module/utils/spigot") == 0)
+    handler_ptr = osc_edit_modules_utils_spigot_handler;  
   
   if(handler_ptr)
     handler_ptr(path, types, argv, argc, data, user_data);
