@@ -81,12 +81,6 @@ void
 dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path);
 
 void
-dsp_build_graph_id();
-
-char *
-dsp_get_graph_id();
-
-void
 dsp_build_mains(int channels_in, int channels_out);
 
 void

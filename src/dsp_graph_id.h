@@ -23,7 +23,7 @@ Copyright 2015 murray foster */
 
 #include "dsp_types.h"
 
-extern char *dsp_global_thread_id;
+extern char *dsp_global_graph_id;
 extern pthread_mutex_t dsp_graph_id_mutex;
 
 void dsp_graph_id_init();

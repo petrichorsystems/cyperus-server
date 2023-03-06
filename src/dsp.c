@@ -347,20 +347,24 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
       dsp_bus_insert_tail(dsp_global_bus_head, new_bus);
     else
       dsp_global_bus_head = new_bus;
-    return;
+  } else {
+    /* if it's not a head bus, parse down path and add */
+    target_bus = dsp_parse_bus_path(target_bus_path);
+    if(target_bus != NULL) {
+      temp_bus = target_bus->down;
+      if (temp_bus != NULL)
+        dsp_bus_insert_tail(temp_bus, new_bus);
+      else
+        target_bus->down = new_bus;
+    }
+    else {
+      target_bus = new_bus;
+    }
   }
-  /* if it's not a head bus, parse down path and add */
-  target_bus = dsp_parse_bus_path(target_bus_path);
-  if(target_bus != NULL) {
-    temp_bus = target_bus->down;
-    if (temp_bus != NULL)
-      dsp_bus_insert_tail(temp_bus, new_bus);
-    else
-      target_bus->down = new_bus;
-  }
-  else {
-    target_bus = new_bus;
-  }
+
+  /* graph changed, generate new graph id */
+  dsp_graph_id_rebuild();
+  
   return;
 } /* dsp_add_bus */
 
@@ -384,6 +388,9 @@ dsp_add_module(struct dsp_bus *target_bus,
     target_bus->dsp_module_head = new_module;
   else
     dsp_module_insert_tail(target_bus->dsp_module_head, new_module);
+
+  /* graph changed, generate new graph id */
+  dsp_graph_id_rebuild();
   
   return new_module;
 } /* dsp_add_module */
@@ -391,12 +398,20 @@ dsp_add_module(struct dsp_bus *target_bus,
 void
 dsp_remove_module(struct dsp_module *module, int remove) {
   module->remove = remove;
+
+  /* graph changed, generate new graph id */
+  dsp_graph_id_rebuild();
+  
   return;
 } /* dsp_remove_module */
 
 void
 dsp_bypass_module(struct dsp_module *module, int bypass) {
   module->bypass = bypass;
+
+  /* graph changed, generate new graph id */
+  dsp_graph_id_rebuild();
+  
   return;
 } /* dsp_bypass */
 
@@ -516,6 +531,9 @@ dsp_add_connection(char *id_out, char *id_in) {
   
   dsp_build_optimized_graph(NULL);
 
+  /* graph changed, generate new graph id */
+  dsp_graph_id_rebuild();
+  
   return 0;
 } /* dsp_add_connection */
 
@@ -650,6 +668,10 @@ dsp_remove_connection(char *id_out, char *id_in) {
            replace the actual processing graph if it's not (on the last sample cycle),
   */
 
+  /* graph changed, generate new graph id */
+  dsp_graph_id_rebuild();
+
+  /* error return */
   return 1;
 } /* dsp_remove_connection */
 
@@ -1068,17 +1090,6 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
   }
   return;
 } /* dsp_optimize_graph */
-
-
-void
-dsp_build_graph_id() {
-  /* dsp_global_graph_id = dsp_generate_object_id(); */
-} /* dsp_build_graph_id */
-
-char *
-dsp_get_graph_id() {
-  return NULL;
-} /* dsp_get_graph_id */
 
 void
 dsp_build_mains(int channels_in, int channels_out) {

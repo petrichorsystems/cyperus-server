@@ -18,24 +18,26 @@ Copyright 2015 murray foster */
 
 #include "dsp_graph_id.h"
 
-char *dsp_global_thread_id;
+char *dsp_global_graph_id;
 pthread_mutex_t dsp_graph_id_mutex;
 
 void
 dsp_graph_id_init() {
-  dsp_global_thread_id = dsp_generate_object_id();
+  dsp_global_graph_id = dsp_generate_object_id();
 } /* dsp_graph_id_init */
 
 void
 dsp_graph_id_rebuild() {
+  char *temp_str = NULL;
+  temp_str = dsp_generate_object_id();  
   pthread_mutex_lock(&dsp_graph_id_mutex);
-  free(dsp_global_thread_id);
-  dsp_global_thread_id = dsp_generate_object_id();
+  strcpy(dsp_global_graph_id, temp_str);
   pthread_mutex_unlock(&dsp_graph_id_mutex);
-} /* dsp_graph_id_sync */
+  free(temp_str);
+} /* dsp_graph_id_rebuild */
 
 char*
 dsp_graph_id_get() {
-  return dsp_global_thread_id;
+  return dsp_global_graph_id;
 
-} /* dsp_graph_id_wait */
+} /* dsp_graph_id_get */

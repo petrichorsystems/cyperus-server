@@ -347,10 +347,10 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 
   printf("ins_str: %s\n", ins_str);
   printf("outs_str: %s\n", outs_str);
-  
+
   new_bus = dsp_bus_init(bus_str);
   dsp_add_bus(path_str, new_bus, ins_str, outs_str);
-
+  
   new_id = malloc(sizeof(char) * strlen(new_bus->id));
   strcpy(new_id, new_bus->id);
   
@@ -773,6 +773,19 @@ osc_edit_modules_osc_transmit_handler(const char *path, const char *types, lo_ar
 } /* osc_edit_modules_osc_transmit_handler */
 
 
+int
+osc_get_graph_id_handler(const char *path, const char *types, lo_arg **argv,
+                         int argc, void *data, void *user_data) {
+  char *request_id;
+  request_id = (char *)argv[0];
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/get/graph/id","sis", request_id, 0, dsp_graph_id_get());
+  free(lo_addr_send);
+  
+  return 0;
+} /* osc_get_graph_id_handler */
+
+
 int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
                     int argc, void *data, void *user_data)
 {
@@ -903,6 +916,9 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
     handler_ptr = osc_add_modules_utils_spigot_handler;
   else if(strcmp(path, "/cyperus/edit/module/utils/spigot") == 0)
     handler_ptr = osc_edit_modules_utils_spigot_handler;  
+
+  else if(strcmp(path, "/cyperus/get/graph/id") == 0)
+    handler_ptr = osc_get_graph_id_handler;
   
   if(handler_ptr)
     handler_ptr(path, types, argv, argc, data, user_data);
