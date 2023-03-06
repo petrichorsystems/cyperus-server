@@ -232,13 +232,16 @@ dsp_parse_bus_path(char *target_path) {
     while(temp_bus != NULL) {
       if(strcmp(paths[idx], temp_bus->id) == 0) {
         bus_count++;
-        if(temp_bus->down) {
-          printf("dsp.c::dsp_parse_bus_path()::DEBUG - descending to bus\n");
-          temp_bus = temp_bus->down;
-        }
         break;
       }
       temp_bus = temp_bus->next;
+    }
+
+    if( bus_count < path_count ) {
+      if(temp_bus->down) {
+        printf("dsp.c::dsp_parse_bus_path()::DEBUG - descending to bus\n");
+        temp_bus = temp_bus->down;
+      }
     }
   }
   
@@ -352,10 +355,11 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
     target_bus = dsp_parse_bus_path(target_bus_path);
     if(target_bus != NULL) {
       temp_bus = target_bus->down;
-      if (temp_bus != NULL)
+      if (temp_bus != NULL) {
         dsp_bus_insert_tail(temp_bus, new_bus);
-      else
+      } else {
         target_bus->down = new_bus;
+      }
     }
     else {
       target_bus = new_bus;

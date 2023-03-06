@@ -203,6 +203,8 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   else
     head_bus = dsp_parse_bus_path(path_str);
 
+  printf("HEAD_BUS: %s\n", head_bus->id);
+  
   if(head_bus == NULL) {
     /* no buses, return new-line char-as-str */
     result_str = "\n";
@@ -224,10 +226,10 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
       break;
     }
   }
-
+  
   if(result_str == NULL)
     result_str = "\n";
-
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   
   /* split bus list into 768-byte chunks */
@@ -332,11 +334,6 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
   bus_str = (char *)argv[2];
   ins_str = (char *)argv[3];
   outs_str = (char *)argv[4];
-  
-  printf("path_str: %s\n", path_str);
-  printf("bus_str: %s\n", bus_str);
-  printf("ins_str: %s\n", ins_str);
-  printf("outs_str: %s\n", outs_str);
 
   for(i=0; i < strlen(ins_str); i++)
     if(ins_str[i] == '|')
@@ -344,9 +341,6 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
   for(i=0; i < strlen(outs_str); i++)
     if(outs_str[i] == '|')
       outs_str[i] = ',';
-
-  printf("ins_str: %s\n", ins_str);
-  printf("outs_str: %s\n", outs_str);
 
   new_bus = dsp_bus_init(bus_str);
   dsp_add_bus(path_str, new_bus, ins_str, outs_str);

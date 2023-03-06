@@ -24,6 +24,7 @@ pthread_mutex_t dsp_graph_id_mutex;
 void
 dsp_graph_id_init() {
   dsp_global_graph_id = dsp_generate_object_id();
+  printf("dsp_global_graph_id: %s\n", dsp_global_graph_id);
 } /* dsp_graph_id_init */
 
 void
