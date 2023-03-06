@@ -1069,6 +1069,17 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
   return;
 } /* dsp_optimize_graph */
 
+
+void
+dsp_build_graph_id() {
+  /* dsp_global_graph_id = dsp_generate_object_id(); */
+} /* dsp_build_graph_id */
+
+char *
+dsp_get_graph_id() {
+  return NULL;
+} /* dsp_get_graph_id */
+
 void
 dsp_build_mains(int channels_in, int channels_out) {
   char *formal_main_name = NULL;
@@ -1153,7 +1164,7 @@ dsp_build_mains(int channels_in, int channels_out) {
       dsp_optimized_main_outs = temp_op;
     else 
       dsp_operation_insert_tail(dsp_optimized_main_outs, temp_op);
-
+    
     free(formal_main_name);
   }
 } /* dsp_build_mains */

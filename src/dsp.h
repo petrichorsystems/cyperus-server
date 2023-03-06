@@ -23,6 +23,7 @@ Copyright 2015 murray foster */
 #include "dsp_types.h"
 #include "dsp_ops.h"
 
+#include "dsp_graph_id.h"
 #include "threadsync.h"
 
 struct dsp_module*
@@ -78,6 +79,12 @@ dsp_optimize_connections_input(char *current_path, struct dsp_connection *connec
 
 void
 dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path);
+
+void
+dsp_build_graph_id();
+
+char *
+dsp_get_graph_id();
 
 void
 dsp_build_mains(int channels_in, int channels_out);

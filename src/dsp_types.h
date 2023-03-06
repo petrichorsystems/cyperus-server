@@ -23,6 +23,8 @@ Copyright 2018 murray foster */
 
 #include "dsp_math.h"
 
+extern char *dsp_generate_object_id();
+
 extern struct dsp_operation *dsp_global_operation_head_processing;
 extern struct dsp_operation *dsp_global_operation_head;
 
