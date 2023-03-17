@@ -883,10 +883,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/envelope/adsr") == 0)
     handler_ptr = osc_edit_modules_envelope_adsr_handler;
 
-  /* else if(strcmp(path, "/cyperus/add/module/envelope/segment") == 0) */
-  /*   handler_ptr = osc_add_modules_envelope_segment_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0) */
-  /*   handler_ptr = osc_edit_modules_envelope_segment_handler; */
+  else if(strcmp(path, "/cyperus/add/module/envelope/segment") == 0)
+    handler_ptr = osc_add_modules_envelope_segment_handler;
+  else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0)
+    handler_ptr = osc_edit_modules_envelope_segment_handler;
 
   else if(strcmp(path, "/cyperus/add/module/osc/float") == 0)
     handler_ptr = osc_add_modules_osc_float_handler;
