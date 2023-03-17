@@ -64,12 +64,14 @@ void *osc_listener_thread(void *arg);
 #include "modules/oscillator/clock/osc_modules_oscillator_clock.h"
 #include "modules/envelope/adsr/osc_modules_envelope_adsr.h"
 #include "modules/envelope/follower/osc_modules_envelope_follower.h"
-#include "modules/envelope/segment/osc_modules_envelope_segment.h"
+
 #include "modules/osc/osc_metronome/osc_modules_osc_osc_metronome.h"
 #include "modules/osc/float/osc_modules_osc_float.h"
-#include "modules/envelope/segment/osc_modules_envelope_segment.h"
 #include "modules/utils/counter/osc_modules_utils_counter.h"
 #include "modules/utils/equals/osc_modules_utils_equals.h"
 #include "modules/utils/spigot/osc_modules_utils_spigot.h"
+
+/* #include "modules/envelope/segment/osc_modules_envelope_segment.h" */
+
 #endif
 

@@ -883,18 +883,18 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   else if(strcmp(path, "/cyperus/edit/module/envelope/adsr") == 0)
     handler_ptr = osc_edit_modules_envelope_adsr_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/envelope/segment") == 0)
-    handler_ptr = osc_add_modules_envelope_segment_handler;
-  else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0)
-    handler_ptr = osc_edit_modules_envelope_segment_handler;
+  /* else if(strcmp(path, "/cyperus/add/module/envelope/segment") == 0) */
+  /*   handler_ptr = osc_add_modules_envelope_segment_handler; */
+  /* else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0) */
+  /*   handler_ptr = osc_edit_modules_envelope_segment_handler; */
 
   else if(strcmp(path, "/cyperus/add/module/osc/float") == 0)
     handler_ptr = osc_add_modules_osc_float_handler;
   else if(strcmp(path, "/cyperus/edit/module/osc/float") == 0)
     handler_ptr = osc_edit_modules_osc_float_handler;
 
-  else if(strcmp(path, "/cyperus/add/module/envelope/stdshape") == 0)
-    handler_ptr = osc_add_modules_envelope_stdshape_handler;
+  /* else if(strcmp(path, "/cyperus/add/module/envelope/stdshape") == 0) */
+  /*   handler_ptr = osc_add_modules_envelope_stdshape_handler; */
 
   else if(strcmp(path, "/cyperus/add/module/utils/counter") == 0)
     handler_ptr = osc_add_modules_utils_counter_handler;
