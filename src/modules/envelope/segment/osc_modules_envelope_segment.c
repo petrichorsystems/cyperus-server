@@ -69,7 +69,7 @@ int osc_add_modules_envelope_segment_handler(const char *path, const char *types
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(
           lo_addr_send,
-          "/cyperus/add/module/utils/counter","sisfffffff",
+          "/cyperus/add/module/envelope/segment","sisfffffff",
           request_id,
           0,
           module_id,
@@ -133,7 +133,7 @@ osc_edit_modules_envelope_segment_handler(const char *path, const char *types, l
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(
           lo_addr_send,
-          "/cyperus/edit/module/utils/counter","sisfffffff",
+          "/cyperus/edit/module/envelope/segment","sisfffffff",
           request_id,
           0,
           module_id,
