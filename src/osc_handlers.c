@@ -200,8 +200,9 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
     head_bus = dsp_global_bus_head;
     root_level = 1;
   }
-  else
-    head_bus = dsp_parse_bus_path(path_str);
+  else {
+    head_bus = dsp_find_bus(path_str);
+  }
 
   printf("HEAD_BUS: %s\n", head_bus->id);
   
@@ -279,7 +280,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
   printf("path: <%s>\n", path);
   printf("path_str: %s\n", path_str);
 
-  temp_bus = dsp_parse_bus_path(path_str);
+  temp_bus = dsp_find_bus(path_str);
 
   result_str_size = 4;
   result_str = malloc(sizeof(char) * (result_str_size + 1));

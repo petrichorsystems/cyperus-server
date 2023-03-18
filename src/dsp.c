@@ -351,7 +351,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 } /* dsp_build_bus_ports */
 
 void
-dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *outs) {
+dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
   struct dsp_bus *temp_bus, *target_bus;
   struct dsp_bus_port *temp_bus_port;
 
@@ -369,14 +369,14 @@ dsp_add_bus(char *target_bus_path, struct dsp_bus *new_bus, char *ins, char *out
   }
 
   /* insert head bus, if that's what we're doing */
-  if( !strcmp(target_bus_path, "/") || !strcmp(target_bus_path, "")) {
+  if( !strcmp(bus_id, "/") || !strcmp(bus_id, "")) {
     if( dsp_global_bus_head != NULL )
       dsp_bus_insert_tail(dsp_global_bus_head, new_bus);
     else
       dsp_global_bus_head = new_bus;
   } else {
     /* if it's not a head bus, parse down path and add */
-    target_bus = dsp_parse_bus_path(target_bus_path);
+    target_bus = dsp_find_bus(bus_id);
     if(target_bus != NULL) {
       temp_bus = target_bus->down;
       if (temp_bus != NULL) {
