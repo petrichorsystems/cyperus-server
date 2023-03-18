@@ -258,6 +258,30 @@ dsp_parse_bus_path(char *target_path) {
   return target_bus;
 } /* dsp_parse_bus_path */
 
+struct dsp_bus*
+dsp_search_bus(struct dsp_bus *head_bus, char *id) {
+  struct dsp_bus *temp_bus = head_bus;
+  struct dsp_bus *found_bus = NULL;
+
+  while(temp_bus != NULL) {
+    if( strcmp(temp_bus->id, id) == 0 )
+      return temp_bus;
+    if( (found_bus = dsp_search_bus(temp_bus->down, id)) != NULL)
+      return found_bus;
+    else if( (found_bus = dsp_search_bus(temp_bus->next, id)) != NULL)
+      return found_bus;
+    else
+      return NULL;
+  }
+} /* dsp_search_bus */
+
+struct dsp_bus*
+dsp_find_bus(char *id) {
+  printf("dsp.c::dsp_find_bus()\n");
+  printf("id: %s\n", id);
+  return dsp_search_bus(dsp_global_bus_head, id);
+} /* dsp_find_bus */
+
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 		    char *bus_ports, int out) {

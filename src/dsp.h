@@ -68,6 +68,12 @@ dsp_remove_connection(char *id_out, char *id_in);
 struct dsp_bus*
 dsp_parse_bus_path(char *target_bus_path);
 
+struct dsp_bus*
+dsp_search_bus(struct dsp_bus *head_bus, char *id);
+
+struct dsp_bus*
+dsp_find_bus(char *id);
+
 void
 dsp_parse_path(char *result[], const char *path);
 
