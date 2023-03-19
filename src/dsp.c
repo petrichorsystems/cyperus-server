@@ -572,85 +572,9 @@ dsp_remove_connection(char *id_out, char *id_in) {
   struct dsp_module *target_module;
   struct dsp_bus_port *target_bus_port;
 
-  /* parsing id_out (connection output) */
-  dsp_parse_path(temp_result, id_out);
-  if( strcmp(temp_result[0], "{") == 0) {
-    port_out = dsp_find_port_out(dsp_main_ins, temp_result[2]);
-  }
-
-  if( strcmp(temp_result[0], ">") == 0 ) {
-    module_path = temp_result[1];
-    port_out_id = temp_result[2];
-
-    dsp_parse_path(temp_result, module_path);
-    bus_path = temp_result[1];
-    module_id = temp_result[2];
-
-    target_bus = dsp_parse_bus_path(bus_path);
-
-    target_module = dsp_find_module(target_bus->dsp_module_head,
-				    module_id);
-    port_out = dsp_find_port_out(target_module->outs, port_out_id);
-  }
-  if( strcmp(temp_result[0], ":") == 0) {
-    bus_port_path = temp_result[1];
-    bus_port_id = temp_result[2];
-
-    dsp_parse_path(temp_result, bus_port_path);
-    bus_path = temp_result[1];
-
-    target_bus = dsp_parse_bus_path(bus_path);
-    target_bus_port = dsp_find_bus_port(target_bus->outs,
-					bus_port_id);
-    if( target_bus_port == NULL ) {
-      target_bus_port = dsp_find_bus_port(target_bus->ins,
-					  bus_port_id);
-      if( target_bus_port )
-	port_out = target_bus_port->out;
-    } else {
-      port_out = target_bus_port->out;
-    }
-  }
-
-  /* parsing id_in (to connection input) */
-  dsp_parse_path(temp_result, id_in);
-  if( strcmp(temp_result[0], "}") == 0) {
-    port_in = dsp_find_port_in(dsp_main_outs, temp_result[2]);
-  }
-
-  if( strcmp(temp_result[0], "<") == 0 ) {
-    module_path = temp_result[1];
-    port_in_id = temp_result[2];
-    dsp_parse_path(temp_result, module_path);
-    bus_path = temp_result[1];
-    module_id = temp_result[2];
-    target_bus = dsp_parse_bus_path(bus_path);
-    target_module = dsp_find_module(target_bus->dsp_module_head,
-				    module_id);
-    port_in = dsp_find_port_in(target_module->ins, port_in_id);
-  }
-
-  if( strcmp(temp_result[0], ":") == 0) {
-
-    bus_port_path = temp_result[1];
-    bus_port_id = temp_result[2];
-
-    dsp_parse_path(temp_result, bus_port_path);
-    bus_path = temp_result[1];
-
-    target_bus = dsp_parse_bus_path(bus_path);
-    target_bus_port = dsp_find_bus_port(target_bus->ins,
-					bus_port_id);
-    if( target_bus_port == NULL ) {
-      target_bus_port = dsp_find_bus_port(target_bus->outs,
-					  bus_port_id);
-      if( target_bus_port )
-	port_in = target_bus_port->in;
-    } else {
-      port_in = target_bus_port->in;
-    }
-  }
-
+  port_out = dsp_find_port_out(id_out);
+  port_in = dsp_find_port_in(id_in);
+  
   if( (port_out == NULL) ||
       (port_in == NULL) ) {
     printf("failed to add connection!\n");
