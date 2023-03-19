@@ -77,24 +77,11 @@ dsp_add_connection(char *id_out, char *id_in);
 int
 dsp_remove_connection(char *id_out, char *id_in);
 
-
-/*
- * new dsp object searching functions, BEGIN
- */
 struct dsp_bus*
 dsp_search_bus(struct dsp_bus *head_bus, char *id);
 
 struct dsp_bus*
 dsp_find_bus(char *id);
-/*
- * new dsp object searching functions, END
- */
-
-struct dsp_bus*
-dsp_parse_bus_path(char *target_bus_path);
-
-void
-dsp_parse_path(char *result[], const char *path);
 
 void
 dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports);
