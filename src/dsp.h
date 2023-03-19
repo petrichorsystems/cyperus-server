@@ -26,17 +26,29 @@ Copyright 2015 murray foster */
 #include "dsp_graph_id.h"
 #include "threadsync.h"
 
-struct dsp_module*
-dsp_find_module(struct dsp_module *head_module, char *name);
+struct dsp_bus_port*
+dsp_search_bus_port(struct dsp_bus *head_bus, char *id);
 
 struct dsp_bus_port*
-dsp_find_bus_port(struct dsp_bus_port *target_bus_port, char *name);
+dsp_find_bus_port(char *id);
+
+struct dsp_module*
+dsp_search_module(struct dsp_bus *head_bus, char *id);
+
+struct dsp_module*
+dsp_find_module(char *id);
 
 struct dsp_port_out*
-dsp_find_port_out(struct dsp_port_out *port_out_head, char *name);
+dsp_search_port_out(struct dsp_bus *head_bus, char *id);
+
+struct dsp_port_out*
+dsp_find_port_out(char *id);
 
 struct dsp_port_in*
-dsp_find_port_in(struct dsp_port_in *port_in_head, char *name);
+dsp_search_port_in(struct dsp_bus *head_bus, char *id);
+
+struct dsp_port_in*
+dsp_find_port_in(char *id);
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_port, char *bus_ports, int out);
@@ -65,14 +77,21 @@ dsp_add_connection(char *id_out, char *id_in);
 int
 dsp_remove_connection(char *id_out, char *id_in);
 
-struct dsp_bus*
-dsp_parse_bus_path(char *target_bus_path);
 
+/*
+ * new dsp object searching functions, BEGIN
+ */
 struct dsp_bus*
 dsp_search_bus(struct dsp_bus *head_bus, char *id);
 
 struct dsp_bus*
 dsp_find_bus(char *id);
+/*
+ * new dsp object searching functions, END
+ */
+
+struct dsp_bus*
+dsp_parse_bus_path(char *target_bus_path);
 
 void
 dsp_parse_path(char *result[], const char *path);
