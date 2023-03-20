@@ -51,7 +51,7 @@ struct dsp_port_in*
 dsp_find_port_in(char *id);
 
 struct dsp_port_out*
-dsp_find_main_in_port_out(char *id)
+dsp_find_main_in_port_out(char *id);
   
 struct dsp_port_in*
 dsp_find_main_out_port_in(char *id);
@@ -60,7 +60,7 @@ struct dsp_port_out*
 dsp_search_module_port_out(struct dsp_bus *head_bus, char *id);
 
 struct dsp_port_out*
-dsp_find_module_port_out(char *id)
+dsp_find_module_port_out(char *id);
 
 struct dsp_port_in*
 dsp_search_module_port_in(struct dsp_bus *head_bus, char *id);
@@ -72,7 +72,7 @@ struct dsp_port_out*
 dsp_search_bus_port_port_out(struct dsp_bus *head_bus, char *id);
 
 struct dsp_port_out*
-dsp_find_bus_port_port_out(char *id)
+dsp_find_bus_port_port_out(char *id);
 
 struct dsp_port_in*
 dsp_search_bus_port_port_in(struct dsp_bus *head_bus, char *id);
