@@ -88,7 +88,7 @@ dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *o
 } /* dsp_feed_outputs */
 
 void
-dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct dsp_port_out *outs) {
+dsp_optimize_connections_module(char *module_id, struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;
@@ -100,20 +100,8 @@ dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct 
     while(temp_out != NULL) {
       temp_outsample = temp_out->value;
       while(temp_connection != NULL) {
-	/* compare each connection 'out' with this one, enqueue each fifo with data
-	   that matches the 'out' port path */
-	current_path = (char *)malloc(strlen(current_bus_path) + strlen(module_id) + 1 + strlen(temp_out->id) + 1);
-	if(current_path != NULL) {
-	  current_path[0] = '\0';
-	  strcpy(current_path, current_bus_path);
-	  strcat(current_path, "?");
-	  strcat(current_path, module_id);
-	  strcat(current_path, ">");
-	  strcat(current_path, temp_out->id);
-	}
-	if(strcmp(current_path, temp_connection->id_out) == 0) {
-	  dsp_optimize_connections_input(current_path,
-					 temp_connection);
+	if(strcmp(temp_out->id, temp_connection->id_out) == 0) {
+	  dsp_optimize_connections_input(temp_connection);
 	}
 	temp_connection = temp_connection->next;
 	free(current_path);
@@ -153,8 +141,6 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  strcat(current_path, temp_out->id);
 	}
 	if(strcmp(current_path, temp_connection->id_out) == 0) {
-	  /* commented out data motion logic */
-	  /* rtqueue_enq(temp_connection->in_values, temp_outsample); */
 
 	  /* BEGIN OPTIMIZATION LOGIC */	  
 
@@ -289,7 +275,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 } /* dsp_optimize_connections_main_inputs */
 
 struct dsp_operation
-*dsp_optimize_module(char *bus_path, struct dsp_module *module) {
+*dsp_optimize_module(char *id, struct dsp_module *module) {
   dsp_parameter dsp_param = module->dsp_param;
 
   struct dsp_port_in *temp_port_in = NULL;
@@ -297,9 +283,7 @@ struct dsp_operation
   struct dsp_operation_sample *temp_sample = NULL;
   struct dsp_operation *new_op = NULL;
   
-  char *full_module_path = malloc(sizeof(char) * (strlen(bus_path) + strlen(module->id) + 2));
-  snprintf(full_module_path, strlen(bus_path)+strlen(module->id)+2, "%s?%s", bus_path, module->id);
-  new_op = dsp_operation_init(full_module_path);
+  new_op = dsp_operation_init(id);
 
   temp_port_in = module->ins;
   while(temp_port_in != NULL) {

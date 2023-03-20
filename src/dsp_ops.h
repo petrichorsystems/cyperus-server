@@ -34,9 +34,9 @@ Copyright 2018 murray foster */
 float dsp_sum_input(struct dsp_port_in *in);
 float dsp_sum_summands(struct dsp_operation_sample *summands);
 void dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
-void dsp_optimize_connections_module(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
+void dsp_optimize_connections_module(char *module_id, struct dsp_port_out *outs);
 void dsp_optimize_connections_main_inputs(struct dsp_port_out *outs);
-struct dsp_operation *dsp_optimize_module(char *bus_path, struct dsp_module *module);
+struct dsp_operation *dsp_optimize_module(char *id, struct dsp_module *module);
 
 void dsp_osc_transmit(struct dsp_operation *osc_transmit, int jack_samplerate, int pos);
 int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, char *path, int samplerate_divisor);

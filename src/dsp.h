@@ -50,6 +50,42 @@ dsp_search_port_in(struct dsp_bus *head_bus, char *id);
 struct dsp_port_in*
 dsp_find_port_in(char *id);
 
+struct dsp_port_out*
+dsp_find_main_in_port_out(char *id)
+  
+struct dsp_port_in*
+dsp_find_main_out_port_in(char *id);
+
+struct dsp_port_out*
+dsp_search_module_port_out(struct dsp_bus *head_bus, char *id);
+
+struct dsp_port_out*
+dsp_find_module_port_out(char *id)
+
+struct dsp_port_in*
+dsp_search_module_port_in(struct dsp_bus *head_bus, char *id);
+
+struct dsp_port_in*
+dsp_find_module_port_in(char *id);
+
+struct dsp_port_out*
+dsp_search_bus_port_port_out(struct dsp_bus *head_bus, char *id);
+
+struct dsp_port_out*
+dsp_find_bus_port_port_out(char *id)
+
+struct dsp_port_in*
+dsp_search_bus_port_port_in(struct dsp_bus *head_bus, char *id);
+
+struct dsp_port_in*
+dsp_find_bus_port_port_in(char *id);
+
+struct dsp_module*
+dsp_search_module_from_port(struct dsp_bus *head_bus, char *id);
+
+struct dsp_module*
+dsp_get_module_from_port(char *id);
+
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_port, char *bus_ports, int out);
 
@@ -87,7 +123,7 @@ void
 dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports);
 
 void
-dsp_optimize_connections_input(char *current_path, struct dsp_connection *connection);
+dsp_optimize_connections_input(struct dsp_connection *connection);
 
 void
 dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path);
