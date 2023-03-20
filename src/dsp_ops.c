@@ -116,12 +116,13 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;
-  char *current_path, *temp_op_in_path;
+  char *current_path, *temp_op_in_id;
 
+  struct dsp_module *temp_module_in = NULL;
   struct dsp_operation *temp_op_out, *temp_op_in = NULL;
   struct dsp_operation_sample *temp_sample, *temp_sample_out, *temp_sample_in, *sample_in, *sample_out = NULL;
   struct dsp_operation_sample *new_summand = NULL;
-  
+
   struct dsp_translation_connection *temp_translation_connection = NULL;
 
   char *temp_result[3];
@@ -134,13 +135,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
       while(temp_connection != NULL) {
 	/* compare each main connection 'out' with this one, enqueue each fifo with data
 	   that matches the 'out' port path */
-	current_path = (char *)malloc(44);
-	if(current_path != NULL) {
-	  current_path[0] = '\0';
-	  strcpy(current_path, "/mains{");
-	  strcat(current_path, temp_out->id);
-	}
-	if(strcmp(current_path, temp_connection->id_out) == 0) {
+	if(strcmp(temp_out->id, temp_connection->id_out) == 0) {
 
 	  /* BEGIN OPTIMIZATION LOGIC */	  
 
@@ -172,28 +167,28 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  temp_op_in = dsp_global_operation_head_processing;
 
 	  int is_bus_port = 0;
-	  
-	  dsp_parse_path(temp_result, temp_connection->id_in);
-	  if( strstr(":", temp_result[0]) ) {
-	    temp_op_in_path = current_path;
+          
+	  if( dsp_find_bus_port_port_in(connection->id_in) != NULL ) {
+	    temp_op_in_id = temp_out->id;
 	    is_bus_port = 1;
-	  }
-	  else if( strstr("<", temp_result[0]) )
-	    temp_op_in_path = temp_result[1];
-	  else if( strstr(">", temp_result[0]) ) {
-	    printf("temp_connection->id_in: '%s', contains output! aborting..\n", (char *)temp_connection->id_in);
-	    exit(1);
-	  } else
-	    temp_op_in_path = current_path;
+	  } else if( (temp_module_in = dsp_get_module_from_port(connection->id_in)) != NULL ) {
+            if( dsp_find_module_port_in(connection->id_in) != NULL ) {
+              temp_op_in_id = temp_module_in->id;
+              is_module_in = 1;
+            } else if( dsp_find_module_port_out(connection->id_in) != NULL ) {
+              printf("temp_connection->id_in: '%s', contains output! aborting..\n", (char *)temp_connection->id_in);
+              exit(1);
+            }
+	  } /* else */
+	    /* temp_op_in_id = temp_out->id; */
 
           sample_in = NULL;
 	  while( temp_op_in != NULL ) {
-	    if( strcmp(temp_op_in->dsp_id, temp_op_in_path) == 0 ) {
-                
+	    if( strcmp(temp_op_in->dsp_id, temp_op_in_id) == 0 ) {
 	      temp_sample_in = temp_op_in->ins;
 	      if( is_bus_port == 0) {
 		while( temp_sample_in != NULL ) {
-		  if( strcmp(temp_sample_in->dsp_id, temp_result[2]) == 0 ) {
+		  if( strcmp(temp_sample_in->dsp_id, connection->id_in) == 0 ) {
 		    sample_in = temp_sample_in;
 		    break;
 		  }
@@ -216,8 +211,8 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
               temp_op_in->outs = sample_out;
               temp_op_in->ins = sample_in;
 	    } else {
-	      sample_in = dsp_operation_sample_init(temp_result[2], 0.0, 1);
-	      temp_op_in = dsp_operation_init(temp_result[1]);
+	      sample_in = dsp_operation_sample_init(connection->id_in, 0.0, 1);
+	      temp_op_in = dsp_operation_init(temp_op_in_id);
 
               printf("dsp_ops.c: dsp_optimize_connections_main_inputs(): ATTENTION: connection made from main input directly to module. do we allow this? exiting..\n");
               exit(1);
@@ -266,7 +261,6 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  /* END OPTIMIZATION LOGIC */
 	}
 	temp_connection = temp_connection->next;
-	free(current_path);
       }
       temp_out = temp_out->next;
     }
