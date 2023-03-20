@@ -57,47 +57,6 @@ void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handl
   new_handler->prev = temp_handler;
 } /* osc_handler_user_defined_insert_tail */
 
-
-struct dsp_port_in *parse_module_port_in(char *port_path) {
-  char *bus_path, *module_path, *module_id, *temp_port_path, *port_id;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *target_module = NULL;
-  struct dsp_port_in *temp_port_in = NULL, *target_port_in = NULL;
-  
-  module_path = malloc(sizeof(char) * (strlen(port_path) - 36 - 1));
-  strncpy(module_path, port_path + (strlen(port_path) - 36 - 1 - 36 - 1), strlen(port_path) - 36 - 1);
-  printf("osc.c::parse_module_port_in(), module_path: %s\n", module_path);
-  
-  port_id = malloc(sizeof(char) * 37);
-  strncpy(port_id, port_path + (strlen(port_path) - 37), 37);
-  printf("osc.c::parse_module_port_in(), port_id: %s\n", port_id);
-  
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, port_path + (strlen(port_path) - 36 - 1 - 36 - 1), 37); 
-  printf("osc.c::parse_module_port_in(), module_id: %s\n", module_id);
-  
-  port_id = malloc(sizeof(char) * (36 + 1)); /* 36 character uuid4 + terminator */
-  strncpy(port_id, port_path + (strlen(port_path) - 36), 36);
-  printf("osc.c::parse_module_port_in(), port_id: %s\n", port_id);
-
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
-  printf("bus_path: %s\n", bus_path);
-  
-  target_bus = dsp_parse_bus_path(bus_path);
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-
-  temp_port_in = target_module->ins;
-  while(temp_port_in != NULL) {
-    if(strcmp(temp_port_in->id, port_id) == 0) {
-      target_port_in = temp_port_in;
-      break;
-    }
-    temp_port_in = temp_port_in->next;
-  }
-  return target_port_in;
-} /* parse_module_port_in */
-
 void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handler, lo_arg** argv) {
   int idx, error_code;
   char *request_id, *temp_port_path;
