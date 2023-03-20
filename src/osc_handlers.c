@@ -440,10 +440,9 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 
   request_id = (char *)argv[0];
   path_str = (char *)argv[1];
-  
-  target_bus = dsp_parse_bus_path(path_str);
-  target_module = target_bus->dsp_module_head;
 
+  target_module = dsp_find_module(path_str);
+  
   if(target_module) {
     result_str = malloc(sizeof(char) * 38);
     strcpy(result_str, target_module->id);
@@ -502,12 +501,10 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 
   printf("module_id: %s\n", module_id);
 
-  temp_bus = dsp_parse_bus_path(bus_path);
-
   printf("about to find module\n");
   
+  target_module = dsp_find_module(module_id);
   
-  temp_module = dsp_find_module(temp_bus->dsp_module_head, module_id);
   printf("appending result_str (or somethin)\n");
   
   result_str_size = 4;
@@ -585,9 +582,8 @@ osc_enable_module_listener_handler(const char *path, const char *types, lo_arg *
   strncpy(module_id, module_path + strlen(module_path) - 36, 37);
   module_id[strlen(module_path) - 36] = 0;
   
-  target_bus = dsp_parse_bus_path(bus_path);
+  target_module = dsp_find_module(module_id);
   
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   dsp_edit_oscillator_sine(target_module, frequency, amplitude, phase);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
@@ -671,102 +667,6 @@ osc_edit_modules_osc_parameter_assigment_handler(const char *path, const char *t
   return 0;
 } /* osc_edit_modules_osc_parameter_assigment_handler */
 
-int osc_add_modules_osc_transmit_handler(const char *path, const char *types, lo_arg ** argv,
-                                               int argc, void *data, void *user_data)
-{
-  char *bus_path, *module_id = NULL;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *temp_module, *target_module = NULL;
-
-  char *request_id;
-  char *host;
-  char *port;
-  char *osc_path;
-
-  int samplerate_divisor;
-  
-  printf("path: <%s>\n", path);
-
-  request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
-  host = (char *)argv[2];
-  port = (char *)argv[3];
-  osc_path = (char *)argv[4];
-  samplerate_divisor = argv[5]->i;
-
-  printf("bus_path: %s\n", bus_path);
-  printf("host: %s\n", host);
-  printf("port: %s\n", port);
-  printf("osc_path: %s\n", osc_path);
-  printf("samplerate_divisor: %d\n", samplerate_divisor);
-
-  target_bus = dsp_parse_bus_path(bus_path);
-  dsp_create_osc_transmit(target_bus, host, port, osc_path, samplerate_divisor);
-  temp_module = target_bus->dsp_module_head;
-  while(temp_module != NULL) {
-    target_module = temp_module;
-    temp_module = temp_module->next;
-  }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
-  printf("add_module_osc_transmit_handler, module_id: %s\n", module_id);
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_transmit","sissssi", request_id, 0, module_id, host, port, osc_path, samplerate_divisor);
-  free(lo_addr_send);
-
-  printf("done\n");
-
-  return 0;
-} /* osc_add_modules_osc_transmit_handler */
-
-
-int
-osc_edit_modules_osc_transmit_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  char *module_path, *module_id;
-  char *bus_path;
-  struct dsp_bus *target_bus;
-  struct dsp_module *target_module;
-
-  char *request_id;
-  char *host;
-  char *port;
-  char *osc_path;
-
-  int samplerate_divisor;
-  
-  printf("path: <%s>\n", path);
-
-  request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
-  host = (char *)argv[2];
-  port = (char *)argv[3];
-  osc_path = (char *)argv[4];
-  samplerate_divisor = argv[5]->i;
-
-  /* split up path */
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
-
-  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
-  printf("bus_path: %s\n", bus_path);
-  
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-
-  printf("module_id: %s\n", module_id);
-  
-  target_bus = dsp_parse_bus_path(bus_path);  
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-
-  dsp_edit_osc_transmit(target_module, host, port, osc_path, samplerate_divisor);
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/osc_transmit","sissssi", request_id, 0, module_id, host, port, osc_path, samplerate_divisor);
-  free(lo_addr_send);
-  return 0;
-} /* osc_edit_modules_osc_transmit_handler */
-
 
 int
 osc_get_graph_id_handler(const char *path, const char *types, lo_arg **argv,
@@ -828,11 +728,6 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
     handler_ptr = osc_add_modules_envelope_follower_handler;
   else if(strcmp(path, "/cyperus/edit/module/envelope/follower") == 0)
     handler_ptr = osc_edit_modules_envelope_follower_handler;
-  
-  else if(strcmp(path, "/cyperus/add/module/osc_transmit") == 0)
-    handler_ptr = osc_add_modules_osc_transmit_handler;
-  else if(strcmp(path, "/cyperus/edit/module/osc_transmit") == 0)
-    handler_ptr = osc_edit_modules_osc_transmit_handler;
   
   else if(strcmp(path, "/cyperus/add/module/analysis/transient_detector") == 0)
     handler_ptr = osc_add_modules_analysis_transient_detector_handler;
