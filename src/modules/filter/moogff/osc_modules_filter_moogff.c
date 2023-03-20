@@ -28,7 +28,7 @@ int osc_add_modules_filter_moogff_handler(const char *path, const char *types, l
 						   int argc, void *data, void *user_data)
 {
   printf("osc_add_modules_filter_moogff_handler()..\n");
-  char *request_id, *bus_path, *module_id = NULL;
+  char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -37,7 +37,7 @@ int osc_add_modules_filter_moogff_handler(const char *path, const char *types, l
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
+  bus_id = (char *)argv[1];
 
   frequency = argv[2]->f;
   gain = argv[3]->f;
@@ -45,8 +45,7 @@ int osc_add_modules_filter_moogff_handler(const char *path, const char *types, l
   mul = argv[5]->f;
   add = argv[6]->f;
   
-  target_bus = dsp_parse_bus_path(bus_path);
-  
+  target_bus = dsp_find_bus(bus_id);  
   dsp_create_filter_moogff(target_bus, frequency, gain, reset, mul, add);
   
   temp_module = target_bus->dsp_module_head;
@@ -69,8 +68,8 @@ int
 osc_edit_modules_filter_moogff_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {  
-  char *request_id, *module_path, *module_id;
-  char *bus_path;
+  char *request_id, *module_id;
+  char *bus_id;
   struct dsp_bus *target_bus;
   struct dsp_module *target_module;
   float frequency, gain, reset, mul, add;
@@ -79,20 +78,14 @@ osc_edit_modules_filter_moogff_handler(const char *path, const char *types, lo_a
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
+  module_id = (char *)argv[1];
   frequency = argv[2]->f;
   gain = argv[3]->f;
   reset = argv[4]->f;
   mul = argv[5]->f;
   add = argv[6]->f;
   
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  target_bus = dsp_parse_bus_path(bus_path);
-  
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  target_module = dsp_find_module(module_id);
   dsp_edit_filter_moogff(target_module, frequency, gain, reset, mul, add);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);

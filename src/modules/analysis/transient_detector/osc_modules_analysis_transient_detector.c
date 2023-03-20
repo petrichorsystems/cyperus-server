@@ -22,7 +22,7 @@ int osc_add_modules_analysis_transient_detector_handler(const char *path, const 
 						       int argc, void *data, void *user_data)
 {
   printf("osc_add_modules_analysis_transient_detector_handler()..\n");
-  char *request_id, *bus_path, *module_id = NULL;
+  char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -31,13 +31,13 @@ int osc_add_modules_analysis_transient_detector_handler(const char *path, const 
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
+  bus_id = (char *)argv[1];
   sensitivity = argv[2]->f;
   attack_ms = argv[3]->f;
   decay_ms = argv[4]->f;
   scale = argv[5]->f;
 
-  target_bus = dsp_parse_bus_path(bus_path);  
+  target_bus = dsp_find_bus(bus_id);  
   dsp_create_transient_detector(target_bus,
 				sensitivity,
 				attack_ms,
@@ -74,31 +74,21 @@ int
 osc_edit_modules_analysis_transient_detector_handler(const char *path, const char *types, lo_arg ** argv,
 						    int argc, void *data, void *user_data)
 {
-  char *request_id, *module_path, *module_id;
-  char *bus_path;
-  struct dsp_bus *target_bus;
+  char *request_id, *module_id;
   struct dsp_module *target_module;
   float sensitivity, attack_ms, decay_ms, scale = 0.0f;
   int count;
 
   request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
+  module_id = (char *)argv[1];
   sensitivity = argv[2]->f;
   attack_ms = argv[3]->f;
   decay_ms = argv[4]->f;
   scale = argv[5]->f;
 
   printf("osc_edit_modules_analysis_transient_detector_handler::sensitivity: %f\n", sensitivity);
-  
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
 
-  module_id = malloc(sizeof(char) * 37);  
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37); 
-
-  target_bus = dsp_parse_bus_path(bus_path);  
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-
+  target_module = dsp_find_module(module_id);
   dsp_edit_transient_detector(target_module,
 			      sensitivity,
 			      attack_ms,

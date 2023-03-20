@@ -28,7 +28,7 @@ int osc_add_modules_envelope_follower_handler(const char *path, const char *type
                                                     int argc, void *data, void *user_data)
 {
   printf("osc_add_modules_envelope_follower_handler()..\n");
-  char *request_id, *bus_path, *module_id = NULL;
+  char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -36,19 +36,19 @@ int osc_add_modules_envelope_follower_handler(const char *path, const char *type
   
   printf("path: <%s>\n", path);
   request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
+  bus_id = (char *)argv[1];
 
   attack = argv[2]->f;
   decay = argv[3]->f;
   scale = argv[4]->f;
   
-  target_bus = dsp_parse_bus_path(bus_path);
+  target_bus = dsp_find_bus(bus_id);
   
   dsp_create_envelope_follower(target_bus,
-                                      attack,
-                                      decay,
-                                      scale);          
-
+                               attack,
+                               decay,
+                               scale);          
+  
   printf("now doing module stuff\n");
   
   temp_module = target_bus->dsp_module_head;
@@ -83,9 +83,7 @@ int
 osc_edit_modules_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
                                                int argc, void *data, void *user_data)
 {  
-  char *request_id, *module_path, *module_id;
-  char *bus_path;
-  struct dsp_bus *target_bus;
+  char *request_id, *module_id;
   struct dsp_module *target_module;
 
   float attack, decay, scale;
@@ -94,19 +92,13 @@ osc_edit_modules_envelope_follower_handler(const char *path, const char *types, 
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
+  module_id = (char *)argv[1];
 
   attack = argv[2]->f;
   decay = argv[3]->f;
   scale = argv[4]->f;
 
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  target_bus = dsp_parse_bus_path(bus_path);
-  
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  target_module = dsp_find_module(module_id);
   dsp_edit_envelope_follower(target_module,
                                     attack,
                                     decay,
