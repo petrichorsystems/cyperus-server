@@ -113,6 +113,7 @@ dsp_optimize_connections_module(char *module_id, struct dsp_port_out *outs) {
 
 void
 dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
+  printf("dsp.c::dsp_optimize_connections_main_inputs()\n");  
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;
@@ -160,16 +161,13 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	     exit */
 	  if(temp_sample_out == NULL) {
 	    printf("no operation describing main input!!: %s\n", temp_connection->id_out);
-	    printf("BAILING\n"); 
+	    printf("BAILING\n");
+            exit(1);
 	  }
-          
-	  /* look for 'in' operation */
-	  temp_op_in = dsp_global_operation_head_processing;
 
-	  int is_bus_port = 0;
-          
-	  if( dsp_find_bus_port_port_in((char *)temp_connection->id_in) != NULL ) {
-	    temp_op_in_id = (char *)temp_out->id;
+	  int is_bus_port = 0;          
+	  if( dsp_find_bus_port_in((char *)temp_connection->id_in) != NULL ) {
+	    temp_op_in_id = (char *)temp_connection->id_in;
 	    is_bus_port = 1;
 	  } else if( (temp_module_in = dsp_get_module_from_port((char *)temp_connection->id_in)) != NULL ) {
             if( dsp_find_module_port_in((char *)temp_connection->id_in) != NULL ) {
@@ -178,9 +176,18 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
               printf("temp_connection->id_in: '%s', contains output! aborting..\n", (char *)temp_connection->id_in);
               exit(1);
             }
-	  } /* else */
-	    /* temp_op_in_id = temp_out->id; */
+	  } else if( dsp_find_main_out_port_in((char *)temp_connection->id_in) != NULL ) {
+            temp_op_in_id = (char *)temp_connection->id_in;
+          } else {
+	    printf("couldn't find valid dsp object/type corresponding to connection input!: %s\n", temp_connection->id_in);
+	    printf("BAILING\n");
+            exit(1);
+          }
 
+          
+	  /* look for 'in' operation */
+	  temp_op_in = dsp_global_operation_head_processing;
+          
           sample_in = NULL;
 	  while( temp_op_in != NULL ) {
 	    if( strcmp(temp_op_in->dsp_id, temp_op_in_id) == 0 ) {

@@ -191,6 +191,8 @@ dsp_add_connection(char *id_out, char *id_in) {
   if( port_out == NULL ) {
     if( (temp_bus_port = dsp_find_bus_port_in(id_out)) != NULL) {
       port_out = temp_bus_port->out;
+    } else if( (temp_bus_port = dsp_find_bus_port_out(id_out)) != NULL) {
+      port_out = temp_bus_port->out;
     } else {
       port_out = dsp_find_port_out(id_out);
     }
@@ -199,6 +201,8 @@ dsp_add_connection(char *id_out, char *id_in) {
   port_in = dsp_find_main_out_port_in(id_in);
   if( port_in == NULL ) {
     if( (temp_bus_port = dsp_find_bus_port_out(id_in)) != NULL) {
+      port_in  = temp_bus_port->in;
+    } else if( (temp_bus_port = dsp_find_bus_port_in(id_in)) != NULL) {
       port_in  = temp_bus_port->in;
     } else {
       port_in = dsp_find_port_in(id_in);
@@ -289,6 +293,7 @@ dsp_remove_connection(char *id_out, char *id_in) {
 
 void
 dsp_optimize_connections_input(struct dsp_connection *connection) {
+  printf("dsp.c::dsp_optimize_connections_input()\n");
   /* is the below ever actually the case? */
 
   /* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
@@ -368,8 +373,10 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
     is_main_in_out = 1;
   } else if( dsp_find_module_port_out((char *)connection->id_out) != NULL ) {
     is_module_out = 1;
-  } else if( dsp_find_bus_port_port_out((char *)connection->id_out) != NULL ) {
+  } else if( dsp_find_bus_port_out((char *)connection->id_out) != NULL ) {
     is_bus_port_out = 1;
+  } else if( dsp_find_bus_port_in((char *)connection->id_out) != NULL ) {
+    is_bus_port_out = 1;    
   } else {
     printf("unexpected connection output -- id: '%s', exiting..\n", connection->id_out);
     exit(1);
@@ -462,13 +469,15 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
   
   /* INPUT PROCESSING */
 
-
-  if( dsp_find_main_in_port_out((char *)connection->id_in) != NULL ) {
+  printf(" INPUT PROCESSING \n");
+  if( dsp_find_main_out_port_in((char *)connection->id_in) != NULL ) {
     is_main_out_in = 1;
   } else if( dsp_find_module_port_in((char *)connection->id_in) != NULL ) {
     is_module_in = 1;
-  } else if( dsp_find_bus_port_port_in((char *)connection->id_in) != NULL ) {
+  } else if( dsp_find_bus_port_in((char *)connection->id_in) != NULL ) {
     is_bus_port_in = 1;
+  } else if( dsp_find_bus_port_out((char *)connection->id_in) != NULL ) {
+    is_bus_port_in = 1;    
   } else {
     printf("unexpected connection input -- id: '%s', exiting..\n", connection->id_in);
     exit(1);
@@ -532,6 +541,9 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
         }
       } else {
         temp_op = dsp_operation_init(connection->id_in);
+
+        printf(" CREATE OPERATION: %s\n", connection->id_in);
+        
       }
       
       if(dsp_global_operation_head_processing == NULL)
@@ -572,41 +584,13 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
   int temp_port_idx = 0;
 
   while(temp_port != NULL) {
-    /* handle bus input */
-    //temp_sample_in = 0.0;
-
-    /* while(rtqueue_isempty(temp_port->in->values) == 0) {
-      temp_sample_in += rtqueue_deq(temp_port->in->values);
-    }
-    */
-
-    // temp_port->out->value = temp_sample_in;
-    /* enqueue out samples on in fifo's based on connection graph */
     temp_connection = dsp_global_connection_graph;
-
-    current_path = (char *)malloc(strlen(current_bus_path) + strlen(temp_port->id) + 1);
-    if(current_path != NULL) {
-      current_path[0] = '\0';
-      strcpy(current_path, current_bus_path);
-      current_path[strlen(current_bus_path)] = '\0'; /* expecting a '/' on the end, remove it */
-      strcat(current_path, ":");
-      strcat(current_path, temp_port->id);
-    }
-
-    while(temp_connection != NULL) {
-      /* compare each connection 'out' with this one, enqueue each fifo with data
-	 that matches the 'out' port path */
-      
-      if(strcmp(current_path, temp_connection->id_out) == 0) {
-	/* commented out data motion logic */
-	/* rtqueue_enq(temp_connection->in_values, temp_sample_in); */
-        
+    while(temp_connection != NULL) {      
+      if(strcmp(temp_port->id, temp_connection->id_out) == 0) {        
 	dsp_optimize_connections_input(temp_connection);
       }
       temp_connection = temp_connection->next;
     }
-    if(current_path != NULL)
-      free(current_path);
     temp_port = temp_port->next;
     temp_port_idx++;
 
@@ -617,27 +601,10 @@ void
 dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
   struct dsp_module *temp_module;
   struct dsp_bus *temp_bus = head_bus;
-  char *current_path;
-  int parent_path_size = 0;
 
   while(temp_bus != NULL) {
-    
-    /* build current path */
-
-    /* handle root path "/" (avoid adding extra path separator if it's root) */
-    if( strcmp(parent_path, "/") == 0 )
-      parent_path_size = 1;
-    else
-      parent_path_size = strlen(parent_path) + 1;
-
-    current_path = (char *)malloc(sizeof(char) * (parent_path_size + strlen(temp_bus->id) + 1));
-    strcpy(current_path, parent_path);
-    if( parent_path_size > 1 )
-      strcat(current_path, "/");
-    strcat(current_path, temp_bus->id);
-
     /* process bus inputs */
-    dsp_optimize_connections_bus(current_path, temp_bus->ins);
+    dsp_optimize_connections_bus(temp_bus->id, temp_bus->ins);
 
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
@@ -647,14 +614,9 @@ dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
     }
     
     /* process bus outputs */
-    dsp_optimize_connections_bus(current_path, temp_bus->outs);
-
-    dsp_optimize_graph(temp_bus->down, current_path);
-
+    dsp_optimize_connections_bus(temp_bus->id, temp_bus->outs);
+    dsp_optimize_graph(temp_bus->down, temp_bus->id);
     temp_bus = temp_bus->next;
-
-    if(current_path)
-      free(current_path);
   }
   return;
 } /* dsp_optimize_graph */
@@ -757,8 +719,11 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
       if( temp_op->ins == NULL ) {
         temp_op->outs->sample->value = 0.0;
       } else {
-	if( temp_op->outs != NULL )
+	if( temp_op->outs != NULL ) {
 	  temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
+          /* printf("temp_op->dsp_id: %s\n", temp_op->dsp_id);           */
+          /* printf("temp_op->outs->sample->value: %f\n", temp_op->outs->sample->value); */
+        }
       }
     } else {
       temp_op->module->dsp_function(temp_op, jack_sr, pos);

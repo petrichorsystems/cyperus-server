@@ -1015,8 +1015,10 @@ _dsp_search_module_from_port(struct dsp_bus *head_bus, char *id) {
   
   while(temp_bus != NULL) {    
     temp_module = temp_bus->dsp_module_head;
+    printf("dsp_types.c::_dsp_search_module_from_port(), assigned temp_module\n");
     while( temp_module != NULL ) {
-      temp_port_in = temp_module->ins;
+      printf("dsp_types.c::_dsp_search_module_from_port(), temp_module not NULL\n");      
+      temp_port_in = temp_module->ins;      
       while( temp_port_in != NULL) {
         if( strcmp(temp_port_in->id, id) == 0)
           return temp_module;
@@ -1028,8 +1030,11 @@ _dsp_search_module_from_port(struct dsp_bus *head_bus, char *id) {
           return temp_module;
         temp_port_out = temp_port_out->next;
       }
+
+      printf("dsp_types.c::_dsp_search_module_from_port(), done searching\n");
       temp_module = temp_module->next;
     }
+    
     if( (temp_module = _dsp_search_module_from_port(temp_bus->down, id)) != NULL)
       return temp_module;
     else if( (temp_module = _dsp_search_module_from_port(temp_bus->next, id)) != NULL)
