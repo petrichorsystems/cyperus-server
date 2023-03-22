@@ -44,7 +44,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   struct dsp_port_in *temp_port_in;
 
   request_id = (char *)argv[0];
-  char *mains_str = malloc(sizeof(char) * ((44 * (jackcli_channels_in +
+  char *mains_str = malloc(sizeof(char) * ((37 * (jackcli_channels_in +
 						  jackcli_channels_out)) +
 					   4 + /* strlen("in:\n") */
 					   5 + /* strlen("out:\n") */
@@ -53,7 +53,6 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   /* process main inputs */
   temp_port_out = dsp_main_ins;
   while(temp_port_out != NULL) {
-    strcat(mains_str, "/mains{");
     strcat(mains_str, temp_port_out->id);
     strcat(mains_str, "\n");
     temp_port_out = temp_port_out->next;
@@ -62,7 +61,6 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   /* process main outputs */
   temp_port_in = dsp_main_outs;
   while(temp_port_in != NULL) {
-    strcat(mains_str, "/mains}");
     strcat(mains_str, temp_port_in->id);
     strcat(mains_str, "\n");
     temp_port_in = temp_port_in->next;

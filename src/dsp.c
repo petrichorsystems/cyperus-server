@@ -23,7 +23,7 @@ Copyright 2015 murray foster */
 int dsp_global_new_operation_graph = 0;
 
 struct dsp_bus_port*
-dsp_search_bus_port(struct dsp_bus *head_bus, char *id) {
+_dsp_search_bus_port(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_bus_port *temp_bus_port = NULL;
   
@@ -45,24 +45,24 @@ dsp_search_bus_port(struct dsp_bus *head_bus, char *id) {
       temp_bus_port = temp_bus_port->next;
     }
     
-    if( (temp_bus_port = dsp_search_bus_port(temp_bus->down, id)) != NULL)
+    if( (temp_bus_port = _dsp_search_bus_port(temp_bus->down, id)) != NULL)
       return temp_bus_port;
-    else if( (temp_bus_port = dsp_search_bus_port(temp_bus->next, id)) != NULL)
+    else if( (temp_bus_port = _dsp_search_bus_port(temp_bus->next, id)) != NULL)
       return temp_bus_port;
     else
       return NULL;
   }
-} /* dsp_search_bus_port */
+} /* _dsp_search_bus_port */
 
 struct dsp_bus_port*
 dsp_find_bus_port(char *id) {
   printf("dsp.c::dsp_find_bus_port()\n");
   printf("id: %s\n", id);
-  return dsp_search_bus_port(dsp_global_bus_head, id);
+  return _dsp_search_bus_port(dsp_global_bus_head, id);
 } /* dsp_find_bus_port */
 
 struct dsp_bus_port*
-dsp_search_bus_port_out(struct dsp_bus *head_bus, char *id) {
+_dsp_search_bus_port_out(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_bus_port *temp_bus_port = NULL;
   
@@ -71,31 +71,31 @@ dsp_search_bus_port_out(struct dsp_bus *head_bus, char *id) {
     /* check 'out' bus ports */
     temp_bus_port = temp_bus->outs;
     while( temp_bus_port != NULL ) {
-      printf("dsp_search_bus_port_out::id: %s\n", id);
-      printf("dsp_search_bus_port_out::temp_bus_port->id: %s\n\n", temp_bus_port->id);
+      printf("_dsp_search_bus_port_out::id: %s\n", id);
+      printf("_dsp_search_bus_port_out::temp_bus_port->id: %s\n\n", temp_bus_port->id);
       if( strcmp(temp_bus_port->id, id) == 0 )
         return temp_bus_port; 
       temp_bus_port = temp_bus_port->next;
     }
     
-    if( (temp_bus_port = dsp_search_bus_port(temp_bus->down, id)) != NULL)
+    if( (temp_bus_port = _dsp_search_bus_port(temp_bus->down, id)) != NULL)
       return temp_bus_port;
-    else if( (temp_bus_port = dsp_search_bus_port(temp_bus->next, id)) != NULL)
+    else if( (temp_bus_port = _dsp_search_bus_port(temp_bus->next, id)) != NULL)
       return temp_bus_port;
     else
       return NULL;
   }
-} /* dsp_search_bus_port_out */
+} /* _dsp_search_bus_port_out */
 
 struct dsp_bus_port*
 dsp_find_bus_port_out(char *id) {
   printf("dsp.c::dsp_find_bus_port_out()\n");
   printf("id: %s\n", id);
-  return dsp_search_bus_port_out(dsp_global_bus_head, id);
+  return _dsp_search_bus_port_out(dsp_global_bus_head, id);
 } /* dsp_find_bus_port_out */
 
 struct dsp_bus_port*
-dsp_search_bus_port_in(struct dsp_bus *head_bus, char *id) {
+_dsp_search_bus_port_in(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_bus_port *temp_bus_port = NULL;
   
@@ -104,31 +104,31 @@ dsp_search_bus_port_in(struct dsp_bus *head_bus, char *id) {
     /* check 'in' bus ports */
     temp_bus_port = temp_bus->ins;
     while( temp_bus_port != NULL ) {
-      printf("dsp_search_bus_port_in::id: %s\n", id);
-      printf("dsp_search_bus_port_in::temp_bus_port->id: %s\n\n", temp_bus_port->id);      
+      printf("_dsp_search_bus_port_in::id: %s\n", id);
+      printf("_dsp_search_bus_port_in::temp_bus_port->id: %s\n\n", temp_bus_port->id);      
       if( strcmp(temp_bus_port->id, id) == 0 )
         return temp_bus_port; 
       temp_bus_port = temp_bus_port->next;
     }
     
-    if( (temp_bus_port = dsp_search_bus_port(temp_bus->down, id)) != NULL)
+    if( (temp_bus_port = _dsp_search_bus_port(temp_bus->down, id)) != NULL)
       return temp_bus_port;
-    else if( (temp_bus_port = dsp_search_bus_port(temp_bus->next, id)) != NULL)
+    else if( (temp_bus_port = _dsp_search_bus_port(temp_bus->next, id)) != NULL)
       return temp_bus_port;
     else
       return NULL;
   }
-} /* dsp_search_bus_port_in */
+} /* _dsp_search_bus_port_in */
 
 struct dsp_bus_port*
 dsp_find_bus_port_in(char *id) {
   printf("dsp.c::dsp_find_bus_port_in()\n");
   printf("id: %s\n", id);
-  return dsp_search_bus_port_in(dsp_global_bus_head, id);
+  return _dsp_search_bus_port_in(dsp_global_bus_head, id);
 } /* dsp_find_bus_port_in */
 
 struct dsp_module*
-dsp_search_module(struct dsp_bus *head_bus, char *id) {
+_dsp_search_module(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_module *temp_module = NULL;
   
@@ -139,24 +139,24 @@ dsp_search_module(struct dsp_bus *head_bus, char *id) {
         return temp_module; 
       temp_module = temp_module->next;
     }
-    if( (temp_module = dsp_search_module(temp_bus->down, id)) != NULL)
+    if( (temp_module = _dsp_search_module(temp_bus->down, id)) != NULL)
       return temp_module;
-    else if( (temp_module = dsp_search_module(temp_bus->next, id)) != NULL)
+    else if( (temp_module = _dsp_search_module(temp_bus->next, id)) != NULL)
       return temp_module;
     else
       return NULL;
   }
-} /* dsp_search_module */
+} /* _dsp_search_module */
 
 struct dsp_module*
 dsp_find_module(char *id) {
   printf("dsp.c::dsp_find_module()\n");
   printf("id: %s\n", id);
-  return dsp_search_module(dsp_global_bus_head, id);
+  return _dsp_search_module(dsp_global_bus_head, id);
 } /* dsp_find_module */
 
 struct dsp_port_out*
-dsp_search_port_out(struct dsp_bus *head_bus, char *id) {
+_dsp_search_port_out(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_module *temp_module = NULL;
   struct dsp_bus_port *temp_bus_port = NULL;
@@ -167,8 +167,8 @@ dsp_search_port_out(struct dsp_bus *head_bus, char *id) {
     temp_bus_port = temp_bus->outs;
     while( temp_bus_port != NULL ) {
       temp_port_out = temp_bus_port->out;
-      printf("dsp_search_port_out::id: %s\n", id);      
-      printf("dsp_search_port_out::temp_port_out->id: %s\n\n", temp_port_out->id);
+      printf("_dsp_search_port_out::id: %s\n", id);      
+      printf("_dsp_search_port_out::temp_port_out->id: %s\n\n", temp_port_out->id);
       if( strcmp(temp_port_out->id, id) == 0)
         return temp_port_out;
       temp_bus_port = temp_bus_port->next;
@@ -178,8 +178,8 @@ dsp_search_port_out(struct dsp_bus *head_bus, char *id) {
     while( temp_module != NULL ) {
       temp_port_out = temp_module->outs;
       while( temp_port_out != NULL) {
-      printf("dsp_search_port_out::id: %s\n", id);        
-      printf("dsp_search_port_out::temp_port_out->id: %s\n\n", temp_port_out->id);
+      printf("_dsp_search_port_out::id: %s\n", id);        
+      printf("_dsp_search_port_out::temp_port_out->id: %s\n\n", temp_port_out->id);
         if( strcmp(temp_port_out->id, id) == 0)
           return temp_port_out;
         temp_port_out = temp_port_out->next;
@@ -187,14 +187,14 @@ dsp_search_port_out(struct dsp_bus *head_bus, char *id) {
       temp_module = temp_module->next;
     }
     
-    if( (temp_port_out = dsp_search_port_out(temp_bus->down, id)) != NULL)
+    if( (temp_port_out = _dsp_search_port_out(temp_bus->down, id)) != NULL)
       return temp_port_out;
-    else if( (temp_port_out = dsp_search_port_out(temp_bus->next, id)) != NULL)
+    else if( (temp_port_out = _dsp_search_port_out(temp_bus->next, id)) != NULL)
       return temp_port_out;
     else
       return NULL;
   }
-} /* dsp_search_port_out */
+} /* _dsp_search_port_out */
 
 struct dsp_port_out*
 dsp_find_port_out(char *id) {
@@ -209,11 +209,11 @@ dsp_find_port_out(char *id) {
     temp_port_out = temp_port_out->next;
   }
   
-  return dsp_search_port_out(dsp_global_bus_head, id);
+  return _dsp_search_port_out(dsp_global_bus_head, id);
 } /* dsp_find_port_out */
 
 struct dsp_port_in*
-dsp_search_port_in(struct dsp_bus *head_bus, char *id) {
+_dsp_search_port_in(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_module *temp_module = NULL;
   struct dsp_bus_port *temp_bus_port = NULL;
@@ -224,8 +224,8 @@ dsp_search_port_in(struct dsp_bus *head_bus, char *id) {
     temp_bus_port = temp_bus->ins;
     while( temp_bus_port != NULL ) {
       temp_port_in = temp_bus_port->in;
-      printf("dsp_search_port_in::id: %s\n", id);      
-      printf("dsp_search_port_in::temp_port_in->id: %s\n\n", temp_port_in->id);      
+      printf("_dsp_search_port_in::id: %s\n", id);      
+      printf("_dsp_search_port_in::temp_port_in->id: %s\n\n", temp_port_in->id);      
       if( strcmp(temp_port_in->id, id) == 0)
         return temp_port_in;
       temp_bus_port = temp_bus_port->next;
@@ -234,8 +234,8 @@ dsp_search_port_in(struct dsp_bus *head_bus, char *id) {
     temp_module = temp_bus->dsp_module_head;
     while( temp_module != NULL ) {
       temp_port_in = temp_module->ins;
-      printf("dsp_search_port_in::id: %s\n", id);      
-      printf("dsp_search_port_in::temp_port_in->id: %s\n\n", temp_port_in->id);            
+      printf("_dsp_search_port_in::id: %s\n", id);      
+      printf("_dsp_search_port_in::temp_port_in->id: %s\n\n", temp_port_in->id);            
       while( temp_port_in != NULL) {
         if( strcmp(temp_port_in->id, id) == 0)
           return temp_port_in;
@@ -244,14 +244,14 @@ dsp_search_port_in(struct dsp_bus *head_bus, char *id) {
       temp_module = temp_module->next;
     }
     
-    if( (temp_port_in = dsp_search_port_in(temp_bus->down, id)) != NULL)
+    if( (temp_port_in = _dsp_search_port_in(temp_bus->down, id)) != NULL)
       return temp_port_in;
-    else if( (temp_port_in = dsp_search_port_in(temp_bus->next, id)) != NULL)
+    else if( (temp_port_in = _dsp_search_port_in(temp_bus->next, id)) != NULL)
       return temp_port_in;
     else
       return NULL;
   }
-} /* dsp_search_port_in */
+} /* _dsp_search_port_in */
 
 struct dsp_port_in*
 dsp_find_port_in(char *id) {
@@ -266,7 +266,7 @@ dsp_find_port_in(char *id) {
     temp_port_in = temp_port_in->next;
   }
   
-  return dsp_search_port_in(dsp_global_bus_head, id);
+  return _dsp_search_port_in(dsp_global_bus_head, id);
 } /* dsp_find_port_in */
 
 struct dsp_port_out*
@@ -300,7 +300,7 @@ dsp_find_main_out_port_in(char *id) {
 } /* dsp_find_main_out_port_in */
 
 struct dsp_port_out*
-dsp_search_module_port_out(struct dsp_bus *head_bus, char *id) {
+_dsp_search_module_port_out(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_module *temp_module = NULL;
   struct dsp_port_out *temp_port_out = NULL;
@@ -317,25 +317,25 @@ dsp_search_module_port_out(struct dsp_bus *head_bus, char *id) {
       temp_module = temp_module->next;
     }
     
-    if( (temp_port_out = dsp_search_port_out(temp_bus->down, id)) != NULL)
+    if( (temp_port_out = _dsp_search_port_out(temp_bus->down, id)) != NULL)
       return temp_port_out;
-    else if( (temp_port_out = dsp_search_port_out(temp_bus->next, id)) != NULL)
+    else if( (temp_port_out = _dsp_search_port_out(temp_bus->next, id)) != NULL)
       return temp_port_out;
     else
       return NULL;
   }
-} /* dsp_search_module_port_out */
+} /* _dsp_search_module_port_out */
 
 struct dsp_port_out*
 dsp_find_module_port_out(char *id) {
   printf("dsp.c::dsp_find_module_port_out()\n");
   printf("id: %s\n", id);
   
-  return dsp_search_module_port_out(dsp_global_bus_head, id);
+  return _dsp_search_module_port_out(dsp_global_bus_head, id);
 } /* dsp_find_module_port_out */
 
 struct dsp_port_in*
-dsp_search_module_port_in(struct dsp_bus *head_bus, char *id) {
+_dsp_search_module_port_in(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_module *temp_module = NULL;
   struct dsp_port_in *temp_port_in = NULL;
@@ -352,25 +352,25 @@ dsp_search_module_port_in(struct dsp_bus *head_bus, char *id) {
       temp_module = temp_module->next;
     }
     
-    if( (temp_port_in = dsp_search_port_in(temp_bus->down, id)) != NULL)
+    if( (temp_port_in = _dsp_search_port_in(temp_bus->down, id)) != NULL)
       return temp_port_in;
-    else if( (temp_port_in = dsp_search_port_in(temp_bus->next, id)) != NULL)
+    else if( (temp_port_in = _dsp_search_port_in(temp_bus->next, id)) != NULL)
       return temp_port_in;
     else
       return NULL;
   }
-} /* dsp_search_module_port_in */
+} /* _dsp_search_module_port_in */
 
 struct dsp_port_in*
 dsp_find_module_port_in(char *id) {
   printf("dsp.c::dsp_find_module_port_in()\n");
   printf("id: %s\n", id);
   
-  return dsp_search_module_port_in(dsp_global_bus_head, id);
+  return _dsp_search_module_port_in(dsp_global_bus_head, id);
 } /* dsp_find_module_port_in */
 
 struct dsp_port_out*
-dsp_search_bus_port_port_out(struct dsp_bus *head_bus, char *id) {
+_dsp_search_bus_port_port_out(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_bus_port *temp_bus_port = NULL;
   struct dsp_port_out *temp_port_out = NULL;
@@ -383,24 +383,24 @@ dsp_search_bus_port_port_out(struct dsp_bus *head_bus, char *id) {
       temp_bus_port = temp_bus_port->next;
     }
     
-    if( (temp_port_out = dsp_search_port_out(temp_bus->down, id)) != NULL)
+    if( (temp_port_out = _dsp_search_port_out(temp_bus->down, id)) != NULL)
       return temp_port_out;
-    else if( (temp_port_out = dsp_search_port_out(temp_bus->next, id)) != NULL)
+    else if( (temp_port_out = _dsp_search_port_out(temp_bus->next, id)) != NULL)
       return temp_port_out;
     else
       return NULL;
-} /* dsp_search_bus_port_port_out */
+} /* _dsp_search_bus_port_port_out */
 
 struct dsp_port_out*
 dsp_find_bus_port_port_out(char *id) {
   printf("dsp.c::dsp_find_bus_port_port_out()\n");
   printf("id: %s\n", id);
   
-  return dsp_search_bus_port_port_out(dsp_global_bus_head, id);
+  return _dsp_search_bus_port_port_out(dsp_global_bus_head, id);
 } /* dsp_find_bus_port_port_out */
 
 struct dsp_port_in*
-dsp_search_bus_port_port_in(struct dsp_bus *head_bus, char *id) {
+_dsp_search_bus_port_port_in(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_bus_port *temp_bus_port = NULL;
   struct dsp_port_in *temp_port_in = NULL;
@@ -413,24 +413,24 @@ dsp_search_bus_port_port_in(struct dsp_bus *head_bus, char *id) {
     temp_bus_port = temp_bus_port->next;
   }
     
-  if( (temp_port_in = dsp_search_port_in(temp_bus->down, id)) != NULL)
+  if( (temp_port_in = _dsp_search_port_in(temp_bus->down, id)) != NULL)
     return temp_port_in;
-  else if( (temp_port_in = dsp_search_port_in(temp_bus->next, id)) != NULL)
+  else if( (temp_port_in = _dsp_search_port_in(temp_bus->next, id)) != NULL)
     return temp_port_in;
   else
     return NULL;
-} /* dsp_search_bus_port_port_in */
+} /* _dsp_search_bus_port_port_in */
 
 struct dsp_port_in*
 dsp_find_bus_port_port_in(char *id) {
   printf("dsp.c::dsp_find_bus_port_port_in()\n");
   printf("id: %s\n", id);
   
-  return dsp_search_bus_port_port_in(dsp_global_bus_head, id);
+  return _dsp_search_bus_port_port_in(dsp_global_bus_head, id);
 } /* dsp_find_bus_port_port_in */
 
 struct dsp_module*
-dsp_search_module_from_port(struct dsp_bus *head_bus, char *id) {
+_dsp_search_module_from_port(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_module *temp_module = NULL;
   struct dsp_port_in *temp_port_in = NULL;
@@ -453,46 +453,46 @@ dsp_search_module_from_port(struct dsp_bus *head_bus, char *id) {
       }
       temp_module = temp_module->next;
     }
-    if( (temp_module = dsp_search_module_from_port(temp_bus->down, id)) != NULL)
+    if( (temp_module = _dsp_search_module_from_port(temp_bus->down, id)) != NULL)
       return temp_module;
-    else if( (temp_module = dsp_search_module_from_port(temp_bus->next, id)) != NULL)
+    else if( (temp_module = _dsp_search_module_from_port(temp_bus->next, id)) != NULL)
       return temp_module;
     else
       return NULL;
   }
-} /* dsp_search_module_from_port */
+} /* _dsp_search_module_from_port */
 
 struct dsp_module*
 dsp_get_module_from_port(char *id) {
   printf("dsp.c::dsp_get_module_from_port()\n");
   printf("id: %s\n", id);
 
-  return dsp_search_module_from_port(dsp_global_bus_head, id);
+  return _dsp_search_module_from_port(dsp_global_bus_head, id);
 } /* dsp_get_module_from_port */
 
 
 struct dsp_bus*
-dsp_search_bus(struct dsp_bus *head_bus, char *id) {
+_dsp_search_bus(struct dsp_bus *head_bus, char *id) {
   struct dsp_bus *temp_bus = head_bus;
   struct dsp_bus *found_bus = NULL;
 
   while(temp_bus != NULL) {
     if( strcmp(temp_bus->id, id) == 0 )
       return temp_bus;
-    if( (found_bus = dsp_search_bus(temp_bus->down, id)) != NULL)
+    if( (found_bus = _dsp_search_bus(temp_bus->down, id)) != NULL)
       return found_bus;
-    else if( (found_bus = dsp_search_bus(temp_bus->next, id)) != NULL)
+    else if( (found_bus = _dsp_search_bus(temp_bus->next, id)) != NULL)
       return found_bus;
     else
       return NULL;
   }
-} /* dsp_search_bus */
+} /* _dsp_search_bus */
 
 struct dsp_bus*
 dsp_find_bus(char *id) {
   printf("dsp.c::dsp_find_bus()\n");
   printf("id: %s\n", id);
-  return dsp_search_bus(dsp_global_bus_head, id);
+  return _dsp_search_bus(dsp_global_bus_head, id);
 } /* dsp_find_bus */
 
 struct dsp_bus_port*
@@ -662,16 +662,22 @@ dsp_add_connection(char *id_out, char *id_in) {
   struct dsp_port_out *port_out = NULL;
   struct dsp_port_in *port_in = NULL;
 
-  if( (temp_bus_port = dsp_find_bus_port_in(id_out)) != NULL) {
-    port_out = temp_bus_port->out;
-  } else {
-    port_out = dsp_find_port_out(id_out);
+  port_out = dsp_find_main_in_port_out(id_out);
+  if( port_out == NULL ) {
+    if( (temp_bus_port = dsp_find_bus_port_in(id_out)) != NULL) {
+      port_out = temp_bus_port->out;
+    } else {
+      port_out = dsp_find_port_out(id_out);
+    }
   }
 
-  if( (temp_bus_port = dsp_find_bus_port_out(id_in)) != NULL) {
-    port_in  = temp_bus_port->in;
-  } else {
-    port_in = dsp_find_port_in(id_in);
+  port_in = dsp_find_main_out_port_in(id_in);
+  if( port_in == NULL ) {
+    if( (temp_bus_port = dsp_find_bus_port_out(id_in)) != NULL) {
+      port_in  = temp_bus_port->in;
+    } else {
+      port_in = dsp_find_port_in(id_in);
+    }
   }
   
   if( (port_out == NULL) ||
@@ -1146,24 +1152,12 @@ dsp_build_mains(int channels_in, int channels_out) {
     if( i == 0 ) {
       temp_port_out = dsp_port_out_init("main_in", 1);
       dsp_main_ins = temp_port_out;
-
-      formal_main_name = (char *)malloc(44);
-      formal_main_name[0] = '\0';
-      strcpy(formal_main_name, "/mains{");
-      strcat(formal_main_name, temp_port_out->id);
     } else {
       temp_port_out->next = dsp_port_out_init("main_in", 1);
       temp_port_out = temp_port_out->next;
-
-      formal_main_name = (char *)malloc(44);
-      if(formal_main_name != NULL) {
-	formal_main_name[0] = '\0';
-	strcpy(formal_main_name, "/mains{");
-	strcat(formal_main_name, temp_port_out->id);
-      }
     }
 	
-    temp_op = dsp_operation_init(formal_main_name);
+    temp_op = dsp_operation_init(temp_port_out->id);
     temp_sample = dsp_operation_sample_init("<main port in>", (float)0.0, 1);
 
     if(temp_op->outs == NULL)
@@ -1182,25 +1176,11 @@ dsp_build_mains(int channels_in, int channels_out) {
     if( i == 0 ) {
       temp_port_in = dsp_port_in_init("main_out", fifo_size, NULL);
       dsp_main_outs = temp_port_in;
-
-      formal_main_name = (char *)malloc(44);
-      if(formal_main_name != NULL) {
-	formal_main_name[0] = '\0';
-	strcpy(formal_main_name, "/mains}");
-	strcat(formal_main_name, temp_port_in->id);
-      }
     } else {
       temp_port_in->next = dsp_port_in_init("main_out", fifo_size, NULL);
       temp_port_in = temp_port_in->next;
-
-      formal_main_name = (char *)malloc(44);
-      if(formal_main_name != NULL) {
-	formal_main_name[0] = '\0';
-	strcpy(formal_main_name, "/mains}");
-	strcat(formal_main_name, temp_port_in->id);
-      }
     }
-    temp_op = dsp_operation_init(formal_main_name);
+    temp_op = dsp_operation_init(temp_port_in->id);
     temp_sample = dsp_operation_sample_init("<main port out>", (float)0.0, 1);
 
     if( temp_op->ins == NULL )
@@ -1212,8 +1192,6 @@ dsp_build_mains(int channels_in, int channels_out) {
       dsp_optimized_main_outs = temp_op;
     else 
       dsp_operation_insert_tail(dsp_optimized_main_outs, temp_op);
-    
-    free(formal_main_name);
   }
 } /* dsp_build_mains */
 

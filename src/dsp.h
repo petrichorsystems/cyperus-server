@@ -27,37 +27,37 @@ Copyright 2015 murray foster */
 #include "threadsync.h"
 
 struct dsp_bus_port*
-dsp_search_bus_port(struct dsp_bus *head_bus, char *id);
+_dsp_search_bus_port(struct dsp_bus *head_bus, char *id);
 
 struct dsp_bus_port*
 dsp_find_bus_port(char *id);
 
 struct dsp_bus_port*
-dsp_search_bus_port_out(struct dsp_bus *head_bus, char *id);
+_dsp_search_bus_port_out(struct dsp_bus *head_bus, char *id);
 
 struct dsp_bus_port*
 dsp_find_bus_port_out(char *id);
 
 struct dsp_bus_port*
-dsp_search_bus_port_in(struct dsp_bus *head_bus, char *id);
+_dsp_search_bus_port_in(struct dsp_bus *head_bus, char *id);
 
 struct dsp_bus_port*
 dsp_find_bus_port_in(char *id);
 
 struct dsp_module*
-dsp_search_module(struct dsp_bus *head_bus, char *id);
+_dsp_search_module(struct dsp_bus *head_bus, char *id);
 
 struct dsp_module*
 dsp_find_module(char *id);
 
 struct dsp_port_out*
-dsp_search_port_out(struct dsp_bus *head_bus, char *id);
+_dsp_search_port_out(struct dsp_bus *head_bus, char *id);
 
 struct dsp_port_out*
 dsp_find_port_out(char *id);
 
 struct dsp_port_in*
-dsp_search_port_in(struct dsp_bus *head_bus, char *id);
+_dsp_search_port_in(struct dsp_bus *head_bus, char *id);
 
 struct dsp_port_in*
 dsp_find_port_in(char *id);
@@ -69,31 +69,31 @@ struct dsp_port_in*
 dsp_find_main_out_port_in(char *id);
 
 struct dsp_port_out*
-dsp_search_module_port_out(struct dsp_bus *head_bus, char *id);
+_dsp_search_module_port_out(struct dsp_bus *head_bus, char *id);
 
 struct dsp_port_out*
 dsp_find_module_port_out(char *id);
 
 struct dsp_port_in*
-dsp_search_module_port_in(struct dsp_bus *head_bus, char *id);
+_dsp_search_module_port_in(struct dsp_bus *head_bus, char *id);
 
 struct dsp_port_in*
 dsp_find_module_port_in(char *id);
 
 struct dsp_port_out*
-dsp_search_bus_port_port_out(struct dsp_bus *head_bus, char *id);
+_dsp_search_bus_port_port_out(struct dsp_bus *head_bus, char *id);
 
 struct dsp_port_out*
 dsp_find_bus_port_port_out(char *id);
 
 struct dsp_port_in*
-dsp_search_bus_port_port_in(struct dsp_bus *head_bus, char *id);
+_dsp_search_bus_port_port_in(struct dsp_bus *head_bus, char *id);
 
 struct dsp_port_in*
 dsp_find_bus_port_port_in(char *id);
 
 struct dsp_module*
-dsp_search_module_from_port(struct dsp_bus *head_bus, char *id);
+_dsp_search_module_from_port(struct dsp_bus *head_bus, char *id);
 
 struct dsp_module*
 dsp_get_module_from_port(char *id);
@@ -126,7 +126,7 @@ int
 dsp_remove_connection(char *id_out, char *id_in);
 
 struct dsp_bus*
-dsp_search_bus(struct dsp_bus *head_bus, char *id);
+_dsp_search_bus(struct dsp_bus *head_bus, char *id);
 
 struct dsp_bus*
 dsp_find_bus(char *id);
