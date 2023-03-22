@@ -61,7 +61,7 @@ int
 osc_edit_modules_filter_varslope_lowpass_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {
-  char *request_id, *module_id, *module_id;
+  char *request_id, *module_id;
   struct dsp_module *target_module;
   float amplitude;
   float slope;

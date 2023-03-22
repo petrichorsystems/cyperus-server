@@ -168,14 +168,13 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 
 	  int is_bus_port = 0;
           
-	  if( dsp_find_bus_port_port_in(temp_connection->id_in) != NULL ) {
-	    temp_op_in_id = temp_out->id;
+	  if( dsp_find_bus_port_port_in((char *)temp_connection->id_in) != NULL ) {
+	    temp_op_in_id = (char *)temp_out->id;
 	    is_bus_port = 1;
-	  } else if( (temp_module_in = dsp_get_module_from_port(temp_connection->id_in)) != NULL ) {
-            if( dsp_find_module_port_in(temp_connection->id_in) != NULL ) {
-              temp_op_in_id = temp_module_in->id;
-              is_module_in = 1;
-            } else if( dsp_find_module_port_out(temp_connection->id_in) != NULL ) {
+	  } else if( (temp_module_in = dsp_get_module_from_port((char *)temp_connection->id_in)) != NULL ) {
+            if( dsp_find_module_port_in((char *)temp_connection->id_in) != NULL ) {
+              temp_op_in_id = (char *)temp_module_in->id;
+            } else if( dsp_find_module_port_out((char *)temp_connection->id_in) != NULL ) {
               printf("temp_connection->id_in: '%s', contains output! aborting..\n", (char *)temp_connection->id_in);
               exit(1);
             }
@@ -188,7 +187,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	      temp_sample_in = temp_op_in->ins;
 	      if( is_bus_port == 0) {
 		while( temp_sample_in != NULL ) {
-		  if( strcmp(temp_sample_in->dsp_id, connection->id_in) == 0 ) {
+		  if( strcmp(temp_sample_in->dsp_id, (char *)temp_connection->id_in) == 0 ) {
 		    sample_in = temp_sample_in;
 		    break;
 		  }
@@ -211,7 +210,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
               temp_op_in->outs = sample_out;
               temp_op_in->ins = sample_in;
 	    } else {
-	      sample_in = dsp_operation_sample_init(temp_connection->id_in, 0.0, 1);
+	      sample_in = dsp_operation_sample_init((char *)temp_connection->id_in, 0.0, 1);
 	      temp_op_in = dsp_operation_init(temp_op_in_id);
 
               printf("dsp_ops.c: dsp_optimize_connections_main_inputs(): ATTENTION: connection made from main input directly to module. do we allow this? exiting..\n");
