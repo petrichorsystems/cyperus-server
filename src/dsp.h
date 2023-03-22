@@ -32,6 +32,18 @@ dsp_search_bus_port(struct dsp_bus *head_bus, char *id);
 struct dsp_bus_port*
 dsp_find_bus_port(char *id);
 
+struct dsp_bus_port*
+dsp_search_bus_port_out(struct dsp_bus *head_bus, char *id);
+
+struct dsp_bus_port*
+dsp_find_bus_port_out(char *id);
+
+struct dsp_bus_port*
+dsp_search_bus_port_in(struct dsp_bus *head_bus, char *id);
+
+struct dsp_bus_port*
+dsp_find_bus_port_in(char *id);
+
 struct dsp_module*
 dsp_search_module(struct dsp_bus *head_bus, char *id);
 
