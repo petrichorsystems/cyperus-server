@@ -576,10 +576,9 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 } /* dsp_optimize_connections_input */
 
 void
-dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports) {
+dsp_optimize_connections_bus(struct dsp_bus_port *ports) {
   struct dsp_bus_port *temp_port = ports;
   struct dsp_connection *temp_connection;
-  char *current_path = NULL;
 
   int temp_port_idx = 0;
 
@@ -598,24 +597,24 @@ dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports)
 } /* dsp_optimize_connections_bus */
 
 void
-dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path) {
+dsp_optimize_graph(struct dsp_bus *head_bus) {
   struct dsp_module *temp_module;
   struct dsp_bus *temp_bus = head_bus;
 
   while(temp_bus != NULL) {
     /* process bus inputs */
-    dsp_optimize_connections_bus(temp_bus->id, temp_bus->ins);
+    dsp_optimize_connections_bus(temp_bus->ins);
 
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
-      dsp_optimize_connections_module((char *)temp_module->id, temp_module->outs);
+      dsp_optimize_connections_module(temp_module->outs);
       temp_module = temp_module->next;
     }
     
     /* process bus outputs */
-    dsp_optimize_connections_bus(temp_bus->id, temp_bus->outs);
-    dsp_optimize_graph(temp_bus->down, temp_bus->id);
+    dsp_optimize_connections_bus(temp_bus->outs);
+    dsp_optimize_graph(temp_bus->down);
     temp_bus = temp_bus->next;
   }
   return;
@@ -686,7 +685,6 @@ void
 *dsp_build_optimized_graph(void *arg) {
   int i;
   float outsample = 0.0;
-  char current_path[2] = "/";
 
   struct dsp_bus *temp_bus;
   struct dsp_module *temp_module;
@@ -700,7 +698,7 @@ void
   
   temp_bus = dsp_global_bus_head;
   while( temp_bus != NULL ) {
-    dsp_optimize_graph(temp_bus, current_path);
+    dsp_optimize_graph(temp_bus);
     temp_bus = temp_bus->next;
   }
 
@@ -738,7 +736,6 @@ void*
 dsp_thread(void *arg) {
   int pos, i;
 
-  char current_path[2] = "/";
   struct dsp_bus *temp_bus;
 
   struct dsp_operation *temp_op;

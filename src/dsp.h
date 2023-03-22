@@ -26,47 +26,6 @@ Copyright 2015 murray foster */
 #include "dsp_graph_id.h"
 #include "threadsync.h"
 
-struct dsp_bus_port*
-dsp_find_bus_port(char *id);
-
-struct dsp_bus_port*
-dsp_find_bus_port_out(char *id);
-
-struct dsp_bus_port*
-dsp_find_bus_port_in(char *id);
-
-struct dsp_module*
-dsp_find_module(char *id);
-
-struct dsp_bus*
-dsp_find_bus(char *id);
-
-struct dsp_port_out*
-dsp_find_port_out(char *id);
-
-struct dsp_port_in*
-dsp_find_port_in(char *id);
-
-struct dsp_port_out*
-dsp_find_main_in_port_out(char *id);
-  
-struct dsp_port_in*
-dsp_find_main_out_port_in(char *id);
-
-struct dsp_port_out*
-dsp_find_module_port_out(char *id);
-
-struct dsp_port_in*
-dsp_find_module_port_in(char *id);
-
-struct dsp_port_out*
-dsp_find_bus_port_port_out(char *id);
-
-struct dsp_port_in*
-dsp_find_bus_port_port_in(char *id);
-
-struct dsp_module*
-dsp_get_module_from_port(char *id);
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_port, char *bus_ports, int out);
@@ -96,13 +55,13 @@ int
 dsp_remove_connection(char *id_out, char *id_in);
 
 void
-dsp_optimize_connections_bus(char *current_bus_path, struct dsp_bus_port *ports);
+dsp_optimize_connections_bus(struct dsp_bus_port *ports);
 
 void
 dsp_optimize_connections_input(struct dsp_connection *connection);
 
 void
-dsp_optimize_graph(struct dsp_bus *head_bus, char *parent_path);
+dsp_optimize_graph(struct dsp_bus *head_bus);
 
 void
 dsp_build_mains(int channels_in, int channels_out);

@@ -34,7 +34,7 @@ Copyright 2018 murray foster */
 float dsp_sum_input(struct dsp_port_in *in);
 float dsp_sum_summands(struct dsp_operation_sample *summands);
 void dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *outs);
-void dsp_optimize_connections_module(char *module_id, struct dsp_port_out *outs);
+void dsp_optimize_connections_module(struct dsp_port_out *outs);
 void dsp_optimize_connections_main_inputs(struct dsp_port_out *outs);
 struct dsp_operation *dsp_optimize_module(char *id, struct dsp_module *module);
 

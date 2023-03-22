@@ -88,7 +88,7 @@ dsp_feed_outputs(char *current_bus_path, char *module_id, struct dsp_port_out *o
 } /* dsp_feed_outputs */
 
 void
-dsp_optimize_connections_module(char *module_id, struct dsp_port_out *outs) {
+dsp_optimize_connections_module(struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;
