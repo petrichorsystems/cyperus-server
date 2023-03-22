@@ -702,9 +702,7 @@ void
     temp_bus = temp_bus->next;
   }
 
-  printf("assigning flag\n");
   dsp_global_new_operation_graph = 1;
-  printf("assigned flag\n");
 } /* dsp_build_optimized_graph */
 
 void
@@ -719,8 +717,6 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
       } else {
 	if( temp_op->outs != NULL ) {
 	  temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
-          /* printf("temp_op->dsp_id: %s\n", temp_op->dsp_id);           */
-          /* printf("temp_op->outs->sample->value: %f\n", temp_op->outs->sample->value); */
         }
       }
     } else {
@@ -742,8 +738,6 @@ dsp_thread(void *arg) {
   
   struct dsp_operation *temp_main_in = NULL;
   struct dsp_operation *temp_main_out = NULL;
-
-  /* dsp_mains_allocate(jackcli_channels_in, jackcli_channels_out, jackcli_fifo_size); */
 
   dsp_global_operation_head = NULL;
   
