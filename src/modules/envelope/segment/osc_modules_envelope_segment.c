@@ -32,31 +32,30 @@ int osc_add_modules_envelope_segment_handler(const char *path, const char *types
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
-  float reset, start, step_size, min, max, direction, auto_reset;
+  char *shape = NULL;
+  float rate, min, max, auto_reset;
   
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
   bus_path = (char *)argv[1];
 
-  reset = argv[2]->f;
-  start = argv[3]->f;
-  step_size = argv[4]->f;
-  min = argv[5]->f;
-  max = argv[6]->f;
-  direction = argv[7]->f;
-  auto_reset = argv[8]->f;
+  rate = argv[2]->f;
+  shape = argv[3];
+  min = argv[4]->f;
+  max = argv[5]->f;
+  auto_reset = argv[6]->f;
   
   target_bus = dsp_parse_bus_path(bus_path);
   
-  dsp_create_envelope_segment(target_bus,
-                           reset,
-                           start,
-                           step_size,
-                           min,
-                           max,
-                           direction,
-                           auto_reset);
+  /* dsp_create_envelope_segment(target_bus, */
+  /*                          reset, */
+  /*                          start, */
+  /*                          step_size, */
+  /*                          min, */
+  /*                          max, */
+  /*                          direction, */
+  /*                          auto_reset); */
   
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -69,16 +68,14 @@ int osc_add_modules_envelope_segment_handler(const char *path, const char *types
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(
           lo_addr_send,
-          "/cyperus/add/module/envelope/segment","sisfffffff",
+          "/cyperus/add/module/envelope/segment","sisfsfff",
           request_id,
           0,
           module_id,
-          reset,
-          start,
-          step_size,
+          rate,
+          shape,
           min,
           max,
-          direction,
           auto_reset);
   free(lo_addr_send);
 
