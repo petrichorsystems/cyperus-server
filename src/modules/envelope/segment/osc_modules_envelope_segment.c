@@ -41,21 +41,19 @@ int osc_add_modules_envelope_segment_handler(const char *path, const char *types
   bus_path = (char *)argv[1];
 
   rate = argv[2]->f;
-  shape = argv[3];
+  shape = (char *)argv[3];
   min = argv[4]->f;
   max = argv[5]->f;
   auto_reset = argv[6]->f;
   
   target_bus = dsp_parse_bus_path(bus_path);
   
-  /* dsp_create_envelope_segment(target_bus, */
-  /*                          reset, */
-  /*                          start, */
-  /*                          step_size, */
-  /*                          min, */
-  /*                          max, */
-  /*                          direction, */
-  /*                          auto_reset); */
+  dsp_create_envelope_segment(target_bus,
+                           rate,
+                           shape,
+                           min,
+                           max,
+                           auto_reset);
   
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {

@@ -32,13 +32,11 @@
 
 int
 dsp_create_envelope_segment(struct dsp_bus *target_bus,
-                         float reset,
-                         float start,
-                         float step_size,
-                         float min,
-                         float max,
-                         float direction,
-                         float auto_reset);
+                            float rate,
+                            char *shape,
+                            float min,
+                            float max,
+                            float auto_reset);
 void
 dsp_envelope_segment(struct dsp_operation *envelope_segment,
 			    int jack_samplerate,

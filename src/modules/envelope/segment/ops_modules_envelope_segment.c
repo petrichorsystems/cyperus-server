@@ -25,13 +25,11 @@ Copyright 2023 murray foster */
 
 int
 dsp_create_envelope_segment(struct dsp_bus *target_bus,
-                         float reset,
-                         float start,
-                         float step_size,
-                         float min,
-                         float max,
-                         float direction,
-                         float auto_reset) {
+                            float rate,
+                            char *shape,
+                            float min,
+                            float max,
+                            float auto_reset) {
   dsp_parameter params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
@@ -43,16 +41,12 @@ dsp_create_envelope_segment(struct dsp_bus *target_bus,
   params.parameters->int32_type = malloc(sizeof(int) * 2);
 
   /* user-facing parameters */
-  params.parameters->float32_type[0] = reset;  
-  params.parameters->float32_type[1] = start;
-  params.parameters->float32_type[2] = step_size;
-  params.parameters->float32_type[3] = min;
-  params.parameters->float32_type[4] = max;
-  params.parameters->float32_type[5] = direction;
-  params.parameters->float32_type[6] = auto_reset;
+  params.parameters->float32_type[0] = rate;  
+  params.parameters->float32_type[1] = min;
+  params.parameters->float32_type[2] = max;
+  params.parameters->float32_type[3] = auto_reset;
 
   /* internal parameters */
-  params.parameters->float32_type[7] = start; /* current_value */
   
   /* osc listener parameters */
   params.parameters->int32_type[1] = 0; /* samples waited */
@@ -60,21 +54,15 @@ dsp_create_envelope_segment(struct dsp_bus *target_bus,
 
                                             
   /* osc listener param state parameters */                                            
-  params.parameters->float32_type[8] = start;       /* old start */
-  params.parameters->float32_type[9] = step_size;   /* old step_size */
-  params.parameters->float32_type[10] = min;         /* old min */
-  params.parameters->float32_type[11] = max;        /* old max */
-  params.parameters->float32_type[12] = direction;  /* old direction */
-  params.parameters->float32_type[13] = auto_reset; /* old auto_reset */
   
   ins = dsp_port_in_init("trigger", 512, NULL);
-  ins->next = dsp_port_in_init("param_reset", 512, &(params.parameters->float32_type[0]));
-  ins->next->next = dsp_port_in_init("param_start", 512, &(params.parameters->float32_type[1]));
-  ins->next->next->next = dsp_port_in_init("param_step_size", 512, &(params.parameters->float32_type[2]));
-  ins->next->next->next->next = dsp_port_in_init("param_min", 512, &(params.parameters->float32_type[3]));
-  ins->next->next->next->next->next = dsp_port_in_init("param_max", 512, &(params.parameters->float32_type[4]));
-  ins->next->next->next->next->next->next = dsp_port_in_init("param_direction", 512, &(params.parameters->float32_type[5]));
-  ins->next->next->next->next->next->next->next = dsp_port_in_init("param_auto_reset", 512, &(params.parameters->float32_type[6]));
+  /* ins->next = dsp_port_in_init("param_reset", 512, &(params.parameters->float32_type[0])); */
+  /* ins->next->next = dsp_port_in_init("param_start", 512, &(params.parameters->float32_type[1])); */
+  /* ins->next->next->next = dsp_port_in_init("param_step_size", 512, &(params.parameters->float32_type[2])); */
+  /* ins->next->next->next->next = dsp_port_in_init("param_min", 512, &(params.parameters->float32_type[3])); */
+  /* ins->next->next->next->next->next = dsp_port_in_init("param_max", 512, &(params.parameters->float32_type[4])); */
+  /* ins->next->next->next->next->next->next = dsp_port_in_init("param_direction", 512, &(params.parameters->float32_type[5])); */
+  /* ins->next->next->next->next->next->next->next = dsp_port_in_init("param_auto_reset", 512, &(params.parameters->float32_type[6])); */
   
   outs = dsp_port_out_init("out", 1);
 
