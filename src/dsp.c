@@ -321,10 +321,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 
   struct dsp_translation_connection *temp_translation_conn = NULL;
 
-  char *temp_result[3];
-  char *temp_result_module[3];
-  char *temp_op_out_path, *temp_op_in_path = NULL;
-
   struct dsp_bus *temp_bus;
   struct dsp_module *temp_module;
 
@@ -337,8 +333,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
   int is_module_in = 0;
   
   /* OUTPUT PROCESSING */
-
-  temp_op_out_path = (char *)connection->id_out;
     
   /* grab 'out' op and sample address */
   temp_op_out = dsp_global_operation_head_processing;
@@ -435,7 +429,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
             temp_sample_out = temp_sample_out->next;
           }
           if( sample_out == NULL ) {
-            printf("CALLING dsp_optimize() ON '%s' FAILED! exiting..\n", temp_result[1]);
+            printf("CALLING dsp_optimize() ON '%s' FAILED! exiting..\n", (char *)connection->id_out);
             exit(1);
           }
 	} else {
@@ -536,12 +530,11 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
           temp_sample_in = temp_sample_in->next;
         }
         if( sample_in == NULL ) {
-          printf("CALLING dsp_optimize() ON '%s' FAILED! exiting..\n", temp_result[1]);
+          printf("CALLING dsp_optimize() ON '%s' FAILED! exiting..\n", (char *)connection->id_in);
           exit(1);
         }
       } else {
         temp_op = dsp_operation_init(connection->id_in);
-
         printf(" CREATE OPERATION: %s\n", connection->id_in);
         
       }

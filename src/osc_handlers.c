@@ -322,14 +322,14 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 {
   int i;
   struct dsp_bus *temp_bus;
-  char *request_id, *path_str, *bus_str, *ins_str, *outs_str, *new_id = NULL;
+  char *request_id, *target_bus_id, *bus_str, *ins_str, *outs_str, *new_id = NULL;
 
   struct dsp_bus *new_bus;
   
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
-  path_str = (char *)argv[1];
+  target_bus_id = (char *)argv[1];
   bus_str = (char *)argv[2];
   ins_str = (char *)argv[3];
   outs_str = (char *)argv[4];
@@ -342,7 +342,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
       outs_str[i] = ',';
 
   new_bus = dsp_bus_init(bus_str);
-  dsp_add_bus(path_str, new_bus, ins_str, outs_str);
+  dsp_add_bus(target_bus_id, new_bus, ins_str, outs_str);
   
   new_id = malloc(sizeof(char) * strlen(new_bus->id));
   strcpy(new_id, new_bus->id);
@@ -354,7 +354,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
     if(outs_str[i] == ',')
       outs_str[i] = '|';
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/bus", "sisssssi", request_id, 0, path_str, bus_str, ins_str, outs_str, new_id,
+  lo_send(lo_addr_send,"/cyperus/add/bus", "sisssssi", request_id, 0, target_bus_id, bus_str, ins_str, outs_str, new_id,
 	  strcmp(new_bus->name, bus_str));
   free(lo_addr_send);
   free(new_id);
