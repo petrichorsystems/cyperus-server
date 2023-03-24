@@ -495,9 +495,12 @@ void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struc
 }
 
 void dsp_operation_insert_ahead(struct dsp_operation *existing_operation, struct dsp_operation *new_operation) {
-  if( existing_operation->next == NULL )
+  if( existing_operation->next == NULL ) {
+    printf("NULL existing_operation->next\n");
     existing_operation->next = new_operation;
-  else {
+    printf("NULL existing_operation->next, assigned\n");    
+  } else {
+    printf("NOT NULL existing_operation->next\n");    
     new_operation->next = existing_operation->next;
     existing_operation->next->prev = new_operation;
     existing_operation->next = new_operation;

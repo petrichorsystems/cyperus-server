@@ -107,7 +107,7 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
   }
 
   /* insert head bus, if that's what we're doing */
-  if( !strcmp(bus_id, "/") || !strcmp(bus_id, "")) {
+  if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") || !strcmp(bus_id, "")) {
     if( dsp_global_bus_head != NULL )
       dsp_bus_insert_tail(dsp_global_bus_head, new_bus);
     else
@@ -396,6 +396,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	  }
 	} else {
 	  sample_out = temp_sample_out;
+          break;
         }
 	break;
       }
@@ -535,8 +536,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
         }
       } else {
         temp_op = dsp_operation_init(connection->id_in);
-        printf(" CREATE OPERATION: %s\n", connection->id_in);
-        
       }
       
       if(dsp_global_operation_head_processing == NULL)

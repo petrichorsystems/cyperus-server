@@ -237,6 +237,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 
 struct dsp_operation
 *dsp_optimize_module(char *id, struct dsp_module *module) {
+  printf("dsp_ops.c::dsp_optimize_module()\n");
   dsp_parameter dsp_param = module->dsp_param;
 
   struct dsp_port_in *temp_port_in = NULL;

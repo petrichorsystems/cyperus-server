@@ -162,7 +162,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
   char *request_id = NULL;
-  char *path_str, *result_str = NULL;
+  char *bus_id, *result_str = NULL;
   int list_type = 0;
   size_t result_str_size = 0;
 
@@ -180,11 +180,11 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   int current_index, last_break, last_cutoff, copy_index = 0;
 
   request_id = (char *)argv[0];
-  path_str = (char *)argv[1];
+  bus_id = (char *)argv[1];
   list_type = argv[2]->i;
 
   printf("path: <%s>\n", path);
-  printf("path_str: %s\n", path_str);
+  printf("bus_id: %s\n", bus_id);
   printf("list_type: %d\n", list_type);
   
   /* list types
@@ -193,13 +193,13 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
      2 - direct descendant
      3 - all descendants */
 
-  if( !strcmp(path_str, "/") ||
-      !strcmp(path_str, "") ) {
+  if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") ||
+      !strcmp(bus_id, "") ) {
     head_bus = dsp_global_bus_head;
     root_level = 1;
   }
   else {
-    head_bus = dsp_find_bus(path_str);
+    head_bus = dsp_find_bus(bus_id);
   }
 
   printf("HEAD_BUS: %s\n", head_bus->id);
@@ -245,7 +245,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	last_cutoff = last_break;
 	if(last_cutoff == strlen(result_str - 1))
 	   more = 0;
-	lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, path_str, list_type, more, part_result_str);
+	lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, bus_id, list_type, more, part_result_str);
 	free(part_result_str);
       }
     }
@@ -256,7 +256,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
     }
     result_str[current_index - last_cutoff] = '\0';
   }
-  lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, path_str, list_type, 0, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, bus_id, list_type, 0, result_str);
   free(lo_addr_send);
   if(strcmp(result_str, "\n"))
     free(result_str);
