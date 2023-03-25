@@ -257,6 +257,8 @@ struct dsp_operation
     temp_port_in = temp_port_in->next;
   }
 
+  printf("iterated over port in's\n");
+  
   temp_port_out = module->outs;
   while(temp_port_out != NULL) {
     temp_sample = dsp_operation_sample_init((char *)temp_port_out->id, 0.0, 1);
@@ -268,7 +270,11 @@ struct dsp_operation
     temp_port_out = temp_port_out->next;
   }
 
+  printf("iterated over port out's\n");
+  
   new_op->module = module;
+
+  printf("about to return\n");
   
   return new_op;
 } /* dsp_optimize_module */
