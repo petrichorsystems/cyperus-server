@@ -385,6 +385,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 
     while(temp_op_out != NULL) {
       if( strcmp(temp_op_out->dsp_id, connection->id_out) == 0 ) {
+        printf("MATCHED BABY!!\n");
 	temp_sample_out = temp_op_out->outs;
 	if( is_bus_port_out == 0 && is_module_out) {
 	  while(temp_sample_out != NULL) {
@@ -396,7 +397,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	  }
 	} else {
 	  sample_out = temp_sample_out;
-          break;
         }
 	break;
       }
@@ -435,7 +435,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
           }
 	} else {
 	  temp_op = dsp_operation_init(connection->id_out);
-	  }
+        }
 	if(dsp_global_operation_head_processing == NULL)
 	  dsp_global_operation_head_processing = temp_op;
 	else {
@@ -446,14 +446,16 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	temp_op = temp_op_out;
       }
 
-      if(temp_op->outs == NULL)
+      if(temp_op->outs == NULL) {
 	temp_op->outs = sample_out;
-      else
+      }
+      else {
 	dsp_operation_sample_insert_tail(temp_op->outs, sample_out);
+      }
 
     }
 
-    matched_op_out = temp_op;
+    matched_op_out = temp_op_out;
     temp_op = NULL;
     temp_op_out = NULL;
     
@@ -542,7 +544,9 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
         dsp_global_operation_head_processing = temp_op;
       else {
         if( is_module_in ) {
+          printf("before ahead\n");
           dsp_operation_insert_ahead(matched_op_out, temp_op);
+          printf("after ahead insert \n");
         } else {
           dsp_operation_insert_tail(dsp_global_operation_head_processing,
                                     temp_op);
