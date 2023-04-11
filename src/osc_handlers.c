@@ -201,8 +201,6 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   else {
     head_bus = dsp_find_bus(bus_id);
   }
-
-  printf("HEAD_BUS: %s\n", head_bus->id);
   
   if(head_bus == NULL) {
     /* no buses, return new-line char-as-str */
