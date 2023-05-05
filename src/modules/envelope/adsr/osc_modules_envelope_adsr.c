@@ -28,7 +28,7 @@ int osc_add_modules_envelope_adsr_handler(const char *path, const char *types, l
 						   int argc, void *data, void *user_data)
 {
   printf("osc_add_modules_envelope_adsr_handler()..\n");
-  char *request_id, *bus_path, *module_id = NULL;
+  char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -38,7 +38,7 @@ int osc_add_modules_envelope_adsr_handler(const char *path, const char *types, l
   
   printf("path: <%s>\n", path);
   request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
+  bus_id = (char *)argv[1];
 
   gate = argv[2]->i;
   attack_rate = argv[3]->f;
@@ -50,7 +50,7 @@ int osc_add_modules_envelope_adsr_handler(const char *path, const char *types, l
   mul = argv[9]->f;
   add = argv[10]->f;
   
-  target_bus = dsp_parse_bus_path(bus_path);
+  target_bus = dsp_find_bus(bus_id);
   
   dsp_create_envelope_adsr(target_bus,
                            gate,
@@ -103,9 +103,7 @@ int
 osc_edit_modules_envelope_adsr_handler(const char *path, const char *types, lo_arg ** argv,
                                                int argc, void *data, void *user_data)
 {  
-  char *request_id, *module_path, *module_id;
-  char *bus_path;
-  struct dsp_bus *target_bus;
+  char *request_id, *module_id;
   struct dsp_module *target_module;
 
   int gate;
@@ -116,7 +114,7 @@ osc_edit_modules_envelope_adsr_handler(const char *path, const char *types, lo_a
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
+  module_id = (char *)argv[1];
 
   gate = argv[2]->i;
   attack_rate = argv[3]->f;
@@ -128,13 +126,7 @@ osc_edit_modules_envelope_adsr_handler(const char *path, const char *types, lo_a
   mul = argv[9]->f;
   add = argv[10]->f;
   
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  strncpy(bus_path, module_path, strlen(module_path) - 37);
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  target_bus = dsp_parse_bus_path(bus_path);
-  
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  target_module = dsp_find_module(module_id);
   dsp_edit_envelope_adsr(target_module,
                          gate,
                          attack_rate,

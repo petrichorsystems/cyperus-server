@@ -44,7 +44,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   struct dsp_port_in *temp_port_in;
 
   request_id = (char *)argv[0];
-  char *mains_str = malloc(sizeof(char) * ((44 * (jackcli_channels_in +
+  char *mains_str = malloc(sizeof(char) * ((37 * (jackcli_channels_in +
 						  jackcli_channels_out)) +
 					   4 + /* strlen("in:\n") */
 					   5 + /* strlen("out:\n") */
@@ -53,7 +53,6 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   /* process main inputs */
   temp_port_out = dsp_main_ins;
   while(temp_port_out != NULL) {
-    strcat(mains_str, "/mains{");
     strcat(mains_str, temp_port_out->id);
     strcat(mains_str, "\n");
     temp_port_out = temp_port_out->next;
@@ -62,7 +61,6 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   /* process main outputs */
   temp_port_in = dsp_main_outs;
   while(temp_port_in != NULL) {
-    strcat(mains_str, "/mains}");
     strcat(mains_str, temp_port_in->id);
     strcat(mains_str, "\n");
     temp_port_in = temp_port_in->next;
@@ -164,7 +162,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
   char *request_id = NULL;
-  char *path_str, *result_str = NULL;
+  char *bus_id, *result_str = NULL;
   int list_type = 0;
   size_t result_str_size = 0;
 
@@ -182,11 +180,11 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   int current_index, last_break, last_cutoff, copy_index = 0;
 
   request_id = (char *)argv[0];
-  path_str = (char *)argv[1];
+  bus_id = (char *)argv[1];
   list_type = argv[2]->i;
 
   printf("path: <%s>\n", path);
-  printf("path_str: %s\n", path_str);
+  printf("bus_id: %s\n", bus_id);
   printf("list_type: %d\n", list_type);
   
   /* list types
@@ -195,15 +193,14 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
      2 - direct descendant
      3 - all descendants */
 
-  if( !strcmp(path_str, "/") ||
-      !strcmp(path_str, "") ) {
+  if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") ||
+      !strcmp(bus_id, "") ) {
     head_bus = dsp_global_bus_head;
     root_level = 1;
   }
-  else
-    head_bus = dsp_parse_bus_path(path_str);
-
-  printf("HEAD_BUS: %s\n", head_bus->id);
+  else {
+    head_bus = dsp_find_bus(bus_id);
+  }
   
   if(head_bus == NULL) {
     /* no buses, return new-line char-as-str */
@@ -246,7 +243,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	last_cutoff = last_break;
 	if(last_cutoff == strlen(result_str - 1))
 	   more = 0;
-	lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, path_str, list_type, more, part_result_str);
+	lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, bus_id, list_type, more, part_result_str);
 	free(part_result_str);
       }
     }
@@ -257,7 +254,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
     }
     result_str[current_index - last_cutoff] = '\0';
   }
-  lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, path_str, list_type, 0, result_str);
+  lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, bus_id, list_type, 0, result_str);
   free(lo_addr_send);
   if(strcmp(result_str, "\n"))
     free(result_str);
@@ -279,7 +276,7 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
   printf("path: <%s>\n", path);
   printf("path_str: %s\n", path_str);
 
-  temp_bus = dsp_parse_bus_path(path_str);
+  temp_bus = dsp_find_bus(path_str);
 
   result_str_size = 4;
   result_str = malloc(sizeof(char) * (result_str_size + 1));
@@ -323,14 +320,14 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 {
   int i;
   struct dsp_bus *temp_bus;
-  char *request_id, *path_str, *bus_str, *ins_str, *outs_str, *new_id = NULL;
+  char *request_id, *target_bus_id, *bus_str, *ins_str, *outs_str, *new_id = NULL;
 
   struct dsp_bus *new_bus;
   
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
-  path_str = (char *)argv[1];
+  target_bus_id = (char *)argv[1];
   bus_str = (char *)argv[2];
   ins_str = (char *)argv[3];
   outs_str = (char *)argv[4];
@@ -343,7 +340,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
       outs_str[i] = ',';
 
   new_bus = dsp_bus_init(bus_str);
-  dsp_add_bus(path_str, new_bus, ins_str, outs_str);
+  dsp_add_bus(target_bus_id, new_bus, ins_str, outs_str);
   
   new_id = malloc(sizeof(char) * strlen(new_bus->id));
   strcpy(new_id, new_bus->id);
@@ -355,7 +352,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
     if(outs_str[i] == ',')
       outs_str[i] = '|';
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/bus", "sisssssi", request_id, 0, path_str, bus_str, ins_str, outs_str, new_id,
+  lo_send(lo_addr_send,"/cyperus/add/bus", "sisssssi", request_id, 0, target_bus_id, bus_str, ins_str, outs_str, new_id,
 	  strcmp(new_bus->name, bus_str));
   free(lo_addr_send);
   free(new_id);
@@ -439,10 +436,9 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 
   request_id = (char *)argv[0];
   path_str = (char *)argv[1];
-  
-  target_bus = dsp_parse_bus_path(path_str);
-  target_module = target_bus->dsp_module_head;
 
+  target_module = dsp_find_module(path_str);
+  
   if(target_module) {
     result_str = malloc(sizeof(char) * 38);
     strcpy(result_str, target_module->id);
@@ -501,12 +497,10 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 
   printf("module_id: %s\n", module_id);
 
-  temp_bus = dsp_parse_bus_path(bus_path);
-
   printf("about to find module\n");
   
+  temp_module = dsp_find_module(module_id);
   
-  temp_module = dsp_find_module(temp_bus->dsp_module_head, module_id);
   printf("appending result_str (or somethin)\n");
   
   result_str_size = 4;
@@ -584,9 +578,8 @@ osc_enable_module_listener_handler(const char *path, const char *types, lo_arg *
   strncpy(module_id, module_path + strlen(module_path) - 36, 37);
   module_id[strlen(module_path) - 36] = 0;
   
-  target_bus = dsp_parse_bus_path(bus_path);
+  target_module = dsp_find_module(module_id);
   
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
   dsp_edit_oscillator_sine(target_module, frequency, amplitude, phase);
   
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
@@ -597,174 +590,78 @@ osc_enable_module_listener_handler(const char *path, const char *types, lo_arg *
 } /* osc_add_module_listener_handler */
 
 
-int osc_add_modules_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data)
-{
-  printf("osc_add_modules_osc_parameter_assignment()..\n");
+/* int osc_add_modules_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data) */
+/* { */
+/*   printf("osc_add_modules_osc_parameter_assignment()..\n"); */
 
-  int idx, num_params, temp_port_path_len;
-  char *request_id, *osc_path, *type_str, *temp_port_path = NULL, **port_paths;
-  osc_handler_user_defined_t* new_handler;
+/*   int idx, num_params, temp_port_path_len; */
+/*   char *request_id, *osc_path, *type_str, *temp_port_path = NULL, **port_paths; */
+/*   osc_handler_user_defined_t* new_handler; */
   
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *temp_module, *target_module = NULL;
+/*   struct dsp_bus *target_bus = NULL; */
+/*   struct dsp_module *temp_module, *target_module = NULL; */
   
-  printf("path: <%s>\n", path);
+/*   printf("path: <%s>\n", path); */
 
-  request_id = (char *)argv[0];
-  osc_path = (char *)argv[1];
-  type_str = (char *)argv[2];
+/*   request_id = (char *)argv[0]; */
+/*   osc_path = (char *)argv[1]; */
+/*   type_str = (char *)argv[2]; */
   
-  num_params = strlen(type_str);
+/*   num_params = strlen(type_str); */
 
-  port_paths = malloc(sizeof(char*)*num_params);
-  for(idx=0; idx<num_params; idx++) {
-    temp_port_path = (char *)argv[3+idx];
-    temp_port_path_len = strlen(temp_port_path);
-    snprintf(port_paths[idx], temp_port_path_len+1, "%s", temp_port_path);
-  }
-  new_handler = osc_handler_user_defined_init(osc_path, type_str, num_params, port_paths);
+/*   port_paths = malloc(sizeof(char*)*num_params); */
+/*   for(idx=0; idx<num_params; idx++) { */
+/*     temp_port_path = (char *)argv[3+idx]; */
+/*     temp_port_path_len = strlen(temp_port_path); */
+/*     snprintf(port_paths[idx], temp_port_path_len+1, "%s", temp_port_path); */
+/*   } */
+/*   new_handler = osc_handler_user_defined_init(osc_path, type_str, num_params, port_paths); */
   
-  pthread_mutex_lock(&global_osc_handlers_user_defined_lock);
-  osc_handler_user_defined_insert_tail(global_osc_handlers_user_defined,
-                                       new_handler);
-  pthread_mutex_unlock(&global_osc_handlers_user_defined_lock);
+/*   pthread_mutex_lock(&global_osc_handlers_user_defined_lock); */
+/*   osc_handler_user_defined_insert_tail(global_osc_handlers_user_defined, */
+/*                                        new_handler); */
+/*   pthread_mutex_unlock(&global_osc_handlers_user_defined_lock); */
   
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","siss", request_id, 0, osc_path, type_str);
-  free(lo_addr_send);
-  return 0;
-} /* osc_add_modules_osc_parameter_assigment_handler */
+/*   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); */
+/*   lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","siss", request_id, 0, osc_path, type_str); */
+/*   free(lo_addr_send); */
+/*   return 0; */
+/* } /\* osc_add_modules_osc_parameter_assigment_handler *\/ */
 
-int
-osc_edit_modules_osc_parameter_assigment_handler(const char *path, const char *types, lo_arg ** argv,
-						int argc, void *data, void *user_data)
-{
-  char *request_id, *module_path, *module_id;
-  char *bus_path;
-  struct dsp_bus *target_bus;
-  struct dsp_module *target_module;
-  float beats_per_minute;
-  int count;
+/* int */
+/* osc_edit_modules_osc_parameter_assigment_handler(const char *path, const char *types, lo_arg ** argv, */
+/* 						int argc, void *data, void *user_data) */
+/* { */
+/*   char *request_id, *module_path, *module_id; */
+/*   char *bus_path; */
+/*   struct dsp_bus *target_bus; */
+/*   struct dsp_module *target_module; */
+/*   float beats_per_minute; */
+/*   int count; */
 
-  request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
-  beats_per_minute=argv[2]->f;
+/*   request_id = (char *)argv[0]; */
+/*   module_path = (char *)argv[1]; */
+/*   beats_per_minute=argv[2]->f; */
 
-  /* printf("osc_edit_modules_osc_parameter_assigment_handler::beats_per_minute: %f\n", beats_per_minute); */
+/*   /\* printf("osc_edit_modules_osc_parameter_assigment_handler::beats_per_minute: %f\n", beats_per_minute); *\/ */
   
-  /* bus_path = malloc(sizeof(char) * (strlen(module_path) - 36)); */
-  /* strncpy(bus_path, module_path, strlen(module_path) - 37); */
+/*   /\* bus_path = malloc(sizeof(char) * (strlen(module_path) - 36)); *\/ */
+/*   /\* strncpy(bus_path, module_path, strlen(module_path) - 37); *\/ */
 
-  /* module_id = malloc(sizeof(char) * 37);   */
-  /* strncpy(module_id, module_path + strlen(module_path) - 36, 37);  */
+/*   /\* module_id = malloc(sizeof(char) * 37);   *\/ */
+/*   /\* strncpy(module_id, module_path + strlen(module_path) - 36, 37);  *\/ */
 
-  /* target_bus = dsp_parse_bus_path(bus_path);   */
-  /* target_module = dsp_find_module(target_bus->dsp_module_head, module_id); */
+/*   /\* target_bus = dsp_parse_bus_path(bus_path);   *\/ */
+/*   /\* target_module = dsp_find_module(target_bus->dsp_module_head, module_id); *\/ */
 
-  /* dsp_edit_osc_metronome(target_module, beats_per_minute); */
+/*   /\* dsp_edit_osc_metronome(target_module, beats_per_minute); *\/ */
 
-  /* lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); */
-  /* lo_send(lo_addr_send,"/cyperus/edit/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute); */
-  /* free(lo_addr_send); */
+/*   /\* lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); *\/ */
+/*   /\* lo_send(lo_addr_send,"/cyperus/edit/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute); *\/ */
+/*   /\* free(lo_addr_send); *\/ */
   
-  return 0;
-} /* osc_edit_modules_osc_parameter_assigment_handler */
-
-int osc_add_modules_osc_transmit_handler(const char *path, const char *types, lo_arg ** argv,
-                                               int argc, void *data, void *user_data)
-{
-  char *bus_path, *module_id = NULL;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *temp_module, *target_module = NULL;
-
-  char *request_id;
-  char *host;
-  char *port;
-  char *osc_path;
-
-  int samplerate_divisor;
-  
-  printf("path: <%s>\n", path);
-
-  request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
-  host = (char *)argv[2];
-  port = (char *)argv[3];
-  osc_path = (char *)argv[4];
-  samplerate_divisor = argv[5]->i;
-
-  printf("bus_path: %s\n", bus_path);
-  printf("host: %s\n", host);
-  printf("port: %s\n", port);
-  printf("osc_path: %s\n", osc_path);
-  printf("samplerate_divisor: %d\n", samplerate_divisor);
-
-  target_bus = dsp_parse_bus_path(bus_path);
-  dsp_create_osc_transmit(target_bus, host, port, osc_path, samplerate_divisor);
-  temp_module = target_bus->dsp_module_head;
-  while(temp_module != NULL) {
-    target_module = temp_module;
-    temp_module = temp_module->next;
-  }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
-  printf("add_module_osc_transmit_handler, module_id: %s\n", module_id);
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_transmit","sissssi", request_id, 0, module_id, host, port, osc_path, samplerate_divisor);
-  free(lo_addr_send);
-
-  printf("done\n");
-
-  return 0;
-} /* osc_add_modules_osc_transmit_handler */
-
-
-int
-osc_edit_modules_osc_transmit_handler(const char *path, const char *types, lo_arg ** argv,
-		     int argc, void *data, void *user_data)
-{
-  char *module_path, *module_id;
-  char *bus_path;
-  struct dsp_bus *target_bus;
-  struct dsp_module *target_module;
-
-  char *request_id;
-  char *host;
-  char *port;
-  char *osc_path;
-
-  int samplerate_divisor;
-  
-  printf("path: <%s>\n", path);
-
-  request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
-  host = (char *)argv[2];
-  port = (char *)argv[3];
-  osc_path = (char *)argv[4];
-  samplerate_divisor = argv[5]->i;
-
-  /* split up path */
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
-
-  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
-  printf("bus_path: %s\n", bus_path);
-  
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-
-  printf("module_id: %s\n", module_id);
-  
-  target_bus = dsp_parse_bus_path(bus_path);  
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
-
-  dsp_edit_osc_transmit(target_module, host, port, osc_path, samplerate_divisor);
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/osc_transmit","sissssi", request_id, 0, module_id, host, port, osc_path, samplerate_divisor);
-  free(lo_addr_send);
-  return 0;
-} /* osc_edit_modules_osc_transmit_handler */
+/*   return 0; */
+/* } /\* osc_edit_modules_osc_parameter_assigment_handler *\/ */
 
 
 int
@@ -827,11 +724,6 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
     handler_ptr = osc_add_modules_envelope_follower_handler;
   else if(strcmp(path, "/cyperus/edit/module/envelope/follower") == 0)
     handler_ptr = osc_edit_modules_envelope_follower_handler;
-  
-  else if(strcmp(path, "/cyperus/add/module/osc_transmit") == 0)
-    handler_ptr = osc_add_modules_osc_transmit_handler;
-  else if(strcmp(path, "/cyperus/edit/module/osc_transmit") == 0)
-    handler_ptr = osc_edit_modules_osc_transmit_handler;
   
   else if(strcmp(path, "/cyperus/add/module/analysis/transient_detector") == 0)
     handler_ptr = osc_add_modules_analysis_transient_detector_handler;
@@ -921,15 +813,15 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
     return 1;
   }
 
-  if(global_osc_handlers_user_defined != NULL) {
-    osc_handler_user_defined_t *temp_handler;
-    temp_handler = global_osc_handlers_user_defined;
-    while(temp_handler != NULL) {
-      if(strcmp(path, temp_handler->osc_path) == 0)
-        osc_execute_handler_parameter_assignment(temp_handler, argv);
-      temp_handler = temp_handler->next;
-    }
-  }
+  /* if(global_osc_handlers_user_defined != NULL) { */
+  /*   osc_handler_user_defined_t *temp_handler; */
+  /*   temp_handler = global_osc_handlers_user_defined; */
+  /*   while(temp_handler != NULL) { */
+  /*     if(strcmp(path, temp_handler->osc_path) == 0) */
+  /*       osc_execute_handler_parameter_assignment(temp_handler, argv); */
+  /*     temp_handler = temp_handler->next; */
+  /*   } */
+  /* } */
   
   return 0;
 }

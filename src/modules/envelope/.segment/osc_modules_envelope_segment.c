@@ -175,7 +175,7 @@ int osc_add_modules_envelope_segment_handler(const char *path, const char *types
 						   int argc, void *data, void *user_data)
 {
   printf("osc_add_modules_envelope_segment_handler()..\n");
-  char *request_id, *bus_path, *module_id = NULL;
+  char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -185,7 +185,7 @@ int osc_add_modules_envelope_segment_handler(const char *path, const char *types
 
   printf("path: <%s>\n", path);
   request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
+  bus_id = (char *)argv[1];
   
   _parse_envelope_segments(argv,
                            levels,
@@ -201,7 +201,7 @@ int osc_add_modules_envelope_segment_handler(const char *path, const char *types
                            &time_scale,
                            &num_stages);
   
-  target_bus = dsp_parse_bus_path(bus_path);  
+  target_bus = dsp_find_bus(bus_id);  
   dsp_create_modules_envelope_segment(target_bus,
                                        levels,
                                        times,
@@ -251,9 +251,7 @@ int
 osc_edit_modules_envelope_segment_handler(const char *path, const char *types, lo_arg ** argv,
                                                int argc, void *data, void *user_data)
 {  
-  char *request_id, *module_path, *module_id;
-  char *bus_path;
-  struct dsp_bus *target_bus;
+  char *request_id, *module_id;
   struct dsp_module *target_module;
 
   int release_node, loop_node, offset;
@@ -262,7 +260,7 @@ osc_edit_modules_envelope_segment_handler(const char *path, const char *types, l
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
+  module_id = (char *)argv[1];
   
   _parse_edit_envelope_segments(argv,
                                 &release_node,
@@ -273,15 +271,7 @@ osc_edit_modules_envelope_segment_handler(const char *path, const char *types, l
                                 &level_bias,
                                 &time_scale);
   
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  snprintf(bus_path, strlen(module_path)-37+1, "%s", module_path);
-
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  
-  target_bus = dsp_parse_bus_path(bus_path);
-  
-  target_module = dsp_find_module(target_bus->dsp_module_head, module_id);
+  target_module = dsp_find_module(module_id);
   dsp_edit_modules_envelope_segment(target_module,
                                      release_node,
                                      loop_node,
@@ -319,7 +309,7 @@ int osc_add_modules_envelope_stdshape_handler(const char *path, const char *type
                                                       int argc, void *data, void *user_data)
 {
   printf("osc_add_modules_envelope_stdshape_handler()..\n");
-  char *request_id, *bus_path, *module_id = NULL;
+  char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
 
@@ -329,7 +319,7 @@ int osc_add_modules_envelope_stdshape_handler(const char *path, const char *type
 
   printf("path: <%s>\n", path);
   request_id = (char *)argv[0];
-  bus_path = (char *)argv[1];
+  bus_id = (char *)argv[1];
   
   _parse_envelope_stdshapes(argv,
                             &levels,
@@ -351,8 +341,8 @@ int osc_add_modules_envelope_stdshape_handler(const char *path, const char *type
      printf(" -- level: %f\n", levels[1]); 
      printf(" -- perc_curve: %f\n", curve[0]); 
   
-  printf("bus_path: %s\n", bus_path); 
-  target_bus = dsp_parse_bus_path(bus_path);
+  printf("bus_id: %s\n", bus_id); 
+  target_bus = dsp_find_bus(bus_id);
   
   dsp_create_modules_envelope_segment(target_bus,
                                      levels,
