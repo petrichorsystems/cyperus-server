@@ -67,6 +67,9 @@ void
 dsp_build_mains(int channels_in, int channels_out);
 
 void
+dsp_build_optimized_main_outs();
+
+void
 *dsp_build_optimized_graph(void *arg);
 
 void

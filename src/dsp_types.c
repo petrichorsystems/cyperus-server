@@ -857,8 +857,9 @@ dsp_find_main_in_port_out(char *id) {
   struct dsp_port_out *temp_port_out = NULL;
   temp_port_out = dsp_main_ins;
   while(temp_port_out != NULL) {
-    if(strcmp(temp_port_out->id, id) == 0)
+    if(strcmp(temp_port_out->id, id) == 0) {
       return temp_port_out;
+    }
     temp_port_out = temp_port_out->next;
   }
   return NULL;
@@ -872,8 +873,9 @@ dsp_find_main_out_port_in(char *id) {
   struct dsp_port_in *temp_port_in = NULL;
   temp_port_in = dsp_main_outs;
   while(temp_port_in != NULL) {
-    if(strcmp(temp_port_in->id, id) == 0)
+    if(strcmp(temp_port_in->id, id) == 0) {
       return temp_port_in;
+    }
     temp_port_in = temp_port_in->next;
   }
   return NULL;

@@ -27,10 +27,17 @@ dsp_sum_summands(struct dsp_operation_sample *summands) {
 
   /* TODO: Properly sum inputs? (be careful, what if not audio) */
 
+  int i=0;
+
+  if( temp_summand == NULL )
+    return 0.0f;
+  
   while(temp_summand != NULL) {
     outsample += temp_summand->sample->value;
     temp_summand = temp_summand->next;
+    i+=1;
   }
+  /* printf("dsp_ops.c::dsp_sum_summands(), summand count: %d\n", i); */
 
   return outsample;
 } /* dsp_sum_input */

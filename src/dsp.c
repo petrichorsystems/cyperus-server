@@ -298,6 +298,7 @@ dsp_remove_connection(char *id_out, char *id_in) {
 void
 dsp_optimize_connections_input(struct dsp_connection *connection) {
   printf("dsp.c::dsp_optimize_connections_input()\n");
+
   /* is the below ever actually the case? */
 
   /* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
@@ -548,9 +549,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
       } else {
         temp_op = dsp_operation_init(connection->id_in);
       }
-
-      printf("about to do global stuff\n");
-      printf("matched_op_out: %s\n", matched_op_out);
       
       if(dsp_global_operation_head_processing == NULL)
         dsp_global_operation_head_processing = temp_op;
@@ -678,20 +676,34 @@ dsp_build_mains(int channels_in, int channels_out) {
       temp_port_in->next = dsp_port_in_init("main_out", fifo_size, NULL);
       temp_port_in = temp_port_in->next;
     }
+  }
+  dsp_build_optimized_main_outs();
+} /* dsp_build_mains */
+
+void
+dsp_build_optimized_main_outs() {
+  struct dsp_port_in *temp_port_in = NULL;
+
+  struct dsp_operation *temp_op = NULL;
+  struct dsp_operation_sample *temp_sample = NULL;
+
+  int i;
+  
+  dsp_optimized_main_outs = NULL;
+  temp_port_in = dsp_main_outs;
+  while(temp_port_in != NULL) {
     temp_op = dsp_operation_init(temp_port_in->id);
     temp_sample = dsp_operation_sample_init("<main port out>", (float)0.0, 1);
 
-    if( temp_op->ins == NULL )
-      temp_op->ins = temp_sample;
-    else
-      dsp_operation_sample_insert_tail(temp_op->ins, temp_sample);
-
+    temp_op->ins = temp_sample;
     if( dsp_optimized_main_outs == NULL )
       dsp_optimized_main_outs = temp_op;
     else 
       dsp_operation_insert_tail(dsp_optimized_main_outs, temp_op);
+    
+    temp_port_in = temp_port_in->next;
   }
-} /* dsp_build_mains */
+} /* dsp_build_optimized_main_outs */
 
 void
 *dsp_build_optimized_graph(void *arg) {
@@ -706,6 +718,8 @@ void
 
   dsp_global_operation_head_processing = NULL;
 
+  dsp_build_optimized_main_outs();
+  
   dsp_optimize_connections_main_inputs(dsp_main_ins);
   
   temp_bus = dsp_global_bus_head;
@@ -769,8 +783,14 @@ dsp_thread(void *arg) {
       temp_main_out = dsp_optimized_main_outs;
       i=0;
       while(temp_main_out != NULL) {
-	if(!rtqueue_isfull(jackcli_fifo_outs[i]))
+	if(!rtqueue_isfull(jackcli_fifo_outs[i])) {
+          /* printf("\n"); */
+          /* printf("\n"); */
+          /* printf("dsp.c::dsp_thread(), jackcli_fifo_outs[i], i: %d\n", i); */
+          /* printf("dsp.c::dsp_thread(), rtqueue_enq(dsp_sum_summands)\n"); */
 	  rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_summands(temp_main_out->ins->summands));
+          /* printf("\n"); */
+        }
 	temp_main_out = temp_main_out->next;
 	i += 1;
       }
