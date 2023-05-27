@@ -180,3 +180,21 @@ osc_listener_thread(void *arg) {
 
 
 } /* osc_listener_thread */
+
+
+void *
+osc_dsp_load_thread(void *arg) {
+  int max_frames = jackcli_samplerate / 60;
+  int frame_count = 0;
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  while(1) {
+    for(int pos=0; pos<jackcli_samplerate; pos++) {
+      if(frame_count == max_frames) {
+        lo_send(lo_addr_send,"/cyperus/dsp/load", "f", global_dsp_load);
+        frame_count = 0;
+      }
+      threadsync_wait();
+      frame_count++;
+    }
+  }
+} /* osc_dsp_loadr_thread */

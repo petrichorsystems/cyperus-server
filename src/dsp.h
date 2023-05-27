@@ -26,6 +26,9 @@ Copyright 2015 murray foster */
 #include "dsp_graph_id.h"
 #include "threadsync.h"
 
+#include <time.h>
+
+extern float global_dsp_load;
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_port, char *bus_ports, int out);

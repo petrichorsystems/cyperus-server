@@ -18,6 +18,7 @@ Copyright 2015 murray foster */
 
 #include "dsp.h"
 
+float global_dsp_load = 0.0f;;
 int dsp_global_new_operation_graph = 0;
 
 struct dsp_bus_port*
@@ -765,6 +766,10 @@ dsp_thread(void *arg) {
   struct dsp_operation *temp_main_in = NULL;
   struct dsp_operation *temp_main_out = NULL;
 
+  struct timespec mt1, mt2;
+  long int tt;
+  long process_time = (1.0f / jackcli_samplerate) * 1000000000;
+  
   dsp_global_operation_head = NULL;
   
   while(1) {
@@ -778,7 +783,18 @@ dsp_thread(void *arg) {
 	i += 1;
       }
 
+      /* start hw timer */
+      clock_gettime (CLOCK_REALTIME, &mt1);
       dsp_process(dsp_global_operation_head, jackcli_samplerate, pos);
+      clock_gettime (CLOCK_REALTIME, &mt2);
+      /* end hw timer */
+
+      
+      tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
+      
+      //Print the delta
+      /* we need to store this in a global variable */
+      global_dsp_load = (double)tt/(double)process_time; 
       
       temp_main_out = dsp_optimized_main_outs;
       i=0;
@@ -786,7 +802,7 @@ dsp_thread(void *arg) {
 	if(!rtqueue_isfull(jackcli_fifo_outs[i])) {
           /* printf("\n"); */
           /* printf("\n"); */
-          /* printf("dsp.c::dsp_thread(), jackcli_fifo_outs[i], i: %d\n", i); */
+          /* printf("dsp.c::dsp_threadb(), jackcli_fifo_outs[i], i: %d\n", i); */
           /* printf("dsp.c::dsp_thread(), rtqueue_enq(dsp_sum_summands)\n"); */
 	  rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_summands(temp_main_out->ins->summands));
           /* printf("\n"); */
@@ -812,6 +828,7 @@ dsp_thread(void *arg) {
 	/* } */
         /* printf("done listing\n");         */
       }
+      threadsync_sync();
     }
   }
   

@@ -730,8 +730,8 @@ _dsp_search_module(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_module*
 dsp_find_module(char *id) {
-  printf("dsp.c::dsp_find_module()\n");
-  printf("id: %s\n", id);
+  /* printf("dsp.c::dsp_find_module()\n"); */
+  /* printf("id: %s\n", id); */
   return _dsp_search_module(dsp_global_bus_head, id);
 } /* dsp_find_module */
 

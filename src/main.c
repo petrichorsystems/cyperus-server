@@ -182,6 +182,10 @@ int main(int argc, char *argv[])
   /* pthread_t osc_listener_thread_id; */
   /* pthread_create(&osc_listener_thread_id, NULL, osc_listener_thread, NULL); */
   /* pthread_detach(osc_listener_thread_id); */
+
+  pthread_t osc_dsp_load_thread_id;
+  pthread_create(&osc_dsp_load_thread_id, NULL, osc_dsp_load_thread, NULL);
+  pthread_detach(osc_dsp_load_thread_id);
   
   printf("press <ENTER> to quit\n\n");
   
