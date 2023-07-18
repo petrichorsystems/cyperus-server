@@ -25,7 +25,9 @@ Copyright 2015 murray foster */
 #include <stdlib.h> //exit(0);
 
 #include <jack/jack.h>
+#include "dsp.h"
 #include "rtqueue.h"
+#include "jacksync.h"
 
 /* ==== BEGIN to-be-defined cyperus params ==== */
 extern int jackcli_channels_in;
@@ -34,6 +36,8 @@ extern int jackcli_fifo_size;
 /* ====  END  to-be-defined cyperus params ==== */
 
 extern int jackcli_samplerate;
+extern unsigned int jackcli_samplerate_pos;
+extern int jackcli_buffer_size;
 extern rtqueue_t **jackcli_fifo_ins;
 extern rtqueue_t **jackcli_fifo_outs;
 

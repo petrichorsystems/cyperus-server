@@ -18,8 +18,8 @@ Copyright 2015 murray foster */
 
 #include "dsp.h"
 
-float global_dsp_load = 0.0f;;
 int dsp_global_new_operation_graph = 0;
+float global_dsp_load = 0.0f;
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
@@ -736,7 +736,7 @@ void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
-
+  
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
       if( temp_op->ins == NULL ) {
@@ -755,86 +755,7 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   return;
 } /* dsp_process */
 
-void*
-dsp_thread(void *arg) {
-  int pos, i;
-
-  struct dsp_bus *temp_bus;
-
-  struct dsp_operation *temp_op;
-  
-  struct dsp_operation *temp_main_in = NULL;
-  struct dsp_operation *temp_main_out = NULL;
-
-  struct timespec mt1, mt2;
-  long int tt;
-  long process_time = (1.0f / jackcli_samplerate) * 1000000000;
-  
-  dsp_global_operation_head = NULL;
-  
-  while(1) {
-    for(pos=0; pos<jackcli_samplerate; pos++) {
-      /* process main inputs */
-      temp_main_in = dsp_optimized_main_ins;
-      i=0;
-      while(temp_main_in != NULL) {
-	temp_main_in->outs->sample->value = rtqueue_deq(jackcli_fifo_ins[i]);
-	temp_main_in = temp_main_in->next;
-	i += 1;
-      }
-
-      /* start hw timer */
-      clock_gettime (CLOCK_REALTIME, &mt1);
-      dsp_process(dsp_global_operation_head, jackcli_samplerate, pos);
-      clock_gettime (CLOCK_REALTIME, &mt2);
-      /* end hw timer */
-
-      
-      tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-      
-      //Print the delta
-      /* we need to store this in a global variable */
-      global_dsp_load = (double)tt/(double)process_time; 
-      
-      temp_main_out = dsp_optimized_main_outs;
-      i=0;
-      while(temp_main_out != NULL) {
-	if(!rtqueue_isfull(jackcli_fifo_outs[i])) {
-          /* printf("\n"); */
-          /* printf("\n"); */
-          /* printf("dsp.c::dsp_threadb(), jackcli_fifo_outs[i], i: %d\n", i); */
-          /* printf("dsp.c::dsp_thread(), rtqueue_enq(dsp_sum_summands)\n"); */
-	  rtqueue_enq(jackcli_fifo_outs[i], dsp_sum_summands(temp_main_out->ins->summands));
-          /* printf("\n"); */
-        }
-	temp_main_out = temp_main_out->next;
-	i += 1;
-      }
-      
-      if( dsp_global_new_operation_graph ) {
-        printf("assigning new graph\n");
-        dsp_global_operation_head = dsp_global_operation_head_processing;
-        dsp_global_new_operation_graph = 0;
-        dsp_global_operation_head_processing = NULL;
-        printf("assigned new graph\n");
-        printf("operations in new graph: \n");
-
-        /* -- debug cruft */
-	/* if(dsp_global_operation_head != NULL) { */
-	/*   temp_op = dsp_global_operation_head; */
-	/*   while(temp_op != NULL) { */
-	/*     temp_op = temp_op->next; */
-	/*   } */
-	/* } */
-        /* printf("done listing\n");         */
-      }
-      threadsync_sync();
-    }
-  }
-  
-  /* deallocate main inputs/outputs */
-  /* NEED TO DO THIS BETTER (ie. iterate over outputs/inputs structs)*/
-  free(dsp_optimized_main_ins);
-  free(dsp_optimized_main_outs);
-
-} /* dsp_thread */
+void dsp_setup(int channels_in, int channels_out) {
+  dsp_global_operation_head = NULL;  
+  dsp_build_mains(channels_in, channels_out);
+} /* dsp_setup */

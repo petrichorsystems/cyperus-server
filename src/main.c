@@ -157,24 +157,26 @@ int main(int argc, char *argv[])
     bitdepth=24;
   }
 
+  /* dsp setup, begin */
+  dsp_setup(input, output);
+  dsp_graph_id_init();
+  threadsync_init();
+  jacksync_dsp_thread_init();
+
   jackcli_setup("cyperus", bitdepth, input, output, fifo_size);
 
   printf("channels in: %d\n", input);
   printf("channels out: %d\n", output);
+  printf("buffer size: %d\n", jackcli_buffer_size);
   printf("bitdepth: %dbits\n", bitdepth);
   printf("fifo size: %d\n", fifo_size);
   printf("osc receive port: %s\n", osc_port_in);
   printf("osc send port: %s\n", osc_port_out);
   printf("filepath: %s\n\n\n", file_path);
-
-  /* dsp setup, begin */
-  dsp_build_mains(input, output);
-  dsp_graph_id_init();
-  threadsync_init();
   
-  pthread_t dsp_thread_id;
-  pthread_create(&dsp_thread_id, NULL, dsp_thread, NULL);
-  pthread_detach(dsp_thread_id);
+  /* pthread_t dsp_thread_id; */
+  /* pthread_create(&dsp_thread_id, NULL, dsp_thread, NULL); */
+  /* pthread_detach(dsp_thread_id); */
   /* dsp setup, end */
   
   osc_setup(osc_port_in, osc_port_out, "127.0.0.1");
