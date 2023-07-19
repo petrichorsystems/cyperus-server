@@ -25,7 +25,6 @@ Copyright 2015 murray foster */
 
 #include "dsp_graph_id.h"
 #include "threadsync.h"
-#include "jacksync.h"
 
 #include <time.h>
 #include <unistd.h>
@@ -80,9 +79,6 @@ void
 
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos);
-
-void
-*dsp_thread(void *arg);
 
 void
 dsp_setup(int channels_in, int channels_out);

@@ -27,7 +27,6 @@ Copyright 2015 murray foster */
 #include <jack/jack.h>
 #include "dsp.h"
 #include "rtqueue.h"
-#include "jacksync.h"
 
 /* ==== BEGIN to-be-defined cyperus params ==== */
 extern int jackcli_channels_in;
