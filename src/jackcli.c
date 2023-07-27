@@ -64,9 +64,6 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
       jackcli_outs[i] = jack_port_get_buffer(jackcli_ports_output[i], nframes);
       memset(jackcli_outs[i], 0, nframes * jackcli_sample_size);
     }
-
-  /* jackcli_ins[n][i] */
-  /* jackcli_outs[n][i] */
   
   for ( i = 0; i < nframes; i++)
     {
@@ -78,17 +75,14 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
       }
       
       clock_gettime (CLOCK_REALTIME, &mt1);
+
       dsp_process(dsp_global_operation_head,
                   jackcli_samplerate,
                   jackcli_samplerate_pos);
+      
       clock_gettime (CLOCK_REALTIME, &mt2);
-
       tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-
-      //Print the delta
-      /* we need to store this in a global variable */
       global_dsp_load = (double)tt/(double)process_time; 
-
 
       temp_main_out = dsp_optimized_main_outs;
       for (n = 0; n < jackcli_channels_out; n++) {
@@ -102,12 +96,15 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
         jackcli_samplerate_pos++;
 
       if( dsp_global_new_operation_graph ) {
-        printf("assigning new graph\n");
+
+        /* printf("assigning new graph\n"); */
+
         dsp_global_operation_head = dsp_global_operation_head_processing;
         dsp_global_new_operation_graph = 0;
         dsp_global_operation_head_processing = NULL;
-        printf("assigned new graph\n");
-        printf("operations in new graph: \n");
+
+        /* printf("assigned new graph\n"); */
+        /* printf("operations in new graph: \n"); */
         
         /* -- debug cruft */
         /* if(dsp_global_operation_head != NULL) { */
@@ -120,7 +117,6 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
       }
       threadsync_sync();
     }
-
   return 0 ;
 } /* jackcli_process_callback */
 
