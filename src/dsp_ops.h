@@ -31,7 +31,6 @@ Copyright 2018 murray foster */
 #include "dsp.h"
 #include "jackcli.h"
 
-float dsp_sum_input(struct dsp_port_in *in);
 float dsp_sum_summands(struct dsp_operation_sample *summands);
 void dsp_optimize_connections_module(struct dsp_port_out *outs);
 void dsp_optimize_connections_main_inputs(struct dsp_port_out *outs);

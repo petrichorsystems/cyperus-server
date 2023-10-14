@@ -42,19 +42,6 @@ dsp_sum_summands(struct dsp_operation_sample *summands) {
   return outsample;
 } /* dsp_sum_input */
 
-
-float
-dsp_sum_input(struct dsp_port_in *in) {
-
-  /* TODO: Properly sum inputs? (be careful, what if not audio) */
-
-  float outsample = 0.0;
-  while(rtqueue_isempty(in->values) == 0) {
-    outsample += rtqueue_deq(in->values);
-  }
-  return outsample;
-} /* dsp_sum_input */
-
 void
 dsp_optimize_connections_module(struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
