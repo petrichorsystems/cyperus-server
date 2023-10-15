@@ -28,7 +28,6 @@ void print_usage() {
 	 " -rp,  --receive-port  osc interface receiving port. default: 97211\n"
 	 " -sp,  --send-port     osc interface sending port. default: 97217\n"
          " -p,   --period        frames per period. default: 128\n"
-	 " -f,   --file          path of session file to load preexisting sounds.\n"
 	 " -fi,  --fifo-size     fifo buffer size for each channel. default: 2048\n\n"
 	 "documentation available soon\n\n");
 } /* print_usage */
@@ -66,7 +65,6 @@ int main(int argc, char *argv[])
   char *osc_port_in = NULL;
   char *osc_port_out = NULL;
   int period = 128;
-  char *file_path = NULL;
 
   char *store_flag=NULL;
   char *store_input=NULL;
@@ -117,12 +115,6 @@ int main(int argc, char *argv[])
 	      !strcmp(store_flag,"--output")) {
 	    store_input = argv[c+1];
 	    output=atoi(store_input);
-	  }
-	  
-	  if( !strcmp(store_flag,"-f") ||
-	      !strcmp(store_flag,"--file")) {
-	    store_input = argv[c+1];
-	    file_path=store_input;
 	  }
 
 	  if( !strcmp(store_flag,"-p") ||
@@ -178,8 +170,7 @@ int main(int argc, char *argv[])
   printf("bitdepth: %dbits\n", bitdepth);
   printf("fifo size: %d\n", fifo_size);
   printf("osc receive port: %s\n", osc_port_in);
-  printf("osc send port: %s\n", osc_port_out);
-  printf("filepath: %s\n\n\n", file_path);
+  printf("osc send port: %s\n\n\n", osc_port_out);
   
   osc_setup(osc_port_in, osc_port_out, "127.0.0.1");
 
