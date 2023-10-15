@@ -81,6 +81,6 @@ void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos);
 
 void
-dsp_setup(int channels_in, int channels_out);
+dsp_setup(int period, unsigned short channels_in, unsigned short channels_out);
 
 #endif

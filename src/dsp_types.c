@@ -18,6 +18,8 @@ Copyright 2018 murray foster */
 
 #include "dsp_types.h"
 
+int dsp_global_period;
+
 struct dsp_operation *dsp_global_operation_head_processing;
 struct dsp_operation *dsp_global_operation_head;
 

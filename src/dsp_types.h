@@ -23,7 +23,7 @@ Copyright 2018 murray foster */
 
 #include "dsp_math.h"
 
-extern char *dsp_generate_object_id();
+extern int dsp_global_period;
 
 extern struct dsp_operation *dsp_global_operation_head_processing;
 extern struct dsp_operation *dsp_global_operation_head;
@@ -264,6 +264,8 @@ struct dsp_translation_sample {
   struct dsp_operation_sample *sample_in;
   struct dsp_operation_sample *sample_out;
 };
+
+char *dsp_generate_object_id();
 
 struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size, float *parameter_value_ptr);
 void dsp_port_in_insert_head(struct dsp_port_in *head_port, struct dsp_port_in *port_in);

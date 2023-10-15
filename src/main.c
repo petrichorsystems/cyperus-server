@@ -21,14 +21,15 @@ Copyright 2015 murray foster */
 void print_usage() {
   printf("Usage: cyperus [options] [arg]\n\n");
   printf("Options:\n"
-	 " -h,  --help          displays this menu\n"
-	 " -i,  --input         input channels.  default: 8\n"
-	 " -o,  --output        output channels. default: 8\n"
-	 " -b,  --bitdepth      set bitdepth of capture to 8, 16, 24, 32, 64, or 128. default: 24\n"
-	 " -p,  --port          set osc interface receiving port. default: 97211\n"
-	 " -sp, --send-port     set osc interface sending port. default: 97217\n"
-	 " -f,  --file          set path of session file to load preexisting sounds.\n"
-	 " -fi, --fifo-size     set fifo buffer size for each channel. default: 2048\n\n"
+	 " -h,   --help          displays this menu\n"
+	 " -i,   --input         input channels.  default: 8\n"
+	 " -o,   --output        output channels. default: 8\n"
+	 " -bd,  --bitdepth      bitdepth of capture to 8, 16, 24, 32, 64, or 128. default: 24\n"
+	 " -rp,  --receive-port  osc interface receiving port. default: 97211\n"
+	 " -sp,  --send-port     osc interface sending port. default: 97217\n"
+         " -p,   --period        frames per period. default: 128\n"
+	 " -f,   --file          path of session file to load preexisting sounds.\n"
+	 " -fi,  --fifo-size     fifo buffer size for each channel. default: 2048\n\n"
 	 "documentation available soon\n\n");
 } /* print_usage */
 
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
   int fifo_size = 2048;
   char *osc_port_in = NULL;
   char *osc_port_out = NULL;
+  int period = 128;
   char *file_path = NULL;
 
   char *store_flag=NULL;
@@ -87,8 +89,8 @@ int main(int argc, char *argv[])
       store_flag = argv[c];
       if( store_flag != NULL )
 	{
-	  if( !strcmp(store_flag,"-p") ||
-	      !strcmp(store_flag,"--port")) {
+	  if( !strcmp(store_flag,"-rp") ||
+	      !strcmp(store_flag,"--receive-port")) {
 	    store_input=argv[c+1];
 	    osc_port_in=store_input;
 	  }
@@ -99,7 +101,7 @@ int main(int argc, char *argv[])
 	    osc_port_out=store_input;
 	  }
 	  
-	  if( !strcmp(store_flag,"-b") ||
+	  if( !strcmp(store_flag,"-bd") ||
 	      !strcmp(store_flag,"--bitdepth")) {
 	    store_input = argv[c+1];
 	    bitdepth=atoi(store_input);
@@ -122,7 +124,13 @@ int main(int argc, char *argv[])
 	    store_input = argv[c+1];
 	    file_path=store_input;
 	  }
-	  
+
+	  if( !strcmp(store_flag,"-p") ||
+	      !strcmp(store_flag,"--period")) {
+	    store_input = argv[c+1];
+	    period=atoi(store_input);
+	  }
+          
 	  if( !strcmp(store_flag,"-fi") ||
 	      !strcmp(store_flag,"--fifo-size")) {
 	    store_input = argv[c+1];
@@ -158,7 +166,7 @@ int main(int argc, char *argv[])
   }
 
   /* dsp setup, begin */
-  dsp_setup(input, output);
+  dsp_setup(period, input, output);
   dsp_graph_id_init();
   threadsync_init();
 

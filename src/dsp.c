@@ -755,7 +755,8 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   return;
 } /* dsp_process */
 
-void dsp_setup(int channels_in, int channels_out) {
+void dsp_setup(int period, unsigned short channels_in, unsigned short channels_out) {
+  dsp_global_period = period;
   dsp_global_operation_head = NULL;  
   dsp_build_mains(channels_in, channels_out);
 } /* dsp_setup */
