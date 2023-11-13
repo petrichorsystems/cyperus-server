@@ -19,7 +19,8 @@ Copyright 2015 murray foster */
 #include "dsp.h"
 
 int dsp_global_new_operation_graph = 0;
-float global_dsp_load = 0.0f;
+unsigned short dsp_global_period = 0;
+float dsp_global_load = 0.0f;
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
@@ -49,7 +50,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 
   if(!multi_port) {
     temp_bus_port = dsp_bus_port_init(target_bus_ports, out);
-    port_in = dsp_port_in_init("in", 512, NULL);
+    port_in = dsp_port_in_init("in", 512);
     port_out = dsp_port_out_init("out", 1);
     temp_bus_port->in = port_in;
     temp_bus_port->out = port_out;
@@ -72,7 +73,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 	if( output_token != NULL ) {
 	  if( strcmp(output_token, "") != 0 ) {
 	    temp_bus_port = dsp_bus_port_init(output_token, out);
-	    port_in = dsp_port_in_init("in", 512, NULL);
+	    port_in = dsp_port_in_init("in", 512);
 	    port_out = dsp_port_out_init("out", 1);
 	    temp_bus_port->in = port_in;
 	    temp_bus_port->out = port_out;
@@ -359,7 +360,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 
   if( matched_op_out ) {
     if( found_sample_out == NULL ) {
-      found_sample_out = dsp_operation_sample_init((char *)connection->id_out, 0.0, 1);
+      found_sample_out = dsp_operation_sample_init((char *)connection->id_out, dsp_global_period, 0.0, 1);
       if(matched_op_out->outs == NULL ) {
 	matched_op_out->outs = found_sample_out;
       } else {
@@ -410,7 +411,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 
     if( sample_out == NULL ) {
       if( is_bus_port_out ) {
-	sample_out = dsp_operation_sample_init("<bus port port in>", 0.0, 1);
+	sample_out = dsp_operation_sample_init("<bus port port in>", dsp_global_period, 0.0, 1);
       }
       else if( is_module_out ) {
 	/* sample_out = dsp_operation_sample_init(temp_result[2], 0.0, 1); */
@@ -519,7 +520,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
   int created_op = 0;
   if( sample_in == NULL ) {
     if( is_bus_port_in ) {
-      sample_in = dsp_operation_sample_init("<bus port port in>", 0.0, 1);
+      sample_in = dsp_operation_sample_init("<bus port port in>", dsp_global_period, 0.0, 1);
     }
     else if( is_module_in ) {
       /* sample_in = dsp_operation_sample_init(temp_result[2], 0.0, 1); */
@@ -575,7 +576,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 
   printf("doing summand stuff\n");
   
-  new_summand = dsp_operation_sample_init((char *)sample_out->dsp_id, 0.0, 0);
+  new_summand = dsp_operation_sample_init((char *)sample_out->dsp_id, dsp_global_period, 0.0, 0);
   new_summand->sample = sample_out->sample;
   if(sample_in->summands == NULL)
     sample_in->summands = new_summand;
@@ -653,9 +654,9 @@ dsp_build_mains(int channels_in, int channels_out) {
       temp_port_out->next = dsp_port_out_init("main_in", 1);
       temp_port_out = temp_port_out->next;
     }
-	
+    
     temp_op = dsp_operation_init(temp_port_out->id);
-    temp_sample = dsp_operation_sample_init("<main port in>", (float)0.0, 1);
+    temp_sample = dsp_operation_sample_init("<main port in>", dsp_global_period, (float)0.0, 1);
 
     if(temp_op->outs == NULL)
       temp_op->outs = temp_sample;
@@ -671,10 +672,10 @@ dsp_build_mains(int channels_in, int channels_out) {
 
   for(i=0; i<channels_out; i++) {
     if( i == 0 ) {
-      temp_port_in = dsp_port_in_init("main_out", fifo_size, NULL);
+      temp_port_in = dsp_port_in_init("main_out", fifo_size);
       dsp_main_outs = temp_port_in;
     } else {
-      temp_port_in->next = dsp_port_in_init("main_out", fifo_size, NULL);
+      temp_port_in->next = dsp_port_in_init("main_out", fifo_size);
       temp_port_in = temp_port_in->next;
     }
   }
@@ -694,7 +695,7 @@ dsp_build_optimized_main_outs() {
   temp_port_in = dsp_main_outs;
   while(temp_port_in != NULL) {
     temp_op = dsp_operation_init(temp_port_in->id);
-    temp_sample = dsp_operation_sample_init("<main port out>", (float)0.0, 1);
+    temp_sample = dsp_operation_sample_init("<main port out>", dsp_global_period, (float)0.0, 1);
 
     temp_op->ins = temp_sample;
     if( dsp_optimized_main_outs == NULL )
@@ -734,16 +735,23 @@ void
 
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
+  float *sample_block = malloc(sizeof(float) * dsp_global_period);
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
-  
+
+  int p;
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
       if( temp_op->ins == NULL ) {
-        temp_op->outs->sample->value = 0.0;
+        for(p = 0; p < dsp_global_period; p++) {
+          temp_op->outs->sample->value[p] = 0.0f;
+        }
       } else {
 	if( temp_op->outs != NULL ) {
-	  temp_op->outs->sample->value = dsp_sum_summands(temp_op->ins->summands);
+          dsp_sum_summands(temp_op->ins->summands, sample_block);
+          for(p = 0; p < dsp_global_period; p++) {
+            temp_op->outs->sample->value[p] = sample_block[p];
+          }
         }
       }
     } else {
@@ -751,12 +759,12 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
     }
     temp_op = temp_op->next;
   }
-  
+  free(sample_block);
   return;
 } /* dsp_process */
 
-void dsp_setup(int period, unsigned short channels_in, unsigned short channels_out) {
+void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {
+  dsp_global_operation_head = NULL;
   dsp_global_period = period;
-  dsp_global_operation_head = NULL;  
   dsp_build_mains(channels_in, channels_out);
 } /* dsp_setup */

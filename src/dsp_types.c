@@ -18,8 +18,6 @@ Copyright 2018 murray foster */
 
 #include "dsp_types.h"
 
-int dsp_global_period;
-
 struct dsp_operation *dsp_global_operation_head_processing;
 struct dsp_operation *dsp_global_operation_head;
 
@@ -50,13 +48,8 @@ char* dsp_generate_object_id() {
   return id;
 }
 
-struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size, float *parameter_value_ptr) {
+struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size) {
 
-  if(parameter_value_ptr)
-    if(strstr(port_name, "param_") == NULL) {
-      printf("dsp_types.c::dsp_port_in_init():ERROR, parameter_value_ptr arg not NULL, but port_name not prefixed by 'param_', returning null\n");
-      return NULL;
-    }
   struct dsp_port_in *new_port = (struct dsp_port_in*)malloc(sizeof(struct dsp_port_in));
   new_port->prev = NULL;
   new_port->next = NULL;
@@ -64,12 +57,6 @@ struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size, float
   strcpy((char *)new_port->name, port_name);
   new_port->id = dsp_generate_object_id();
   new_port->remove = 0;
-  new_port->values = rtqueue_init(fifo_size);
-
-  if(parameter_value_ptr) {
-    new_port->parameter_value_ptr = malloc(sizeof(float));
-    new_port->parameter_value_ptr = parameter_value_ptr;
-  }
   
   return new_port;
 }
@@ -175,8 +162,6 @@ struct dsp_connection* dsp_connection_init(const char *id_out,
   new_connection->id_in = malloc(sizeof(char) * strlen(id_in) + 1);
   strcpy((char *)new_connection->id_in, id_in);
 
-  new_connection->out_value = port_out->value;
-  new_connection->in_values = port_in->values;
   return new_connection;
 }
 
@@ -234,8 +219,6 @@ void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*
 void dsp_connection_terminate(struct dsp_connection *connection) {
   connection->id_out = NULL;
   connection->id_in = NULL;
-  connection->out_value = (float)0;
-  connection->in_values = NULL;
   free((char *)connection->id);
   connection->id = NULL;
   free((char *)connection);
@@ -558,14 +541,20 @@ void dsp_translation_connection_insert_tail(struct dsp_translation_connection *h
   new_translation_conn->prev = temp_translation_conn;
 }
 
-struct dsp_sample* dsp_sample_init(float value) {
+struct dsp_sample* dsp_sample_init(unsigned short blocksize, float value) {
   struct dsp_sample *new_sample = (struct dsp_sample*)malloc(sizeof(struct dsp_sample));
   new_sample->id = dsp_generate_object_id();
-  new_sample->value = value;
+  new_sample->value = malloc(sizeof(float) * blocksize);
+  new_sample->value[0] = value;
+
+  for(int p = 1; p < blocksize; p++) {
+    new_sample->value[p] = 0.0f;
+  }
+  
   return new_sample;
 }
 
-struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, float value, int init_sample) {
+struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, unsigned short blocksize, float value, int init_sample) {
   struct dsp_operation_sample *new_operation_sample = (struct dsp_operation_sample*)malloc(sizeof(struct dsp_operation_sample));
   new_operation_sample->id = dsp_generate_object_id();
   new_operation_sample->dsp_id = malloc(sizeof(char) * strlen(dsp_id) + 1);
@@ -575,7 +564,7 @@ struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, float value
   new_operation_sample->summands = NULL;
 
   if( init_sample )
-    new_operation_sample->sample = dsp_sample_init(value);
+    new_operation_sample->sample = dsp_sample_init(blocksize, value);
   
   return new_operation_sample;
 }

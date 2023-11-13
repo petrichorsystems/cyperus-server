@@ -18,8 +18,6 @@ Copyright 2015 murray foster */
 
 #include "jackcli.h"
 
-rtqueue_t **jackcli_fifo_ins;
-rtqueue_t **jackcli_fifo_outs;
 
 unsigned int jackcli_samplerate_pos;
 
@@ -39,7 +37,7 @@ jack_default_audio_sample_t **jackcli_ins;
 
 int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 {
-  unsigned int i, n = 0; 
+  unsigned int i, n, p = 0; 
 
   struct dsp_bus *temp_bus;
 
@@ -51,10 +49,9 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   struct timespec mt1, mt2;
   long int tt;
 
-  long process_time = (1.0f / jackcli_samplerate) * 1000000000;
-  
-  int block_size = jackcli_buffer_size;
-  int block_size_pos = 0;
+  long process_time = (1.0f / jackcli_samplerate) * nframes * 1000000000;
+
+  float *temp_sample_block = malloc(sizeof(float) * dsp_global_period);
   
   for(i = 0; i < jackcli_channels_in; i++)
     jackcli_ins[i] = jack_port_get_buffer(jackcli_ports_input[i], nframes);
@@ -65,58 +62,68 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
       memset(jackcli_outs[i], 0, nframes * jackcli_sample_size);
     }
   
-  for ( i = 0; i < nframes; i++)
-    {
-      /* process main inputs */
-      temp_main_in = dsp_optimized_main_ins;
-      for (n = 0; n < jackcli_channels_in; n++) {
-        temp_main_in->outs->sample->value = jackcli_ins[n][i];
-        temp_main_in = temp_main_in->next;
-      }
-      
-      clock_gettime (CLOCK_REALTIME, &mt1);
-
-      dsp_process(dsp_global_operation_head,
-                  jackcli_samplerate,
-                  jackcli_samplerate_pos);
-      
-      clock_gettime (CLOCK_REALTIME, &mt2);
-      tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-      global_dsp_load = (double)tt/(double)process_time; 
-
-      temp_main_out = dsp_optimized_main_outs;
-      for (n = 0; n < jackcli_channels_out; n++) {
-        jackcli_outs[n][i] = dsp_sum_summands(temp_main_out->ins->summands);
-        temp_main_out = temp_main_out->next;
-      }
-
-      if( jackcli_samplerate_pos >= jackcli_samplerate - 1 )
-        jackcli_samplerate_pos = 0;
-      else
-        jackcli_samplerate_pos++;
-
-      if( dsp_global_new_operation_graph ) {
-
-        /* printf("assigning new graph\n"); */
-
-        dsp_global_operation_head = dsp_global_operation_head_processing;
-        dsp_global_new_operation_graph = 0;
-        dsp_global_operation_head_processing = NULL;
-
-        /* printf("assigned new graph\n"); */
-        /* printf("operations in new graph: \n"); */
-        
-        /* -- debug cruft */
-        /* if(dsp_global_operation_head != NULL) { */
-        /*   temp_op = dsp_global_operation_head; */
-        /*   while(temp_op != NULL) { */
-        /*     temp_op = temp_op->next; */
-        /*   } */
-        /* } */
-        /* printf("done listing\n");         */
-      }
-      threadsync_sync();
+  for ( i = 0; i < nframes; i++) {
+    /* process main inputs */
+    temp_main_in = dsp_optimized_main_ins;
+    for (n = 0; n < jackcli_channels_in; n++) {
+      temp_main_in->outs->sample->value[i] = jackcli_ins[n][i];
+      temp_main_in = temp_main_in->next;
     }
+  }
+  
+  clock_gettime (CLOCK_REALTIME, &mt1);
+
+  dsp_process(dsp_global_operation_head,
+              jackcli_samplerate,
+              jackcli_samplerate_pos);
+      
+  clock_gettime (CLOCK_REALTIME, &mt2);
+  tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
+  dsp_global_load = (double)tt/(double)process_time; 
+  
+  temp_main_out = dsp_optimized_main_outs;
+  for (n = 0; n < jackcli_channels_out; n++) {
+
+    for ( i = 0; i < nframes; i++)
+      temp_sample_block[i] = 0.0f;
+    
+    dsp_sum_summands(temp_main_out->ins->summands, temp_sample_block);
+   
+    for ( i = 0; i < nframes; i++) {
+      jackcli_outs[n][i] = temp_sample_block[i];
+    }    
+    temp_main_out = temp_main_out->next;
+  }
+
+  if( jackcli_samplerate_pos  >= jackcli_samplerate - 1 )
+    jackcli_samplerate_pos = 0;
+  else
+    jackcli_samplerate_pos += dsp_global_period;
+
+  if( dsp_global_new_operation_graph ) {
+    
+    /* printf("assigning new graph\n"); */
+
+    dsp_global_operation_head = dsp_global_operation_head_processing;
+    dsp_global_new_operation_graph = 0;
+    dsp_global_operation_head_processing = NULL;
+
+    /* printf("assigned new graph\n"); */
+    /* printf("operations in new graph: \n"); */
+    
+    /* -- debug cruft */
+    /* if(dsp_global_operation_head != NULL) { */
+    /*   temp_op = dsp_global_operation_head; */
+    /*   while(temp_op != NULL) { */
+    /*     temp_op = temp_op->next; */
+    /*   } */
+    /* } */
+    /* printf("done listing\n");         */
+  }
+  threadsync_sync();
+
+
+  
   return 0 ;
 } /* jackcli_process_callback */
 
@@ -144,21 +151,6 @@ void jackcli_allocate_ports(int channels_in, int channels_out)
       jackcli_ports_output [i] = jack_port_register(jackcli_client, name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
     }
 } /* jackcli_allocate_ports */
-
-int jackcli_fifo_setup()
-{
-  int i = 0;
-  
-  jackcli_fifo_ins = malloc(sizeof(rtqueue_t*) * jackcli_channels_in);
-  jackcli_fifo_outs = malloc(sizeof(rtqueue_t*) * jackcli_channels_out);
-
-  for( i=0; i < jackcli_channels_in; i++)
-    jackcli_fifo_ins[i] = rtqueue_init(jackcli_fifo_size);
-  for( i=0; i < jackcli_channels_out; i++)
-    jackcli_fifo_outs[i] = rtqueue_init(jackcli_fifo_size);
-
-  return 0;
-} /* jackcli_fifo_setup */
 
 
 void jackcli_shutdown_callback(void *arg)
@@ -208,14 +200,12 @@ int jackcli_close()
   free (jackcli_ports_input);
 } /* jackcli_close() */
 
-int jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out, int fifo_size)
+int jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out)
 {
   jackcli_channels_in = channels_in;
   jackcli_channels_out = channels_out;
-  jackcli_fifo_size = fifo_size;
   
   jackcli_open(jackcli_client_name);
-  jackcli_fifo_setup();
   jackcli_set_callbacks();
 
   jackcli_allocate_ports(channels_in, channels_out);

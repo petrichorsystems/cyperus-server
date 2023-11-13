@@ -25,10 +25,9 @@ Copyright 2019 murray foster */
 #include <string.h>
 #include <math.h>
 
-#include "rtqueue.h"
-
 typedef struct dsp_module_parameters {
   int *int32_type;
+  int **int32_arr_type;
   unsigned int *uint32_type;
   short *int16_type;
   float *float32_type;

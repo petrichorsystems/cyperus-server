@@ -28,7 +28,6 @@ void print_usage() {
 	 " -rp,  --receive-port  osc interface receiving port. default: 97211\n"
 	 " -sp,  --send-port     osc interface sending port. default: 97217\n"
          " -p,   --period        frames per period. default: 128\n"
-	 " -fi,  --fifo-size     fifo buffer size for each channel. default: 2048\n\n"
 	 "documentation available soon\n\n");
 } /* print_usage */
 
@@ -61,7 +60,6 @@ int main(int argc, char *argv[])
   int input = 8;
   int output = 8;
   int bitdepth;
-  int fifo_size = 2048;
   char *osc_port_in = NULL;
   char *osc_port_out = NULL;
   int period = 128;
@@ -122,12 +120,6 @@ int main(int argc, char *argv[])
 	    store_input = argv[c+1];
 	    period=atoi(store_input);
 	  }
-          
-	  if( !strcmp(store_flag,"-fi") ||
-	      !strcmp(store_flag,"--fifo-size")) {
-	    store_input = argv[c+1];
-	    fifo_size=atoi(store_input);
-	  }
 
 	  /* reset temporarily stored flag&input */
 	  store_input=NULL;
@@ -162,13 +154,13 @@ int main(int argc, char *argv[])
   dsp_graph_id_init();
   threadsync_init();
 
-  jackcli_setup("cyperus", bitdepth, input, output, fifo_size);
+  jackcli_setup("cyperus", bitdepth, input, output);
 
   printf("channels in: %d\n", input);
   printf("channels out: %d\n", output);
   printf("buffer size: %d\n", jackcli_buffer_size);
   printf("bitdepth: %dbits\n", bitdepth);
-  printf("fifo size: %d\n", fifo_size);
+  printf("period: %d frames\n", period);
   printf("osc receive port: %s\n", osc_port_in);
   printf("osc send port: %s\n\n\n", osc_port_out);
   

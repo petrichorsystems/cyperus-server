@@ -26,18 +26,17 @@ Copyright 2018 murray foster */
 #include <lo/lo.h>
 
 #include "dsp_types.h"
-#include "rtqueue.h"
 #include "dsp_math.h"
 #include "dsp.h"
 #include "jackcli.h"
 
-float dsp_sum_summands(struct dsp_operation_sample *summands);
+float *dsp_sum_summands(struct dsp_operation_sample *summands, float *sample_block);
 void dsp_optimize_connections_module(struct dsp_port_out *outs);
 void dsp_optimize_connections_main_inputs(struct dsp_port_out *outs);
 struct dsp_operation *dsp_optimize_module(char *id, struct dsp_module *module);
 
-void dsp_osc_transmit(struct dsp_operation *osc_transmit, int jack_samplerate, int pos);
-int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, char *path, int samplerate_divisor);
-void dsp_edit_osc_transmit(struct dsp_module *osc_transmit, char *host, char *port, char *path, int samplerate_divisor);
+/* void dsp_osc_transmit(struct dsp_operation *osc_transmit, int jack_samplerate, int pos); */
+/* int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, char *path, int samplerate_divisor); */
+/* void dsp_edit_osc_transmit(struct dsp_module *osc_transmit, char *host, char *port, char *path, int samplerate_divisor); */
 
 #endif

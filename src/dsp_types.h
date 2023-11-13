@@ -19,11 +19,10 @@ Copyright 2018 murray foster */
 #ifndef DSP_TYPES_H
 #define DSP_TYPES_H
 
+#include <stdlib.h>
 #include <uuid/uuid.h>
 
 #include "dsp_math.h"
-
-extern int dsp_global_period;
 
 extern struct dsp_operation *dsp_global_operation_head_processing;
 extern struct dsp_operation *dsp_global_operation_head;
@@ -41,7 +40,7 @@ extern struct dsp_operation *dsp_optimized_main_ins;
 extern struct dsp_operation *dsp_optimized_main_outs;
 
 typedef struct dsp_module_parameter {
-  float in;
+  float *in;
   
   int pos;
 
@@ -139,14 +138,6 @@ typedef struct dsp_module_parameter {
       float freq;
       float amp;
     } sawtooth;
-    struct {
-      char *name;
-      char *host;
-      char *port;
-      char *path;
-      int samplerate_divisor;
-      int count;
-    } osc_transmit;
   };
 }dsp_parameter;
 
@@ -155,8 +146,6 @@ struct dsp_port_in {
   const char *name;
   struct dsp_port_in *next;
   struct dsp_port_in *prev;
-  rtqueue_t *values;
-  float *parameter_value_ptr;
   int remove; /* boolean remove flag */
 };
 
@@ -176,8 +165,6 @@ struct dsp_connection {
   struct dsp_connection *prev;
   const char *id_out;
   const char *id_in;
-  float out_value;
-  rtqueue_t *in_values;
   int remove; /* boolean remove flag */
 };
 
@@ -224,7 +211,7 @@ struct dsp_bus {
 
 struct dsp_sample {
   const char *id;
-  float value;
+  float *value;
 };
 
 struct dsp_operation_sample {
@@ -267,7 +254,7 @@ struct dsp_translation_sample {
 
 char *dsp_generate_object_id();
 
-struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size, float *parameter_value_ptr);
+struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size);
 void dsp_port_in_insert_head(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
 void dsp_port_in_insert_tail(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
 
@@ -321,9 +308,9 @@ void dsp_operation_insert_head(struct dsp_operation *head_operation, struct dsp_
 void dsp_operation_insert_tail(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
 void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struct dsp_operation *new_operation);
 void dsp_operation_insert_ahead(struct dsp_operation *existing_operation, struct dsp_operation *new_operation);
-struct dsp_sample* dsp_sample_init(float value);
+struct dsp_sample* dsp_sample_init(unsigned short blocksize, float value);
 
-struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, float value, int init_sample);
+struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, unsigned short blocksize, float value, int init_sample);
 void dsp_operation_sample_insert_head(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample);
 void dsp_operation_sample_insert_tail(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample);
 

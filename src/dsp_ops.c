@@ -21,25 +21,33 @@ Copyright 2018 murray foster */
 dsp_parameter dsp_voice_parameters[0];
 
 float
-dsp_sum_summands(struct dsp_operation_sample *summands) {
+*dsp_sum_summands(struct dsp_operation_sample *summands, float *sample_block) {
   struct dsp_operation_sample *temp_summand = summands;
-  float outsample = 0.0;
 
   /* TODO: Properly sum inputs? (be careful, what if not audio) */
 
-  int i=0;
-
-  if( temp_summand == NULL )
-    return 0.0f;
+  int p = 0;
+  int summand_idx = 0;
+  unsigned short period_idx = 0;
   
-  while(temp_summand != NULL) {
-    outsample += temp_summand->sample->value;
-    temp_summand = temp_summand->next;
-    i+=1;
+  if( temp_summand == NULL ) {
+    for(p = 0; p < dsp_global_period; p++) {
+      sample_block[p] = 0.0f;
+    }
+    return sample_block;
   }
-  /* printf("dsp_ops.c::dsp_sum_summands(), summand count: %d\n", i); */
+  
+  for(period_idx = 0; period_idx < dsp_global_period; period_idx++) {
+    temp_summand = summands;
+    summand_idx = 0;
+    while(temp_summand != NULL) {
+      sample_block[period_idx] += temp_summand->sample->value[period_idx];
+      temp_summand = temp_summand->next;
+      summand_idx += 1;      
+    }
+  }
 
-  return outsample;
+  return sample_block;
 } /* dsp_sum_input */
 
 void
@@ -165,14 +173,14 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
           
 	  if( sample_in == NULL ) {
 	    if( is_bus_port ) {
-              sample_out = dsp_operation_sample_init("<bus port port out>", 0.0, 1);
-	      sample_in = dsp_operation_sample_init("<bus port port in>", 0.0, 1);
+              sample_out = dsp_operation_sample_init("<bus port port out>", dsp_global_period, 0.0, 1);
+	      sample_in = dsp_operation_sample_init("<bus port port in>", dsp_global_period, 0.0, 1);
               sample_out->sample = sample_in->sample;
 	      temp_op_in = dsp_operation_init(temp_connection->id_in);
               temp_op_in->outs = sample_out;
               temp_op_in->ins = sample_in;
 	    } else {
-	      sample_in = dsp_operation_sample_init((char *)temp_connection->id_in, 0.0, 1);
+	      sample_in = dsp_operation_sample_init((char *)temp_connection->id_in, dsp_global_period, 0.0, 1);
 	      temp_op_in = dsp_operation_init(temp_op_in_id);
 
               printf("dsp_ops.c: dsp_optimize_connections_main_inputs(): ATTENTION: connection made from main input directly to module. do we allow this? exiting..\n");
@@ -211,8 +219,9 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	  }
 
 
-          new_summand = dsp_operation_sample_init((char *)temp_sample_out->dsp_id, 0.0, 0);
+          new_summand = dsp_operation_sample_init((char *)temp_sample_out->dsp_id, dsp_global_period, 0.0, 0);
           new_summand->sample = temp_sample_out->sample;
+          
           if( sample_in->summands == NULL )
             sample_in->summands = new_summand;
           else
@@ -243,7 +252,7 @@ struct dsp_operation
 
   temp_port_in = module->ins;
   while(temp_port_in != NULL) {
-    temp_sample = dsp_operation_sample_init((char *)temp_port_in->id, 0.0, 1);
+    temp_sample = dsp_operation_sample_init((char *)temp_port_in->id, dsp_global_period, 0.0, 1);
     if(new_op->ins == NULL)
       new_op->ins = temp_sample;
     else
@@ -255,7 +264,7 @@ struct dsp_operation
   
   temp_port_out = module->outs;
   while(temp_port_out != NULL) {
-    temp_sample = dsp_operation_sample_init((char *)temp_port_out->id, 0.0, 1);
+    temp_sample = dsp_operation_sample_init((char *)temp_port_out->id, dsp_global_period, 0.0, 1);
     if(new_op->outs == NULL)
       new_op->outs = temp_sample;
     else
@@ -273,78 +282,78 @@ struct dsp_operation
   return new_op;
 } /* dsp_optimize_module */
 
-void dsp_osc_transmit(struct dsp_operation *osc_transmit, int jack_samplerate, int pos) {
-  float insample = 0.0;
+/* void dsp_osc_transmit(struct dsp_operation *osc_transmit, int jack_samplerate, int pos) { */
+/*   float insample = 0.0; */
 
-  if( osc_transmit->ins->next->summands != NULL ) {
-    insample = dsp_sum_summands(osc_transmit->ins->summands);
-  }
+/*   if( osc_transmit->ins->next->summands != NULL ) { */
+/*     insample = dsp_sum_summands(osc_transmit->ins->summands); */
+/*   } */
 
-  if ( osc_transmit->module->dsp_param.osc_transmit.count % osc_transmit->module->dsp_param.osc_transmit.samplerate_divisor == 0 ) {
-    lo_address lo_addr_send = lo_address_new((const char*)osc_transmit->module->dsp_param.osc_transmit.host, (const char*)osc_transmit->module->dsp_param.osc_transmit.port);
-    lo_send(lo_addr_send, (const char*)osc_transmit->module->dsp_param.osc_transmit.path, "f", insample);
-    free(lo_addr_send);
-  }
-  osc_transmit->module->dsp_param.osc_transmit.count++;
+/*   if ( osc_transmit->module->dsp_param.osc_transmit.count % osc_transmit->module->dsp_param.osc_transmit.samplerate_divisor == 0 ) { */
+/*     lo_address lo_addr_send = lo_address_new((const char*)osc_transmit->module->dsp_param.osc_transmit.host, (const char*)osc_transmit->module->dsp_param.osc_transmit.port); */
+/*     lo_send(lo_addr_send, (const char*)osc_transmit->module->dsp_param.osc_transmit.path, "f", insample); */
+/*     free(lo_addr_send); */
+/*   } */
+/*   osc_transmit->module->dsp_param.osc_transmit.count++; */
   
-  return;
-} /* dsp_osc_transmit */
+/*   return; */
+/* } /\* dsp_osc_transmit *\/ */
 
-int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, char *path, int samplerate_divisor) {
-  printf("start dsp_create_osc_transmit()\n");
-  dsp_parameter osc_transmitter_param;
-  struct dsp_port_in *ins;
-  struct dsp_port_out *outs;
+/* int dsp_create_osc_transmit(struct dsp_bus *target_bus, char *host, char *port, char *path, int samplerate_divisor) { */
+/*   printf("start dsp_create_osc_transmit()\n"); */
+/*   dsp_parameter osc_transmitter_param; */
+/*   struct dsp_port_in *ins; */
+/*   struct dsp_port_out *outs; */
   
-  osc_transmitter_param.pos = 0;
-  osc_transmitter_param.osc_transmit.name = "osc transmitter";
+/*   osc_transmitter_param.pos = 0; */
+/*   osc_transmitter_param.osc_transmit.name = "osc transmitter"; */
 
-  osc_transmitter_param.osc_transmit.host = malloc(sizeof(char) * (strlen(host) + 1));
-  strcpy(osc_transmitter_param.osc_transmit.host, host);
+/*   osc_transmitter_param.osc_transmit.host = malloc(sizeof(char) * (strlen(host) + 1)); */
+/*   strcpy(osc_transmitter_param.osc_transmit.host, host); */
   
-  osc_transmitter_param.osc_transmit.port = malloc(sizeof(char) * (strlen(port) + 1));
-  strcpy(osc_transmitter_param.osc_transmit.port, port);
+/*   osc_transmitter_param.osc_transmit.port = malloc(sizeof(char) * (strlen(port) + 1)); */
+/*   strcpy(osc_transmitter_param.osc_transmit.port, port); */
   
-  osc_transmitter_param.osc_transmit.path = malloc(sizeof(char) * (strlen(path) + 1));
-  strcpy(osc_transmitter_param.osc_transmit.path, path);
+/*   osc_transmitter_param.osc_transmit.path = malloc(sizeof(char) * (strlen(path) + 1)); */
+/*   strcpy(osc_transmitter_param.osc_transmit.path, path); */
 
-  osc_transmitter_param.osc_transmit.samplerate_divisor = samplerate_divisor;
-  osc_transmitter_param.osc_transmit.count = 0;
+/*   osc_transmitter_param.osc_transmit.samplerate_divisor = samplerate_divisor; */
+/*   osc_transmitter_param.osc_transmit.count = 0; */
   
-  ins = dsp_port_in_init("in", 512, NULL);
+/*   ins = dsp_port_in_init("in", 512, NULL); */
 
-  dsp_add_module(target_bus,
-                 "osc transmitter",
-                 dsp_osc_transmit,
-                 NULL,
-                 dsp_optimize_module,
-                 osc_transmitter_param,
-                 ins,
-                 NULL);
-  printf("finish dsp_create_osc_transmit()\n");
-  return 0;
-} /* dsp_create_osc_transmit */
+/*   dsp_add_module(target_bus, */
+/*                  "osc transmitter", */
+/*                  dsp_osc_transmit, */
+/*                  NULL, */
+/*                  dsp_optimize_module, */
+/*                  osc_transmitter_param, */
+/*                  ins, */
+/*                  NULL); */
+/*   printf("finish dsp_create_osc_transmit()\n"); */
+/*   return 0; */
+/* } /\* dsp_create_osc_transmit *\/ */
 
-void dsp_edit_osc_transmit(struct dsp_module *osc_transmit, char *host, char *port, char *path, int samplerate_divisor) {
-  printf("start dsp_edit_osc_transmit()\n");
-  free(osc_transmit->dsp_param.osc_transmit.host);
-  free(osc_transmit->dsp_param.osc_transmit.port);
-  free(osc_transmit->dsp_param.osc_transmit.path);
+/* void dsp_edit_osc_transmit(struct dsp_module *osc_transmit, char *host, char *port, char *path, int samplerate_divisor) { */
+/*   printf("start dsp_edit_osc_transmit()\n"); */
+/*   free(osc_transmit->dsp_param.osc_transmit.host); */
+/*   free(osc_transmit->dsp_param.osc_transmit.port); */
+/*   free(osc_transmit->dsp_param.osc_transmit.path); */
 
-  printf("finish free()s\n");
+/*   printf("finish free()s\n"); */
   
-  osc_transmit->dsp_param.osc_transmit.host = malloc(sizeof(char) * (strlen(host) + 1));
-  strcpy(osc_transmit->dsp_param.osc_transmit.host, host);
+/*   osc_transmit->dsp_param.osc_transmit.host = malloc(sizeof(char) * (strlen(host) + 1)); */
+/*   strcpy(osc_transmit->dsp_param.osc_transmit.host, host); */
   
-  osc_transmit->dsp_param.osc_transmit.port = malloc(sizeof(char) * (strlen(port) + 1));
-  strcpy(osc_transmit->dsp_param.osc_transmit.port, port);
+/*   osc_transmit->dsp_param.osc_transmit.port = malloc(sizeof(char) * (strlen(port) + 1)); */
+/*   strcpy(osc_transmit->dsp_param.osc_transmit.port, port); */
   
-  osc_transmit->dsp_param.osc_transmit.path = malloc(sizeof(char) * (strlen(path) + 1));
-  strcpy(osc_transmit->dsp_param.osc_transmit.path, path);
+/*   osc_transmit->dsp_param.osc_transmit.path = malloc(sizeof(char) * (strlen(path) + 1)); */
+/*   strcpy(osc_transmit->dsp_param.osc_transmit.path, path); */
 
-  osc_transmit->dsp_param.osc_transmit.samplerate_divisor = samplerate_divisor;  
+/*   osc_transmit->dsp_param.osc_transmit.samplerate_divisor = samplerate_divisor;   */
 
-  printf("finish dsp_edit_osc_transmit()\n");
-  return;
-} /* dsp_edit_osc_transmit */
+/*   printf("finish dsp_edit_osc_transmit()\n"); */
+/*   return; */
+/* } /\* dsp_edit_osc_transmit *\/ */
 

@@ -29,7 +29,8 @@ Copyright 2015 murray foster */
 #include <time.h>
 #include <unistd.h>
 
-extern float global_dsp_load;
+extern unsigned short dsp_global_period;
+extern float dsp_global_load;
 extern int dsp_global_new_operation_graph;
 
 struct dsp_bus_port*
@@ -81,6 +82,6 @@ void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos);
 
 void
-dsp_setup(int period, unsigned short channels_in, unsigned short channels_out);
+dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out);
 
 #endif
