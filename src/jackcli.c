@@ -83,10 +83,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   
   temp_main_out = dsp_optimized_main_outs;
   for (n = 0; n < jackcli_channels_out; n++) {
-
-    for ( i = 0; i < nframes; i++)
-      temp_sample_block[i] = 0.0f;
-    
+    memset(temp_sample_block, 0.0f, sizeof(float) * nframes);
     dsp_sum_summands(temp_main_out->ins->summands, temp_sample_block);
    
     for ( i = 0; i < nframes; i++) {
@@ -121,8 +118,6 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     /* printf("done listing\n");         */
   }
   threadsync_sync();
-
-
   
   return 0 ;
 } /* jackcli_process_callback */

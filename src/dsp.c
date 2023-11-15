@@ -741,6 +741,8 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
 
   int p;
   while(temp_op != NULL) {
+    
+    memset(sample_block, 0.0f, sizeof(float) * dsp_global_period);
     if( temp_op->module == NULL ) {
       if( temp_op->ins == NULL ) {
         for(p = 0; p < dsp_global_period; p++) {

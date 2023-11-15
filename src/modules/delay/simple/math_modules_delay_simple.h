@@ -12,6 +12,6 @@
 #include "../../../dsp_types.h"
 
 extern float
-math_modules_delay_simple(dsp_parameter *filter, int samplerate, int pos);
+*math_modules_delay_simple(dsp_parameter *filter, int samplerate, int pos);
 
 #endif

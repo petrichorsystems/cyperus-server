@@ -31,9 +31,7 @@ float
   unsigned short period_idx = 0;
   
   if( temp_summand == NULL ) {
-    for(p = 0; p < dsp_global_period; p++) {
-      sample_block[p] = 0.0f;
-    }
+    memset(sample_block, 0.0f, sizeof(float) * dsp_global_period);
     return sample_block;
   }
   

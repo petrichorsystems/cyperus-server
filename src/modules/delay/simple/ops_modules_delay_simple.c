@@ -36,30 +36,41 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
 
+  params.in = malloc(sizeof(float) * dsp_global_period);
   params.name = "delay_simple";  
-  params.pos = 0;  
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));  
-  params.parameters->float32_type = malloc(sizeof(float) * 3);
-  params.parameters->int32_type = malloc(sizeof(int) * 3);
-  params.parameters->float32_arr_type = malloc(sizeof(float *) * 1);
+  params.pos = 0;
   
-  /* user-facing parameters */
-  params.parameters->float32_type[0] = amount;
-  params.parameters->float32_type[1] = time * jackcli_samplerate; 
-  params.parameters->float32_type[2] = feedback; 
+  params.parameters = malloc(sizeof(dsp_module_parameters_t));
+  
+  params.parameters->int32_type = malloc(sizeof(int) * 2);
+  params.parameters->float32_arr_type = malloc(sizeof(float *) * 4);
+  params.parameters->int32_arr_type = malloc(sizeof(int *));  
+  
+  params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float)); /* user-facing amount parameter */
+  params.parameters->float32_arr_type[2] = calloc(dsp_global_period, sizeof(float)); /* user-facing time parameter */  
+  params.parameters->float32_arr_type[3] = calloc(dsp_global_period, sizeof(float)); /* user-facing feedback parameter */
 
+  params.parameters->int32_arr_type[0] = calloc(dsp_global_period, sizeof(int)); /* internal time (% of sec) to sample conversion */
+
+  for(int p=0; p<dsp_global_period; p++) {
+    params.parameters->float32_arr_type[1][p] = amount; /* user-facing amount parameter */
+    params.parameters->float32_arr_type[2][p] = time; /* user-facing time parameter */  
+    params.parameters->float32_arr_type[3][p] = feedback; /* user-facing feedback parameter */  
+    
+    params.parameters->int32_arr_type[0][p] = (int)(time * jackcli_samplerate); /* internal time (% of sec) to sample conversion */
+  }
+  
   /* internal parameters */
-  params.parameters->int32_type[0] = (int)(time * jackcli_samplerate); /* time_samples */
-  params.parameters->int32_type[1] = 0; /* delay_pos */
-  params.parameters->int32_type[2] = 0; /* delay_time_pos */
+  params.parameters->int32_type[0] = 0; /* delay_pos */
+  params.parameters->int32_type[1] = 0; /* delay_time_pos */
   
-  params.parameters->float32_arr_type[0] = calloc(time * jackcli_samplerate * 30, sizeof(float));
-
+  params.parameters->float32_arr_type[0] = calloc(time * jackcli_samplerate * 30, sizeof(float)); /* delay sample buffer */
   
-  ins = dsp_port_in_init("in", 512, NULL);
-  ins->next = dsp_port_in_init("param_amount", 512, &(params.parameters->float32_type[0]));
-  ins->next->next = dsp_port_in_init("param_time", 512, &(params.parameters->float32_type[1]));
-  ins->next->next->next = dsp_port_in_init("param_feedback", 512, &(params.parameters->float32_type[2]));  
+  
+  ins = dsp_port_in_init("in", 512);
+  ins->next = dsp_port_in_init("param_amount", 512);
+  ins->next->next = dsp_port_in_init("param_time", 512);
+  ins->next->next->next = dsp_port_in_init("param_feedback", 512);  
   outs = dsp_port_out_init("out", 1);
   
   dsp_add_module(target_bus,
@@ -77,24 +88,42 @@ void
 dsp_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate, int pos) {
   /* printf("ops_modules_delay_simple.c::dsp_delay_simple()\n"); */
   
-  float insample = 0.0f;
-  float outsample = 0.0f;
+  float *insamples = malloc(sizeof(float) * dsp_global_period);
+  float *outsamples = malloc(sizeof(float) * dsp_global_period);
 
-  insample = dsp_sum_summands(delay_simple->ins->summands);
-  delay_simple->module->dsp_param.in = insample;
+  float *param_time_block = malloc(sizeof(float) * dsp_global_period);
+
+  int p;
+
+  memset(insamples, 0.0f, sizeof(float) * dsp_global_period);
+  memset(outsamples, 0.0f, sizeof(float) * dsp_global_period);
+  memset(param_time_block, 0.0f, sizeof(float) * dsp_global_period);
+  
+  dsp_sum_summands(delay_simple->ins->summands, insamples);
+  
+  memcpy(delay_simple->module->dsp_param.in, insamples, sizeof(float) * dsp_global_period);
 
   /* param_time input */
   if( delay_simple->ins->next->next->summands != NULL ) {
-      delay_simple->module->dsp_param.parameters->float32_type[1] = dsp_sum_summands(delay_simple->ins->next->next->summands);
-        delay_simple->module->dsp_param.parameters->int32_type[0] = (int)(delay_simple->module->dsp_param.parameters->float32_type[1] * jack_samplerate);
+    dsp_sum_summands(delay_simple->ins->next->next->summands, param_time_block);
+    memcpy(delay_simple->module->dsp_param.parameters->float32_arr_type[2], param_time_block, sizeof(float) * dsp_global_period);
+
+    for(int p=0; p<dsp_global_period; p++) {
+      delay_simple->module->dsp_param.parameters->int32_arr_type[0][p] = (int)(delay_simple->module->dsp_param.parameters->float32_arr_type[2][p] * jack_samplerate);
+    }
+ 
+    free(param_time_block);
   }
+
+  outsamples = math_modules_delay_simple(&delay_simple->module->dsp_param,
+                                         jack_samplerate,
+                                         pos);
   
-  outsample = math_modules_delay_simple(&delay_simple->module->dsp_param,
-                                              jack_samplerate,
-                                              pos);
+  /* drive audio outputs */
+  memcpy(delay_simple->outs->sample->value,  outsamples, sizeof(float) * dsp_global_period);
   
-  /* Drive audio outputs */
-  delay_simple->outs->sample->value = outsample;
+  free(insamples);  
+  free(outsamples);
   
 } /* dsp_delay_simple */
 
@@ -104,19 +133,14 @@ void dsp_edit_delay_simple(struct dsp_module *delay_simple,
                             float time,
                             float feedback
                            ) {
-  printf("about to assign amount\n");
-  delay_simple->dsp_param.parameters->float32_type[0] = amount;
-  printf("assigned delay_simple->dsp_param.parameters->float32_type[0]: %f\n",
-	 delay_simple->dsp_param.parameters->float32_type[0]);
-  printf("about to assign time\n");
-  delay_simple->dsp_param.parameters->float32_type[1] = time;
-  delay_simple->dsp_param.parameters->int32_type[0] = (int)(time * jackcli_samplerate);
-  printf("assigned delay_simple->dsp_param.parameters->float32_type[1]: %f\n",
-	 delay_simple->dsp_param.parameters->float32_type[1]);
-  printf("about to assign reset\n");
-  delay_simple->dsp_param.parameters->float32_type[2] = feedback;
-  printf("assigned delay_simple->dsp_param.parameters->float32_type[2]: %f\n",
-	 delay_simple->dsp_param.parameters->float32_type[2]);  
+  for(int p=0; p<dsp_global_period; p++) {
+    delay_simple->dsp_param.parameters->float32_arr_type[1][p] = amount; /* user-facing amount parameter */
+  
+    delay_simple->dsp_param.parameters->float32_arr_type[2][p] =  time; /* user-facing time parameter */
+    delay_simple->dsp_param.parameters->int32_arr_type[0][p] = (int)(time * jackcli_samplerate); /* internal time (% of sec) to sample conversion */
+  
+    delay_simple->dsp_param.parameters->float32_arr_type[3][p] = feedback; /* user-facing feedback parameter */
+  }
 
   printf("returning\n");
   
