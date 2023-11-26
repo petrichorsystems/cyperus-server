@@ -48,7 +48,6 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 
   struct timespec mt1, mt2;
   long int tt;
-
   long process_time = (1.0f / jackcli_samplerate) * nframes * 1000000000;
 
   float *temp_sample_block = malloc(sizeof(float) * dsp_global_period);
@@ -83,8 +82,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   
   temp_main_out = dsp_optimized_main_outs;
   for (n = 0; n < jackcli_channels_out; n++) {
-    memset(temp_sample_block, 0.0f, sizeof(float) * nframes);
-    dsp_sum_summands(temp_main_out->ins->summands, temp_sample_block);
+    dsp_sum_summands(temp_sample_block, temp_main_out->ins->summands);
    
     for ( i = 0; i < nframes; i++) {
       jackcli_outs[n][i] = temp_sample_block[i];

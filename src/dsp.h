@@ -45,8 +45,8 @@ dsp_bypass_module(struct dsp_module *module, int bypass);
 struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
-	       void (*dsp_function) (struct dsp_operation*, int, int),
-               void (*dsp_osc_listener_function) (struct dsp_operation*, int, int),
+	       void (*dsp_function) (struct dsp_operation*, int),
+               void (*dsp_osc_listener_function) (struct dsp_operation*, int),
 	       struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,

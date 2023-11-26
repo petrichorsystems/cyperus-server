@@ -21,7 +21,7 @@ Copyright 2018 murray foster */
 dsp_parameter dsp_voice_parameters[0];
 
 float
-*dsp_sum_summands(struct dsp_operation_sample *summands, float *sample_block) {
+*dsp_sum_summands(float *sample_block, struct dsp_operation_sample *summands) {
   struct dsp_operation_sample *temp_summand = summands;
 
   /* TODO: Properly sum inputs? (be careful, what if not audio) */
@@ -29,9 +29,10 @@ float
   int p = 0;
   int summand_idx = 0;
   unsigned short period_idx = 0;
+
+  memset(sample_block, 0.0f, sizeof(float) * dsp_global_period);
   
   if( temp_summand == NULL ) {
-    memset(sample_block, 0.0f, sizeof(float) * dsp_global_period);
     return sample_block;
   }
   

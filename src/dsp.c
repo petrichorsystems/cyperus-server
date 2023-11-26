@@ -138,8 +138,8 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
-	       void (*dsp_function) (struct dsp_operation*, int, int),
-               void (*dsp_osc_listener_function) (struct dsp_operation*, int, int),
+	       void (*dsp_function) (struct dsp_operation*, int),
+               void (*dsp_osc_listener_function) (struct dsp_operation*, int),
 	       struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
@@ -740,29 +740,22 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   temp_op = head_op;
 
   int p;
-  while(temp_op != NULL) {
-    
-    memset(sample_block, 0.0f, sizeof(float) * dsp_global_period);
+  while(temp_op != NULL) {    
     if( temp_op->module == NULL ) {
       if( temp_op->ins == NULL ) {
-        for(p = 0; p < dsp_global_period; p++) {
-          temp_op->outs->sample->value[p] = 0.0f;
-        }
+        memset(temp_op->outs->sample->value, 0.0f, sizeof(float) * dsp_global_period);
       } else {
 	if( temp_op->outs != NULL ) {
-          dsp_sum_summands(temp_op->ins->summands, sample_block);
-          for(p = 0; p < dsp_global_period; p++) {
-            temp_op->outs->sample->value[p] = sample_block[p];
-          }
+          dsp_sum_summands(temp_op->outs->sample->value, temp_op->ins->summands);
         }
       }
     } else {
-      temp_op->module->dsp_function(temp_op, jack_sr, pos);
+      temp_op->module->dsp_function(temp_op, jack_sr);
     }
     temp_op = temp_op->next;
   }
+
   free(sample_block);
-  return;
 } /* dsp_process */
 
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {

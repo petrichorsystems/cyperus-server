@@ -173,8 +173,8 @@ struct dsp_module {
   const char *name;
   struct dsp_module *next;
   struct dsp_module *prev;
-  void (*dsp_function) (struct dsp_operation*, int, int);
-  void (*dsp_osc_listener_function) (struct dsp_operation*, int, int);
+  void (*dsp_function) (struct dsp_operation*, int);
+  void (*dsp_osc_listener_function) (struct dsp_operation*, int);
   struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*);
   dsp_parameter dsp_param;
   struct dsp_port_in *ins;
@@ -275,8 +275,8 @@ void dsp_connection_printf(struct dsp_connection *connection);
 void dsp_connection_terminate(struct dsp_connection *connection);
 
 struct dsp_module* dsp_module_init(const char *module_name,
-				   void (*dsp_function) (struct dsp_operation*, int, int),
-                                   void (*dsp_osc_listener_function) (struct dsp_operation*, int, int),
+				   void (*dsp_function) (struct dsp_operation*, int),
+                                   void (*dsp_osc_listener_function) (struct dsp_operation*, int),
 				   struct dsp_operation *(*dsp_optimize) (char *, struct dsp_module*),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,

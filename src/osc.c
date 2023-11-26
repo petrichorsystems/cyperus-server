@@ -141,6 +141,53 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
   return 0;
 } /* osc_change_address */
 
+void
+osc_callback_timer_callback(int signum) {
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  struct dsp_operation *temp_op = NULL;  
+  
+  lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global_load);
+
+  temp_op = dsp_global_operation_head;
+  while(temp_op != NULL) {
+    /* execute appropriate listener function */
+    if( temp_op->module->dsp_osc_listener_function != NULL ) {
+      temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
+    }
+    temp_op = temp_op->next;
+  }
+  
+} /* osc_callback_timer_callback */
+
+void *
+osc_callback_timer_thread(void *arg) {
+  struct itimerval callback_timer;
+  struct itimerval callback_timer_old;
+  unsigned short fps = 30;
+  long sample_duration_usec = (long)(1000 * 1000 / fps);
+
+  callback_timer.it_value.tv_sec = 1;
+  callback_timer.it_value.tv_usec = 0;
+  callback_timer.it_interval.tv_sec = 0;
+  callback_timer.it_interval.tv_usec = sample_duration_usec;
+  
+  setitimer(ITIMER_REAL, &callback_timer, &callback_timer_old);
+  signal(SIGALRM, osc_callback_timer_callback);
+
+  while(1) {
+    sleep(1);
+  }
+} /* osc_callback_timer_thread */
+
+int
+osc_callback_timer_setup() {
+  pthread_t callback_timer_thread_id;
+  pthread_create(&callback_timer_thread_id, NULL, osc_callback_timer_thread, NULL);
+  pthread_detach(callback_timer_thread_id);
+  return 0;
+} /* osc_callback_timer_setup */
+
+
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   /* global_osc_handlers_user_defined = NULL; */
 
@@ -159,42 +206,7 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
   lo_server_thread_add_method(lo_thread, NULL, NULL, cyperus_osc_handler, NULL);
 
   lo_server_thread_start(lo_thread);
+
+  osc_callback_timer_setup();
+  
 } /* osc_setup */
-
-void *
-osc_listener_thread(void *arg) {
-  struct dsp_operation *temp_op = NULL;
-  while(1) {
-    for(int pos=0; pos<jackcli_samplerate; pos++) {
-      temp_op = dsp_global_operation_head;
-      while(temp_op != NULL) {
-        /* execute appropriate listener function */
-        if( temp_op->module->dsp_osc_listener_function != NULL ) {
-          temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate, pos);
-        }
-        temp_op = temp_op->next;
-      }
-      threadsync_wait();
-    }
-  }
-
-
-} /* osc_listener_thread */
-
-
-void *
-osc_dsp_load_thread(void *arg) {
-  int max_frames = jackcli_samplerate / 60;
-  int frame_count = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  while(1) {
-    for(int pos=0; pos<jackcli_samplerate; pos++) {
-      if(frame_count == max_frames) {
-        lo_send(lo_addr_send,"/cyperus/dsp/load", "f", global_dsp_load);
-        frame_count = 0;
-      }
-      threadsync_wait();
-      frame_count++;
-    }
-  }
-} /* osc_dsp_loadr_thread */

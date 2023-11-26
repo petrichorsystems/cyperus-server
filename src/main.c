@@ -165,14 +165,6 @@ int main(int argc, char *argv[])
   printf("osc send port: %s\n\n\n", osc_port_out);
   
   osc_setup(osc_port_in, osc_port_out, "127.0.0.1");
-
-  /* pthread_t osc_listener_thread_id; */
-  /* pthread_create(&osc_listener_thread_id, NULL, osc_listener_thread, NULL); */
-  /* pthread_detach(osc_listener_thread_id); */
-
-  pthread_t osc_dsp_load_thread_id;
-  pthread_create(&osc_dsp_load_thread_id, NULL, osc_dsp_load_thread, NULL);
-  pthread_detach(osc_dsp_load_thread_id);
   
   printf("press <ENTER> to quit\n\n");
   

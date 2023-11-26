@@ -20,6 +20,7 @@ Copyright 2015 murray foster */
 #define OSC_H
 
 #include <lo/lo.h>
+#include <signal.h>
 
 #include "dsp.h"
 #include "osc_handlers.h"
@@ -50,29 +51,31 @@ extern lo_server_thread lo_thread;
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out);
 
-void *osc_listener_thread(void *arg);
-void *osc_dsp_load_thread(void *arg);
+void osc_callback_timer_callback(int signum);
+void *osc_callback_timer_thread(void *arg);
+int osc_callback_timer_setup();
 
 #include "modules/delay/simple/osc_modules_delay_simple.h"
-#include "modules/analysis/transient_detector/osc_modules_analysis_transient_detector.h"
-#include "modules/filter/bandpass/osc_modules_filter_bandpass.h"
-#include "modules/filter/moogff/osc_modules_filter_moogff.h"
-#include "modules/filter/varslope_lowpass/osc_modules_filter_varslope_lowpass.h"
 #include "modules/oscillator/sine/osc_modules_oscillator_sine.h"
-#include "modules/oscillator/sawtooth/osc_modules_oscillator_sawtooth.h"
-#include "modules/oscillator/triangle/osc_modules_oscillator_triangle.h"
-#include "modules/oscillator/pulse/osc_modules_oscillator_pulse.h"
-#include "modules/oscillator/clock/osc_modules_oscillator_clock.h"
-#include "modules/envelope/adsr/osc_modules_envelope_adsr.h"
 #include "modules/envelope/follower/osc_modules_envelope_follower.h"
 
-#include "modules/osc/osc_metronome/osc_modules_osc_osc_metronome.h"
-#include "modules/osc/float/osc_modules_osc_float.h"
-#include "modules/utils/counter/osc_modules_utils_counter.h"
-#include "modules/utils/equals/osc_modules_utils_equals.h"
-#include "modules/utils/spigot/osc_modules_utils_spigot.h"
+/* #include "modules/analysis/transient_detector/osc_modules_analysis_transient_detector.h" */
+/* #include "modules/filter/bandpass/osc_modules_filter_bandpass.h" */
+/* #include "modules/filter/moogff/osc_modules_filter_moogff.h" */
+/* #include "modules/filter/varslope_lowpass/osc_modules_filter_varslope_lowpass.h" */
+/* #include "modules/oscillator/sawtooth/osc_modules_oscillator_sawtooth.h" */
+/* #include "modules/oscillator/triangle/osc_modules_oscillator_triangle.h" */
+/* #include "modules/oscillator/pulse/osc_modules_oscillator_pulse.h" */
+/* #include "modules/oscillator/clock/osc_modules_oscillator_clock.h" */
+/* #include "modules/envelope/adsr/osc_modules_envelope_adsr.h" */
 
-#include "modules/envelope/segment/osc_modules_envelope_segment.h"
+/* #include "modules/osc/osc_metronome/osc_modules_osc_osc_metronome.h" */
+/* #include "modules/osc/float/osc_modules_osc_float.h" */
+/* #include "modules/utils/counter/osc_modules_utils_counter.h" */
+/* #include "modules/utils/equals/osc_modules_utils_equals.h" */
+/* #include "modules/utils/spigot/osc_modules_utils_spigot.h" */
+
+/* #include "modules/envelope/segment/osc_modules_envelope_segment.h" */
 
 #endif
 
