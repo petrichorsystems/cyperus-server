@@ -31,34 +31,45 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
   dsp_parameter params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-
+  int p;
+  
   params.name = "oscillator_sine";  
-  params.pos = 0;  
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));  
+  params.pos = 0;
+
+  params.parameters = malloc(sizeof(dsp_module_parameters_t));
+  
+  params.parameters->float32_arr_type = malloc(sizeof(float*) * 3);
   params.parameters->float32_type = malloc(sizeof(float) * 7);
   params.parameters->int32_type = malloc(sizeof(int) * 2);
 
-  /* user-facing parameters */
-  params.parameters->float32_type[0] = frequency;
-  params.parameters->float32_type[1] = amplitude;
-  params.parameters->float32_type[2] = phase;
+  /* user-facing parameter allocation */
+  params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float)); /* frequency */
+  params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float)); /* amplitude */
+  params.parameters->float32_arr_type[2] = calloc(dsp_global_period, sizeof(float)); /* phase */
 
-  /* internal parameters */
-  params.parameters->float32_type[3] = 0.0f;      /* phase_delta */
+  for(p=0; p<dsp_global_period; p++) {
+    /* user-facing parameter assignment */    
+    params.parameters->float32_arr_type[0][p] = frequency;
+    params.parameters->float32_arr_type[1][p] = amplitude;
+    params.parameters->float32_arr_type[2][p] = phase;
+
+    /* internal parameter assignment */
+    params.parameters->float32_type[0] = 0.0f; /* phase_delta */ 
+  }
 
   /* osc listener parameters */
   params.parameters->int32_type[0] = 0; /* samples waited */
-  params.parameters->int32_type[1] = (int)((1.0f / 60.0f) * (float)jackcli_samplerate);
+  params.parameters->int32_type[1] = (int)((1.0f / 60.0f) * (float)jackcli_samplerate); /* samples to wait */
 
   /* osc listener param state parameters */
-  params.parameters->float32_type[4] = frequency;
-  params.parameters->float32_type[5] = amplitude;
-  params.parameters->float32_type[6] = phase;
+  params.parameters->float32_type[1] = frequency;
+  params.parameters->float32_type[2] = amplitude;
+  params.parameters->float32_type[3] = phase;
   
   
-  ins = dsp_port_in_init("param_frequency", 512, &(params.parameters->float32_type[0]));
-  ins->next = dsp_port_in_init("param_amplitude", 512, &(params.parameters->float32_type[1]));
-  ins->next->next = dsp_port_in_init("param_phase", 512, &(params.parameters->float32_type[2]));
+  ins = dsp_port_in_init("param_frequency", 512);
+  ins->next = dsp_port_in_init("param_amplitude", 512);
+  ins->next->next = dsp_port_in_init("param_phase", 512);
   outs = dsp_port_out_init("out", 1);
 
   dsp_add_module(target_bus,
@@ -73,35 +84,27 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
 } /* dsp_create_oscillator_sine */
 
 void
-dsp_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate, int pos) {
-  float insample = 0.0;
-  float outsample = 0.0;
+dsp_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate) {
+  float *outsamples;
   
-  /* frequency input */
-  if( oscillator_sine->ins->summands != NULL ) {
-     oscillator_sine->module->dsp_param.parameters->float32_type[0] = dsp_sum_summands(oscillator_sine->ins->summands);
-  }
+  /* handle params with connected inputs */
+  if( oscillator_sine->ins->summands != NULL ) /* frequency */
+    dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[0], oscillator_sine->ins->summands);
+  if( oscillator_sine->ins->next->summands != NULL ) /* amplitude */
+    dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[1], oscillator_sine->ins->next->summands);
+  if( oscillator_sine->ins->next->next->summands != NULL ) /* phase */
+    dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[2], oscillator_sine->ins->next->next->summands);
 
-  /* amplitude input */
-  if( oscillator_sine->ins->next->summands != NULL ) {
-     oscillator_sine->module->dsp_param.parameters->float32_type[1] = dsp_sum_summands(oscillator_sine->ins->next->summands);
-  }
-  
-  /* phase input */
-  if( oscillator_sine->ins->next->next->summands != NULL ) {
-     oscillator_sine->module->dsp_param.parameters->float32_type[2] = dsp_sum_summands(oscillator_sine->ins->next->next->summands);
-  }
-
-  dsp_osc_listener_oscillator_sine(oscillator_sine, jack_samplerate, pos);
-  
-  outsample = math_modules_oscillator_sine(oscillator_sine->module->dsp_param.parameters,
-                                                  jack_samplerate,
-                                                  pos);
+  dsp_osc_listener_oscillator_sine(oscillator_sine, jack_samplerate);
+  outsamples = math_modules_oscillator_sine(oscillator_sine->module->dsp_param.parameters,
+                                                  jack_samplerate);
   
   /* drive audio outputs */
-  oscillator_sine->outs->sample->value = outsample;
-  
-  return;
+  memcpy(oscillator_sine->outs->sample->value,
+         outsamples,
+         sizeof(float) * dsp_global_period);
+
+  free(outsamples);
 } /* dsp_oscillator_sine */
 
 
@@ -109,64 +112,49 @@ void dsp_edit_oscillator_sine(struct dsp_module *oscillator_sine,
                                float frequency,
                                float amplitude,
                                float phase) {
-  printf("about to assign frequency\n");
-  oscillator_sine->dsp_param.parameters->float32_type[0] = frequency;
-  printf("assigned oscillator_sine->dsp_param.parameters->float32_type[0]: %f\n",
-	 oscillator_sine->dsp_param.parameters->float32_type[0]);
-  printf("about to assign amplitude\n");
-  oscillator_sine->dsp_param.parameters->float32_type[1] = amplitude;
-  printf("assigned oscillator_sine->dsp_param.parameters->float32_type[1]: %f\n",
-	 oscillator_sine->dsp_param.parameters->float32_type[1]);
-  printf("about to assign phase\n");
-  oscillator_sine->dsp_param.parameters->float32_type[2] = phase;
-  printf("assigned oscillator_sine->dsp_param.parameters->float32_type[2]: %f\n", oscillator_sine->dsp_param.parameters->float32_type[2]);
-
-  printf("returning\n");
-  
+  for(int p=0; p<dsp_global_period; p++) {
+    oscillator_sine->dsp_param.parameters->float32_arr_type[0][p] = frequency;
+    oscillator_sine->dsp_param.parameters->float32_arr_type[1][p] = amplitude;
+    oscillator_sine->dsp_param.parameters->float32_arr_type[2][p] = phase;    
+  }
 } /* dsp_edit_oscillator_sine */
 
 
 void
-dsp_osc_listener_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate, int pos) {
-
+dsp_osc_listener_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate) {
   unsigned short param_connected = 0;
   if( (oscillator_sine->ins->summands != NULL) ||
       (oscillator_sine->ins->next->summands != NULL) ||
       (oscillator_sine->ins->next->next->summands != NULL) ) {
-     param_connected = 1;
+    param_connected = 1;
   }
 
   /* if param_connected, activate osc listener */
   if(param_connected) {
-    /* osc listener, 60hz */
-     int samples_waited = oscillator_sine->module->dsp_param.parameters->int32_type[0];
-     int samples_to_wait = oscillator_sine->module->dsp_param.parameters->int32_type[1];
-     if( samples_waited == samples_to_wait - 1) {
-       /* if new value is different than old value, send osc messages */
-       if(
-          oscillator_sine->module->dsp_param.parameters->float32_type[0] != oscillator_sine->module->dsp_param.parameters->float32_type[4] ||
-          oscillator_sine->module->dsp_param.parameters->float32_type[1] != oscillator_sine->module->dsp_param.parameters->float32_type[5] ||
-          oscillator_sine->module->dsp_param.parameters->float32_type[2] != oscillator_sine->module->dsp_param.parameters->float32_type[6]
-          ) {
-         int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
-         char *path = (char *)malloc(sizeof(char) * path_len);
-         snprintf(path, path_len, "%s%s", "/cyperus/listener/", oscillator_sine->module->id);    
-         lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-         lo_send(lo_addr_send, path, "fff",
-                 oscillator_sine->module->dsp_param.parameters->float32_type[0],
-                 oscillator_sine->module->dsp_param.parameters->float32_type[1],
-                 oscillator_sine->module->dsp_param.parameters->float32_type[2]);
-         free(lo_addr_send);
+    /* if new value is different than old value, send osc messages */
+    if(
+       oscillator_sine->module->dsp_param.parameters->float32_type[1] != oscillator_sine->module->dsp_param.parameters->float32_arr_type[1][0] ||
+       oscillator_sine->module->dsp_param.parameters->float32_type[2] != oscillator_sine->module->dsp_param.parameters->float32_arr_type[2][0] ||
+       oscillator_sine->module->dsp_param.parameters->float32_type[3] != oscillator_sine->module->dsp_param.parameters->float32_arr_type[3][0]
+       ) {
+      int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
+      char *path = (char *)malloc(sizeof(char) * path_len);
+      snprintf(path, path_len, "%s%s", "/cyperus/listener/", oscillator_sine->module->id);    
+      lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
+      lo_send(lo_addr_send, path, "fff",
+              oscillator_sine->module->dsp_param.parameters->float32_type[1],
+              oscillator_sine->module->dsp_param.parameters->float32_type[2],
+              oscillator_sine->module->dsp_param.parameters->float32_type[3]);
+      free(lo_addr_send);
 
-         /* assign new parameter to last parameter after we're reported the change */
-         oscillator_sine->module->dsp_param.parameters->float32_type[4] = oscillator_sine->module->dsp_param.parameters->float32_type[0];
-         oscillator_sine->module->dsp_param.parameters->float32_type[5] = oscillator_sine->module->dsp_param.parameters->float32_type[1];
-         oscillator_sine->module->dsp_param.parameters->float32_type[6] = oscillator_sine->module->dsp_param.parameters->float32_type[2];
-       }
-       oscillator_sine->module->dsp_param.parameters->int32_type[0] = 0;
-     } else {
-       oscillator_sine->module->dsp_param.parameters->int32_type[0] += 1;
-     } 
+      /* assign new parameter to last parameter after we're reported the change */
+      oscillator_sine->module->dsp_param.parameters->float32_type[1] = oscillator_sine->module->dsp_param.parameters->float32_arr_type[0][0];
+      oscillator_sine->module->dsp_param.parameters->float32_type[2] = oscillator_sine->module->dsp_param.parameters->float32_arr_type[1][0];
+      oscillator_sine->module->dsp_param.parameters->float32_type[3] = oscillator_sine->module->dsp_param.parameters->float32_arr_type[2][0];
+    }
+    oscillator_sine->module->dsp_param.parameters->int32_type[0] = 0;
+  } else {
+    oscillator_sine->module->dsp_param.parameters->int32_type[0] += 1;
   }
   
   return;
