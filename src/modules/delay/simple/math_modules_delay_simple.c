@@ -1,4 +1,4 @@
-  /* math_modules_delay_simple.c
+/* math_modules_delay_simple.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ Copyright 2021 murray foster */
 #include "math_modules_delay_simple.h"
 
 extern
-float *math_modules_delay_simple(dsp_parameter *delay, int samplerate, int pos) {
+float *math_modules_delay_simple(dsp_parameter *delay, int samplerate) {
   /* printf("math_modules_delay_simple.c::math_modules_delay_simple()\n"); */
   
   float *out = malloc(sizeof(float) * dsp_global_period);

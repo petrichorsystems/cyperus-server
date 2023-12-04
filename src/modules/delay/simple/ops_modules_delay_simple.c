@@ -36,36 +36,47 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
 
-  params.in = malloc(sizeof(float) * dsp_global_period);
   params.name = "delay_simple";  
   params.pos = 0;
+
+  /* audio input */
+  params.in = malloc(sizeof(float) * dsp_global_period);
   
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
   
   params.parameters->int32_type = malloc(sizeof(int) * 2);
+  params.parameters->float32_type = malloc(sizeof(int) * 3);  
   params.parameters->float32_arr_type = malloc(sizeof(float *) * 4);
   params.parameters->int32_arr_type = malloc(sizeof(int *));  
-  
-  params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float)); /* user-facing amount parameter */
-  params.parameters->float32_arr_type[2] = calloc(dsp_global_period, sizeof(float)); /* user-facing time parameter */  
-  params.parameters->float32_arr_type[3] = calloc(dsp_global_period, sizeof(float)); /* user-facing feedback parameter */
 
-  params.parameters->int32_arr_type[0] = calloc(dsp_global_period, sizeof(int)); /* internal time (% of sec) to sample conversion */
+  /* user-facing parameter allocation */
+  params.parameters->float32_arr_type[0] = calloc(time * jackcli_samplerate * 30, sizeof(float)); /* delay sample buffer */
+  params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float)); /* amount */
+  params.parameters->float32_arr_type[2] = calloc(dsp_global_period, sizeof(float)); /* time */  
+  params.parameters->float32_arr_type[3] = calloc(dsp_global_period, sizeof(float)); /* feedback */
+
+  /* internal parameter allocation */
+  params.parameters->int32_arr_type[0] = calloc(dsp_global_period, sizeof(int)); /* time (% of sec) to sample conversion */
 
   for(int p=0; p<dsp_global_period; p++) {
-    params.parameters->float32_arr_type[1][p] = amount; /* user-facing amount parameter */
-    params.parameters->float32_arr_type[2][p] = time; /* user-facing time parameter */  
-    params.parameters->float32_arr_type[3][p] = feedback; /* user-facing feedback parameter */  
-    
-    params.parameters->int32_arr_type[0][p] = (int)(time * jackcli_samplerate); /* internal time (% of sec) to sample conversion */
+    /* user-facing parameter assignment */
+    params.parameters->float32_arr_type[1][p] = amount;
+    params.parameters->float32_arr_type[2][p] = time;
+    params.parameters->float32_arr_type[3][p] = feedback;
+
+    /* internal parameter assignment, time (% of sec) to sample conversion */
+    params.parameters->int32_arr_type[0][p] = (int)(time * jackcli_samplerate);
   }
   
-  /* internal parameters */
+  /* internal parameter assignment */
   params.parameters->int32_type[0] = 0; /* delay_pos */
-  params.parameters->int32_type[1] = 0; /* delay_time_pos */
-  
-  params.parameters->float32_arr_type[0] = calloc(time * jackcli_samplerate * 30, sizeof(float)); /* delay sample buffer */
-  
+  params.parameters->int32_type[1] = 0; /* delay_time_pos */  
+
+  /* osc listener parameters */
+  params.parameters->float32_type[0] = amount;
+  params.parameters->float32_type[1] = time;
+  params.parameters->float32_type[2] = feedback;
+
   
   ins = dsp_port_in_init("in", 512);
   ins->next = dsp_port_in_init("param_amount", 512);
@@ -76,7 +87,7 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "delay_simple",
 		 dsp_delay_simple,
-                 NULL,
+                 dsp_osc_listener_delay_simple,
 		 dsp_optimize_module,
 		 params,
 		 ins,
@@ -85,63 +96,86 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
 } /* dsp_create_delay_simple */
 
 void
-dsp_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate, int pos) {
+dsp_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate) {
   /* printf("ops_modules_delay_simple.c::dsp_delay_simple()\n"); */
+
+  float *outsamples;
+  int p;  
   
-  float *insamples = malloc(sizeof(float) * dsp_global_period);
-  float *outsamples = malloc(sizeof(float) * dsp_global_period);
-
-  float *param_time_block = malloc(sizeof(float) * dsp_global_period);
-
-  int p;
-
-  memset(insamples, 0.0f, sizeof(float) * dsp_global_period);
-  memset(outsamples, 0.0f, sizeof(float) * dsp_global_period);
-  memset(param_time_block, 0.0f, sizeof(float) * dsp_global_period);
+  dsp_sum_summands(delay_simple->module->dsp_param.in, delay_simple->ins->summands);  
   
-  dsp_sum_summands(delay_simple->ins->summands, insamples);
-  
-  memcpy(delay_simple->module->dsp_param.in, insamples, sizeof(float) * dsp_global_period);
-
-  /* param_time input */
-  if( delay_simple->ins->next->next->summands != NULL ) {
-    dsp_sum_summands(delay_simple->ins->next->next->summands, param_time_block);
-    memcpy(delay_simple->module->dsp_param.parameters->float32_arr_type[2], param_time_block, sizeof(float) * dsp_global_period);
-
+  /* handle params with connected inputs */
+  if( delay_simple->ins->next->summands != NULL ) { /* amount */
+    dsp_sum_summands(delay_simple->module->dsp_param.parameters->float32_arr_type[1], delay_simple->ins->next->summands);
+  }
+  if( delay_simple->ins->next->next->summands != NULL ) { /* time */
+    dsp_sum_summands(delay_simple->module->dsp_param.parameters->float32_arr_type[2], delay_simple->ins->next->next->summands);
+    /* calculate time in samples across current period */
     for(int p=0; p<dsp_global_period; p++) {
       delay_simple->module->dsp_param.parameters->int32_arr_type[0][p] = (int)(delay_simple->module->dsp_param.parameters->float32_arr_type[2][p] * jack_samplerate);
     }
- 
-    free(param_time_block);
   }
+  if( delay_simple->ins->next->next->next->summands != NULL ) { /* feedback */
+    dsp_sum_summands(delay_simple->module->dsp_param.parameters->float32_arr_type[3], delay_simple->ins->next->next->next->summands);
+  }  
 
   outsamples = math_modules_delay_simple(&delay_simple->module->dsp_param,
-                                         jack_samplerate,
-                                         pos);
+                                         jack_samplerate);
   
   /* drive audio outputs */
-  memcpy(delay_simple->outs->sample->value,  outsamples, sizeof(float) * dsp_global_period);
+  memcpy(delay_simple->outs->sample->value,
+         outsamples,
+         sizeof(float) * dsp_global_period);
   
-  free(insamples);  
   free(outsamples);
-  
 } /* dsp_delay_simple */
-
 
 void dsp_edit_delay_simple(struct dsp_module *delay_simple,
                             float amount,
                             float time,
-                            float feedback
-                           ) {
+                            float feedback) {
+  int time_samples = (int)(time * jackcli_samplerate);
   for(int p=0; p<dsp_global_period; p++) {
-    delay_simple->dsp_param.parameters->float32_arr_type[1][p] = amount; /* user-facing amount parameter */
-  
-    delay_simple->dsp_param.parameters->float32_arr_type[2][p] =  time; /* user-facing time parameter */
-    delay_simple->dsp_param.parameters->int32_arr_type[0][p] = (int)(time * jackcli_samplerate); /* internal time (% of sec) to sample conversion */
-  
-    delay_simple->dsp_param.parameters->float32_arr_type[3][p] = feedback; /* user-facing feedback parameter */
+    delay_simple->dsp_param.parameters->float32_arr_type[1][p] = amount;  
+    delay_simple->dsp_param.parameters->float32_arr_type[2][p] =  time; 
+    delay_simple->dsp_param.parameters->int32_arr_type[0][p] = time_samples; /* internal time (% of sec) to sample conversion */
+    delay_simple->dsp_param.parameters->float32_arr_type[3][p] = feedback;
+  }
+} /* dsp_edit_delay_simple */
+
+void
+dsp_osc_listener_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate) {
+  unsigned short param_connected = 0;
+  if( (delay_simple->ins->next->summands != NULL) ||
+      (delay_simple->ins->next->next->summands != NULL) ||
+      (delay_simple->ins->next->next->next->summands != NULL) ) {
+    param_connected = 1;
   }
 
-  printf("returning\n");
+  /* if param_connected, activate osc listener */
+  if(param_connected) {
+    /* if new value is different than old value, send osc messages */
+    if(
+       delay_simple->module->dsp_param.parameters->float32_type[0] != delay_simple->module->dsp_param.parameters->float32_arr_type[1][0] ||
+       delay_simple->module->dsp_param.parameters->float32_type[1] != delay_simple->module->dsp_param.parameters->float32_arr_type[2][0] ||
+       delay_simple->module->dsp_param.parameters->float32_type[2] != delay_simple->module->dsp_param.parameters->float32_arr_type[3][0]
+       ) {
+      int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
+      char *path = (char *)malloc(sizeof(char) * path_len);
+      snprintf(path, path_len, "%s%s", "/cyperus/listener/", delay_simple->module->id);    
+      lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
+      lo_send(lo_addr_send, path, "fff",
+              delay_simple->module->dsp_param.parameters->float32_arr_type[1][0],
+              delay_simple->module->dsp_param.parameters->float32_arr_type[2][0],
+              delay_simple->module->dsp_param.parameters->float32_arr_type[3][0]);
+      free(lo_addr_send);
+
+      /* assign new parameter to last parameter after we're reported the change */
+      delay_simple->module->dsp_param.parameters->float32_type[0] = delay_simple->module->dsp_param.parameters->float32_arr_type[1][0];
+      delay_simple->module->dsp_param.parameters->float32_type[1] = delay_simple->module->dsp_param.parameters->float32_arr_type[2][0];
+      delay_simple->module->dsp_param.parameters->float32_type[2] = delay_simple->module->dsp_param.parameters->float32_arr_type[3][0];
+    }
+  }
   
-} /* dsp_edit_delay_simple */
+  return;
+} /* dsp_osc_listener_delay_simple */

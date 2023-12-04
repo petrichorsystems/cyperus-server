@@ -37,11 +37,15 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
                          float feedback);
 void
 dsp_delay_simple(struct dsp_operation *delay_simple,
-                  int jack_samplerate,
-                  int pos);
+                  int jack_samplerate);
 void
 dsp_edit_delay_simple(struct dsp_module *delay_simple,
                        float amount,
                        float time,
                        float feedback);                          
+
+void
+dsp_osc_listener_delay_simple(struct dsp_operation *delay_simple,
+                              int jack_samplerate);
+
 #endif
