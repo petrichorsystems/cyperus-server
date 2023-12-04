@@ -37,8 +37,7 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
                            float phase);
 void
 dsp_oscillator_sine(struct dsp_operation *oscillator_sine,
-			    int jack_samplerate,
-			    int pos);
+			    int jack_samplerate);
 void
 dsp_edit_oscillator_sine(struct dsp_module *oscillator_sine,
                          float frequency,
@@ -47,6 +46,5 @@ dsp_edit_oscillator_sine(struct dsp_module *oscillator_sine,
 
 void
 dsp_osc_listener_oscillator_sine(struct dsp_operation *oscillator_sine,
-                                 int jack_samplerate,
-                                 int pos);
+                                 int jack_samplerate);
 #endif
