@@ -28,71 +28,135 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
                                     float attack,
                                     float decay,
                                     float scale) {
-  dsp_parameter envelope_follower_param;
+  dsp_parameter params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
 
-  envelope_follower_param.name = "envelope_follower";  
-  envelope_follower_param.pos = 0;  
-  envelope_follower_param.parameters = malloc(sizeof(dsp_module_parameters_t));
-  printf("malloc() float32\n");
-  envelope_follower_param.parameters->float32_type = malloc(sizeof(float) * 4);
+  params.name = "envelope_follower";  
+  params.pos = 0;
+
+  /* signal input */
+  params.in = malloc(sizeof(float) * dsp_global_period);
   
-  /* user-facing parameters */
-  envelope_follower_param.parameters->float32_type[0] = attack; 
-  envelope_follower_param.parameters->float32_type[1] = decay;
-  envelope_follower_param.parameters->float32_type[2] = scale;
+  params.parameters = malloc(sizeof(dsp_module_parameters_t));
+
+  params.parameters->float32_type = malloc(sizeof(float) * 4);
+  params.parameters->float32_arr_type = malloc(sizeof(float *) * 3);  
+
+  /* user-facing parameter allocation */
+  params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float));
+  params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float));
+  params.parameters->float32_arr_type[2] = calloc(dsp_global_period, sizeof(float));
+
+  for(int p=0; p<dsp_global_period; p++) {
+    /* user-facing parameter assignment */
+    params.parameters->float32_arr_type[0][p] = attack; 
+    params.parameters->float32_arr_type[1][p] = decay;
+    params.parameters->float32_arr_type[2][p] = scale;
+  }
   
-  /* internal parameters */
-  envelope_follower_param.parameters->float32_type[3] = 0.0f; /* last output sample */
+  /* internal parameter assignment */
+  params.parameters->float32_type[0] = 0.0f; /* last output sample */
+
+  /* osc listener parameters */
+  params.parameters->float32_type[1] = attack;
+  params.parameters->float32_type[2] = decay;
+  params.parameters->float32_type[3] = scale;
   
-  ins = dsp_port_in_init("in", 512, NULL);
+  ins = dsp_port_in_init("in", 512);
+  ins->next = dsp_port_in_init("param_attack", 512);
+  ins->next->next = dsp_port_in_init("param_decay", 512);
+  ins->next->next->next = dsp_port_in_init("param_scale", 512);
   outs = dsp_port_out_init("out", 1);
 
   dsp_add_module(target_bus,
 		 "envelope_follower",
 		 dsp_envelope_follower,
-                 NULL,
+                 dsp_osc_listener_envelope_follower,
 		 dsp_optimize_module,
-		 envelope_follower_param,
+		 params,
 		 ins,
 		 outs);
-  
+
   return 0;
 } /* dsp_create_envelope_follower */
 
 void
-dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos) {
-  float insample = 0.0f;
-  float outsample = 0.0f;
+dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate) {
+  float *outsamples;
+  int p;
 
-  insample = dsp_sum_summands(envelope_follower->ins->summands);
-  envelope_follower->module->dsp_param.in = insample;
+  dsp_sum_summands(envelope_follower->module->dsp_param.in, envelope_follower->ins->summands);
 
-  outsample = math_modules_envelope_follower(&envelope_follower->module->dsp_param,
-                                                  jack_samplerate,
-                                                  pos);
+  /* handle params with connected inputs */
+  if( envelope_follower->ins->next->summands != NULL ) { /* attack */
+    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[0], envelope_follower->ins->next->summands);
+  }
+  if( envelope_follower->ins->next->next->summands != NULL ) { /* decay */
+    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[1], envelope_follower->ins->next->next->summands);
+  }
+  if( envelope_follower->ins->next->next->next->summands != NULL ) { /* scale */
+    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[2], envelope_follower->ins->next->next->next->summands);
+  }  
+
+  outsamples = math_modules_envelope_follower(&envelope_follower->module->dsp_param,
+                                             jack_samplerate);
   /* drive audio outputs */
-  envelope_follower->outs->sample->value = outsample;
+  memcpy(envelope_follower->outs->sample->value,
+         outsamples,
+         sizeof(float) * dsp_global_period);
+
+  free(outsamples);
 } /* dsp_envelope_follower */
 
 
 void
 dsp_edit_envelope_follower(struct dsp_module *envelope_follower,
-                                  float attack,
-                                  float decay,
-                                  float scale) {
-  envelope_follower->dsp_param.parameters->float32_type[0] = attack;
-  printf("assigned envelope_follower->dsp_param.parameters->float32_type[0]: %f\n",
-	 envelope_follower->dsp_param.parameters->float32_type[0]);
-  
-  envelope_follower->dsp_param.parameters->float32_type[1] = decay;
-  printf("assigned envelope_follower->dsp_param.parameters->float32_type[1]: %f\n",
-	 envelope_follower->dsp_param.parameters->float32_type[1]);
-  
-  envelope_follower->dsp_param.parameters->float32_type[2] = scale;
-  printf("assigned envelope_follower->dsp_param.parameters->float32_type[2]: %f\n",
-	 envelope_follower->dsp_param.parameters->float32_type[2]);
-    
-  printf("dsp_edit_envelope_follower::returning\n");
+                           float attack,
+                           float decay,
+                           float scale) {
+  for(int p=0; p<dsp_global_period; p++) {
+    envelope_follower->dsp_param.parameters->float32_arr_type[0][p] = attack;  
+    envelope_follower->dsp_param.parameters->float32_arr_type[1][p] = decay; 
+    envelope_follower->dsp_param.parameters->float32_arr_type[2][p] = scale;
+  }
 } /* dsp_edit_envelope_follower */
+
+void
+dsp_osc_listener_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate) {
+  unsigned short param_connected = 0;
+  if( (envelope_follower->ins->summands != NULL) ||
+      (envelope_follower->ins->next->summands != NULL) ||
+      (envelope_follower->ins->next->next->summands != NULL) ) {
+    param_connected = 1;
+  }
+
+  /* if param_connected, activate osc listener */
+  if(param_connected) {
+    /* if new value is different than old value, send osc messages */
+    if(
+       envelope_follower->module->dsp_param.parameters->float32_type[1] != envelope_follower->module->dsp_param.parameters->float32_arr_type[0][0] ||
+       envelope_follower->module->dsp_param.parameters->float32_type[2] != envelope_follower->module->dsp_param.parameters->float32_arr_type[1][0] ||
+       envelope_follower->module->dsp_param.parameters->float32_type[3] != envelope_follower->module->dsp_param.parameters->float32_arr_type[2][0]
+       ) {
+      int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
+      char *path = (char *)malloc(sizeof(char) * path_len);
+      snprintf(path, path_len, "%s%s", "/cyperus/listener/", envelope_follower->module->id);    
+
+      lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
+      lo_send(lo_addr_send, path, "fff",
+              envelope_follower->module->dsp_param.parameters->float32_arr_type[0][0],
+              envelope_follower->module->dsp_param.parameters->float32_arr_type[1][0],
+              envelope_follower->module->dsp_param.parameters->float32_arr_type[2][0]);
+      free(lo_addr_send);
+
+      /* assign new parameter to last parameter after we're reported the change */
+      envelope_follower->module->dsp_param.parameters->float32_type[1] = envelope_follower->module->dsp_param.parameters->float32_arr_type[0][0];
+      envelope_follower->module->dsp_param.parameters->float32_type[2] = envelope_follower->module->dsp_param.parameters->float32_arr_type[1][0];
+      envelope_follower->module->dsp_param.parameters->float32_type[3] = envelope_follower->module->dsp_param.parameters->float32_arr_type[2][0];
+    }
+  }
+  
+  return;
+} /* dsp_osc_listener_envelope_follower */
+

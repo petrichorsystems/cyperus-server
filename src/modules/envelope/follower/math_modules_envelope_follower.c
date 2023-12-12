@@ -19,26 +19,32 @@ Copyright 2021 murray foster */
 #include "math_modules_envelope_follower.h"
 
 extern
-float math_modules_envelope_follower(dsp_parameter *follower, int samplerate, int pos) {
-
-  float attack_ms = follower->parameters->float32_type[0];
-  float decay_ms = follower->parameters->float32_type[1];
-  float coeff_attack = exp(log(0.01f) / (attack_ms * samplerate * 0.001f));
-  float coeff_decay = exp(log(0.01f) / (decay_ms * samplerate * 0.001f));
-
-  float scale = follower->parameters->float32_type[2];
+float *math_modules_envelope_follower(dsp_parameter *follower, int samplerate) {
+  float *out = malloc(sizeof(float) * dsp_global_period);
   
-  float insample = follower->in;
-  float outsample = 0.0f;
+  float *attack_ms = follower->parameters->float32_arr_type[0];
+  float *decay_ms = follower->parameters->float32_arr_type[1];
+  float *scale = follower->parameters->float32_arr_type[2];
+
+  float last_sample = follower->parameters->float32_type[0];
+  
+  float coeff_attack;
+  float coeff_decay;
   float absin = 0.0f;
   
-  absin = fabs(insample);
-  if(absin > follower->parameters->float32_type[3])
-    outsample = coeff_attack * ( follower->parameters->float32_type[3] - absin) + absin;
-  else
-    outsample = coeff_decay * ( follower->parameters->float32_type[3] - absin) + absin;
+  for(int p=0; p<dsp_global_period; p++) {
+    coeff_attack = exp(log(0.01f) / (attack_ms[p] * samplerate * 0.001f));
+    coeff_decay = exp(log(0.01f) / (decay_ms[p] * samplerate * 0.001f));
   
-  follower->parameters->float32_type[3] = outsample;
-
-  return fabs(outsample) * scale;
+    absin = fabs(follower->in[p]);
+    if(absin > last_sample)
+      out[p] = coeff_attack * (last_sample - absin) + absin;
+    else
+      out[p] = coeff_decay * (last_sample - absin) + absin;
+  
+    last_sample = out[p];
+    out[p] = fabs(out[p]) * scale[p];
+  }  
+  follower->parameters->float32_type[0] = last_sample;
+  return out;
 }

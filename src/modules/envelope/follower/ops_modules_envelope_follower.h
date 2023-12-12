@@ -38,7 +38,7 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
                                     float decay,
                                     float scale);
 void
-dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate, int pos);
+dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate);
 
 void
 dsp_edit_envelope_follower(struct dsp_module *envelope_follower,
@@ -46,4 +46,7 @@ dsp_edit_envelope_follower(struct dsp_module *envelope_follower,
                                   float decay,
                                   float scale);
 
+void
+dsp_osc_listener_envelope_follower(struct dsp_operation *envelope_follower,
+                                   int jack_samplerate);
 #endif
