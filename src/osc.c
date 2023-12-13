@@ -143,17 +143,18 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 
 void
 osc_callback_timer_callback(int signum) {
+  
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   struct dsp_operation *temp_op = NULL;  
   
   lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global_load);
-
+  
   temp_op = dsp_global_operation_head;
   while(temp_op != NULL) {
     /* execute appropriate listener function */
-    if( temp_op->module->dsp_osc_listener_function != NULL ) {
-      temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
-    }
+    if( temp_op->module != NULL )
+      if( temp_op->module->dsp_osc_listener_function != NULL )
+        temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
     temp_op = temp_op->next;
   }
   
