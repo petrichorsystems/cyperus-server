@@ -1,4 +1,4 @@
-/* osc_modules_osc_osc_float.c
+/* osc_modules_osc_utils_float.c
 This file is a part of 'cyperus'
 This program is free software: you can redistribute it and/or modify
 hit under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ Copyright 2015 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
 
-#include "../../../rtqueue.h"
 #include "../../../dsp_math.h"
 #include "../../../dsp.h"
 #include "../../../dsp_types.h"
@@ -28,13 +27,13 @@ Copyright 2015 murray foster */
 #include "../../../jackcli.h"
 #include "../../../osc.h"
 
-#include "ops_modules_osc_float.h"
-#include "osc_modules_osc_float.h"
+#include "ops_modules_utils_float.h"
+#include "osc_modules_utils_float.h"
 
-int osc_add_modules_osc_float_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_add_modules_utils_float_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
-  printf("osc_add_modules_osc_float_handler()..\n");
+  printf("osc_add_modules_utils_float_handler()..\n");
   char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -48,7 +47,7 @@ int osc_add_modules_osc_float_handler(const char *path, const char *types, lo_ar
   value=argv[2]->f;
 
   target_bus = dsp_find_bus(bus_id);  
-  dsp_create_osc_float(target_bus, value);
+  dsp_create_utils_float(target_bus, value);
 
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -58,16 +57,16 @@ int osc_add_modules_osc_float_handler(const char *path, const char *types, lo_ar
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
-  printf("osc_add_modules_osc_float_handler, module_id: %s\n", module_id);
+  printf("osc_add_modules_utils_float_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/osc_float","sisf", request_id, 0, module_id, value);
+  lo_send(lo_addr_send,"/cyperus/add/module/utils/float","sisf", request_id, 0, module_id, value);
   free(lo_addr_send);
   return 0;
-} /* osc_add_modules_osc_float_handler */
+} /* osc_add_modules_utils_float_handler */
 
 
 int
-osc_edit_modules_osc_float_handler(const char *path, const char *types, lo_arg ** argv,
+osc_edit_modules_utils_float_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {
   char *request_id, *module_path, *module_id;
@@ -79,15 +78,15 @@ osc_edit_modules_osc_float_handler(const char *path, const char *types, lo_arg *
   module_id = (char *)argv[1];
   value=argv[2]->f;
 
-  printf("osc_edit_modules_osc_float_handler::value: %f\n", value);
+  printf("osc_edit_modules_utils_float_handler::value: %f\n", value);
   
   target_module = dsp_find_module(module_id);
-  dsp_edit_osc_float(target_module, value);
+  dsp_edit_utils_float(target_module, value);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/osc_float","sisf", request_id, 0, module_id, value);
+  lo_send(lo_addr_send,"/cyperus/edit/module/utils/float","sisf", request_id, 0, module_id, value);
   free(lo_addr_send);
   
   return 0;
-} /* osc_edit_modules_osc_float_handler */
+} /* osc_edit_modules_utils_float_handler */
 
