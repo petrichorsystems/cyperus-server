@@ -46,7 +46,7 @@ dsp_create_utils_float(struct dsp_bus *target_bus,
 
   for(int p=0; p<dsp_global_period; p++) {
     /* user-facing parameter assignment */
-    params.parameters->float32_arr_type[0][p] = value;
+    params.in[p] = value;
   }
   
   /* osc listener parameters */
