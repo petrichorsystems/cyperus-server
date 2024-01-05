@@ -308,15 +308,14 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_port_in *temp_port_in = NULL;
-  
+
+  struct dsp_operation *temp_head_op = NULL;
   struct dsp_operation *temp_op = NULL;
   struct dsp_operation *temp_op_out = NULL;
   struct dsp_operation *temp_op_in = NULL;
 
   struct dsp_operation *matched_op_out = NULL;
   struct dsp_operation *matched_op_in = NULL;
-
-  struct dsp_operation *temp_trranslation_op = NULL;
 
   struct dsp_operation_sample *temp_sample_out = NULL;
   struct dsp_operation_sample *temp_sample_in = NULL;
@@ -338,9 +337,24 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
   int is_main_out_in = 0;
   int is_bus_port_in = 0;
   int is_module_in = 0;
+
+  int module_out_exists = 0;
   
   /* OUTPUT PROCESSING */
-    
+      
+  if( dsp_find_main_in_port_out((char *)connection->id_out) != NULL ) {
+    is_main_in_out = 1;
+  } else if( dsp_find_module_port_out((char *)connection->id_out) != NULL ) {
+    is_module_out = 1;
+  } else if( dsp_find_bus_port_out((char *)connection->id_out) != NULL ) {
+    is_bus_port_out = 1;
+  } else if( dsp_find_bus_port_in((char *)connection->id_out) != NULL ) {
+    is_bus_port_out = 1;    
+  } else {
+    printf("unexpected connection output -- id: '%s', exiting..\n", connection->id_out);
+    exit(1);
+  }
+
   /* grab 'out' op and sample address */
   temp_op_out = dsp_global_operation_head_processing;
   while(temp_op_out != NULL) {
@@ -354,7 +368,8 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
     }
     if(found_sample_out != NULL) {
       matched_op_out = temp_op_out;
-      break;    }
+      break;
+    }
     temp_op_out = temp_op_out->next;
   }
 
@@ -367,19 +382,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	dsp_operation_sample_insert_tail(matched_op_out->outs, found_sample_out);
       }
     }
-  }
-  
-  if( dsp_find_main_in_port_out((char *)connection->id_out) != NULL ) {
-    is_main_in_out = 1;
-  } else if( dsp_find_module_port_out((char *)connection->id_out) != NULL ) {
-    is_module_out = 1;
-  } else if( dsp_find_bus_port_out((char *)connection->id_out) != NULL ) {
-    is_bus_port_out = 1;
-  } else if( dsp_find_bus_port_in((char *)connection->id_out) != NULL ) {
-    is_bus_port_out = 1;    
-  } else {
-    printf("unexpected connection output -- id: '%s', exiting..\n", connection->id_out);
-    exit(1);
   }
   
   if( found_sample_out == NULL ) {
@@ -445,6 +447,9 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	if(dsp_global_operation_head_processing == NULL)
 	  dsp_global_operation_head_processing = temp_op;
 	else {
+
+          /* check if module exists first */
+          
 	  dsp_operation_insert_tail(dsp_global_operation_head_processing,
 				    temp_op);
         }
@@ -497,25 +502,47 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
     temp_op_in = dsp_optimized_main_outs;
   else
     temp_op_in = dsp_global_operation_head_processing;
-  
+
+
   while(temp_op_in != NULL) {
-    if( strcmp(temp_op_in->dsp_id, connection->id_in) == 0 ) {
-      temp_sample_in = temp_op_in->ins;
-      if( is_bus_port_in == 0 && is_module_in) {
-        while(temp_sample_in != NULL) {
-          if( strcmp(temp_sample_in->dsp_id, connection->id_in) == 0 ) {
-            sample_in = temp_sample_in;
-            break;
-          }
-          temp_sample_in = temp_sample_in->next;
-        }
-      } else {
-        sample_in = temp_sample_in;
+    if(is_bus_port_in) {
+      if( strcmp(temp_op_in->dsp_id, connection->id_in) == 0 ) {
+        sample_in = temp_op_in->ins;
+        break;
       }
-      break;
+    }
+    if(is_module_in) {
+      temp_sample_in = temp_op_in->ins;
+      while(temp_sample_in != NULL) {       
+        if( strcmp(temp_sample_in->dsp_id, connection->id_in) == 0 ) {
+          sample_in = temp_sample_in;
+          break;
+        }
+        temp_sample_in = temp_sample_in->next;
+      }
     }
     temp_op_in = temp_op_in->next;
   }
+
+  
+  /* while(temp_op_in != NULL) { */
+  /*   if( strcmp(temp_op_in->dsp_id, connection->id_in) == 0 ) { */
+  /*     temp_sample_in = temp_op_in->ins; */
+  /*     if( is_bus_port_in == 0 && is_module_in) { */
+  /*       while(temp_sample_in != NULL) { */
+  /*         if( strcmp(temp_sample_in->dsp_id, connection->id_in) == 0 ) { */
+  /*           sample_in = temp_sample_in; */
+  /*           break; */
+  /*         } */
+  /*         temp_sample_in = temp_sample_in->next; */
+  /*       } */
+  /*     } else { */
+  /*       sample_in = temp_sample_in; */
+  /*     } */
+  /*     break; */
+  /*   } */
+  /*   temp_op_in = temp_op_in->next; */
+  /* } */
 
   int created_op = 0;
   if( sample_in == NULL ) {
@@ -556,7 +583,20 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
         dsp_global_operation_head_processing = temp_op;
       else {
         if( is_module_in ) {
-          dsp_operation_insert_ahead(matched_op_out, temp_op);
+
+          /* check if module exists first */
+
+          /* temp_head_op = dsp_global_operation_head_processing; */
+          /* while(temp_head_op != NULL) { */
+
+          /*   if(temp_head_op->module != NULL) */
+          /*     if( strcmp(temp_head_op->module->id, temp_op->module->id) == 0) */
+          /*       module_out_exists = 1; */
+          /*   temp_head_op = temp_head_op->next; */
+          /* } */
+          /* if(module_out_exists == 0) */
+          
+            dsp_operation_insert_ahead(matched_op_out, temp_op);
         } else {
           dsp_operation_insert_tail(dsp_global_operation_head_processing,
                                     temp_op);
@@ -735,10 +775,16 @@ void
 
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
+
+  struct dsp_connection *temp_connection = dsp_global_connection_graph;
+  int connection_idx = 0;
+  
   float *sample_block = malloc(sizeof(float) * dsp_global_period);
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
 
+  printf("START DSP PROCESS----\n");
+  
   int p;
   while(temp_op != NULL) {    
     if( temp_op->module == NULL ) {
@@ -750,6 +796,7 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
         }
       }
     } else {
+      printf("temp_op->module->name: %s\n", temp_op->module->name);
       temp_op->module->dsp_function(temp_op, jack_sr);
     }
     temp_op = temp_op->next;
