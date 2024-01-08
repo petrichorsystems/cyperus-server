@@ -384,11 +384,11 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
   int failed = 0;
   
   printf("path: <%s>\n", path);
-
+  
   request_id = (char *)argv[0];
   path_out = (char *)argv[1];
   path_in = (char *)argv[2];
-
+  
   failed = dsp_add_connection(path_out, path_in);
 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
@@ -482,39 +482,24 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 
   request_id = (char *)argv[0];
   module_path = (char *)argv[1];
-
-  printf("module_path: <%s>\n", module_path);
   
   /* split up path */
   bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
   snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
-
-  printf("strlen(module_path) - 37: %d\n", (int)strlen(module_path) - 37);
-  printf("bus_path: %s\n", bus_path);
   
   module_id = malloc(sizeof(char) * 37);
   strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-
-  printf("module_id: %s\n", module_id);
-
-  printf("about to find module\n");
   
   temp_module = dsp_find_module(module_id);
-  
-  printf("appending result_str (or somethin)\n");
   
   result_str_size = 4;
   result_str = malloc(sizeof(char) * (result_str_size + 1));
   strcpy(result_str, "in:\n");
-
-  printf("in\n");
   
   if(temp_module == NULL)
     printf(" NULL DUDE \n");
 
   temp_port_in = temp_module->ins;
-  
-  printf("iterating over ins\n");
   
   while(temp_port_in != NULL) {
     result_str_size += strlen(temp_port_in->id) + 1 + strlen(temp_port_in->name) + 2;
@@ -738,10 +723,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   /* else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0) */
   /*   handler_ptr = osc_edit_modules_envelope_segment_handler; */
 
-  /* else if(strcmp(path, "/cyperus/add/module/osc/float") == 0) */
-  /*   handler_ptr = osc_add_modules_osc_float_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/osc/float") == 0) */
-  /*   handler_ptr = osc_edit_modules_osc_float_handler; */
+  else if(strcmp(path, "/cyperus/add/module/utils/float") == 0)
+    handler_ptr = osc_add_modules_utils_float_handler;
+  else if(strcmp(path, "/cyperus/edit/module/utils/float") == 0)
+    handler_ptr = osc_edit_modules_utils_float_handler;
 
   /* else if(strcmp(path, "/cyperus/add/module/envelope/stdshape") == 0) */
   /*   handler_ptr = osc_add_modules_envelope_stdshape_handler; */

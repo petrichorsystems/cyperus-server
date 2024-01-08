@@ -79,6 +79,7 @@ dsp_utils_float(struct dsp_operation *utils_float,
   memcpy(utils_float->outs->sample->value,
          utils_float->module->dsp_param.in,
          sizeof(float) * dsp_global_period);
+
 } /* dsp_utils_float */
 
 

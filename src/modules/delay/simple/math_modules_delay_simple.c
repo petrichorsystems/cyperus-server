@@ -29,8 +29,8 @@ float *math_modules_delay_simple(dsp_parameter *delay, int samplerate) {
   
   int *time_samples = delay->parameters->int32_arr_type[0];
   
-  int delay_pos = delay->parameters->int32_type[1];
-  int delay_time_pos = delay->parameters->int32_type[2];
+  int delay_pos = delay->parameters->int32_type[0];
+  int delay_time_pos = delay->parameters->int32_type[1];
   
   for(int p=0; p<dsp_global_period; p++) {
     if( delay_pos >= time_samples[p] )
@@ -46,7 +46,7 @@ float *math_modules_delay_simple(dsp_parameter *delay, int samplerate) {
     delay_pos += 1;
     out[p] *= amount[p];    
   }
-  delay->parameters->int32_type[1] = delay_pos;
-  delay->parameters->int32_type[2] = delay_time_pos;
+  delay->parameters->int32_type[0] = delay_pos;
+  delay->parameters->int32_type[1] = delay_time_pos;
   return out;
 }

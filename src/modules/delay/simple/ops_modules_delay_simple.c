@@ -49,8 +49,10 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   params.parameters->float32_arr_type = malloc(sizeof(float *) * 4);
   params.parameters->int32_arr_type = malloc(sizeof(int *));  
 
+  /* sample buffer allocation - max size 30sec */
+  params.parameters->float32_arr_type[0] = calloc(jackcli_samplerate * 30, sizeof(float)); /* delay sample buffer */
+  
   /* user-facing parameter allocation */
-  params.parameters->float32_arr_type[0] = calloc(time * jackcli_samplerate * 30, sizeof(float)); /* delay sample buffer */
   params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float)); /* amount */
   params.parameters->float32_arr_type[2] = calloc(dsp_global_period, sizeof(float)); /* time */  
   params.parameters->float32_arr_type[3] = calloc(dsp_global_period, sizeof(float)); /* feedback */
@@ -58,6 +60,10 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   /* internal parameter allocation */
   params.parameters->int32_arr_type[0] = calloc(dsp_global_period, sizeof(int)); /* time (% of sec) to sample conversion */
 
+
+  /* sample buffer assignment */ 
+  memset(params.parameters->float32_arr_type[0], 0, jackcli_samplerate * 30 * sizeof(float));
+  
   for(int p=0; p<dsp_global_period; p++) {
     /* user-facing parameter assignment */
     params.parameters->float32_arr_type[1][p] = amount;
@@ -102,7 +108,7 @@ dsp_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate) {
   float *outsamples;
   int p;  
   
-  dsp_sum_summands(delay_simple->module->dsp_param.in, delay_simple->ins->summands);  
+  dsp_sum_summands(delay_simple->module->dsp_param.in, delay_simple->ins->summands);
   
   /* handle params with connected inputs */
   if( delay_simple->ins->next->summands != NULL ) { /* amount */
@@ -163,6 +169,7 @@ dsp_osc_listener_delay_simple(struct dsp_operation *delay_simple, int jack_sampl
       int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
       char *path = (char *)malloc(sizeof(char) * path_len);
       snprintf(path, path_len, "%s%s", "/cyperus/listener/", delay_simple->module->id);    
+
       lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
       lo_send(lo_addr_send, path, "fff",
               delay_simple->module->dsp_param.parameters->float32_arr_type[1][0],

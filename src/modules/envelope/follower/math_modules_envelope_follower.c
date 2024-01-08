@@ -41,7 +41,7 @@ float *math_modules_envelope_follower(dsp_parameter *follower, int samplerate) {
       out[p] = coeff_attack * (last_sample - absin) + absin;
     else
       out[p] = coeff_decay * (last_sample - absin) + absin;
-  
+    
     last_sample = out[p];
     out[p] = fabs(out[p]) * scale[p];
   }  
