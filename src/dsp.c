@@ -217,9 +217,6 @@ dsp_add_connection(char *id_out, char *id_in) {
     return 1;
   }
 
-  printf("dsp.c::dsp_add_connection(), id_out: %s, id_in: %s\n", id_out, id_in);
-  printf("dsp.c::dsp_add_connection(), port_out->id: %s, port_in->id: %s\n", port_out->id, port_in->id);
-
   /* instantiate and add to global connection graph */
   new_connection = dsp_connection_init(id_out,
 				       id_in,
@@ -298,7 +295,6 @@ dsp_remove_connection(char *id_out, char *id_in) {
 
 void
 dsp_optimize_connections_input(struct dsp_connection *connection) {
-  printf("dsp.c::dsp_optimize_connections_input()\n");
 
   /* is the below ever actually the case? */
 
@@ -348,7 +344,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
   /* OUTPUT PROCESSING */
   error_not_found = 0;
 
-  printf(" OUTPUT PROCESSING \n");  
   if( dsp_find_main_in_port_out((char *)connection->id_out) != NULL ) {
     is_main_in_out = 1;
   } else if( dsp_find_module_port_out((char *)connection->id_out) != NULL ) {
@@ -403,7 +398,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
     temp_op_out = dsp_global_operation_head_processing;
     while( temp_op_out != NULL ) {
       if( strcmp(temp_op_out->dsp_id, temp_module->id) == 0 ) {
-        printf("dsp.c::dsp_optimized_connections_input(), found module: temp_op_out->dsp_id: %s\n", temp_op_out->dsp_id);
         matched_op_out = temp_op_out;
         break;
       }
@@ -495,7 +489,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
   /* INPUT PROCESSING */
   error_not_found = 0;
   
-  printf(" INPUT PROCESSING \n");
   if( dsp_find_main_out_port_in((char *)connection->id_in) != NULL ) {
     is_main_out_in = 1;
   } else if( dsp_find_module_port_in((char *)connection->id_in) != NULL ) {

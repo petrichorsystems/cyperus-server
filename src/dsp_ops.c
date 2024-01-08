@@ -239,7 +239,6 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 
 struct dsp_operation
 *dsp_optimize_module(char *id, struct dsp_module *module) {
-  printf("dsp_ops.c::dsp_optimize_module()\n");
   dsp_parameter dsp_param = module->dsp_param;
 
   struct dsp_port_in *temp_port_in = NULL;
@@ -258,8 +257,6 @@ struct dsp_operation
       dsp_operation_sample_insert_tail(new_op->ins, temp_sample);
     temp_port_in = temp_port_in->next;
   }
-
-  printf("iterated over port in's\n");
   
   temp_port_out = module->outs;
   while(temp_port_out != NULL) {
@@ -271,12 +268,8 @@ struct dsp_operation
 
     temp_port_out = temp_port_out->next;
   }
-
-  printf("iterated over port out's\n");
   
   new_op->module = module;
-
-  printf("about to return\n");
   
   return new_op;
 } /* dsp_optimize_module */
