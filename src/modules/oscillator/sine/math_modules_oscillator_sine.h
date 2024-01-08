@@ -11,7 +11,6 @@
 #include "../../../dsp_math.h"
 #include "../../../dsp_types.h"
 
-extern float
-math_modules_oscillator_sine(dsp_module_parameters_t *parameters, int samplerate);
+extern float* math_modules_oscillator_sine(dsp_module_parameters_t *parameters, int samplerate);
 
 #endif

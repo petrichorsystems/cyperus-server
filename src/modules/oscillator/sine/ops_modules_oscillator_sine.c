@@ -34,7 +34,6 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
   int p;
   
   params.name = "oscillator_sine";  
-  params.pos = 0;
 
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
   
