@@ -61,8 +61,30 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 			     int argc, void *data, void *user_data);
 
 
+int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg ** argv,
+				   int argc, void *data, void *user_data);
+
+int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg ** argv,
+				     int argc, void *data, void *user_data);
+
+int osc_write_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
+				      int argc, void *data, void *user_data);
+
+int osc_append_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
+				       int argc, void *data, void *user_data);
+
+int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
+				     int argc, void *data, void *user_data);
+
+int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
+				       int argc, void *data, void *user_data);
+
 int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
 				 int argc, void *data, void *user_data);
+
+int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
+				 int argc, void *data, void *user_data);
+
 
 int osc_add_module_block_processor_handler(const char *path, const char *types, lo_arg ** argv,
 					   int argc, void *data, void *user_data);

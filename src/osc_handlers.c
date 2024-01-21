@@ -460,7 +460,6 @@ int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg *
   request_id = (char *)argv[0];
   
   if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    printf("Current working dir: %s\n", cwd);
   } else {
     perror("getcwd() error");
     return 1;
@@ -545,6 +544,176 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
   return 0;
   
 } /* osc_list_filesystem_path_handler */
+
+int _write_append_filesystem_file(char *openmode, char *filepath, char *content) {
+	FILE *fp;
+	int error;
+
+	if (strcmp(openmode, "w")  == 0) {
+	} else if (strcmp(openmode, "a") == 0) {
+	} else {
+		printf("unknown open mode: %s (must be 'w' or 'a')!, exiting..\n", openmode);
+		exit(1);
+	}
+	fp = fopen(filepath, openmode);
+	error = fprintf(fp, "%s", content);
+	if (error < 0)
+		printf("error writing to filesystem! returning error..\n");
+	fclose(fp);
+	return error;
+} /* _write_append_filesystem_file */
+
+int osc_write_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
+				     int argc, void *data, void *user_data)
+{
+	printf("cyperus::osc_handlers.c::osc_write_filesystem_file_handler()\n");
+	
+	char *request_id, *filepath, *content;
+	int error;
+	bool success;
+	FILE *fp;
+	
+	request_id = filepath = content = NULL;
+	error = 0;
+	success = false;
+  
+	request_id = (char *)argv[0];
+	filepath = (char *)argv[1];
+	content = (char *)argv[2];
+	
+	if (_write_append_filesystem_file("w", filepath, content) < 0) {
+		/* do some error-handling here */
+		printf("error-handling!\n");
+	} else
+		success = true;
+	
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
+	lo_send(lo_addr_send,"/cyperus/write/filesystem/file", "sisis", request_id, 0, filepath, success, "");
+	lo_address_free(lo_addr_send);
+  
+  return 0;
+  
+} /* osc_write_filesystem_file_handler */
+
+int osc_append_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
+				     int argc, void *data, void *user_data)
+{
+	printf("cyperus::osc_handlers.c::osc_append_filesystem_file_handler()\n");
+	
+	char *request_id, *filepath, *content;
+	int error;
+	bool success;
+	FILE *fp;
+	
+	request_id = filepath = content = NULL;
+	error = 0;
+	success = false;
+  
+	request_id = (char *)argv[0];
+	filepath = (char *)argv[1];
+	content = (char *)argv[2];
+	
+	if (_write_append_filesystem_file("a", filepath, content) < 0) {
+		/* do some error-handling here */
+		printf("error-handling!\n");
+	} else
+		success = true;
+	
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
+	lo_send(lo_addr_send,"/cyperus/append/filesystem/file", "sisis", request_id, 0, filepath, success, "");
+	lo_address_free(lo_addr_send);
+  
+  return 0;
+} /* osc_append_filesystem_file_handlers */
+
+int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
+				     int argc, void *data, void *user_data)
+{
+	printf("cyperus::osc_handlers.c::osc_read_filesystem_file_handler()\n");
+	
+	char *request_id, *filepath, *raw_str;
+	int error;
+	bool success;
+	unsigned long len;
+	FILE *fp;
+	char **osc_str;
+	int raw_strlen;
+	int osc_str_len;
+	int i;
+	
+	request_id = filepath = raw_str = NULL;
+	error = 0;
+	success = false;
+  
+	request_id = (char *)argv[0];
+	filepath = (char *)argv[1];
+	raw_str = (char *)argv[2];
+	
+	fp = fopen(filepath, "r");
+	if (fp)
+	{
+		fseek (fp, 0, SEEK_END);
+		len = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+		raw_str = malloc(len+1);
+		if (raw_str) {
+			fread(raw_str, len, 1, fp);
+		}
+		fclose (fp);
+		raw_str[len] = '\0';
+	} else {
+		printf("error-handling\n");
+		success = false;
+	}	
+	
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
+	if (osc_str_len > 1) {
+		for (i=0; i<osc_str_len - 1; i++) {
+			lo_send(lo_addr_send,"/cyperus/read/filesystem/file", "sisiis", request_id, 0, filepath, i+1, osc_str_len, osc_str[i]);
+			free(osc_str[i]);
+		}
+	} else {
+		i = 0;
+	}
+
+	lo_send(lo_addr_send,"/cyperus/read/filesystem/file", "sisiis", request_id, 0, filepath, i+1, osc_str_len, osc_str[i]);
+	lo_address_free(lo_addr_send);
+
+	free(osc_str[i]);
+	free(osc_str);
+  return 0;
+} /* osc_read_filesystem_file_handlers */
+
+int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
+				       int argc, void *data, void *user_data)
+{
+	printf("cyperus::osc_handlers.c::osc_remove_filesystem_file_handler()\n");
+	
+	char *request_id, *filepath;
+	int error;
+	bool success;
+	FILE *fp;
+	
+	request_id = filepath = NULL;
+	error = 0;
+	success = false;
+  
+	request_id = (char *)argv[0];
+	filepath = (char *)argv[1];
+	
+	if (unlink(filepath) < 0) {
+		/* do some error-handling here */
+		printf("error-handling!\n");
+	} else
+		success = true;
+	
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
+	lo_send(lo_addr_send,"/cyperus/remove/filesystem/file", "sisis", request_id, 0, filepath, success, "");
+	lo_address_free(lo_addr_send);
+  
+  return 0;
+} /* osc_remove_filesystem_file_handlers */
 
 /* int osc_add_modules_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data) */
 /* { */
@@ -645,7 +814,6 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
   /* } */
   int (*handler_ptr)(const char *path, const char *types, lo_arg ** argv,
                      int argc, void *data, void *user_data);
-  printf("types: %s\n", types);
   handler_ptr = NULL;
   if(strcmp(path, "/cyperus/address") == 0)
     handler_ptr = osc_address_handler;
@@ -764,6 +932,18 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 
   else if(strcmp(path, "/cyperus/list/filesystem/path") == 0)
     handler_ptr = osc_list_filesystem_path_handler;
+
+  else if(strcmp(path, "/cyperus/write/filesystem/file") == 0)
+    handler_ptr = osc_write_filesystem_file_handler;
+
+  else if(strcmp(path, "/cyperus/append/filesystem/file") == 0)
+    handler_ptr = osc_append_filesystem_file_handler;
+
+  else if(strcmp(path, "/cyperus/read/filesystem/file") == 0)
+    handler_ptr = osc_read_filesystem_file_handler;
+  
+  else if(strcmp(path, "/cyperus/remove/filesystem/file") == 0)
+    handler_ptr = osc_remove_filesystem_file_handler;
   
   if(handler_ptr)
     handler_ptr(path, types, argv, argc, data, user_data);

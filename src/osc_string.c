@@ -37,9 +37,11 @@ char **osc_string_build_osc_str(int *osc_str_len, char *str) {
 			if ((strlen(str) - idx) < OSC_MAX_STR_LEN) {
 				tmp = malloc(sizeof(char) * (strlen(str) - idx + 2));
 				memcpy(tmp, str+idx, strlen(str) - idx + 1);
+				tmp[strlen(str)-idx] = '\0';
 			} else {
 				tmp = malloc(sizeof(char) * OSC_MAX_STR_LEN+1);
 				memcpy(tmp, str+idx, OSC_MAX_STR_LEN);
+				tmp[OSC_MAX_STR_LEN] = '\0';
 			}
 			
 			if(!osc_str_idx)
