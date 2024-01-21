@@ -23,10 +23,15 @@ Copyright 2015 murray foster */
 /* #include <string.h> memset */
 /* #include <stdlib.h> exit(0); */
 
+#include <dirent.h>
+#include <limits.h>
+
 #include "dsp.h"
 #include "dsp_types.h"
 #include "jackcli.h"
 #include "osc.h"
+
+#define OSC_MAX_STR_LEN 768
 
 char *int_to_str(int x);
 

@@ -80,6 +80,45 @@ char *int_to_str(int x) {
   return buffer;
 } /* int_to_str */
 
+char  **build_osc_str(int *osc_str_len, char *str) {
+	/* split string into >=768 byte chunks, OSC on top of UDP will truncate
+	 * payloads that are too big. i'm not sure what this limit is, but
+	 * 768 bytes feels good to me */
+	char *tmp, **osc_str, **osc_str_tmp = NULL;
+	int idx, osc_str_idx = 0;
+	
+	if(strlen(str) > OSC_MAX_STR_LEN) {
+		for (idx=0; idx<strlen(str); idx+=OSC_MAX_STR_LEN) {
+			if ((strlen(str) - idx) < OSC_MAX_STR_LEN) {
+				tmp = malloc(sizeof(char) * (strlen(str) - idx + 2));
+				memcpy(tmp, str+idx, strlen(str) - idx + 1);
+			} else {
+				tmp = malloc(sizeof(char) * OSC_MAX_STR_LEN+1);
+				memcpy(tmp, str+idx, OSC_MAX_STR_LEN);
+			}
+			
+			if(!osc_str_idx)
+				osc_str = malloc(sizeof(char *));
+			else {
+				osc_str_tmp = realloc(osc_str, sizeof(char *) * (osc_str_idx + 1));
+				if (osc_str_tmp == NULL) {
+					printf("could not allocate memory!");
+					exit(1);
+				}
+				osc_str = osc_str_tmp;
+			}
+			osc_str[osc_str_idx] = tmp;
+			osc_str_idx += 1;
+		}
+		*osc_str_len = osc_str_idx;
+	} else {
+		osc_str[0] = malloc(sizeof(char *));
+		*osc_str_len = 1;
+		strcpy(osc_str[0], str);
+	}
+	return osc_str;
+}
+
 char *build_bus_list_str(struct dsp_bus *head_bus,
 			 int root_level,
 			 const char *separator,
@@ -535,6 +574,99 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
   
 } /* osc_list_module_port_handler */
 
+int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg ** argv,
+                                        int argc, void *data, void *user_data)
+{
+  printf("cyperus::osc_handlers.c::osc_get_filesystem_cwd_handler()\n");
+  char *request_id = NULL;
+  char cwd[PATH_MAX];
+  
+  request_id = (char *)argv[0];
+  
+  if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    printf("Current working dir: %s\n", cwd);
+  } else {
+    perror("getcwd() error");
+    return 1;
+  }
+  
+  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+  lo_send(lo_addr_send,"/cyperus/get/filesystem/cwd", "sis", request_id, 0, cwd);
+  lo_address_free(lo_addr_send);
+  
+  return 0;
+  
+} /* osc_get_filesystem_cwd_handler */
+
+int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg ** argv,
+				     int argc, void *data, void *user_data)
+{
+	printf("cyperus::osc_handlers.c::osc_list_filesystem_path_handler()\n");
+	char *request_id, *path_filesystem, *raw_str, *raw_str_tmp, *result_str;
+	char **osc_str;
+	int raw_strlen;
+	int osc_str_len;
+	int i;
+	
+	DIR *d;
+	struct dirent *dir;
+
+	request_id = path_filesystem = raw_str = raw_str_tmp = result_str = NULL;
+	osc_str = NULL;
+  
+	request_id = (char *)argv[0];
+	path_filesystem = (char *)argv[1];
+
+	raw_strlen = 1;   /* set initial value to 1 to account for null-termination
+			   * of raw_str */
+	osc_str_len = 0;
+	d = opendir(path_filesystem);
+	if (d) {
+		while ((dir = readdir(d)) != NULL) {
+			raw_strlen += strlen(dir->d_name);
+			if (raw_str == NULL) {
+				raw_str = malloc(sizeof(char) * raw_strlen);
+				if (raw_str == NULL) {
+					printf("could not allocate memory! exiting..");
+					exit(1);
+				}
+				memcpy(raw_str, dir->d_name, raw_strlen+1);
+			} else {
+				/* increment raw_strlen by 1 to make room for
+				 * delimiting newline character */
+				raw_strlen += 1;
+				raw_str_tmp = realloc(raw_str, sizeof(char) * raw_strlen);
+				if (raw_str_tmp == NULL) {
+					printf("could not allocate memory! exiting..");
+					exit(1);
+				}
+				raw_str = raw_str_tmp;
+				raw_str[raw_strlen - strlen(dir->d_name) - 2] = '\n';
+				memcpy(raw_str+(raw_strlen - strlen(dir->d_name))-1,
+				       dir->d_name, strlen(dir->d_name)+1);	      
+			}
+		}
+		closedir(d);
+	}
+
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	
+	osc_str = build_osc_str(&osc_str_len, raw_str);	
+	if (osc_str_len > 1) {
+		for (i=0; i<osc_str_len - 1; i++) {
+			printf("i: %d, len: %zu, s: %s\n", i, strlen(osc_str[i]), osc_str[i]);
+			lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "sisiis", request_id, 0, path_filesystem, i+1, osc_str_len, osc_str[i]);			
+		}
+	} else {
+		i = 0;
+	}
+	
+	lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "sisiis", request_id, 0, path_filesystem, i+1, osc_str_len, osc_str[i]);
+	lo_address_free(lo_addr_send);
+  
+  return 0;
+  
+} /* osc_list_filesystem_path_handler */
 
 /* int osc_add_modules_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data) */
 /* { */
@@ -748,6 +880,12 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 
   else if(strcmp(path, "/cyperus/get/graph/id") == 0)
     handler_ptr = osc_get_graph_id_handler;
+
+  else if(strcmp(path, "/cyperus/get/filesystem/cwd") == 0)
+    handler_ptr = osc_get_filesystem_cwd_handler;
+
+  else if(strcmp(path, "/cyperus/list/filesystem/path") == 0)
+    handler_ptr = osc_list_filesystem_path_handler;
   
   if(handler_ptr)
     handler_ptr(path, types, argv, argc, data, user_data);
