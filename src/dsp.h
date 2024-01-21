@@ -19,15 +19,16 @@ Copyright 2015 murray foster */
 #ifndef DSP_H
 #define DSP_H
 
+#include <stdbool.h>
+#include <time.h>
+#include <unistd.h>
+
 #include "dsp_math.h"
 #include "dsp_types.h"
 #include "dsp_ops.h"
 
 #include "dsp_graph_id.h"
 #include "threadsync.h"
-
-#include <time.h>
-#include <unistd.h>
 
 extern unsigned short dsp_global_period;
 extern float dsp_global_load;

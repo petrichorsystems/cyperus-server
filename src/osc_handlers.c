@@ -72,130 +72,6 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
   free(lo_addr_send);
   return 0;
 } /* osc_list_main_handler */
-
-char *int_to_str(int x) {
-  char *buffer = malloc(sizeof(char) * 13);
-  if(buffer)
-    sprintf(buffer, "%d", x);
-  return buffer;
-} /* int_to_str */
-
-char  **build_osc_str(int *osc_str_len, char *str) {
-	/* split string into >=768 byte chunks, OSC on top of UDP will truncate
-	 * payloads that are too big. i'm not sure what this limit is, but
-	 * 768 bytes feels good to me */
-	char *tmp, **osc_str, **osc_str_tmp = NULL;
-	int idx, osc_str_idx = 0;
-	
-	if(strlen(str) > OSC_MAX_STR_LEN) {
-		for (idx=0; idx<strlen(str); idx+=OSC_MAX_STR_LEN) {
-			if ((strlen(str) - idx) < OSC_MAX_STR_LEN) {
-				tmp = malloc(sizeof(char) * (strlen(str) - idx + 2));
-				memcpy(tmp, str+idx, strlen(str) - idx + 1);
-			} else {
-				tmp = malloc(sizeof(char) * OSC_MAX_STR_LEN+1);
-				memcpy(tmp, str+idx, OSC_MAX_STR_LEN);
-			}
-			
-			if(!osc_str_idx)
-				osc_str = malloc(sizeof(char *));
-			else {
-				osc_str_tmp = realloc(osc_str, sizeof(char *) * (osc_str_idx + 1));
-				if (osc_str_tmp == NULL) {
-					printf("could not allocate memory!");
-					exit(1);
-				}
-				osc_str = osc_str_tmp;
-			}
-			osc_str[osc_str_idx] = tmp;
-			osc_str_idx += 1;
-		}
-		*osc_str_len = osc_str_idx;
-	} else {
-		osc_str[0] = malloc(sizeof(char *));
-		*osc_str_len = 1;
-		strcpy(osc_str[0], str);
-	}
-	return osc_str;
-}
-
-char *build_bus_list_str(struct dsp_bus *head_bus,
-			 int root_level,
-			 const char *separator,
-			 int single,
-			 int descendants) {
-  struct dsp_bus *temp_bus = head_bus;
-  char *single_result_str, *result_str = NULL;
-  size_t single_result_str_size, result_str_size = 0;
-  struct dsp_bus_port *temp_bus_port = NULL;
-  int count_bus_ports;;
-  char *bus_ins_str, *bus_outs_str;
-
-  if( temp_bus != NULL )
-    if(!root_level)
-      if(descendants)
-	temp_bus = temp_bus->down;
-      else
-	while(temp_bus->prev != NULL)
-	  temp_bus = temp_bus->prev;
-
-  /* else */
-      /* 	temp_bus = temp_bus->next; */
-  
-  while(temp_bus != NULL) {
-    /* parse inputs */
-    count_bus_ports = 0;
-    temp_bus_port = temp_bus->ins;
-    while(temp_bus_port != NULL) {
-      count_bus_ports += 1;
-      temp_bus_port = temp_bus_port->next;
-    }
-    bus_ins_str = int_to_str(count_bus_ports);
-    
-    /* parse_outputs */
-    count_bus_ports = 0;
-    temp_bus_port = temp_bus->outs;
-    while(temp_bus_port != NULL) {
-      count_bus_ports += 1;
-      temp_bus_port = temp_bus_port->next;
-    }
-    bus_outs_str = int_to_str(count_bus_ports);
-
-    /* construct result string */
-    single_result_str_size = strlen(temp_bus->id) + 1 + strlen(temp_bus->name) + 1 +
-      strlen(bus_ins_str) + 1 + strlen(bus_outs_str) + 2;
-    result_str_size += single_result_str_size;
-    single_result_str = malloc(sizeof(char) * single_result_str_size);
-    strcpy(single_result_str, temp_bus->id);
-    strcat(single_result_str, separator);
-    strcat(single_result_str, temp_bus->name);
-    strcat(single_result_str, separator);
-    strcat(single_result_str, bus_ins_str);
-    strcat(single_result_str, separator);
-    strcat(single_result_str, bus_outs_str);
-    strcat(single_result_str, "\n");
-    free(bus_ins_str);
-    free(bus_outs_str);
-
-    if(result_str == NULL) {
-      result_str = malloc(sizeof(char) * single_result_str_size);
-      strcpy(result_str, single_result_str);
-    } else {
-      result_str = realloc(result_str, sizeof(char) * (result_str_size + 1));
-      strcat(result_str, single_result_str);
-    }
-    free(single_result_str);
-
-    if(single)
-      break;
-    if(descendants)
-      temp_bus = temp_bus->down;
-    else
-      temp_bus = temp_bus->next;
-  }
-
-  return result_str;
-} /* build_bus_list_str */
 			 
 int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
@@ -247,16 +123,16 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
   } else {
     switch(list_type) {
     case 0: /* list peer */
-      result_str = build_bus_list_str(head_bus, root_level, "|", 1, 0);
+      result_str = osc_string_build_bus_list(head_bus, root_level, "|", 1, 0);
       break;
     case 1: /* list all peers */
-      result_str = build_bus_list_str(head_bus, root_level, "|", 0, 0);
+      result_str = osc_string_build_bus_list(head_bus, root_level, "|", 0, 0);
       break;
     case 2: /* list direct descendant */
-      result_str = build_bus_list_str(head_bus, root_level, "|", 1, 1);
+      result_str = osc_string_build_bus_list(head_bus, root_level, "|", 1, 1);
       break;
     case 3: /* list all direct descendants */
-      result_str = build_bus_list_str(head_bus, root_level, "|", 0, 1);
+      result_str = osc_string_build_bus_list(head_bus, root_level, "|", 0, 1);
       break;
     default: /* ? */
       break;
@@ -650,19 +526,21 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 	}
 
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	
-	osc_str = build_osc_str(&osc_str_len, raw_str);	
+	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
 	if (osc_str_len > 1) {
 		for (i=0; i<osc_str_len - 1; i++) {
-			printf("i: %d, len: %zu, s: %s\n", i, strlen(osc_str[i]), osc_str[i]);
-			lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "sisiis", request_id, 0, path_filesystem, i+1, osc_str_len, osc_str[i]);			
+			lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "sisiis", request_id, 0, path_filesystem, i+1, osc_str_len, osc_str[i]);
+			free(osc_str[i]);
 		}
 	} else {
 		i = 0;
 	}
-	
+
 	lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "sisiis", request_id, 0, path_filesystem, i+1, osc_str_len, osc_str[i]);
 	lo_address_free(lo_addr_send);
+
+	free(osc_str[i]);
+	free(osc_str);
   
   return 0;
   

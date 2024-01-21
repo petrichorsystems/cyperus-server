@@ -30,10 +30,7 @@ Copyright 2015 murray foster */
 #include "dsp_types.h"
 #include "jackcli.h"
 #include "osc.h"
-
-#define OSC_MAX_STR_LEN 768
-
-char *int_to_str(int x);
+#include "osc_string.h"
 
 void osc_error(int num, const char *msg, const char *path);
 
