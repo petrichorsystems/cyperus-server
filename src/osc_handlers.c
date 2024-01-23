@@ -304,22 +304,24 @@ int osc_remove_module_handler(const char *path, const char *types, lo_arg ** arg
 int osc_add_connection_handler(const char *path, const char *types, lo_arg **argv,
                                       int argc, void *data, void *user_data)
 {
-  char *request_id, *path_out, *path_in;
-  int failed = 0;
+	char *request_id, *path_out, *path_in;
+	bool multipart;
+	int failed = 0;
   
-  printf("path: <%s>\n", path);
+	printf("path: <%s>\n", path);
   
-  request_id = (char *)argv[0];
-  path_out = (char *)argv[1];
-  path_in = (char *)argv[2];
+	request_id = (char *)argv[0];
+	path_out = (char *)argv[1];
+	path_in = (char *)argv[2];
   
-  failed = dsp_add_connection(path_out, path_in);
+	failed = dsp_add_connection(path_out, path_in);
 
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/connection", "sissi", request_id, 0, path_out, path_in, failed);
-  lo_address_free(lo_addr_send);
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_send(lo_addr_send,"/cyperus/add/connection", "siissi", request_id, 0, multipart, path_out, path_in, failed);
+	lo_address_free(lo_addr_send);
 
-  printf("done osc_add_connection_handler()\n");
+	printf("done osc_add_connection_handler()\n");
   
   return 0;
 } /* osc_add_connection_handler */
@@ -327,22 +329,24 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 int osc_remove_connection_handler(const char *path, const char *types, lo_arg **argv,
                                          int argc, void *data, void *user_data)
 {
-  char *request_id, *path_out, *path_in;
-  int failed = 0;
+	char *request_id, *path_out, *path_in;
+	bool multipart;
+	int failed = 0;
   
-  printf("path: <%s>\n", path);
+	printf("path: <%s>\n", path);
 
-  request_id = (char *)argv[0];
-  path_out = (char *)argv[1];
-  path_in = (char *)argv[2];
+	request_id = (char *)argv[0];
+	path_out = (char *)argv[1];
+	path_in = (char *)argv[2];
 
-  failed = dsp_remove_connection(path_out, path_in);
+	failed = dsp_remove_connection(path_out, path_in);
 
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/remove/connection", "sissi", request_id, 0, path_out, path_in, failed);
-  lo_address_free(lo_addr_send);
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_send(lo_addr_send,"/cyperus/remove/connection", "siissi", request_id, 0, path_out, path_in, failed);
+	lo_address_free(lo_addr_send);
 
-  printf("done osc_remove_connection_handler()\n");
+	printf("done osc_remove_connection_handler()\n");
   
   return 0;
 } /* osc_remove_connection_handler */
