@@ -185,54 +185,57 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
-  struct dsp_bus *temp_bus = NULL;
-  char *request_id, *path_str, *result_str = NULL;
-  size_t result_str_size = 0;
-  struct dsp_bus_port *temp_bus_port = NULL;
+	struct dsp_bus *temp_bus = NULL;
+	char *request_id, *path_str, *result_str = NULL;
+	size_t result_str_size = 0;
+	struct dsp_bus_port *temp_bus_port = NULL;
+	bool multipart;
+  
+	request_id = (char *)argv[0];
+	path_str = (char *)argv[1];
 
-  request_id = (char *)argv[0];
-  path_str = (char *)argv[1];
+	printf("path: <%s>\n", path);
+	printf("path_str: %s\n", path_str);
 
-  printf("path: <%s>\n", path);
-  printf("path_str: %s\n", path_str);
+	temp_bus = dsp_find_bus(path_str);
 
-  temp_bus = dsp_find_bus(path_str);
+	result_str_size = 4;
+	result_str = malloc(sizeof(char) * (result_str_size + 1));
+	strcpy(result_str, "in:\n");
+	/* process main inputs */
+	temp_bus_port = temp_bus->ins;
+	while(temp_bus_port != NULL) {
+		result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
+		result_str = realloc(result_str, sizeof(char) * result_str_size);
+		strcat(result_str, temp_bus_port->id);
+		strcat(result_str, "|");
+		strcat(result_str, temp_bus_port->name);
+		strcat(result_str, "\n");
+		temp_bus_port = temp_bus_port->next;
+	}
 
-  result_str_size = 4;
-  result_str = malloc(sizeof(char) * (result_str_size + 1));
-  strcpy(result_str, "in:\n");
-  /* process main inputs */
-  temp_bus_port = temp_bus->ins;
-  while(temp_bus_port != NULL) {
-    result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
-    result_str = realloc(result_str, sizeof(char) * result_str_size);
-    strcat(result_str, temp_bus_port->id);
-    strcat(result_str, "|");
-    strcat(result_str, temp_bus_port->name);
-    strcat(result_str, "\n");
-    temp_bus_port = temp_bus_port->next;
-  }
+	result_str_size += 4;
+	result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
+	strcat(result_str, "out:\n");
+	/* process main outputs */
+	temp_bus_port = temp_bus->outs;
+	while(temp_bus_port != NULL) {
+		result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
+		result_str = realloc(result_str, sizeof(char) * result_str_size);
+		strcat(result_str, temp_bus_port->id);
+		strcat(result_str, "|");
+		strcat(result_str, temp_bus_port->name);
+		strcat(result_str, "\n");
+		temp_bus_port = temp_bus_port->next;
+	}
 
-  result_str_size += 4;
-  result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
-  strcat(result_str, "out:\n");
-  /* process main outputs */
-  temp_bus_port = temp_bus->outs;
-  while(temp_bus_port != NULL) {
-    result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
-    result_str = realloc(result_str, sizeof(char) * result_str_size);
-    strcat(result_str, temp_bus_port->id);
-    strcat(result_str, "|");
-    strcat(result_str, temp_bus_port->name);
-    strcat(result_str, "\n");
-    temp_bus_port = temp_bus_port->next;
-  }
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/bus_port", "siss", request_id, 0, path_str, result_str);
-  free(lo_addr_send);
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_send(lo_addr_send,"/cyperus/list/bus_port", "siiss", request_id, 0, multipart, path_str, result_str);
+	free(lo_addr_send);
 
-  free(result_str);
-  return 0;
+	free(result_str);
+	return 0;
 } /* osc_list_bus_port_handler */
 
 int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
