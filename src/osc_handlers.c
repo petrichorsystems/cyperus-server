@@ -79,104 +79,106 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
-  char *request_id = NULL;
-  char *bus_id, *result_str = NULL;
-  int list_type = 0;
-  size_t result_str_size = 0;
+	char *request_id = NULL;
+	char *bus_id, *result_str = NULL;
+	int list_type = 0;
+	size_t result_str_size = 0;
 
-  char *partial_result_str = NULL;
-  size_t partial_result_str_size = 0;
+	char *partial_result_str = NULL;
+	size_t partial_result_str_size = 0;
   
-  struct dsp_bus *head_bus = NULL;
-  struct dsp_bus_port *temp_bus_port = NULL;
-  int count_bus_ports;;
-  char *bus_ins_str, *bus_outs_str;
-  int root_level = 0;
+	struct dsp_bus *head_bus = NULL;
+	struct dsp_bus_port *temp_bus_port = NULL;
+	int count_bus_ports;;
+	char *bus_ins_str, *bus_outs_str;
+	int root_level = 0;
 
-  char *part_result_str = NULL;
-  int more = 0;
-  int current_index, last_break, last_cutoff, copy_index = 0;
+	char *part_result_str = NULL;
+	int current_index, last_break, last_cutoff, copy_index = 0;
 
-  request_id = (char *)argv[0];
-  bus_id = (char *)argv[1];
-  list_type = argv[2]->i;
+	bool multipart = false;
+  
+	request_id = (char *)argv[0];
+	bus_id = (char *)argv[1];
+	list_type = argv[2]->i;
 
-  printf("path: <%s>\n", path);
-  printf("bus_id: %s\n", bus_id);
-  printf("list_type: %d\n", list_type);
+	printf("path: <%s>\n", path);
+	printf("bus_id: %s\n", bus_id);
+	printf("list_type: %d\n", list_type);
   
-  /* list types
-     0 - peer
-     1 - all peers
-     2 - direct descendant
-     3 - all descendants */
+	/* list types
+	   0 - peer
+	   1 - all peers
+	   2 - direct descendant
+	   3 - all descendants */
 
-  if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") ||
-      !strcmp(bus_id, "") ) {
-    head_bus = dsp_global_bus_head;
-    root_level = 1;
-  }
-  else {
-    head_bus = dsp_find_bus(bus_id);
-  }
+	if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") ||
+	    !strcmp(bus_id, "") ) {
+		head_bus = dsp_global_bus_head;
+		root_level = 1;
+	}
+	else {
+		head_bus = dsp_find_bus(bus_id);
+	}
   
-  if(head_bus == NULL) {
-    /* no buses, return new-line char-as-str */
-    result_str = "\n";
-  } else {
-    switch(list_type) {
-    case 0: /* list peer */
-      result_str = osc_string_build_bus_list(head_bus, root_level, "|", 1, 0);
-      break;
-    case 1: /* list all peers */
-      result_str = osc_string_build_bus_list(head_bus, root_level, "|", 0, 0);
-      break;
-    case 2: /* list direct descendant */
-      result_str = osc_string_build_bus_list(head_bus, root_level, "|", 1, 1);
-      break;
-    case 3: /* list all direct descendants */
-      result_str = osc_string_build_bus_list(head_bus, root_level, "|", 0, 1);
-      break;
-    default: /* ? */
-      break;
-    }
-  }
+	if(head_bus == NULL) {
+		/* no buses, return new-line char-as-str */
+		result_str = "\n";
+	} else {
+		switch(list_type) {
+		case 0: /* list peer */
+			result_str = osc_string_build_bus_list(head_bus, root_level, "|", 1, 0);
+			break;
+		case 1: /* list all peers */
+			result_str = osc_string_build_bus_list(head_bus, root_level, "|", 0, 0);
+			break;
+		case 2: /* list direct descendant */
+			result_str = osc_string_build_bus_list(head_bus, root_level, "|", 1, 1);
+			break;
+		case 3: /* list all direct descendants */
+			result_str = osc_string_build_bus_list(head_bus, root_level, "|", 0, 1);
+			break;
+		default: /* ? */
+			break;
+		}
+	}
   
-  if(result_str == NULL)
-    result_str = "\n";
+	if(result_str == NULL)
+		result_str = "\n";
   
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   
-  /* split bus list into 768-byte chunks */
-  if(strlen(result_str) > 768) {
-    more = 1;
-    for(current_index=0; current_index<strlen(result_str); current_index++) {
-      if(result_str[current_index] == '\n')
-	last_break = current_index;
-      if((current_index - last_cutoff) > 768) {	
-	part_result_str = malloc(sizeof(char) * (last_break - last_cutoff + 1));
-	for(copy_index=last_cutoff; copy_index<last_break; copy_index++)
-	  part_result_str[copy_index - last_cutoff] = result_str[copy_index];
-	part_result_str[copy_index] = '\0';
-	last_cutoff = last_break;
-	if(last_cutoff == strlen(result_str - 1))
-	   more = 0;
-	lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, bus_id, list_type, more, part_result_str);
-	free(part_result_str);
-      }
-    }
-  }
-  if(more) {
-    for(current_index=last_cutoff; current_index<strlen(result_str); current_index++) {
-      result_str[current_index - last_cutoff] = result_str[current_index];
-    }
-    result_str[current_index - last_cutoff] = '\0';
-  }
-  lo_send(lo_addr_send,"/cyperus/list/bus", "sisiis", request_id, 0, bus_id, list_type, 0, result_str);
-  free(lo_addr_send);
-  if(strcmp(result_str, "\n"))
-    free(result_str);
-  return 0;
+	/* split bus list into 768-byte chunks */
+	if(strlen(result_str) > 768) {
+		multipart = true;
+		for(current_index=0; current_index<strlen(result_str); current_index++) {
+			if(result_str[current_index] == '\n')
+				last_break = current_index;
+			if((current_index - last_cutoff) > 768) {	
+				part_result_str = malloc(sizeof(char) * (last_break - last_cutoff + 1));
+				for(copy_index=last_cutoff; copy_index<last_break; copy_index++)
+					part_result_str[copy_index - last_cutoff] = result_str[copy_index];
+				part_result_str[copy_index] = '\0';
+				last_cutoff = last_break;
+				if(last_cutoff == strlen(result_str - 1))
+					multipart = false;
+				lo_send(lo_addr_send,"/cyperus/list/bus", "siisis", request_id, 0, multipart, bus_id, list_type, part_result_str);
+				free(part_result_str);
+			}
+		}
+	}
+	if(multipart) {
+		for(current_index=last_cutoff; current_index<strlen(result_str); current_index++) {
+			result_str[current_index - last_cutoff] = result_str[current_index];
+		}
+		result_str[current_index - last_cutoff] = '\0';
+	}
+	multipart = false;
+	lo_send(lo_addr_send,"/cyperus/list/bus", "siisis", request_id, 0, multipart, bus_id, list_type, result_str);
+	free(lo_addr_send);
+	if(strcmp(result_str, "\n"))
+		free(result_str);
+	return 0;
 } /* osc_list_bus_handler */
 
 			 
