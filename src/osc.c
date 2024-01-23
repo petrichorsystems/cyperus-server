@@ -125,89 +125,89 @@ lo_server_thread lo_thread;
 /* } /\* osc_execute_handler_parameter_assignment *\/ */
 
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out) {
-  free(send_host_out);
-  free(send_port_out);
+	bool multipart;
+	
+	free(send_host_out);
+	free(send_port_out);
 
-  send_host_out = malloc(sizeof(char) * strlen(new_host_out) + 1);
-  strcpy(send_host_out, new_host_out);
+	send_host_out = malloc(sizeof(char) * strlen(new_host_out) + 1);
+	strcpy(send_host_out, new_host_out);
 
-  send_port_out = malloc(sizeof(char) * strlen(new_port_out) + 1);
-  strcpy(send_port_out, new_port_out);
-  
-  lo_address lo_addr_send = lo_address_new((const char*)new_host_out, (const char*)new_port_out);
-  lo_send(lo_addr_send,"/cyperus/address", "siss", request_id, 0, new_host_out, new_port_out);
-  free(lo_addr_send);
-  printf("changed osc server and port to: %s:%s\n", new_host_out, new_port_out);
-  return 0;
+	send_port_out = malloc(sizeof(char) * strlen(new_port_out) + 1);
+	strcpy(send_port_out, new_port_out);
+
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)new_host_out, (const char*)new_port_out);
+	lo_send(lo_addr_send,"/cyperus/address", "siiss", request_id, 0, multipart, new_host_out, new_port_out);
+	free(lo_addr_send);
+	printf("changed osc server and port to: %s:%s\n", new_host_out, new_port_out);
+	return 0;
 } /* osc_change_address */
 
 void
 osc_callback_timer_callback(int signum) {
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	struct dsp_operation *temp_op = NULL;  
+
+	lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global_load);
   
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  struct dsp_operation *temp_op = NULL;  
-  
-  lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global_load);
-  
-  temp_op = dsp_global_operation_head;
-  while(temp_op != NULL) {
-    /* execute appropriate listener function */
-    if( temp_op->module != NULL )
-      if( temp_op->module->dsp_osc_listener_function != NULL )
-        temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
-    temp_op = temp_op->next;
-  }
-  
+	temp_op = dsp_global_operation_head;
+	while(temp_op != NULL) {
+		/* execute appropriate listener function */
+		if( temp_op->module != NULL )
+			if( temp_op->module->dsp_osc_listener_function != NULL )
+				temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
+		temp_op = temp_op->next;
+	}
 } /* osc_callback_timer_callback */
 
 void *
 osc_callback_timer_thread(void *arg) {
-  struct itimerval callback_timer;
-  struct itimerval callback_timer_old;
-  unsigned short fps = 30;
-  long sample_duration_usec = (long)(1000 * 1000 / fps);
+	struct itimerval callback_timer;
+	struct itimerval callback_timer_old;
+	unsigned short fps = 30;
+	long sample_duration_usec = (long)(1000 * 1000 / fps);
 
-  callback_timer.it_value.tv_sec = 1;
-  callback_timer.it_value.tv_usec = 0;
-  callback_timer.it_interval.tv_sec = 0;
-  callback_timer.it_interval.tv_usec = sample_duration_usec;
+	callback_timer.it_value.tv_sec = 1;
+	callback_timer.it_value.tv_usec = 0;
+	callback_timer.it_interval.tv_sec = 0;
+	callback_timer.it_interval.tv_usec = sample_duration_usec;
   
-  setitimer(ITIMER_REAL, &callback_timer, &callback_timer_old);
-  signal(SIGALRM, osc_callback_timer_callback);
+	setitimer(ITIMER_REAL, &callback_timer, &callback_timer_old);
+	signal(SIGALRM, osc_callback_timer_callback);
 
-  while(1) {
-    sleep(1);
-  }
+	while(1) {
+		sleep(1);
+	}
 } /* osc_callback_timer_thread */
 
 int
 osc_callback_timer_setup() {
-  pthread_t callback_timer_thread_id;
-  pthread_create(&callback_timer_thread_id, NULL, osc_callback_timer_thread, NULL);
-  pthread_detach(callback_timer_thread_id);
-  return 0;
+	pthread_t callback_timer_thread_id;
+	pthread_create(&callback_timer_thread_id, NULL, osc_callback_timer_thread, NULL);
+	pthread_detach(callback_timer_thread_id);
+	return 0;
 } /* osc_callback_timer_setup */
 
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
-  /* global_osc_handlers_user_defined = NULL; */
-
-  /* if(pthread_mutex_init(&global_osc_handlers_user_defined_lock, NULL) != 0) { */
-  /*     printf("\n mutex init failed\n"); */
-  /*     return 1; */
-  /* } */
+	/* global_osc_handlers_user_defined = NULL; */
+	
+	/* if(pthread_mutex_init(&global_osc_handlers_user_defined_lock, NULL) != 0) { */
+	/*     printf("\n mutex init failed\n"); */
+	/*     return 1; */
+	/* } */
   
-  send_host_out = malloc(sizeof(char) * 10);
-  strcpy(send_host_out, "127.0.0.1");
+	send_host_out = malloc(sizeof(char) * 10);
+	strcpy(send_host_out, "127.0.0.1");
 
-  send_port_out = malloc(sizeof(char) * 6);
-  strcpy(send_port_out, osc_port_out);
+	send_port_out = malloc(sizeof(char) * 6);
+	strcpy(send_port_out, osc_port_out);
 
-  lo_server_thread lo_thread = lo_server_thread_new(osc_port_in, osc_error);
-  lo_server_thread_add_method(lo_thread, NULL, NULL, cyperus_osc_handler, NULL);
+	lo_server_thread lo_thread = lo_server_thread_new(osc_port_in, osc_error);
+	lo_server_thread_add_method(lo_thread, NULL, NULL, cyperus_osc_handler, NULL);
 
-  lo_server_thread_start(lo_thread);
+	lo_server_thread_start(lo_thread);
 
-  osc_callback_timer_setup();
-  
+	osc_callback_timer_setup();
 } /* osc_setup */
