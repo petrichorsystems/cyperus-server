@@ -38,39 +38,42 @@ int osc_address_handler(const char *path, const char *types, lo_arg **argv,
 int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
-  printf("osc_list_main_handler..\n");
-  char *request_id = NULL;
-  struct dsp_port_out *temp_port_out;
-  struct dsp_port_in *temp_port_in;
+	printf("osc_list_main_handler..\n");
+	char *request_id, *mains_str = NULL;
+	struct dsp_port_out *temp_port_out;
+	struct dsp_port_in *temp_port_in;
+	bool multipart;
+  
 
-  request_id = (char *)argv[0];
-  char *mains_str = malloc(sizeof(char) * ((37 * (jackcli_channels_in +
+	request_id = (char *)argv[0];
+	mains_str = malloc(sizeof(char) * ((37 * (jackcli_channels_in +
 						  jackcli_channels_out)) +
 					   4 + /* strlen("in:\n") */
 					   5 + /* strlen("out:\n") */
 					   1));
-  strcpy(mains_str, "in:\n");
-  /* process main inputs */
-  temp_port_out = dsp_main_ins;
-  while(temp_port_out != NULL) {
-    strcat(mains_str, temp_port_out->id);
-    strcat(mains_str, "\n");
-    temp_port_out = temp_port_out->next;
-  }
-  strcat(mains_str, "out:\n");
-  /* process main outputs */
-  temp_port_in = dsp_main_outs;
-  while(temp_port_in != NULL) {
-    strcat(mains_str, temp_port_in->id);
-    strcat(mains_str, "\n");
-    temp_port_in = temp_port_in->next;
-  }
-   
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/main", "sis", request_id, 0, mains_str);
-  free(mains_str);
-  free(lo_addr_send);
-  return 0;
+	strcpy(mains_str, "in:\n");
+	/* process main inputs */
+	temp_port_out = dsp_main_ins;
+	while(temp_port_out != NULL) {
+		strcat(mains_str, temp_port_out->id);
+		strcat(mains_str, "\n");
+		temp_port_out = temp_port_out->next;
+	}
+	strcat(mains_str, "out:\n");
+	/* process main outputs */
+	temp_port_in = dsp_main_outs;
+	while(temp_port_in != NULL) {
+		strcat(mains_str, temp_port_in->id);
+		strcat(mains_str, "\n");
+		temp_port_in = temp_port_in->next;
+	}
+
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_send(lo_addr_send,"/cyperus/list/main", "siis", request_id, 0, multipart, mains_str);
+	free(mains_str);
+	free(lo_addr_send);
+	return 0;
 } /* osc_list_main_handler */
 			 
 int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
