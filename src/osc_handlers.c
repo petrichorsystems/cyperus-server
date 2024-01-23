@@ -468,21 +468,23 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg ** argv,
                                         int argc, void *data, void *user_data)
 {
-  printf("cyperus::osc_handlers.c::osc_get_filesystem_cwd_handler()\n");
-  char *request_id = NULL;
-  char cwd[PATH_MAX];
+	printf("cyperus::osc_handlers.c::osc_get_filesystem_cwd_handler()\n");
+	char *request_id = NULL;
+	char cwd[PATH_MAX];
+	bool multipart;
   
-  request_id = (char *)argv[0];
+	request_id = (char *)argv[0];
   
-  if (getcwd(cwd, sizeof(cwd)) != NULL) {
-  } else {
-    perror("getcwd() error");
-    return 1;
-  }
-  
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/get/filesystem/cwd", "sis", request_id, 0, cwd);
-  lo_address_free(lo_addr_send);
+	if (getcwd(cwd, sizeof(cwd)) != NULL) {
+	} else {
+		perror("getcwd() error");
+		return 1;
+	}
+
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_send(lo_addr_send,"/cyperus/get/filesystem/cwd", "siis", request_id, 0, multipart, cwd);
+	lo_address_free(lo_addr_send);
   
   return 0;
   
@@ -501,6 +503,8 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 	DIR *d;
 	struct dirent *dir;
 
+	int multipart_no, multipart_total;
+	
 	request_id = path_filesystem = raw_str = raw_str_tmp = result_str = NULL;
 	osc_str = NULL;
   
@@ -541,16 +545,18 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
+	multipart_total = osc_str_len;	
 	if (osc_str_len > 1) {
 		for (i=0; i<osc_str_len - 1; i++) {
-			lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "sisiis", request_id, 0, path_filesystem, i+1, osc_str_len, osc_str[i]);
+			multipart_no = i+1;
+			lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "siiiss", request_id, 0, multipart_no, multipart_total, path_filesystem, osc_str[i]);
 			free(osc_str[i]);
 		}
 	} else {
 		i = 0;
 	}
-
-	lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "sisiis", request_id, 0, path_filesystem, i+1, osc_str_len, osc_str[i]);
+	multipart_no = i+1;
+	lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "siiiss", request_id, 0, multipart_no, multipart_total, path_filesystem, osc_str[i]);
 	lo_address_free(lo_addr_send);
 
 	free(osc_str[i]);
@@ -585,12 +591,11 @@ int osc_write_filesystem_file_handler(const char *path, const char *types, lo_ar
 	
 	char *request_id, *filepath, *content;
 	int error;
-	bool success;
 	FILE *fp;
+	bool multipart;
 	
 	request_id = filepath = content = NULL;
 	error = 0;
-	success = false;
   
 	request_id = (char *)argv[0];
 	filepath = (char *)argv[1];
@@ -599,11 +604,12 @@ int osc_write_filesystem_file_handler(const char *path, const char *types, lo_ar
 	if (_write_append_filesystem_file("w", filepath, content) < 0) {
 		/* do some error-handling here */
 		printf("error-handling!\n");
-	} else
-		success = true;
-	
+		error = -1;
+	}
+
+	multipart = false;
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
-	lo_send(lo_addr_send,"/cyperus/write/filesystem/file", "sisis", request_id, 0, filepath, success, "");
+	lo_send(lo_addr_send,"/cyperus/write/filesystem/file", "siis", request_id, error, 0, filepath);
 	lo_address_free(lo_addr_send);
   
   return 0;
@@ -617,12 +623,11 @@ int osc_append_filesystem_file_handler(const char *path, const char *types, lo_a
 	
 	char *request_id, *filepath, *content;
 	int error;
-	bool success;
 	FILE *fp;
+	bool multipart;
 	
 	request_id = filepath = content = NULL;
 	error = 0;
-	success = false;
   
 	request_id = (char *)argv[0];
 	filepath = (char *)argv[1];
@@ -631,11 +636,11 @@ int osc_append_filesystem_file_handler(const char *path, const char *types, lo_a
 	if (_write_append_filesystem_file("a", filepath, content) < 0) {
 		/* do some error-handling here */
 		printf("error-handling!\n");
-	} else
-		success = true;
+		error = -1;
+	}
 	
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
-	lo_send(lo_addr_send,"/cyperus/append/filesystem/file", "sisis", request_id, 0, filepath, success, "");
+	lo_send(lo_addr_send,"/cyperus/append/filesystem/file", "siis", request_id, error, multipart, filepath);
 	lo_address_free(lo_addr_send);
   
   return 0;
@@ -648,17 +653,16 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 	
 	char *request_id, *filepath, *raw_str;
 	int error;
-	bool success;
 	unsigned long len;
 	FILE *fp;
 	char **osc_str;
 	int raw_strlen;
 	int osc_str_len;
 	int i;
+	int multipart_no, multipart_total;
 	
 	request_id = filepath = raw_str = NULL;
 	error = 0;
-	success = false;
   
 	request_id = (char *)argv[0];
 	filepath = (char *)argv[1];
@@ -678,21 +682,24 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 		raw_str[len] = '\0';
 	} else {
 		printf("error-handling\n");
-		success = false;
-	}	
-	
+		error = -1;
+	}
+
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
+	multipart_total = osc_str_len;
+	
 	if (osc_str_len > 1) {
 		for (i=0; i<osc_str_len - 1; i++) {
-			lo_send(lo_addr_send,"/cyperus/read/filesystem/file", "sisiis", request_id, 0, filepath, i+1, osc_str_len, osc_str[i]);
+			multipart_no = i+1;
+			lo_send(lo_addr_send,"/cyperus/read/filesystem/file", "siiiss", request_id, error, multipart_no, multipart_total, filepath, osc_str[i]);
 			free(osc_str[i]);
 		}
 	} else {
 		i = 0;
 	}
-
-	lo_send(lo_addr_send,"/cyperus/read/filesystem/file", "sisiis", request_id, 0, filepath, i+1, osc_str_len, osc_str[i]);
+	multipart_no = i+1;
+	lo_send(lo_addr_send,"/cyperus/read/filesystem/file", "siiiss", request_id, error, multipart_no, multipart_total, filepath, osc_str[i]);
 	lo_address_free(lo_addr_send);
 
 	free(osc_str[i]);
@@ -707,12 +714,11 @@ int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_a
 	
 	char *request_id, *filepath;
 	int error;
-	bool success;
 	FILE *fp;
+	bool multipart;
 	
 	request_id = filepath = NULL;
 	error = 0;
-	success = false;
   
 	request_id = (char *)argv[0];
 	filepath = (char *)argv[1];
@@ -720,11 +726,12 @@ int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_a
 	if (unlink(filepath) < 0) {
 		/* do some error-handling here */
 		printf("error-handling!\n");
-	} else
-		success = true;
-	
+		error = -1;
+	} 
+
+	multipart = false;
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
-	lo_send(lo_addr_send,"/cyperus/remove/filesystem/file", "sisis", request_id, 0, filepath, success, "");
+	lo_send(lo_addr_send,"/cyperus/remove/filesystem/file", "siis", request_id, error, multipart, filepath);
 	lo_address_free(lo_addr_send);
   
   return 0;
