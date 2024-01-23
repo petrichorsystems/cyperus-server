@@ -241,60 +241,61 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
 int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
                                int argc, void *data, void *user_data)
 {
-  int i;
-  struct dsp_bus *temp_bus;
-  char *request_id, *target_bus_id, *bus_str, *ins_str, *outs_str, *new_id = NULL;
-
-  struct dsp_bus *new_bus;
+	int i;
+	struct dsp_bus *temp_bus;
+	char *request_id, *target_bus_id, *bus_str, *ins_str, *outs_str, *new_id = NULL;
+	bool multipart;
+	struct dsp_bus *new_bus;
   
-  printf("path: <%s>\n", path);
+	printf("path: <%s>\n", path);
 
-  request_id = (char *)argv[0];
-  target_bus_id = (char *)argv[1];
-  bus_str = (char *)argv[2];
-  ins_str = (char *)argv[3];
-  outs_str = (char *)argv[4];
+	request_id = (char *)argv[0];
+	target_bus_id = (char *)argv[1];
+	bus_str = (char *)argv[2];
+	ins_str = (char *)argv[3];
+	outs_str = (char *)argv[4];
 
-  for(i=0; i < strlen(ins_str); i++)
-    if(ins_str[i] == '|')
-      ins_str[i] = ',';
-  for(i=0; i < strlen(outs_str); i++)
-    if(outs_str[i] == '|')
-      outs_str[i] = ',';
+	for(i=0; i < strlen(ins_str); i++)
+		if(ins_str[i] == '|')
+			ins_str[i] = ',';
+	for(i=0; i < strlen(outs_str); i++)
+		if(outs_str[i] == '|')
+			outs_str[i] = ',';
 
-  new_bus = dsp_bus_init(bus_str);
-  dsp_add_bus(target_bus_id, new_bus, ins_str, outs_str);
+	new_bus = dsp_bus_init(bus_str);
+	dsp_add_bus(target_bus_id, new_bus, ins_str, outs_str);
   
-  new_id = malloc(sizeof(char) * strlen(new_bus->id));
-  strcpy(new_id, new_bus->id);
+	new_id = malloc(sizeof(char) * strlen(new_bus->id));
+	strcpy(new_id, new_bus->id);
   
-  for(i=0; i < strlen(ins_str); i++)
-    if(ins_str[i] == ',')
-      ins_str[i] = '|';
-  for(i=0; i < strlen(outs_str); i++)
-    if(outs_str[i] == ',')
-      outs_str[i] = '|';
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/bus", "sisssssi", request_id, 0, target_bus_id, bus_str, ins_str, outs_str, new_id,
-	  strcmp(new_bus->name, bus_str));
-  free(lo_addr_send);
-  free(new_id);
-  
+	for(i=0; i < strlen(ins_str); i++)
+		if(ins_str[i] == ',')
+			ins_str[i] = '|';
+	for(i=0; i < strlen(outs_str); i++)
+		if(outs_str[i] == ',')
+			outs_str[i] = '|';
+
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_send(lo_addr_send,"/cyperus/add/bus", "siisssssi", request_id, 0, multipart, target_bus_id, bus_str, ins_str, outs_str, new_id,
+		strcmp(new_bus->name, bus_str));
+	free(lo_addr_send);
+	free(new_id);
   return 0;
 } /* osc_add_bus_handler */
 
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
                                      int argc, void *data, void *user_data)
 {
-  int voice;
-  int module_no;
+	int voice;
+	int module_no;
   
-  printf("path: <%s>\n", path);
-  module_no=argv[0]->i;
+	printf("path: <%s>\n", path);
+	module_no=argv[0]->i;
 
-  printf("removing module #%d..\n",module_no);
-  
-  dsp_remove_module(0,module_no);
+	printf("removing module #%d..\n",module_no);
+	
+	dsp_remove_module(0,module_no);
   
   return 0;
 } /* osc_remove_module_handler */
