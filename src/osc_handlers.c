@@ -399,71 +399,70 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
                                         int argc, void *data, void *user_data)
 {
-  printf("cyperus::osc_handlers.c::osc_list_module_port_handler()\n");
-  int count;
-  struct dsp_bus *temp_bus;
-  struct dsp_module *temp_module = NULL;
-  char *request_id, *bus_path, *module_id, *result_str = NULL;
-  size_t result_str_size = 0;
-  struct dsp_port_in *temp_port_in;
-  struct dsp_port_out *temp_port_out;
-  char *module_path;
-  bool multipart;
+	printf("cyperus::osc_handlers.c::osc_list_module_port_handler()\n");
+	int count;
+	struct dsp_bus *temp_bus;
+	struct dsp_module *temp_module = NULL;
+	char *request_id, *bus_path, *module_id, *result_str = NULL;
+	size_t result_str_size = 0;
+	struct dsp_port_in *temp_port_in;
+	struct dsp_port_out *temp_port_out;
+	char *module_path;
+	bool multipart;
+	
+	request_id = (char *)argv[0];
+	module_path = (char *)argv[1];
+  
+	/* split up path */
+	bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
+	snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
+	
+	module_id = malloc(sizeof(char) * 37);
+	strncpy(module_id, module_path + strlen(module_path) - 36, 37);
+  
+	temp_module = dsp_find_module(module_id);
+  
+	result_str_size = 4;
+	result_str = malloc(sizeof(char) * (result_str_size + 1));
+	strcpy(result_str, "in:\n");
+  
+	if(temp_module == NULL)
+		printf(" NULL DUDE \n");
 
-  request_id = (char *)argv[0];
-  module_path = (char *)argv[1];
+	temp_port_in = temp_module->ins;
   
-  /* split up path */
-  bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-  snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
-  
-  module_id = malloc(sizeof(char) * 37);
-  strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  
-  temp_module = dsp_find_module(module_id);
-  
-  result_str_size = 4;
-  result_str = malloc(sizeof(char) * (result_str_size + 1));
-  strcpy(result_str, "in:\n");
-  
-  if(temp_module == NULL)
-    printf(" NULL DUDE \n");
+	while(temp_port_in != NULL) {
+		result_str_size += strlen(temp_port_in->id) + 1 + strlen(temp_port_in->name) + 2;
+		result_str = realloc(result_str, sizeof(char) * result_str_size);
+		strcat(result_str, temp_port_in->id);
+		strcat(result_str, "|");
+		strcat(result_str, temp_port_in->name);
+		strcat(result_str, "\n");
+		temp_port_in = temp_port_in->next;
+	}
 
-  temp_port_in = temp_module->ins;
+	result_str_size += 4;
+	result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
+	strcat(result_str, "out:\n");
   
-  while(temp_port_in != NULL) {
-    result_str_size += strlen(temp_port_in->id) + 1 + strlen(temp_port_in->name) + 2;
-    result_str = realloc(result_str, sizeof(char) * result_str_size);
-    strcat(result_str, temp_port_in->id);
-    strcat(result_str, "|");
-    strcat(result_str, temp_port_in->name);
-    strcat(result_str, "\n");
-    temp_port_in = temp_port_in->next;
-  }
+	temp_port_out = temp_module->outs;
+	while(temp_port_out != NULL) {
+		result_str_size += strlen(temp_port_out->id) + 1 + strlen(temp_port_out->name) + 2;
+		result_str = realloc(result_str, sizeof(char) * result_str_size);
+		strcat(result_str, temp_port_out->id);
+		strcat(result_str, "|");
+		strcat(result_str, temp_port_out->name);
+		strcat(result_str, "\n");
+		temp_port_out = temp_port_out->next;
+	}
 
-  result_str_size += 4;
-  result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
-  strcat(result_str, "out:\n");
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_send(lo_addr_send,"/cyperus/list/module_port", "siiss", request_id, 0, multipart, module_path, result_str);
+	lo_address_free(lo_addr_send);
+	free(result_str);
   
-  temp_port_out = temp_module->outs;
-  while(temp_port_out != NULL) {
-    result_str_size += strlen(temp_port_out->id) + 1 + strlen(temp_port_out->name) + 2;
-    result_str = realloc(result_str, sizeof(char) * result_str_size);
-    strcat(result_str, temp_port_out->id);
-    strcat(result_str, "|");
-    strcat(result_str, temp_port_out->name);
-    strcat(result_str, "\n");
-    temp_port_out = temp_port_out->next;
-  }
-
-  multipart = false;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/list/module_port", "siiss", request_id, 0, multipart, module_path, result_str);
-  lo_address_free(lo_addr_send);
-  free(result_str);
-  
-  return 0;
-  
+	return 0;
 } /* osc_list_module_port_handler */
 
 int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg ** argv,
