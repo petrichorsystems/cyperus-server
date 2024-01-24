@@ -112,7 +112,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	   2 - direct descendant
 	   3 - all descendants */
 
-	if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") ||
+	if ( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") ||
 	    !strcmp(bus_id, "") ) {
 		head_bus = dsp_global_bus_head;
 		root_level = 1;
@@ -121,7 +121,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 		head_bus = dsp_find_bus(bus_id);
 	}
   
-	if(head_bus == NULL) {
+	if (head_bus == NULL) {
 		/* no buses, return new-line char-as-str */
 		result_str = "\n";
 	} else {
@@ -143,31 +143,31 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 		}
 	}
   
-	if(result_str == NULL)
+	if (result_str == NULL)
 		result_str = "\n";
   
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   
 	/* split bus list into 768-byte chunks */
-	if(strlen(result_str) > 768) {
+	if (strlen(result_str) > 768) {
 		multipart = true;
 		for(current_index=0; current_index<strlen(result_str); current_index++) {
-			if(result_str[current_index] == '\n')
+			if (result_str[current_index] == '\n')
 				last_break = current_index;
-			if((current_index - last_cutoff) > 768) {	
+			if ((current_index - last_cutoff) > 768) {	
 				part_result_str = malloc(sizeof(char) * (last_break - last_cutoff + 1));
 				for(copy_index=last_cutoff; copy_index<last_break; copy_index++)
 					part_result_str[copy_index - last_cutoff] = result_str[copy_index];
 				part_result_str[copy_index] = '\0';
 				last_cutoff = last_break;
-				if(last_cutoff == strlen(result_str - 1))
+				if (last_cutoff == strlen(result_str - 1))
 					multipart = false;
 				lo_send(lo_addr_send,"/cyperus/list/bus", "siisis", request_id, 0, multipart, bus_id, list_type, part_result_str);
 				free(part_result_str);
 			}
 		}
 	}
-	if(multipart) {
+	if (multipart) {
 		for(current_index=last_cutoff; current_index<strlen(result_str); current_index++) {
 			result_str[current_index - last_cutoff] = result_str[current_index];
 		}
@@ -176,7 +176,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	multipart = false;
 	lo_send(lo_addr_send,"/cyperus/list/bus", "siisis", request_id, 0, multipart, bus_id, list_type, result_str);
 	free(lo_addr_send);
-	if(strcmp(result_str, "\n"))
+	if (strcmp(result_str, "\n"))
 		free(result_str);
 	return 0;
 } /* osc_list_bus_handler */
@@ -256,10 +256,10 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 	outs_str = (char *)argv[4];
 
 	for(i=0; i < strlen(ins_str); i++)
-		if(ins_str[i] == '|')
+		if (ins_str[i] == '|')
 			ins_str[i] = ',';
 	for(i=0; i < strlen(outs_str); i++)
-		if(outs_str[i] == '|')
+		if (outs_str[i] == '|')
 			outs_str[i] = ',';
 
 	new_bus = dsp_bus_init(bus_str);
@@ -269,10 +269,10 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 	strcpy(new_id, new_bus->id);
   
 	for(i=0; i < strlen(ins_str); i++)
-		if(ins_str[i] == ',')
+		if (ins_str[i] == ',')
 			ins_str[i] = '|';
 	for(i=0; i < strlen(outs_str); i++)
-		if(outs_str[i] == ',')
+		if (outs_str[i] == ',')
 			outs_str[i] = '|';
 
 	multipart = false;
@@ -368,7 +368,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 
 	target_module = dsp_find_module(path_str);
   
-	if(target_module) {
+	if (target_module) {
 		result_str = malloc(sizeof(char) * 38);
 		strcpy(result_str, target_module->id);
 		strcat(result_str, "\n");
@@ -378,7 +378,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 			result_str = realloc(result_str, sizeof(char) * (strlen(result_str) + strlen(target_module->id) + 2));
 
 			strcat(result_str, target_module->id);
-			if( target_module->next != NULL )
+			if ( target_module->next != NULL )
 				strcat(result_str, "\n");
 			target_module = target_module->next;
 		}
@@ -390,7 +390,7 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	lo_send(lo_addr_send,"/cyperus/list/module","siis", request_id, 0, multipart, result_str);
 	free(lo_addr_send);
-	if( !strcmp(result_str, "") )
+	if ( !strcmp(result_str, "") )
 		free(result_str);
 	return 0;
   
@@ -426,7 +426,7 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 	result_str = malloc(sizeof(char) * (result_str_size + 1));
 	strcpy(result_str, "in:\n");
   
-	if(temp_module == NULL)
+	if (temp_module == NULL)
 		printf(" NULL DUDE \n");
 
 	temp_port_in = temp_module->ins;
@@ -813,176 +813,179 @@ int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_a
 
 int
 osc_get_graph_id_handler(const char *path, const char *types, lo_arg **argv,
-                         int argc, void *data, void *user_data) {
-  char *request_id;
-  request_id = (char *)argv[0];
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/get/graph/id","sis", request_id, 0, dsp_graph_id_get());
-  free(lo_addr_send);
+                         int argc, void *data, void *user_data)
+{
+	char *request_id;
+	bool multipart;
+	request_id = (char *)argv[0];
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_send(lo_addr_send,"/cyperus/get/graph/id","sis", request_id, 0, multipart, dsp_graph_id_get());
+	free(lo_addr_send);
   
-  return 0;
+	return 0;
 } /* osc_get_graph_id_handler */
 
 
 int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
                     int argc, void *data, void *user_data)
 {
-  /* int i; */
-  /* printf("path: <%s>\n", path); */
-  /* for (i = 0; i < argc; i++) { */
-  /*   printf("arg %d '%c' ", i, types[i]); */
-  /*   lo_arg_pp((lo_type)types[i], argv[i]); */
-  /*   printf("\n"); */
-  /* } */
-  int (*handler_ptr)(const char *path, const char *types, lo_arg ** argv,
-                     int argc, void *data, void *user_data);
-  handler_ptr = NULL;
-  if(strcmp(path, "/cyperus/address") == 0)
-    handler_ptr = osc_address_handler;
-  else if(strcmp(path, "/cyperus/list/main") == 0)
-    handler_ptr = osc_list_main_handler;
-  else if(strcmp(path, "/cyperus/add/bus") == 0)
-    handler_ptr = osc_add_bus_handler;
-  else if(strcmp(path, "/cyperus/list/bus") == 0)
-    handler_ptr = osc_list_bus_handler;
-  else if(strcmp(path, "/cyperus/list/bus_port") == 0)
-    handler_ptr = osc_list_bus_port_handler;
+	/* int i; */
+	/* printf("path: <%s>\n", path); */
+	/* for (i = 0; i < argc; i++) { */
+	/*   printf("arg %d '%c' ", i, types[i]); */
+	/*   lo_arg_pp((lo_type)types[i], argv[i]); */
+	/*   printf("\n"); */
+	/* } */
+	int (*handler_ptr)(const char *path, const char *types, lo_arg ** argv,
+			   int argc, void *data, void *user_data);
+	handler_ptr = NULL;
+	if (strcmp(path, "/cyperus/address") == 0)
+		handler_ptr = osc_address_handler;
+	else if (strcmp(path, "/cyperus/list/main") == 0)
+		handler_ptr = osc_list_main_handler;
+	else if (strcmp(path, "/cyperus/add/bus") == 0)
+		handler_ptr = osc_add_bus_handler;
+	else if (strcmp(path, "/cyperus/list/bus") == 0)
+		handler_ptr = osc_list_bus_handler;
+	else if (strcmp(path, "/cyperus/list/bus_port") == 0)
+		handler_ptr = osc_list_bus_port_handler;
+	
+	else if (strcmp(path, "/cyperus/add/connection") == 0)
+		handler_ptr = osc_add_connection_handler;
+	else if (strcmp(path, "/cyperus/remove/connection") == 0)
+		handler_ptr = osc_remove_connection_handler;
+	
+	else if (strcmp(path, "/cyperus/list/modules") == 0)
+		handler_ptr = osc_list_modules_handler;
+	else if (strcmp(path, "/cyperus/list/module_port") == 0)
+		handler_ptr = osc_list_module_port_handler;
+	
+	else if (strcmp(path, "/cyperus/add/module/delay/simple") == 0)
+		handler_ptr = osc_add_modules_delay_simple_handler;
+	else if (strcmp(path, "/cyperus/edit/module/delay/simple") == 0)
+		handler_ptr = osc_edit_modules_delay_simple_handler;
   
-  else if(strcmp(path, "/cyperus/add/connection") == 0)
-    handler_ptr = osc_add_connection_handler;
-  else if(strcmp(path, "/cyperus/remove/connection") == 0)
-    handler_ptr = osc_remove_connection_handler;
+	else if (strcmp(path, "/cyperus/add/module/envelope/follower") == 0)
+		handler_ptr = osc_add_modules_envelope_follower_handler;
+	else if (strcmp(path, "/cyperus/edit/module/envelope/follower") == 0)
+		handler_ptr = osc_edit_modules_envelope_follower_handler;
+	
+	/* else if (strcmp(path, "/cyperus/add/module/analysis/transient_detector") == 0) */
+	/*   handler_ptr = osc_add_modules_analysis_transient_detector_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/analysis/transient_detector") == 0) */
+	/*   handler_ptr = osc_edit_modules_analysis_transient_detector_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/filter/bandpass") == 0) */
+	/*   handler_ptr = osc_add_modules_filter_bandpass_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/filter/bandpass") == 0) */
+	/*   handler_ptr = osc_edit_modules_filter_bandpass_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/filter/moogff") == 0) */
+	/*   handler_ptr = osc_add_modules_filter_moogff_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/filter/moogff") == 0) */
+	/*   handler_ptr = osc_edit_modules_filter_moogff_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/filter/varslope_lowpass") == 0) */
+	/*   handler_ptr = osc_add_modules_filter_varslope_lowpass_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/filter/varslope_lowpass") == 0) */
+	/*   handler_ptr = osc_edit_modules_filter_varslope_lowpass_handler; */
+	
+	else if (strcmp(path, "/cyperus/add/module/oscillator/sine") == 0)
+		handler_ptr = osc_add_modules_oscillator_sine_handler;
+	else if (strcmp(path, "/cyperus/edit/module/oscillator/sine") == 0)
+		handler_ptr = osc_edit_modules_oscillator_sine_handler;
+	
+	/* else if (strcmp(path, "/cyperus/add/module/oscillator/sawtooth") == 0) */
+	/*   handler_ptr = osc_add_modules_oscillator_sawtooth_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/sawtooth") == 0) */
+	/*   handler_ptr = osc_edit_modules_oscillator_sawtooth_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/oscillator/triangle") == 0) */
+	/*   handler_ptr = osc_add_modules_oscillator_triangle_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/triangle") == 0) */
+	/*   handler_ptr = osc_edit_modules_oscillator_triangle_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/oscillator/pulse") == 0) */
+	/*   handler_ptr = osc_add_modules_oscillator_pulse_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/pulse") == 0) */
+	/*   handler_ptr = osc_edit_modules_oscillator_pulse_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/oscillator/clock") == 0) */
+	/*   handler_ptr = osc_add_modules_oscillator_clock_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0) */
+	/*   handler_ptr = osc_edit_modules_oscillator_clock_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/envelope/adsr") == 0) */
+	/*   handler_ptr = osc_add_modules_envelope_adsr_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/envelope/adsr") == 0) */
+	/*   handler_ptr = osc_edit_modules_envelope_adsr_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/envelope/segment") == 0) */
+	/*   handler_ptr = osc_add_modules_envelope_segment_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/envelope/segment") == 0) */
+	/*   handler_ptr = osc_edit_modules_envelope_segment_handler; */
+	
+	else if (strcmp(path, "/cyperus/add/module/utils/float") == 0)
+		handler_ptr = osc_add_modules_utils_float_handler;
+	else if (strcmp(path, "/cyperus/edit/module/utils/float") == 0)
+		handler_ptr = osc_edit_modules_utils_float_handler;
+	
+	/* else if (strcmp(path, "/cyperus/add/module/envelope/stdshape") == 0) */
+	/*   handler_ptr = osc_add_modules_envelope_stdshape_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/utils/counter") == 0) */
+	/*   handler_ptr = osc_add_modules_utils_counter_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/utils/counter") == 0) */
+	/*   handler_ptr = osc_edit_modules_utils_counter_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/utils/equals") == 0) */
+	/*   handler_ptr = osc_add_modules_utils_equals_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/utils/equals") == 0) */
+	/*   handler_ptr = osc_edit_modules_utils_equals_handler; */
+	
+	/* else if (strcmp(path, "/cyperus/add/module/utils/spigot") == 0) */
+	/*   handler_ptr = osc_add_modules_utils_spigot_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/utils/spigot") == 0) */
+	/*   handler_ptr = osc_edit_modules_utils_spigot_handler;   */
+	
+	else if (strcmp(path, "/cyperus/get/graph/id") == 0)
+		handler_ptr = osc_get_graph_id_handler;
+	
+	else if (strcmp(path, "/cyperus/get/filesystem/cwd") == 0)
+		handler_ptr = osc_get_filesystem_cwd_handler;
+	
+	else if (strcmp(path, "/cyperus/list/filesystem/path") == 0)
+		handler_ptr = osc_list_filesystem_path_handler;
+	
+	else if (strcmp(path, "/cyperus/write/filesystem/file") == 0)
+		handler_ptr = osc_write_filesystem_file_handler;
+	
+	else if (strcmp(path, "/cyperus/append/filesystem/file") == 0)
+		handler_ptr = osc_append_filesystem_file_handler;
+	
+	else if (strcmp(path, "/cyperus/read/filesystem/file") == 0)
+		handler_ptr = osc_read_filesystem_file_handler;
+	
+	else if (strcmp(path, "/cyperus/remove/filesystem/file") == 0)
+		handler_ptr = osc_remove_filesystem_file_handler;
+	
+	if (handler_ptr)
+		handler_ptr(path, types, argv, argc, data, user_data);
+	else {
+		printf("we should raise some warning message, default handling, etc\n");
+		return 1;
+	}
 
-  else if(strcmp(path, "/cyperus/list/modules") == 0)
-    handler_ptr = osc_list_modules_handler;
-  else if(strcmp(path, "/cyperus/list/module_port") == 0)
-    handler_ptr = osc_list_module_port_handler;
-
-  else if(strcmp(path, "/cyperus/add/module/delay/simple") == 0)
-    handler_ptr = osc_add_modules_delay_simple_handler;
-  else if(strcmp(path, "/cyperus/edit/module/delay/simple") == 0)
-    handler_ptr = osc_edit_modules_delay_simple_handler;
-  
-  else if(strcmp(path, "/cyperus/add/module/envelope/follower") == 0)
-    handler_ptr = osc_add_modules_envelope_follower_handler;
-  else if(strcmp(path, "/cyperus/edit/module/envelope/follower") == 0)
-    handler_ptr = osc_edit_modules_envelope_follower_handler;
-  
-  /* else if(strcmp(path, "/cyperus/add/module/analysis/transient_detector") == 0) */
-  /*   handler_ptr = osc_add_modules_analysis_transient_detector_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/analysis/transient_detector") == 0) */
-  /*   handler_ptr = osc_edit_modules_analysis_transient_detector_handler; */
-
-  /* else if(strcmp(path, "/cyperus/add/module/filter/bandpass") == 0) */
-  /*   handler_ptr = osc_add_modules_filter_bandpass_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/filter/bandpass") == 0) */
-  /*   handler_ptr = osc_edit_modules_filter_bandpass_handler; */
-  
-  /* else if(strcmp(path, "/cyperus/add/module/filter/moogff") == 0) */
-  /*   handler_ptr = osc_add_modules_filter_moogff_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/filter/moogff") == 0) */
-  /*   handler_ptr = osc_edit_modules_filter_moogff_handler; */
-  
-  /* else if(strcmp(path, "/cyperus/add/module/filter/varslope_lowpass") == 0) */
-  /*   handler_ptr = osc_add_modules_filter_varslope_lowpass_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/filter/varslope_lowpass") == 0) */
-  /*   handler_ptr = osc_edit_modules_filter_varslope_lowpass_handler; */
-
-  else if(strcmp(path, "/cyperus/add/module/oscillator/sine") == 0)
-    handler_ptr = osc_add_modules_oscillator_sine_handler;
-  else if(strcmp(path, "/cyperus/edit/module/oscillator/sine") == 0)
-    handler_ptr = osc_edit_modules_oscillator_sine_handler;
-
-  /* else if(strcmp(path, "/cyperus/add/module/oscillator/sawtooth") == 0) */
-  /*   handler_ptr = osc_add_modules_oscillator_sawtooth_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/oscillator/sawtooth") == 0) */
-  /*   handler_ptr = osc_edit_modules_oscillator_sawtooth_handler; */
-
-  /* else if(strcmp(path, "/cyperus/add/module/oscillator/triangle") == 0) */
-  /*   handler_ptr = osc_add_modules_oscillator_triangle_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/oscillator/triangle") == 0) */
-  /*   handler_ptr = osc_edit_modules_oscillator_triangle_handler; */
-  
-  /* else if(strcmp(path, "/cyperus/add/module/oscillator/pulse") == 0) */
-  /*   handler_ptr = osc_add_modules_oscillator_pulse_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/oscillator/pulse") == 0) */
-  /*   handler_ptr = osc_edit_modules_oscillator_pulse_handler; */
-
-  /* else if(strcmp(path, "/cyperus/add/module/oscillator/clock") == 0) */
-  /*   handler_ptr = osc_add_modules_oscillator_clock_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0) */
-  /*   handler_ptr = osc_edit_modules_oscillator_clock_handler; */
-  
-  /* else if(strcmp(path, "/cyperus/add/module/envelope/adsr") == 0) */
-  /*   handler_ptr = osc_add_modules_envelope_adsr_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/envelope/adsr") == 0) */
-  /*   handler_ptr = osc_edit_modules_envelope_adsr_handler; */
-
-  /* else if(strcmp(path, "/cyperus/add/module/envelope/segment") == 0) */
-  /*   handler_ptr = osc_add_modules_envelope_segment_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/envelope/segment") == 0) */
-  /*   handler_ptr = osc_edit_modules_envelope_segment_handler; */
-
-  else if(strcmp(path, "/cyperus/add/module/utils/float") == 0)
-    handler_ptr = osc_add_modules_utils_float_handler;
-  else if(strcmp(path, "/cyperus/edit/module/utils/float") == 0)
-    handler_ptr = osc_edit_modules_utils_float_handler;
-
-  /* else if(strcmp(path, "/cyperus/add/module/envelope/stdshape") == 0) */
-  /*   handler_ptr = osc_add_modules_envelope_stdshape_handler; */
-
-  /* else if(strcmp(path, "/cyperus/add/module/utils/counter") == 0) */
-  /*   handler_ptr = osc_add_modules_utils_counter_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/utils/counter") == 0) */
-  /*   handler_ptr = osc_edit_modules_utils_counter_handler; */
-
-  /* else if(strcmp(path, "/cyperus/add/module/utils/equals") == 0) */
-  /*   handler_ptr = osc_add_modules_utils_equals_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/utils/equals") == 0) */
-  /*   handler_ptr = osc_edit_modules_utils_equals_handler; */
-
-  /* else if(strcmp(path, "/cyperus/add/module/utils/spigot") == 0) */
-  /*   handler_ptr = osc_add_modules_utils_spigot_handler; */
-  /* else if(strcmp(path, "/cyperus/edit/module/utils/spigot") == 0) */
-  /*   handler_ptr = osc_edit_modules_utils_spigot_handler;   */
-
-  else if(strcmp(path, "/cyperus/get/graph/id") == 0)
-    handler_ptr = osc_get_graph_id_handler;
-
-  else if(strcmp(path, "/cyperus/get/filesystem/cwd") == 0)
-    handler_ptr = osc_get_filesystem_cwd_handler;
-
-  else if(strcmp(path, "/cyperus/list/filesystem/path") == 0)
-    handler_ptr = osc_list_filesystem_path_handler;
-
-  else if(strcmp(path, "/cyperus/write/filesystem/file") == 0)
-    handler_ptr = osc_write_filesystem_file_handler;
-
-  else if(strcmp(path, "/cyperus/append/filesystem/file") == 0)
-    handler_ptr = osc_append_filesystem_file_handler;
-
-  else if(strcmp(path, "/cyperus/read/filesystem/file") == 0)
-    handler_ptr = osc_read_filesystem_file_handler;
-  
-  else if(strcmp(path, "/cyperus/remove/filesystem/file") == 0)
-    handler_ptr = osc_remove_filesystem_file_handler;
-  
-  if(handler_ptr)
-    handler_ptr(path, types, argv, argc, data, user_data);
-  else {
-    printf("we should raise some warning message, default handling, etc\n");
-    return 1;
-  }
-
-  /* if(global_osc_handlers_user_defined != NULL) { */
-  /*   osc_handler_user_defined_t *temp_handler; */
-  /*   temp_handler = global_osc_handlers_user_defined; */
-  /*   while(temp_handler != NULL) { */
-  /*     if(strcmp(path, temp_handler->osc_path) == 0) */
-  /*       osc_execute_handler_parameter_assignment(temp_handler, argv); */
-  /*     temp_handler = temp_handler->next; */
-  /*   } */
-  /* } */
-  
-  return 0;
+	/* if (global_osc_handlers_user_defined != NULL) { */
+	/*   osc_handler_user_defined_t *temp_handler; */
+	/*   temp_handler = global_osc_handlers_user_defined; */
+	/*   while(temp_handler != NULL) { */
+	/*     if (strcmp(path, temp_handler->osc_path) == 0) */
+	/*       osc_execute_handler_parameter_assignment(temp_handler, argv); */
+	/*     temp_handler = temp_handler->next; */
+	/*   } */
+	/* } */
+	
+	return 0;
 }
