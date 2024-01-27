@@ -506,6 +506,10 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 	struct stat stat_file;
 	int stat_ret;
 
+	time_t modified_time;
+	struct tm modified_time_local;
+	char modified_time_str[20];
+	
 	char *file_metadata_str;
 	char *filesize_str;
 	int tmp_strlen;
@@ -519,8 +523,8 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 	request_id = (char *)argv[0];
 	dirpath = (char *)argv[1];
 
-	raw_strlen = 1;   /* set initial value to 1 to account for null-termination
-			   * of raw_str */
+	raw_strlen = 0;
+
 	osc_str_len = 0;
 	d = opendir(dirpath);
 	if (d) {
@@ -543,54 +547,62 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 				printf("error calling stat() on file %s! exiting..", filepath);
 				exit(1);
 			}
-
+			free(filepath);
+			
 			tmp_strlen = snprintf(NULL, 0, "%lu", stat_file.st_size);
 			filesize_str = malloc(sizeof(char) * (tmp_strlen+1));
 			snprintf(filesize_str, tmp_strlen+1, "%lu", stat_file.st_size);
 
-			printf("filepath size: %s\n", filesize_str);
-
+			tmp_strlen = 0;			
 			tmp_strlen += strlen(dir->d_name);
 			tmp_strlen += 1; /* \t separator */
 			tmp_strlen += strlen(filesize_str);
 			tmp_strlen += 1; /* \t separator */
 			
 			if (S_ISDIR(stat_file.st_mode)) {
-				printf("filepath points to a dir\n");
 				tmp_strlen += 9; /* "directory" */
 			} else if (S_ISREG(stat_file.st_mode)) {
-				printf("filepath points to a file\n");
 				tmp_strlen += 4; /* "file" */
 			} else {
 				printf("filepath points to unknown type\n");
 			}
 
+			/* add length for time string (19) + \t (1) */
+			tmp_strlen += 20;
+			
 			file_metadata_str = malloc(sizeof(char) * tmp_strlen + 1);
 			memcpy(file_metadata_str, dir->d_name, strlen(dir->d_name));
 			file_metadata_str[strlen(dir->d_name)] = '\t';
 			memcpy(file_metadata_str+strlen(dir->d_name)+1, filesize_str, strlen(filesize_str));
 			file_metadata_str[strlen(dir->d_name)+1+strlen(filesize_str)] = '\t';
 
+			modified_time = stat_file.st_mtime;
+			localtime_r(&modified_time, &modified_time_local);
+			strftime(modified_time_str, sizeof(modified_time_str), "%Y-%m-%d %H:%M:%S", &modified_time_local);
+			
 			if (S_ISDIR(stat_file.st_mode)) {
 				memcpy(file_metadata_str+strlen(dir->d_name)+1+strlen(filesize_str)+1, "directory", 9);
-				file_metadata_str[strlen(dir->d_name)+1+strlen(filesize_str)+1+9] = '\0';
+				file_metadata_str[strlen(dir->d_name)+1+strlen(filesize_str)+1+9] = '\t';
+				memcpy(file_metadata_str+strlen(dir->d_name)+1+strlen(filesize_str)+1+9+1, modified_time_str, 19);
+				file_metadata_str[tmp_strlen] = '\0';
 			} else if (S_ISREG(stat_file.st_mode)) {
 				memcpy(file_metadata_str+strlen(dir->d_name)+1+strlen(filesize_str)+1, "file", 4);
-				file_metadata_str[strlen(dir->d_name)+1+strlen(filesize_str)+1+4] = '\0';
+				file_metadata_str[strlen(dir->d_name)+1+strlen(filesize_str)+1+4] = '\t';
+				memcpy(file_metadata_str+strlen(dir->d_name)+1+strlen(filesize_str)+1+4+1, modified_time_str, 19);
+				file_metadata_str[tmp_strlen] = '\0';
 			} else {
 				printf("filepath points to unknown type\n");
-			}
-			free(filepath);
-			
+			}		       
+
 			raw_strlen += strlen(file_metadata_str);
 			
 			if (raw_str == NULL) {
-				raw_str = malloc(sizeof(char) * raw_strlen);
+				raw_str = malloc(sizeof(char) * (raw_strlen + 1));
 				if (raw_str == NULL) {
 					printf("could not allocate memory! exiting..");
 					exit(1);
 				}
-				memcpy(raw_str, file_metadata_str, raw_strlen+1);
+				memcpy(raw_str, file_metadata_str, raw_strlen);
 			} else {
 				/* increment raw_strlen by 1 to make room for
 				 * delimiting newline character */
