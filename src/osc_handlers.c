@@ -523,7 +523,7 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 	request_id = (char *)argv[0];
 	dirpath = (char *)argv[1];
 
-	raw_strlen = 0;
+	raw_strlen = 1;
 
 	osc_str_len = 0;
 	d = opendir(dirpath);
