@@ -494,37 +494,103 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 				     int argc, void *data, void *user_data)
 {
 	printf("cyperus::osc_handlers.c::osc_list_filesystem_path_handler()\n");
-	char *request_id, *path_filesystem, *raw_str, *raw_str_tmp, *result_str;
+	char *request_id, *dirpath, *filepath, *raw_str, *raw_str_tmp, *result_str;
 	char **osc_str;
 	int raw_strlen;
 	int osc_str_len;
 	int i;
-	
+
+	bool filepath_tr_slash;
 	DIR *d;
 	struct dirent *dir;
+	struct stat stat_file;
+	int stat_ret;
 
+	char *file_metadata_str;
+	char *filesize_str;
+	int tmp_strlen;
+	
 	int multipart_no, multipart_total;
 	
-	request_id = path_filesystem = raw_str = raw_str_tmp = result_str = NULL;
+	request_id = dirpath = filepath = raw_str = raw_str_tmp = result_str = file_metadata_str = filesize_str = NULL;
 	osc_str = NULL;
+	filepath_tr_slash = false;
   
 	request_id = (char *)argv[0];
-	path_filesystem = (char *)argv[1];
+	dirpath = (char *)argv[1];
 
 	raw_strlen = 1;   /* set initial value to 1 to account for null-termination
 			   * of raw_str */
 	osc_str_len = 0;
-	d = opendir(path_filesystem);
+	d = opendir(dirpath);
 	if (d) {
 		while ((dir = readdir(d)) != NULL) {
-			raw_strlen += strlen(dir->d_name);
+			if (dirpath[strlen(dirpath)-1] == '/')
+				filepath_tr_slash = true;
+
+			tmp_strlen = strlen(dirpath) + strlen(dir->d_name);
+			if (!filepath_tr_slash)
+				tmp_strlen += 1;
+
+			filepath = malloc(sizeof(char) * (tmp_strlen + 1));
+			if (!filepath_tr_slash)
+				snprintf(filepath, tmp_strlen+1, "%s/%s", dirpath, dir->d_name);
+			else
+				snprintf(filepath, tmp_strlen+1, "%s%s", dirpath, dir->d_name);
+
+			stat_ret = stat(filepath, &stat_file);
+			if (stat_ret) {
+				printf("error calling stat() on file %s! exiting..", filepath);
+				exit(1);
+			}
+
+			tmp_strlen = snprintf(NULL, 0, "%lu", stat_file.st_size);
+			filesize_str = malloc(sizeof(char) * (tmp_strlen+1));
+			snprintf(filesize_str, tmp_strlen+1, "%lu", stat_file.st_size);
+
+			printf("filepath size: %s\n", filesize_str);
+
+			tmp_strlen += strlen(dir->d_name);
+			tmp_strlen += 1; /* \t separator */
+			tmp_strlen += strlen(filesize_str);
+			tmp_strlen += 1; /* \t separator */
+			
+			if (S_ISDIR(stat_file.st_mode)) {
+				printf("filepath points to a dir\n");
+				tmp_strlen += 9; /* "directory" */
+			} else if (S_ISREG(stat_file.st_mode)) {
+				printf("filepath points to a file\n");
+				tmp_strlen += 4; /* "file" */
+			} else {
+				printf("filepath points to unknown type\n");
+			}
+
+			file_metadata_str = malloc(sizeof(char) * tmp_strlen + 1);
+			memcpy(file_metadata_str, dir->d_name, strlen(dir->d_name));
+			file_metadata_str[strlen(dir->d_name)] = '\t';
+			memcpy(file_metadata_str+strlen(dir->d_name)+1, filesize_str, strlen(filesize_str));
+			file_metadata_str[strlen(dir->d_name)+1+strlen(filesize_str)] = '\t';
+
+			if (S_ISDIR(stat_file.st_mode)) {
+				memcpy(file_metadata_str+strlen(dir->d_name)+1+strlen(filesize_str)+1, "directory", 9);
+				file_metadata_str[strlen(dir->d_name)+1+strlen(filesize_str)+1+9] = '\0';
+			} else if (S_ISREG(stat_file.st_mode)) {
+				memcpy(file_metadata_str+strlen(dir->d_name)+1+strlen(filesize_str)+1, "file", 4);
+				file_metadata_str[strlen(dir->d_name)+1+strlen(filesize_str)+1+4] = '\0';
+			} else {
+				printf("filepath points to unknown type\n");
+			}
+			free(filepath);
+			
+			raw_strlen += strlen(file_metadata_str);
+			
 			if (raw_str == NULL) {
 				raw_str = malloc(sizeof(char) * raw_strlen);
 				if (raw_str == NULL) {
 					printf("could not allocate memory! exiting..");
 					exit(1);
 				}
-				memcpy(raw_str, dir->d_name, raw_strlen+1);
+				memcpy(raw_str, file_metadata_str, raw_strlen+1);
 			} else {
 				/* increment raw_strlen by 1 to make room for
 				 * delimiting newline character */
@@ -535,10 +601,11 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 					exit(1);
 				}
 				raw_str = raw_str_tmp;
-				raw_str[raw_strlen - strlen(dir->d_name) - 2] = '\n';
-				memcpy(raw_str+(raw_strlen - strlen(dir->d_name))-1,
-				       dir->d_name, strlen(dir->d_name)+1);	      
+				raw_str[raw_strlen - strlen(file_metadata_str) - 2] = '\n';
+				memcpy(raw_str+(raw_strlen - strlen(file_metadata_str))-1,
+				       file_metadata_str, strlen(file_metadata_str)+1);	      
 			}
+			free(file_metadata_str);
 		}
 		closedir(d);
 	}
@@ -549,14 +616,14 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 	if (osc_str_len > 1) {
 		for (i=0; i<osc_str_len - 1; i++) {
 			multipart_no = i+1;
-			lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "siiiss", request_id, 0, multipart_no, multipart_total, path_filesystem, osc_str[i]);
+			lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "siiiss", request_id, 0, multipart_no, multipart_total, dirpath, osc_str[i]);
 			free(osc_str[i]);
 		}
 	} else {
 		i = 0;
 	}
 	multipart_no = i+1;
-	lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "siiiss", request_id, 0, multipart_no, multipart_total, path_filesystem, osc_str[i]);
+	lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "siiiss", request_id, 0, multipart_no, multipart_total, dirpath, osc_str[i]);
 	lo_address_free(lo_addr_send);
 
 	free(osc_str[i]);

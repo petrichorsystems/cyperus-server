@@ -155,7 +155,9 @@ def test_get_filesystem_cwd():
 
 def test_list_filesystem_path():
     print(osc_list_filesystem_path('.'))
-    print(osc_list_filesystem_path('/proc'))
+    paths = osc_list_filesystem_path('/home/mfoster/Pictures')
+    print(paths)
+    print('len', len(paths))
 
 
 def test_write_filesystem_file():
@@ -190,9 +192,9 @@ if __name__ == '__main__':
 
     server.start()
 
-    test_get_filesystem_cwd()
+    # test_get_filesystem_cwd()
     test_list_filesystem_path()
-    test_write_filesystem_file()
-    test_append_filesystem_file()
-    test_read_filesystem_file()
-    test_remove_filesystem_file()
+    # test_write_filesystem_file()
+    # test_append_filesystem_file()
+    # test_read_filesystem_file()
+    # test_remove_filesystem_file()
