@@ -529,9 +529,15 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 	d = opendir(dirpath);
 	if (d) {
 		while ((dir = readdir(d)) != NULL) {
+
+			/* skip hidden files */
+			if (dir->d_name[0] == '.')
+				if (strcmp(dir->d_name, "..") && strcmp(dir->d_name, ".."))
+					continue;
+			
 			if (dirpath[strlen(dirpath)-1] == '/')
 				filepath_tr_slash = true;
-
+			
 			tmp_strlen = strlen(dirpath) + strlen(dir->d_name);
 			if (!filepath_tr_slash)
 				tmp_strlen += 1;
@@ -542,10 +548,12 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 			else
 				snprintf(filepath, tmp_strlen+1, "%s%s", dirpath, dir->d_name);
 
+			
 			stat_ret = stat(filepath, &stat_file);
 			if (stat_ret) {
-				printf("error calling stat() on file %s! exiting..", filepath);
-				exit(1);
+				printf("warning: error calling stat() on file %s! error: %d, skipping..\n", filepath, stat_ret);
+				free(filepath);				
+				continue;
 			}
 			free(filepath);
 			
@@ -816,6 +824,51 @@ int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_a
   return 0;
 } /* osc_remove_filesystem_file_handlers */
 
+int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg ** argv,
+				    int argc, void *data, void *user_data)
+{
+	printf("cyperus::osc_handlers.c::osc_make_filesystem_dir_handler()\n");
+	
+	char *request_id, *dirpath, *dirname, *fullpath;
+	int error;
+	FILE *fp;
+	bool multipart;
+	int fullpath_strlen;
+	struct stat dirstat = {0};
+	
+	request_id = dirpath = dirname = fullpath = NULL;
+	error = 0;
+	fullpath_strlen = 0;
+  
+	request_id = (char *)argv[0];
+	dirpath = (char *)argv[1];
+	dirname = (char *)argv[2];
+
+	fullpath_strlen = strlen(dirpath) + strlen(dirname);
+	if (dirpath[strlen(dirpath) - 1] != '/') 
+		fullpath_strlen += 1;
+	fullpath = malloc(sizeof(char) * fullpath_strlen);
+
+	if (dirpath[strlen(dirpath) - 1] != '/')
+		snprintf(fullpath, fullpath_strlen + 1, "%s/%s", dirpath, dirname);
+	else
+		snprintf(fullpath, fullpath_strlen + 1, "%s%s", dirpath, dirname);
+
+	printf("cyperus::osc_handlers.c::osc_make_filesystem_dir_handler(), fullpath: %s\n", fullpath);
+
+	if (mkdir(fullpath, 0755) == -1) {
+		printf("cyperus::osc_handlers.c::osc_make_filesystem_dir_handler(), fullpath: %s could not be created, exiting..\n", fullpath);
+		exit(1);
+	}
+	
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
+	lo_send(lo_addr_send,"/cyperus/make/filesystem/dir", "siisss", request_id, error, multipart, dirpath, dirname, fullpath);
+	lo_address_free(lo_addr_send);
+  
+  return 0;
+} /* osc_make_filesystem_dir */
+
 /* int osc_add_modules_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data) */
 /* { */
 /*   printf("osc_add_modules_osc_parameter_assignment()..\n"); */
@@ -1048,6 +1101,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 	
 	else if (strcmp(path, "/cyperus/remove/filesystem/file") == 0)
 		handler_ptr = osc_remove_filesystem_file_handler;
+
+	else if (strcmp(path, "/cyperus/make/filesystem/dir") == 0)
+		handler_ptr = osc_make_filesystem_dir_handler;
+
 	
 	if (handler_ptr)
 		handler_ptr(path, types, argv, argc, data, user_data);

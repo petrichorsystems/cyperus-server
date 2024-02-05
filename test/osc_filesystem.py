@@ -37,13 +37,16 @@ class OscServer(ServerThread):
     def osc_read_filesystem_file(self, path, args):
         print("received '/cyperus/read/filesystem/file'")
         responses.put(args)
-
         
     @make_method('/cyperus/remove/filesystem/file', 'siis')
     def osc_remove_filesystem_file(self, path, args):
         print("received '/cyperus/remove/filesystem/file'")
         responses.put(args)
 
+    @make_method('/cyperus/make/filesystem/dir', 'siisss')
+    def osc_make_filesystem_dir(self, path, args):
+        print("received '/cyperus/make/filesystem/dir'")
+        responses.put(args)
         
     @make_method('/cyperus/dsp/load', 'f')
     def osc_dsp_load(self, path, args):
@@ -148,14 +151,27 @@ def osc_remove_filesystem_file(filepath):
         return response[3]
     else:
         raise Exception("failed!")
+
+
+def osc_make_filesystem_dir(dirpath, dirname):
+    request_id = str(uuid.uuid4())
+    liblo.send(dest, "/cyperus/make/filesystem/dir", request_id, dirpath, dirname)
+    response = responses.get()
+    
+    if response[1] == 0:
+        return response[5]
+    else:
+        raise Exception("failed!")
+
     
 def test_get_filesystem_cwd():
     print(osc_get_filesystem_cwd())
     
 
 def test_list_filesystem_path():
+    print(osc_list_filesystem_path('/'))    
     print(osc_list_filesystem_path('.'))
-    paths = osc_list_filesystem_path('/home/mfoster/Pictures')
+    paths = osc_list_filesystem_path('/home/mfoster/')
     print(paths)
     print('len', len(paths))
 
@@ -182,6 +198,17 @@ def test_read_filesystem_file():
 def test_remove_filesystem_file():
     print(osc_remove_filesystem_file('test/test_preset.json'))
 
+
+def test_make_filesystem_dir():
+    new_dirpath = osc_make_filesystem_dir('../test', 'file.test')
+    expected_dirpath = "../test/file.test"
+    if new_dirpath != expected_dirpath:
+        raise Exception(f"ERROR!, expected dirpath '{expected_dirpath}', but got '{new_dirpath}")
+    new_dirpath = osc_make_filesystem_dir('../test/', 'file.test')
+    expected_dirpath = "../test/file.test"
+    if new_dirpath != expected_dirpath:
+        raise Exception(f"ERROR!, expected dirpath '{expected_dirpath}', but got '{new_dirpath}")    
+
     
 if __name__ == '__main__':
     #outgoing connection
@@ -193,8 +220,9 @@ if __name__ == '__main__':
     server.start()
 
     # test_get_filesystem_cwd()
-    test_list_filesystem_path()
+    # test_list_filesystem_path()
     # test_write_filesystem_file()
     # test_append_filesystem_file()
     # test_read_filesystem_file()
     # test_remove_filesystem_file()
+    test_make_filesystem_dir()
