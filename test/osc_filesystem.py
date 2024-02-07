@@ -3,6 +3,7 @@
 import json
 import liblo
 from liblo import *
+import os
 import queue, sys, time
 import time
 import uuid
@@ -42,6 +43,11 @@ class OscServer(ServerThread):
     def osc_remove_filesystem_file(self, path, args):
         print("received '/cyperus/remove/filesystem/file'")
         responses.put(args)
+
+    @make_method('/cyperus/remove/filesystem/dir', 'siis')
+    def osc_remove_filesystem_dir(self, path, args):
+        print("received '/cyperus/remove/filesystem/dir'")
+        responses.put(args)        
 
     @make_method('/cyperus/make/filesystem/dir', 'siisss')
     def osc_make_filesystem_dir(self, path, args):
@@ -152,6 +158,16 @@ def osc_remove_filesystem_file(filepath):
     else:
         raise Exception("failed!")
 
+def osc_remove_filesystem_dir(dirpath):
+    request_id = str(uuid.uuid4())
+    liblo.send(dest, "/cyperus/remove/filesystem/dir", request_id, dirpath)
+    response = responses.get()
+    
+    if response[1] == 0:
+        return response[3]
+    else:
+        raise Exception("failed!")
+    
 
 def osc_make_filesystem_dir(dirpath, dirname):
     request_id = str(uuid.uuid4())
@@ -198,6 +214,11 @@ def test_read_filesystem_file():
 def test_remove_filesystem_file():
     print(osc_remove_filesystem_file('test/test_preset.json'))
 
+    
+def test_remove_filesystem_dir():
+    os.makedirs('test/presets');
+    print(osc_remove_filesystem_dir('test/presets'))
+    
 
 def test_make_filesystem_dir():
     new_dirpath = osc_make_filesystem_dir('../test', 'file.test')
@@ -225,4 +246,5 @@ if __name__ == '__main__':
     # test_append_filesystem_file()
     # test_read_filesystem_file()
     # test_remove_filesystem_file()
-    test_make_filesystem_dir()
+    test_remove_filesystem_dir()
+    # test_make_filesystem_dir()

@@ -824,6 +824,37 @@ int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_a
   return 0;
 } /* osc_remove_filesystem_file_handlers */
 
+int osc_remove_filesystem_dir_handler(const char *path, const char *types, lo_arg ** argv,
+				       int argc, void *data, void *user_data)
+{
+	printf("cyperus::osc_handlers.c::osc_remove_filesystem_dir_handler()\n");
+	
+	char *request_id, *dirpath;
+	int error;
+	FILE *fp;
+	bool multipart;
+	
+	request_id = dirpath = NULL;
+	error = 0;
+  
+	request_id = (char *)argv[0];
+	dirpath = (char *)argv[1];
+	
+	if (rmdir(dirpath) < 0) {
+		/* do some error-handling here */
+		printf("error-handling!\n");
+		error = -1;
+	} 
+
+	multipart = false;
+	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
+	lo_send(lo_addr_send,"/cyperus/remove/filesystem/dir", "siis", request_id, error, multipart, dirpath);
+	lo_address_free(lo_addr_send);
+  
+  return 0;
+} /* osc_remove_filesystem_dir_handlers */
+
+
 int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg ** argv,
 				    int argc, void *data, void *user_data)
 {
@@ -1102,6 +1133,9 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 	else if (strcmp(path, "/cyperus/remove/filesystem/file") == 0)
 		handler_ptr = osc_remove_filesystem_file_handler;
 
+	else if (strcmp(path, "/cyperus/remove/filesystem/dir") == 0)
+		handler_ptr = osc_remove_filesystem_dir_handler;	
+
 	else if (strcmp(path, "/cyperus/make/filesystem/dir") == 0)
 		handler_ptr = osc_make_filesystem_dir_handler;
 
@@ -1110,6 +1144,7 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 		handler_ptr(path, types, argv, argc, data, user_data);
 	else {
 		printf("we should raise some warning message, default handling, etc\n");
+		printf("path: %s\n", path);
 		return 1;
 	}
 
