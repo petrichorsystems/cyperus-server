@@ -22,8 +22,10 @@ Copyright 2015 murray foster */
 /* #include <stdio.h> printf */
 /* #include <string.h> memset */
 /* #include <stdlib.h> exit(0); */
+#define _XOPEN_SOURCE 500
 
 #include <dirent.h>
+#include <ftw.h>
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>

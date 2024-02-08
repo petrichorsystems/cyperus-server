@@ -824,6 +824,14 @@ int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_a
   return 0;
 } /* osc_remove_filesystem_file_handlers */
 
+int _unlink_callback(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
+{
+    int rv = remove(fpath);
+    if (rv)
+        perror(fpath);
+    return rv;
+}
+
 int osc_remove_filesystem_dir_handler(const char *path, const char *types, lo_arg ** argv,
 				       int argc, void *data, void *user_data)
 {
@@ -839,12 +847,9 @@ int osc_remove_filesystem_dir_handler(const char *path, const char *types, lo_ar
   
 	request_id = (char *)argv[0];
 	dirpath = (char *)argv[1];
-	
-	if (rmdir(dirpath) < 0) {
-		/* do some error-handling here */
-		printf("error-handling!\n");
-		error = -1;
-	} 
+
+	/* recursively unlink directory and children */
+	nftw(dirpath, _unlink_callback, 64, FTW_DEPTH | FTW_PHYS);	
 
 	multipart = false;
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
