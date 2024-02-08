@@ -753,7 +753,6 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
   
 	request_id = (char *)argv[0];
 	filepath = (char *)argv[1];
-	raw_str = (char *)argv[2];
 	
 	fp = fopen(filepath, "r");
 	if (fp)
@@ -775,7 +774,8 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
 	multipart_total = osc_str_len;
-	
+
+	multipart_no = 0;
 	if (osc_str_len > 1) {
 		for (i=0; i<osc_str_len - 1; i++) {
 			multipart_no = i+1;
