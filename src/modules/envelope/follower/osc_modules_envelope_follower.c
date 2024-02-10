@@ -67,7 +67,7 @@ int osc_add_modules_envelope_follower_handler(const char *path, const char *type
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
           "/cyperus/add/module/envelope/follower",
-          "sisfff",
+          "siisfff",
           request_id,
           0,
 	  multipart_no,
@@ -115,7 +115,7 @@ osc_edit_modules_envelope_follower_handler(const char *path, const char *types, 
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
           "/cyperus/edit/module/envelope/follower",
-          "sisfff",
+          "siisfff",
           request_id,
           0,
 	  multipart_no,

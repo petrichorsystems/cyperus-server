@@ -60,7 +60,7 @@ int osc_add_modules_delay_simple_handler(const char *path, const char *types, lo
 
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/delay/simple","sisfff", request_id, 0, multipart_no, module_id, amount, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/add/module/delay/simple","siisfff", request_id, 0, multipart_no, module_id, amount, time, feedback);
   free(lo_addr_send);
 
   return 0;
@@ -89,7 +89,7 @@ osc_edit_modules_delay_simple_handler(const char *path, const char *types, lo_ar
 
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/delay/simple","sisfff", request_id, 0, multipart_no, module_id, amount, time, feedback);
+  lo_send(lo_addr_send,"/cyperus/edit/module/delay/simple","siisfff", request_id, 0, multipart_no, module_id, amount, time, feedback);
   free(lo_addr_send);
   
   return 0;

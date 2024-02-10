@@ -58,7 +58,7 @@ int osc_add_modules_oscillator_sine_handler(const char *path, const char *types,
 
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/oscillator/sine","sisfff", request_id, 0, multipart_no, module_id, frequency, amplitude, phase);
+  lo_send(lo_addr_send,"/cyperus/add/module/oscillator/sine","siisfff", request_id, 0, multipart_no, module_id, frequency, amplitude, phase);
   free(lo_addr_send);
 
   return 0;
@@ -90,7 +90,7 @@ osc_edit_modules_oscillator_sine_handler(const char *path, const char *types, lo
 
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/sine","sisfff", request_id, 0, multipart_no, module_id, frequency, amplitude, phase);
+  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/sine","siisfff", request_id, 0, multipart_no, module_id, frequency, amplitude, phase);
   free(lo_addr_send);
   
   return 0;

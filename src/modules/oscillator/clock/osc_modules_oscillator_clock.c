@@ -57,7 +57,7 @@ int osc_add_modules_oscillator_clock_handler(const char *path, const char *types
 
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/oscillator/clock","sisff", request_id, 0, multipart_no, module_id, frequency, amplitude);
+  lo_send(lo_addr_send,"/cyperus/add/module/oscillator/clock","siisff", request_id, 0, multipart_no, module_id, frequency, amplitude);
   free(lo_addr_send);
 
   return 0;
@@ -86,7 +86,7 @@ osc_edit_modules_oscillator_clock_handler(const char *path, const char *types, l
 
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/clock","sisff", request_id, 0, multipart_no, module_id, frequency, amplitude);
+  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/clock","siisff", request_id, 0, multipart_no, module_id, frequency, amplitude);
   free(lo_addr_send);
   
   return 0;
