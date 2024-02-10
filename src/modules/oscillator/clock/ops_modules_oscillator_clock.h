@@ -36,8 +36,7 @@ dsp_create_oscillator_clock(struct dsp_bus *target_bus,
                            float amplitude);
 void
 dsp_oscillator_clock(struct dsp_operation *oscillator_clock,
-			    int jack_samplerate,
-			    int pos);
+			    int jack_samplerate);
 void
 dsp_edit_oscillator_clock(struct dsp_module *oscillator_clock,
                          float frequency,
@@ -45,6 +44,5 @@ dsp_edit_oscillator_clock(struct dsp_module *oscillator_clock,
 
 void
 dsp_osc_listener_oscillator_clock(struct dsp_operation *oscillator_clock,
-                                 int jack_samplerate,
-                                 int pos);
+                                 int jack_samplerate);
 #endif

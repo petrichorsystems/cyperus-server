@@ -56,10 +56,6 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
     params.parameters->float32_type[0] = 0.0f; /* phase_delta */ 
   }
 
-  /* osc listener parameters */
-  params.parameters->int32_type[0] = 0; /* samples waited */
-  params.parameters->int32_type[1] = (int)((1.0f / 60.0f) * (float)jackcli_samplerate); /* samples to wait */
-
   /* osc listener param state parameters */
   params.parameters->float32_type[1] = frequency;
   params.parameters->float32_type[2] = amplitude;
@@ -126,6 +122,7 @@ dsp_osc_listener_oscillator_sine(struct dsp_operation *oscillator_sine, int jack
       (oscillator_sine->ins->next->summands != NULL) ||
       (oscillator_sine->ins->next->next->summands != NULL) ) {
     param_connected = 1;
+    printf("PARAM CONNTECT\n");
   }
 
   /* if param_connected, activate osc listener */
@@ -151,9 +148,6 @@ dsp_osc_listener_oscillator_sine(struct dsp_operation *oscillator_sine, int jack
       oscillator_sine->module->dsp_param.parameters->float32_type[2] = oscillator_sine->module->dsp_param.parameters->float32_arr_type[1][0];
       oscillator_sine->module->dsp_param.parameters->float32_type[3] = oscillator_sine->module->dsp_param.parameters->float32_arr_type[2][0];
     }
-    oscillator_sine->module->dsp_param.parameters->int32_type[0] = 0;
-  } else {
-    oscillator_sine->module->dsp_param.parameters->int32_type[0] += 1;
   }
   
   return;

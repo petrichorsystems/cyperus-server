@@ -33,6 +33,8 @@ int osc_add_modules_oscillator_clock_handler(const char *path, const char *types
   struct dsp_module *temp_module, *target_module = NULL;
 
   float frequency, amplitude;
+
+  int multipart_no;
   
   printf("path: <%s>\n", path);
 
@@ -53,8 +55,9 @@ int osc_add_modules_oscillator_clock_handler(const char *path, const char *types
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
+  multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/oscillator/clock","sisff", request_id, 0, module_id, frequency, amplitude);
+  lo_send(lo_addr_send,"/cyperus/add/module/oscillator/clock","sisff", request_id, 0, multipart_no, module_id, frequency, amplitude);
   free(lo_addr_send);
 
   return 0;
@@ -68,7 +71,7 @@ osc_edit_modules_oscillator_clock_handler(const char *path, const char *types, l
   char *request_id, *module_id;
   struct dsp_module *target_module;
   float frequency, amplitude;
-  int count;
+  int multipart_no;
   
   printf("path: <%s>\n", path);
 
@@ -80,9 +83,10 @@ osc_edit_modules_oscillator_clock_handler(const char *path, const char *types, l
   
   target_module = dsp_find_module(module_id);
   dsp_edit_oscillator_clock(target_module, frequency, amplitude);
-  
+
+  multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/clock","sisff", request_id, 0, module_id, frequency, amplitude);
+  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/clock","sisff", request_id, 0, multipart_no, module_id, frequency, amplitude);
   free(lo_addr_send);
   
   return 0;

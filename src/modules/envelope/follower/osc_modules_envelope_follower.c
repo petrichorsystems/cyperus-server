@@ -33,6 +33,8 @@ int osc_add_modules_envelope_follower_handler(const char *path, const char *type
   struct dsp_module *temp_module, *target_module = NULL;
 
   float attack, decay, scale;
+
+  int multipart_no;
   
   printf("path: <%s>\n", path);
   request_id = (char *)argv[0];
@@ -60,13 +62,15 @@ int osc_add_modules_envelope_follower_handler(const char *path, const char *type
   strcpy(module_id, target_module->id);
 
   printf("about to send msg\n");
-  
+
+  multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
           "/cyperus/add/module/envelope/follower",
           "sisfff",
           request_id,
           0,
+	  multipart_no,
           module_id,
           attack,
           decay,
@@ -88,6 +92,7 @@ osc_edit_modules_envelope_follower_handler(const char *path, const char *types, 
 
   float attack, decay, scale;
 
+  int multipart_no;
   
   printf("path: <%s>\n", path);
 
@@ -105,13 +110,15 @@ osc_edit_modules_envelope_follower_handler(const char *path, const char *types, 
                                     scale);                                          
 
   printf("about to send osc msg\n");
-  
+
+  multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
           "/cyperus/edit/module/envelope/follower",
           "sisfff",
           request_id,
           0,
+	  multipart_no,
           module_id,
           attack,
           decay,
