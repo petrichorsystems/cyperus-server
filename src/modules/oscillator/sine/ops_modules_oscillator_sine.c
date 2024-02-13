@@ -90,7 +90,6 @@ dsp_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate) 
   if( oscillator_sine->ins->next->next->summands != NULL ) /* phase */
     dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[2], oscillator_sine->ins->next->next->summands);
 
-  dsp_osc_listener_oscillator_sine(oscillator_sine, jack_samplerate);
   outsamples = math_modules_oscillator_sine(oscillator_sine->module->dsp_param.parameters,
                                                   jack_samplerate);
   

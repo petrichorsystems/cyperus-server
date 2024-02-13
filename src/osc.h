@@ -64,9 +64,9 @@ int osc_callback_timer_setup();
 /* #include "modules/filter/moogff/osc_modules_filter_moogff.h" */
 /* #include "modules/filter/varslope_lowpass/osc_modules_filter_varslope_lowpass.h" */
 /* #include "modules/oscillator/sawtooth/osc_modules_oscillator_sawtooth.h" */
-/* #include "modules/oscillator/triangle/osc_modules_oscillator_triangle.h" */
+#include "modules/oscillator/triangle/osc_modules_oscillator_triangle.h"
 /* #include "modules/oscillator/pulse/osc_modules_oscillator_pulse.h" */
-/* #include "modules/oscillator/clock/osc_modules_oscillator_clock.h" */
+#include "modules/oscillator/clock/osc_modules_oscillator_clock.h"
 /* #include "modules/envelope/adsr/osc_modules_envelope_adsr.h" */
 
 /* #include "modules/osc/osc_metronome/osc_modules_osc_osc_metronome.h" */

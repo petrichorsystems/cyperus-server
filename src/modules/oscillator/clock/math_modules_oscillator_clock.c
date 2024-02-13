@@ -18,9 +18,8 @@ extern float* math_modules_oscillator_clock(dsp_module_parameters_t *parameters,
 			samples_clock = (int)((float)samplerate / frequency[p]);
 			frequency_last = frequency[p];
 		}
-
 		if( samples_count >= (samples_clock - 1)) {
-			out[p] = 1.0f * amplitude[p];
+			out[p] = amplitude[p];
 			samples_count = 0;
 		}  else {
 			out[p] = 0.0f;

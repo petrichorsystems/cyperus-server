@@ -1069,20 +1069,20 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/sawtooth") == 0) */
 	/*   handler_ptr = osc_edit_modules_oscillator_sawtooth_handler; */
 	
-	/* else if (strcmp(path, "/cyperus/add/module/oscillator/triangle") == 0) */
-	/*   handler_ptr = osc_add_modules_oscillator_triangle_handler; */
-	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/triangle") == 0) */
-	/*   handler_ptr = osc_edit_modules_oscillator_triangle_handler; */
+	else if (strcmp(path, "/cyperus/add/module/oscillator/triangle") == 0)
+	  handler_ptr = osc_add_modules_oscillator_triangle_handler;
+	else if (strcmp(path, "/cyperus/edit/module/oscillator/triangle") == 0)
+	  handler_ptr = osc_edit_modules_oscillator_triangle_handler;
 	
 	/* else if (strcmp(path, "/cyperus/add/module/oscillator/pulse") == 0) */
 	/*   handler_ptr = osc_add_modules_oscillator_pulse_handler; */
 	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/pulse") == 0) */
 	/*   handler_ptr = osc_edit_modules_oscillator_pulse_handler; */
 	
-	/* else if (strcmp(path, "/cyperus/add/module/oscillator/clock") == 0) */
-	/*   handler_ptr = osc_add_modules_oscillator_clock_handler; */
-	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0) */
-	/*   handler_ptr = osc_edit_modules_oscillator_clock_handler; */
+	else if (strcmp(path, "/cyperus/add/module/oscillator/clock") == 0)
+	  handler_ptr = osc_add_modules_oscillator_clock_handler;
+	else if (strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0)
+	  handler_ptr = osc_edit_modules_oscillator_clock_handler;
 	
 	/* else if (strcmp(path, "/cyperus/add/module/envelope/adsr") == 0) */
 	/*   handler_ptr = osc_add_modules_envelope_adsr_handler; */

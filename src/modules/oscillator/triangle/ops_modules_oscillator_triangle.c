@@ -25,63 +25,115 @@ Copyright 2018 murray foster */
 
 int
 dsp_create_oscillator_triangle(struct dsp_bus *target_bus,
-                            float frequency,
-                            float amplitude) {
-  dsp_parameter params;
-  struct dsp_port_in *ins;
-  struct dsp_port_out *outs;
+			       float frequency,
+			       float amplitude)
+{
+	dsp_parameter params;
+	struct dsp_port_in *ins;
+	struct dsp_port_out *outs;
+	int p;
+  
+	params.name = "oscillator_triangle";
+  
+	params.parameters = malloc(sizeof(dsp_module_parameters_t));  
 
-  params.name = "oscillator_triangle";  
-  params.pos = 0;  
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));  
-  params.parameters->float32_type = malloc(sizeof(float) * 2);
+	params.parameters->float32_arr_type = malloc(sizeof(float *) * 2);
+	params.parameters->float32_type = malloc(sizeof(float) * 2);
+	params.parameters->int32_type = malloc(sizeof(int) * 1);
+	
+	/* user-facing parameter allocation */
+	params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float)); /* frequency */
+	params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float)); /* amplitude */
 
-  /* user-facing parameters */
-  params.parameters->float32_type[0] = frequency;
-  params.parameters->float32_type[1] = amplitude;
+	
+	/* user-facing parameter assigment */
+	for (p=0; p<dsp_global_period; p++) {
+		params.parameters->float32_arr_type[0][p] = frequency;
+		params.parameters->float32_arr_type[1][p] = amplitude;	  
+	}
 
-  ins = dsp_port_in_init("param_frequency", 512, &(params.parameters->float32_type[0]));
-  ins->next = dsp_port_in_init("param_amplitude", 512, &(params.parameters->float32_type[1]));
-  outs = dsp_port_out_init("out", 1);
+	/* internal parameter assignment */
+	params.parameters->int32_type[0] = 0;
+	
+	/* osc listener param state parameters */
+	params.parameters->float32_type[0] = frequency;
+	params.parameters->float32_type[1] = amplitude;
 
-  dsp_add_module(target_bus,
-		 "oscillator_triangle",
-		 dsp_oscillator_triangle,
-                 NULL,
-		 dsp_optimize_module,
-		 params,
-		 ins,
-		 outs);
-  return 0;
+	ins = dsp_port_in_init("param_frequency", 512);
+	ins->next = dsp_port_in_init("param_amplitude", 512);
+	outs = dsp_port_out_init("out", 1);
+
+	dsp_add_module(target_bus,
+		       "oscillator_triangle",
+		       dsp_oscillator_triangle,
+		       dsp_osc_listener_oscillator_triangle,
+		       dsp_optimize_module,
+		       params,
+		       ins,
+		       outs);
+	return 0;
 } /* dsp_create_oscillator_triangle */
 
 void
-dsp_oscillator_triangle(struct dsp_operation *oscillator_triangle, int jack_samplerate, int pos) {
-  float insample = 0.0;
-  float outsample = 0.0;
+dsp_oscillator_triangle(struct dsp_operation *oscillator_triangle, int jack_samplerate)
+{
+	float *outsamples;
+
+	/* handle params with connected inputs */
+	if( oscillator_triangle->ins->summands != NULL ) /* frequency */
+		dsp_sum_summands(oscillator_triangle->module->dsp_param.parameters->float32_arr_type[0], oscillator_triangle->ins->summands);
+	if( oscillator_triangle->ins->next->summands != NULL ) /* amplitude */
+		dsp_sum_summands(oscillator_triangle->module->dsp_param.parameters->float32_arr_type[1], oscillator_triangle->ins->next->summands);
+	
+	outsamples = math_modules_oscillator_triangle(oscillator_triangle->module->dsp_param.parameters,
+						      jack_samplerate);  
+	/* drive audio outputs */
+	memcpy(oscillator_triangle->outs->sample->value,
+	       outsamples,
+	       sizeof(float) * dsp_global_period);
   
-  outsample = math_modules_oscillator_triangle(oscillator_triangle->module->dsp_param.parameters,
-                                                  jack_samplerate,
-                                                  pos);  
-  /* drive audio outputs */
-  oscillator_triangle->outs->sample->value = outsample;
-  
-  return;
+	free(outsamples);
 } /* dsp_oscillator_triangle */
 
 
 void dsp_edit_oscillator_triangle(struct dsp_module *oscillator_triangle,
                                float frequency,
                                float amplitude) {
-  printf("about to assign frequency\n");
-  oscillator_triangle->dsp_param.parameters->float32_type[0] = frequency;
-  printf("assigned oscillator_triangle->dsp_param.parameters->float32_type[0]: %f\n",
-	 oscillator_triangle->dsp_param.parameters->float32_type[0]);
-  printf("about to assign amplitude\n");
-  oscillator_triangle->dsp_param.parameters->float32_type[1] = amplitude;
-  printf("assigned oscillator_triangle->dsp_param.parameters->float32_type[1]: %f\n",
-	 oscillator_triangle->dsp_param.parameters->float32_type[1]);
-
-  printf("returning\n");
+  for(int p=0; p<dsp_global_period; p++) {
+    oscillator_triangle->dsp_param.parameters->float32_arr_type[0][p] = frequency;
+    oscillator_triangle->dsp_param.parameters->float32_arr_type[1][p] = amplitude;
+  }
   
 } /* dsp_edit_oscillator_triangle */
+
+void
+dsp_osc_listener_oscillator_triangle(struct dsp_operation *oscillator_triangle, int jack_samplerate) {
+	unsigned short param_connected = 0;
+	if( (oscillator_triangle->ins->summands != NULL) ||
+	    (oscillator_triangle->ins->next->summands != NULL)) {
+		param_connected = 1;
+		printf("PARAM CONNTECT\n");
+	}
+
+	/* if param_connected, activate osc listener */
+	if(param_connected) {
+		/* if new value is different than old value, send osc messages */
+		if(oscillator_triangle->module->dsp_param.parameters->float32_type[0] != oscillator_triangle->module->dsp_param.parameters->float32_arr_type[0][0] ||
+		   oscillator_triangle->module->dsp_param.parameters->float32_type[1] != oscillator_triangle->module->dsp_param.parameters->float32_arr_type[1][0]) {
+			int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
+			char *path = (char *)malloc(sizeof(char) * path_len);
+			snprintf(path, path_len, "%s%s", "/cyperus/listener/", oscillator_triangle->module->id);    
+			lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
+			lo_send(lo_addr_send, path, "ff",
+				oscillator_triangle->module->dsp_param.parameters->float32_type[0],
+				oscillator_triangle->module->dsp_param.parameters->float32_type[1]);
+			free(lo_addr_send);
+			
+			/* assign new parameter to last parameter after we're reported the change */
+			oscillator_triangle->module->dsp_param.parameters->float32_type[0] = oscillator_triangle->module->dsp_param.parameters->float32_arr_type[0][0];
+			oscillator_triangle->module->dsp_param.parameters->float32_type[1] = oscillator_triangle->module->dsp_param.parameters->float32_arr_type[1][0];
+		}
+	}
+	
+	return;
+} /* dsp_osc_listener_oscillator_triangle */

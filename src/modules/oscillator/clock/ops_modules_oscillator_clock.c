@@ -35,8 +35,9 @@ dsp_create_oscillator_clock(struct dsp_bus *target_bus,
   
   params.name = "oscillator_clock";  
   params.pos = 0;  
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));  
-  params.parameters->float32_type = malloc(sizeof(float) * 5);
+  params.parameters = malloc(sizeof(dsp_module_parameters_t));
+  params.parameters->float32_arr_type = malloc(sizeof(float *) * 2);
+  params.parameters->float32_type = malloc(sizeof(float) * 3);
   params.parameters->int32_type = malloc(sizeof(int) * 2);
 
   /* user-facing parameters */
@@ -82,8 +83,7 @@ dsp_oscillator_clock(struct dsp_operation *oscillator_clock, int jack_samplerate
 	  dsp_sum_summands(oscillator_clock->module->dsp_param.parameters->float32_arr_type[0], oscillator_clock->ins->summands);
   if( oscillator_clock->ins->next->summands != NULL ) /* amplitude */
 	  dsp_sum_summands(oscillator_clock->module->dsp_param.parameters->float32_arr_type[1], oscillator_clock->ins->next->summands);
-  
-  dsp_osc_listener_oscillator_clock(oscillator_clock, jack_samplerate);  
+    
   outsamples = math_modules_oscillator_clock(oscillator_clock->module->dsp_param.parameters,
                                                   jack_samplerate);
   

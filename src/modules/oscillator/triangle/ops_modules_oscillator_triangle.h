@@ -32,14 +32,17 @@
 
 int
 dsp_create_oscillator_triangle(struct dsp_bus *target_bus,
-                           float frequency,
-                           float amplitude);
+			       float frequency,
+			       float amplitude);
 void
 dsp_oscillator_triangle(struct dsp_operation *oscillator_triangle,
-			    int jack_samplerate,
-			    int pos);
+			int jack_samplerate);
 void
 dsp_edit_oscillator_triangle(struct dsp_module *oscillator_triangle,
-                         float frequency,
-                         float amplitude);                          
+			     float frequency,
+			     float amplitude);
+
+void
+dsp_osc_listener_oscillator_triangle(struct dsp_operation *oscillator_triangle,
+			int jack_samplerate);
 #endif
