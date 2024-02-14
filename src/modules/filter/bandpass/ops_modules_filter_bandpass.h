@@ -37,11 +37,15 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
                            float amount);
 void
 dsp_filter_bandpass(struct dsp_operation *filter_bandpass,
-                  int jack_samplerate,
-                  int pos);
+		    int jack_samplerate);
 void
 dsp_edit_filter_bandpass(struct dsp_module *filter_bandpass,
                          float frequency,
                          float q,
-                         float amount);                          
+                         float amount);
+
+void
+dsp_osc_listener_filter_bandpass(struct dsp_operation *filter_bandpass,
+				 int jack_samplerate);
+
 #endif

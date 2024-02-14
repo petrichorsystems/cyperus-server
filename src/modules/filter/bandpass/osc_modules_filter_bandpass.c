@@ -33,6 +33,7 @@ int osc_add_modules_filter_bandpass_handler(const char *path, const char *types,
   struct dsp_module *temp_module, *target_module = NULL;
 
   float frequency, q, amount;
+  int multipart;
   
   printf("path: <%s>\n", path);
 
@@ -54,8 +55,9 @@ int osc_add_modules_filter_bandpass_handler(const char *path, const char *types,
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
+  multipart = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/filter/bandpass","sisfff", request_id, 0, module_id, frequency, q, amount);
+  lo_send(lo_addr_send,"/cyperus/add/module/filter/bandpass","siisfff", request_id, 0, multipart, module_id, frequency, q, amount);
   free(lo_addr_send);
 
   return 0;
@@ -69,7 +71,7 @@ osc_edit_modules_filter_bandpass_handler(const char *path, const char *types, lo
   char *request_id, *module_id;
   struct dsp_module *target_module;
   float frequency, q, amount;
-  int count;
+  int multipart;
   
   printf("path: <%s>\n", path);
 
@@ -81,9 +83,10 @@ osc_edit_modules_filter_bandpass_handler(const char *path, const char *types, lo
   
   target_module = dsp_find_module(module_id);
   dsp_edit_filter_bandpass(target_module, frequency, q, amount);
-  
+
+  multipart = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/filter/bandpass","sisfff", request_id, 0, module_id, frequency, q, amount);
+  lo_send(lo_addr_send,"/cyperus/edit/module/filter/bandpass","siisfff", request_id, 0, multipart, module_id, frequency, q, amount);
   free(lo_addr_send);
   
   return 0;
