@@ -86,15 +86,15 @@ float* math_modules_filter_bandpass(dsp_parameter *filter, int samplerate) {
 
   frequency_old = filter->parameters->float32_arr_type[3];
   q_old = filter->parameters->float32_arr_type[4];
-
-  for (int p=0; p<dsp_global_period; p++) {
+  
+  for (int p=0; p<dsp_global_period; p++) {	  
 	  if( (frequency[p] != frequency_old[p]) ||
 	      (q[p] != q_old[p]) ) {
 		  _bandpass_docoeff(filter, samplerate, p);
 		  filter->parameters->float32_arr_type[3][p] = frequency[p];
 		  filter->parameters->float32_arr_type[4][p] = q[p];		  
 	  }
-  
+	  
 	  last = filter->parameters->float32_arr_type[5][p];
 	  prev = filter->parameters->float32_arr_type[6][p];
 	  coef1 = filter->parameters->float32_arr_type[7][p];
@@ -118,4 +118,5 @@ float* math_modules_filter_bandpass(dsp_parameter *filter, int samplerate) {
   
 	  outsamples[p] = outsample * amount[p];
   }
+  return outsamples;
 }

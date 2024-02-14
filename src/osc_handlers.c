@@ -1044,10 +1044,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 	/* else if (strcmp(path, "/cyperus/edit/module/analysis/transient_detector") == 0) */
 	/*   handler_ptr = osc_edit_modules_analysis_transient_detector_handler; */
 	
-	/* else if (strcmp(path, "/cyperus/add/module/filter/bandpass") == 0) */
-	/*   handler_ptr = osc_add_modules_filter_bandpass_handler; */
-	/* else if (strcmp(path, "/cyperus/edit/module/filter/bandpass") == 0) */
-	/*   handler_ptr = osc_edit_modules_filter_bandpass_handler; */
+	else if (strcmp(path, "/cyperus/add/module/filter/bandpass") == 0)
+	  handler_ptr = osc_add_modules_filter_bandpass_handler;
+	else if (strcmp(path, "/cyperus/edit/module/filter/bandpass") == 0)
+	  handler_ptr = osc_edit_modules_filter_bandpass_handler;
 	
 	/* else if (strcmp(path, "/cyperus/add/module/filter/moogff") == 0) */
 	/*   handler_ptr = osc_add_modules_filter_moogff_handler; */

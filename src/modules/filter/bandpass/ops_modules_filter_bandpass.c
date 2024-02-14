@@ -88,7 +88,7 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "filter_bandpass",
 		 dsp_filter_bandpass,
-                 dsp_osc_listener_filter_bandpass,
+                 NULL, /* dsp_osc_listener_filter_bandpass, */
 		 dsp_optimize_module,
 		 params,
 		 ins,
@@ -108,23 +108,26 @@ dsp_filter_bandpass(struct dsp_operation *filter_bandpass, int jack_samplerate) 
 		dsp_sum_summands(filter_bandpass->module->dsp_param.parameters->float32_arr_type[0], filter_bandpass->ins->next->summands);
 	}
 
-	/*
-	  if( filter_bandpass->ins->next->summands != NULL ) {
-	  dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->summands) * jack_samplerate;
-	  }
+	
+	  /* if( filter_bandpass->ins->next->summands != NULL ) { */
+	  /* dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->summands) * jack_samplerate; */
+	  /* } */
 
-	  if( filter_bandpass->ins->next->next->summands != NULL ) {
-	  dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->next->summands) * jack_samplerate;
-	  }
+	  /* if( filter_bandpass->ins->next->next->summands != NULL ) { */
+	  /* dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->next->summands) * jack_samplerate; */
+	  /* } */
 
-	  if( filter_bandpass->ins->next->next->next->summands != NULL ) {
-	  dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->next->next->summands) * jack_samplerate;
-	  }
-	*/
+	  /* if( filter_bandpass->ins->next->next->next->summands != NULL ) { */
+	  /* dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->next->next->summands) * jack_samplerate; */
+	  /* } */
 	
 	outsamples = math_modules_filter_bandpass(&filter_bandpass->module->dsp_param,
 						  jack_samplerate);
-  
+
+	/* outsamples = malloc(sizeof(float) * dsp_global_period); */
+	/* for(p=0; p<dsp_global_period; p++) */
+	/* 	outsamples[p] = 0.0f; */
+	
 	/* drive audio outputs */
 	memcpy(filter_bandpass->outs->sample->value,
 	       outsamples,
