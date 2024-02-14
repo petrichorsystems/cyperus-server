@@ -25,7 +25,7 @@ static inline int PD_BIGORSMALL(float f)  /* exponent outside (-64,64) */
     return((pun.ui & 0x20000000) == ((pun.ui >> 1) & 0x20000000));
 }
 
-extern *float
+extern float*
 math_modules_filter_bandpass(dsp_parameter *filter, int samplerate);
 
 extern float

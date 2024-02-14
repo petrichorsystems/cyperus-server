@@ -39,7 +39,7 @@ void _bandpass_docoeff(dsp_parameter *filter, int samplerate, int idx) {
   float r, oneminusr, omega;
 
   if (frequency[idx] < 0.001f)
-	  frequency[idx] = 10f;
+	  frequency[idx] = 10.0f;
   if (q[idx] < 0)
 	  q[idx] = 0.0f;
   
@@ -65,19 +65,20 @@ void _bandpass_docoeff(dsp_parameter *filter, int samplerate, int idx) {
 
 extern
 float math_modules_filter_bandpass_init(dsp_parameter *filter) {
-  _bandpass_docoeff(filter, jackcli_samplerate);
+	for(int p=0; p<dsp_global_period; p++)
+		_bandpass_docoeff(filter, jackcli_samplerate, p);
   /* filter->parameters->float32_type[5] = 0.0f; /\* last *\/ */
   /* filter->parameters->float32_type[6] = 0.0f; /\* prev *\/ */
 }
 
 extern
-*float math_modules_filter_bandpass(dsp_parameter *filter, int samplerate) {
+float* math_modules_filter_bandpass(dsp_parameter *filter, int samplerate) {
   float *frequency, *q, *amount;
   float output, outsample, *outsamples;
 
-  float *frequency_old, *q_old, *last, *prev, *coef1, *coef2, *gain;
+  float *frequency_old, *q_old, last, prev, coef1, coef2, gain;
 
-  outsamples = malloc(szoef(float) * dsp_global_period);
+  outsamples = malloc(sizeof(float) * dsp_global_period);
   
   frequency = filter->parameters->float32_arr_type[0];
   q = filter->parameters->float32_arr_type[1];
@@ -100,7 +101,7 @@ extern
 	  coef2 = filter->parameters->float32_arr_type[8][p];
 	  gain = filter->parameters->float32_arr_type[9][p];  
 
-	  output = filter->in + coef1 * last + coef2 * prev;
+	  output = filter->in[p] + coef1 * last + coef2 * prev;
 	  outsample = gain * output;
   
 	  prev = last;
@@ -115,6 +116,6 @@ extern
 	  filter->parameters->float32_arr_type[5][p] = last;
 	  filter->parameters->float32_arr_type[6][p] = prev;
   
-	  outsamples[p] = outsample * amount;
+	  outsamples[p] = outsample * amount[p];
   }
 }

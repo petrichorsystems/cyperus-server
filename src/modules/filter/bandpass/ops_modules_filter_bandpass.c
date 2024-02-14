@@ -42,7 +42,7 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
   
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
 
-  params.parameters->float32_arr_type = malloc(sizeof(float *xo) * 10);
+  params.parameters->float32_arr_type = malloc(sizeof(float *) * 10);
 
   /* user-facing parameter allocation */
   params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float)); /* frequency */
@@ -78,7 +78,7 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
   
   math_modules_filter_bandpass_init(&params);
   
-  ins = dsp_port_in_init("in", 512, NULL);
+  ins = dsp_port_in_init("in", 512);
   ins->next = dsp_port_in_init("param_frequency", 512);
   ins->next->next = dsp_port_in_init("param_q", 512);
   ins->next->next = dsp_port_in_init("param_amount", 512);  
@@ -98,14 +98,14 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
 
 void
 dsp_filter_bandpass(struct dsp_operation *filter_bandpass, int jack_samplerate) {
-	float *outsample;
+	float *outsamples;
 	int p;
 
-	dsp_sum_sumands(filter_bandpass->module->dsp_param.in, filter_bandpass->ins->summands);
+	dsp_sum_summands(filter_bandpass->module->dsp_param.in, filter_bandpass->ins->summands);
 
 	/* handle params with connected inputs */
 	if (filter_bandpass->ins->next->summands != NULL ) { /* frequency */
-		filter_bandpass->module->dsp_param.parameters->float32_type[0]  = dsp_sum_summands(filter_bandpass->ins->next->summands);
+		dsp_sum_summands(filter_bandpass->module->dsp_param.parameters->float32_arr_type[0], filter_bandpass->ins->next->summands);
 	}
 
 	/*
@@ -126,8 +126,6 @@ dsp_filter_bandpass(struct dsp_operation *filter_bandpass, int jack_samplerate) 
 						  jack_samplerate);
   
 	/* drive audio outputs */
-	filter_bandpass->outs->sample->value = outsample;
-
 	memcpy(filter_bandpass->outs->sample->value,
 	       outsamples,
 	       sizeof(float) * dsp_global_period);
