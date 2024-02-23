@@ -43,7 +43,8 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
 
   params.parameters->float32_arr_type = malloc(sizeof(float *) * 10);
-
+  params.parameters->float32_type = malloc(sizeof(float) * 3);
+  
   /* user-facing parameter allocation */
   params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float)); /* frequency */
   params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float)); /* q */  
@@ -58,7 +59,8 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
   params.parameters->float32_arr_type[8] = calloc(dsp_global_period, sizeof(float)); /* coef1 */    
   params.parameters->float32_arr_type[8] = calloc(dsp_global_period, sizeof(float)); /* coef2 */
   params.parameters->float32_arr_type[9] = calloc(dsp_global_period, sizeof(float)); /* gain */      
-  
+
+  /* parameter assignment */
   for(int p=0; p<dsp_global_period; p++) {
 	  /* user-facing parameters */	  
 	  params.parameters->float32_arr_type[0][p] = frequency;
@@ -75,20 +77,25 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
 	  params.parameters->float32_arr_type[9][p] = 0.0f; /* gain */
 
   }
+
+  /* osc listener parameter assignment */
+  params.parameters->float32_type[0] = frequency;
+  params.parameters->float32_type[1] = q;
+  params.parameters->float32_type[2] = amount;  
   
   math_modules_filter_bandpass_init(&params);
   
   ins = dsp_port_in_init("in", 512);
   ins->next = dsp_port_in_init("param_frequency", 512);
   ins->next->next = dsp_port_in_init("param_q", 512);
-  ins->next->next = dsp_port_in_init("param_amount", 512);  
+  ins->next->next->next = dsp_port_in_init("param_amount", 512);  
 
   outs = dsp_port_out_init("out", 1);
 
   dsp_add_module(target_bus,
 		 "filter_bandpass",
 		 dsp_filter_bandpass,
-                 NULL, /* dsp_osc_listener_filter_bandpass, */
+                 dsp_osc_listener_filter_bandpass,
 		 dsp_optimize_module,
 		 params,
 		 ins,
@@ -107,26 +114,18 @@ dsp_filter_bandpass(struct dsp_operation *filter_bandpass, int jack_samplerate) 
 	if (filter_bandpass->ins->next->summands != NULL ) { /* frequency */
 		dsp_sum_summands(filter_bandpass->module->dsp_param.parameters->float32_arr_type[0], filter_bandpass->ins->next->summands);
 	}
-
 	
-	  /* if( filter_bandpass->ins->next->summands != NULL ) { */
-	  /* dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->summands) * jack_samplerate; */
-	  /* } */
+	if( filter_bandpass->ins->next->next->summands != NULL ) {
+		dsp_sum_summands(filter_bandpass->module->dsp_param.parameters->float32_arr_type[1], filter_bandpass->ins->next->next->summands);
+	}
 
-	  /* if( filter_bandpass->ins->next->next->summands != NULL ) { */
-	  /* dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->next->summands) * jack_samplerate; */
-	  /* } */
-
-	  /* if( filter_bandpass->ins->next->next->next->summands != NULL ) { */
-	  /* dsp_param.filter_bandpass = dsp_sum_summands(filter_bandpass->ins->next->next->next->summands) * jack_samplerate; */
-	  /* } */
+	if( filter_bandpass->ins->next->next->next->summands != NULL ) {
+		dsp_sum_summands(filter_bandpass->module->dsp_param.parameters->float32_arr_type[2], filter_bandpass->ins->next->next->next->summands);
+	}
 	
 	outsamples = math_modules_filter_bandpass(&filter_bandpass->module->dsp_param,
 						  jack_samplerate);
 
-	/* outsamples = malloc(sizeof(float) * dsp_global_period); */
-	/* for(p=0; p<dsp_global_period; p++) */
-	/* 	outsamples[p] = 0.0f; */
 	
 	/* drive audio outputs */
 	memcpy(filter_bandpass->outs->sample->value,
@@ -163,9 +162,9 @@ dsp_osc_listener_filter_bandpass(struct dsp_operation *filter_bandpass, int jack
   if(param_connected) {
     /* if new value is different than old value, send osc messages */
     if(
-       filter_bandpass->module->dsp_param.parameters->float32_type[0] != filter_bandpass->module->dsp_param.parameters->float32_arr_type[1][0] ||
-       filter_bandpass->module->dsp_param.parameters->float32_type[1] != filter_bandpass->module->dsp_param.parameters->float32_arr_type[2][0] ||
-       filter_bandpass->module->dsp_param.parameters->float32_type[2] != filter_bandpass->module->dsp_param.parameters->float32_arr_type[3][0]
+       filter_bandpass->module->dsp_param.parameters->float32_type[0] != filter_bandpass->module->dsp_param.parameters->float32_arr_type[0][0] ||
+       filter_bandpass->module->dsp_param.parameters->float32_type[1] != filter_bandpass->module->dsp_param.parameters->float32_arr_type[1][0] ||
+       filter_bandpass->module->dsp_param.parameters->float32_type[2] != filter_bandpass->module->dsp_param.parameters->float32_arr_type[2][0]
        ) {
       int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
       char *path = (char *)malloc(sizeof(char) * path_len);
@@ -173,15 +172,15 @@ dsp_osc_listener_filter_bandpass(struct dsp_operation *filter_bandpass, int jack
 
       lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
       lo_send(lo_addr_send, path, "fff",
+              filter_bandpass->module->dsp_param.parameters->float32_arr_type[0][0],
               filter_bandpass->module->dsp_param.parameters->float32_arr_type[1][0],
-              filter_bandpass->module->dsp_param.parameters->float32_arr_type[2][0],
-              filter_bandpass->module->dsp_param.parameters->float32_arr_type[3][0]);
+              filter_bandpass->module->dsp_param.parameters->float32_arr_type[2][0]);
       free(lo_addr_send);
 
       /* assign new parameter to last parameter after we're reported the change */
-      filter_bandpass->module->dsp_param.parameters->float32_type[0] = filter_bandpass->module->dsp_param.parameters->float32_arr_type[1][0];
-      filter_bandpass->module->dsp_param.parameters->float32_type[1] = filter_bandpass->module->dsp_param.parameters->float32_arr_type[2][0];
-      filter_bandpass->module->dsp_param.parameters->float32_type[2] = filter_bandpass->module->dsp_param.parameters->float32_arr_type[3][0];
+      filter_bandpass->module->dsp_param.parameters->float32_type[0] = filter_bandpass->module->dsp_param.parameters->float32_arr_type[0][0];
+      filter_bandpass->module->dsp_param.parameters->float32_type[1] = filter_bandpass->module->dsp_param.parameters->float32_arr_type[1][0];
+      filter_bandpass->module->dsp_param.parameters->float32_type[2] = filter_bandpass->module->dsp_param.parameters->float32_arr_type[2][0];
     }
   }
   
