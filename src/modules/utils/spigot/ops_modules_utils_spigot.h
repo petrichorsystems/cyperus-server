@@ -35,14 +35,12 @@ dsp_create_utils_spigot(struct dsp_bus *target_bus,
                         float open);
 extern void
 dsp_utils_spigot(struct dsp_operation *utils_spigot,
-                  int jack_samplerate,
-                  int pos);
+                  int jack_samplerate);
 extern void
 dsp_edit_utils_spigot(struct dsp_module *utils_spigot,
                       float open);
 
 extern void
 dsp_osc_listener_utils_spigot(struct dsp_operation *utils_spigot,
-                           int jack_samplerate,
-                           int pos);
+                           int jack_samplerate);
 #endif

@@ -26,108 +26,100 @@ _utils_spigot_thread(void *arg) {
 
 int
 dsp_create_utils_spigot(struct dsp_bus *target_bus,
-                        float open) {
-  dsp_parameter utils_spigot_param;
-  struct dsp_port_in *ins;
-  struct dsp_port_out *outs;
+                        float open)
+{
+	dsp_parameter params;
+	struct dsp_port_in *ins;
+	struct dsp_port_out *outs;
+	
+	params.name = "utils_spigot";
+  
+	params.parameters = malloc(sizeof(dsp_module_parameters_t));
+	params.parameters->float32_arr_type = malloc(sizeof(float*));
+	params.parameters->float32_type = malloc(sizeof(float));
 
-  utils_spigot_param.name = "utils_spigot";
-  utils_spigot_param.pos = 0;
-  
-  utils_spigot_param.parameters = malloc(sizeof(dsp_module_parameters_t));
-  utils_spigot_param.parameters->float32_type = malloc(sizeof(float) * 2);
-  utils_spigot_param.parameters->float32_type[0] = open; /* current open state */
-  utils_spigot_param.parameters->float32_type[1] = open; /* last open state */
-  
-  /* osc listener, sample position tracking */
-  utils_spigot_param.parameters->int32_type = malloc(sizeof(int) * 2);
-  utils_spigot_param.parameters->int32_type[0] = 0;
-  utils_spigot_param.parameters->int32_type[1] = (int)((1.0f / 60.0f) * (float)jackcli_samplerate);
-  
-  utils_spigot_param.parameters->char_type = malloc(sizeof(char*));
-  utils_spigot_param.parameters->char_type[0] = malloc(sizeof(char) * 37); /* len(uuid4) + len('\n') */
-  strcpy(utils_spigot_param.parameters->char_type[0], utils_spigot_param.parameters->char_type[0]);  
+	/* user-facing parameter allocation */
+	params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float)); /* current open state */
 
-  ins = dsp_port_in_init("in", 512, NULL);
-  ins->next = dsp_port_in_init("open", 512, NULL);
-  outs = dsp_port_out_init("out", 1);
-  dsp_add_module(target_bus,
-		 "utils_spigot",
-		 dsp_utils_spigot,
-                 dsp_osc_listener_utils_spigot,
-		 dsp_optimize_module,
-		 utils_spigot_param,
-		 ins,
-		 outs);
-  return 0;
+	/* parameter assignment */
+	for (int p=0; p<dsp_global_period; p++)
+		params.parameters->float32_arr_type[0][p] = open;
+
+	/* internal parameter assignment */
+	params.parameters->float32_type[0] = open; /* last open state */
+  
+	ins = dsp_port_in_init("in", 512);
+	ins->next = dsp_port_in_init("open", 512);
+
+	outs = dsp_port_out_init("out", 1);
+	
+	dsp_add_module(target_bus,
+		       "utils_spigot",
+		       dsp_utils_spigot,
+		       dsp_osc_listener_utils_spigot,
+		       dsp_optimize_module,
+		       params,
+		       ins,
+		       outs);
+	return 0;
 } /* dsp_create_utils_spigot */
 
 void
 dsp_utils_spigot(struct dsp_operation *utils_spigot,
-                  int jack_samplerate,
-                  int pos) {
-  char *path = NULL;
-  int path_len = 0;
-  float out = 0.0f;
+		 int jack_samplerate) {
+	float *outsamples;
   
-  /* open input */
-  if( utils_spigot->ins->next->summands != NULL ) {  
-     utils_spigot->module->dsp_param.parameters->float32_type[0] = dsp_sum_summands(utils_spigot->ins->next->summands);
-  }
+	outsamples = calloc(dsp_global_period, sizeof(float));
 
-  if(utils_spigot->module->dsp_param.parameters->float32_type[0]) {
-    out = dsp_sum_summands(utils_spigot->ins->summands);
-  } else {
-    out = 0.0f;
-  }
-
-  dsp_osc_listener_utils_spigot(utils_spigot, jack_samplerate, pos);
+	dsp_sum_summands(utils_spigot->module->dsp_param.in, utils_spigot->ins->summands);
   
-  /* drive outputs */
-  utils_spigot->outs->sample->value = out;
+	/* open input */
+	if( utils_spigot->ins->next->summands != NULL )
+		dsp_sum_summands(utils_spigot->module->dsp_param.parameters->float32_arr_type[0], utils_spigot->ins->next->summands);
+
+	for(int p; p<dsp_global_period; p++)
+		if(utils_spigot->module->dsp_param.parameters->float32_arr_type[0][p])
+			outsamples[p] = utils_spigot->module->dsp_param.in[p];
+		else
+			outsamples[p] = 0.0f;
+	
+	/* drive outputs */
+	memcpy(utils_spigot->outs->sample->value,
+	       outsamples,
+	       sizeof(float) * dsp_global_period);
+
+	free(outsamples);
 } /* dsp_utils_spigot */
 
 
 void dsp_edit_utils_spigot(struct dsp_module *utils_spigot,
                            float open) {
-  printf("about to assign open\n");
-  utils_spigot->dsp_param.parameters->float32_type[0] = open;
-  printf("assigned utils_spigot.dsp_param.parameters->float32_type[0]: %f\n",
-	 utils_spigot->dsp_param.parameters->float32_type[0]);
-
-  printf("returning\n");
-  
+	for (int p=0; p<dsp_global_period; p++)
+		utils_spigot->dsp_param.parameters->float32_arr_type[0][p] = open;
 } /* dsp_edit_utils_spigot */
 
 void
 dsp_osc_listener_utils_spigot(struct dsp_operation *utils_spigot,
-                  int jack_samplerate,
-                  int pos) {
-  float outsample = 0.0f;
-  char *path = NULL;
-  int path_len = 0;
+			      int jack_samplerate) {
+  /* float outsample = 0.0f; */
+  /* char *path = NULL; */
+  /* int path_len = 0; */
 
   
-  /* value input */
-  if( utils_spigot->ins->summands != NULL ) {  
-     /* osc listener, 60hz */
-     int samples_waited = utils_spigot->module->dsp_param.parameters->int32_type[0];
-     int samples_to_wait = utils_spigot->module->dsp_param.parameters->int32_type[1];
-     if( samples_waited == samples_to_wait - 1) {
-       /* if new value is different than old value, send osc messages */
-       if( (utils_spigot->module->dsp_param.parameters->float32_type[0] != utils_spigot->module->dsp_param.parameters->float32_type[1]) ) {
-         path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
-         path = (char *)malloc(sizeof(char) * path_len);
-         snprintf(path, path_len, "%s%s", "/cyperus/listener/", utils_spigot->module->id);    
-         lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-         lo_send(lo_addr_send, path, "f", utils_spigot->module->dsp_param.parameters->float32_type[0]);
-         free(lo_addr_send);
-         utils_spigot->module->dsp_param.parameters->float32_type[1] = utils_spigot->module->dsp_param.parameters->float32_type[0];
-       }
-       utils_spigot->module->dsp_param.parameters->int32_type[0] = 0;
-     } else {
-       utils_spigot->module->dsp_param.parameters->int32_type[0] += 1;
-     }
-
-  }
+  /* /\* value input *\/ */
+  /* if( utils_spigot->ins->summands != NULL ) { */
+  /*      /\* if new value is different than old value, send osc messages *\/ */
+  /*      if( (utils_spigot->module->dsp_param.parameters->float32_type[0] != utils_spigot->module->dsp_param.parameters->float32_type[1]) ) { */
+  /*        path_len = 18 + 36 + 1; /\* len('/cyperus/listener/') + len(uuid4) + len('\n') *\/ */
+  /*        path = (char *)malloc(sizeof(char) * path_len); */
+  /*        snprintf(path, path_len, "%s%s", "/cyperus/listener/", utils_spigot->module->id); */
+  /*        lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out); */
+  /*        lo_send(lo_addr_send, path, "f", utils_spigot->module->dsp_param.parameters->float32_type[0]); */
+  /*        free(lo_addr_send); */
+  /*        utils_spigot->module->dsp_param.parameters->float32_type[1] = utils_spigot->module->dsp_param.parameters->float32_type[0]; */
+  /*      } */
+  /*      utils_spigot->module->dsp_param.parameters->int32_type[0] = 0; */
+  /*    } else { */
+  /*      utils_spigot->module->dsp_param.parameters->int32_type[0] += 1; */
+  /*    } */
 } /* dsp_utils_spigot */

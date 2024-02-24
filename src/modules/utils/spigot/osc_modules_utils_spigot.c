@@ -20,7 +20,6 @@ Copyright 2015 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
 
-#include "../../../rtqueue.h"
 #include "../../../dsp_math.h"
 #include "../../../dsp.h"
 #include "../../../dsp_types.h"
@@ -40,6 +39,8 @@ int osc_add_modules_utils_spigot_handler(const char *path, const char *types, lo
   struct dsp_module *temp_module, *target_module = NULL;
 
   float open;
+
+  int multipart;
   
   printf("path: <%s>\n", path);
 
@@ -59,8 +60,9 @@ int osc_add_modules_utils_spigot_handler(const char *path, const char *types, lo
   strcpy(module_id, target_module->id);
 
   printf("osc_add_modules_utils_spigot_handler, module_id: %s\n", module_id);
+  multipart = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/utils/spigot","sisf", request_id, 0, module_id, open);
+  lo_send(lo_addr_send,"/cyperus/add/module/utils/spigot","siisf", request_id, 0, multipart, module_id, open);
   free(lo_addr_send);
   return 0;
 } /* osc_add_modules_utils_spigot_handler */
@@ -73,8 +75,9 @@ osc_edit_modules_utils_spigot_handler(const char *path, const char *types, lo_ar
   char *request_id, *module_id;
   struct dsp_module *target_module;
   float open;
-  int count;
-
+  
+  int multipart;
+  
   request_id = (char *)argv[0];
   module_id = (char *)argv[1];
   open=argv[2]->f;
@@ -84,8 +87,9 @@ osc_edit_modules_utils_spigot_handler(const char *path, const char *types, lo_ar
   target_module = dsp_find_module(module_id);
   dsp_edit_utils_spigot(target_module, open);
 
+  multipart = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/utils/spigot","sisf", request_id, 0, module_id, open);
+  lo_send(lo_addr_send,"/cyperus/edit/module/utils/spigot","siisf", request_id, 0, multipart, module_id, open);
   free(lo_addr_send);
   
   return 0;
