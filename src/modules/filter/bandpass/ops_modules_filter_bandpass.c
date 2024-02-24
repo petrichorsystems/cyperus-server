@@ -35,7 +35,6 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
   struct dsp_port_out *outs;
 
   params.name = "filter_bandpass";  
-  params.pos = 0;
 
   /* audio input */
   params.in = malloc(sizeof(float) * dsp_global_period);
@@ -106,7 +105,6 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
 void
 dsp_filter_bandpass(struct dsp_operation *filter_bandpass, int jack_samplerate) {
 	float *outsamples;
-	int p;
 
 	dsp_sum_summands(filter_bandpass->module->dsp_param.in, filter_bandpass->ins->summands);
 
