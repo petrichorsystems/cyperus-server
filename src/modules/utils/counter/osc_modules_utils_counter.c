@@ -33,6 +33,8 @@ int osc_add_modules_utils_counter_handler(const char *path, const char *types, l
   struct dsp_module *temp_module, *target_module = NULL;
 
   float reset, start, step_size, min, max, direction, auto_reset;
+
+  int multipart;
   
   printf("path: <%s>\n", path);
 
@@ -66,12 +68,14 @@ int osc_add_modules_utils_counter_handler(const char *path, const char *types, l
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
+  multipart = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(
           lo_addr_send,
-          "/cyperus/add/module/utils/counter","sisfffffff",
+          "/cyperus/add/module/utils/counter","siisfffffff",
           request_id,
           0,
+	  multipart,
           module_id,
           reset,
           start,
@@ -95,6 +99,8 @@ osc_edit_modules_utils_counter_handler(const char *path, const char *types, lo_a
 
   float reset, start, step_size, min, max, direction, auto_reset;
 
+  int multipart;
+  
   printf("path: <%s>\n", path);
 
   request_id = (char *)argv[0];
@@ -117,13 +123,15 @@ osc_edit_modules_utils_counter_handler(const char *path, const char *types, lo_a
                          max,
                          direction,
                          auto_reset);
-  
+
+  multipart = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(
           lo_addr_send,
-          "/cyperus/edit/module/utils/counter","sisfffffff",
+          "/cyperus/edit/module/utils/counter","siisfffffff",
           request_id,
           0,
+	  multipart,
           module_id,
           reset,
           start,

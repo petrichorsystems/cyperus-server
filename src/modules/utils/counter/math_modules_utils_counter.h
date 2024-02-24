@@ -10,7 +10,6 @@
 #include "../../../dsp_math.h"
 #include "../../../dsp_types.h"
 
-extern float
-math_modules_utils_counter(dsp_parameter *counter, int samplerate, int pos);
+extern float* math_modules_utils_counter(dsp_parameter *counter, int samplerate);
 
 #endif

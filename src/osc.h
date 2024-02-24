@@ -73,7 +73,7 @@ int osc_callback_timer_setup();
 
 #include "modules/utils/float/osc_modules_utils_float.h"
 
-/* #include "modules/utils/counter/osc_modules_utils_counter.h" */
+#include "modules/utils/counter/osc_modules_utils_counter.h"
 /* #include "modules/utils/equals/osc_modules_utils_equals.h" */
 /* #include "modules/utils/spigot/osc_modules_utils_spigot.h" */
 
