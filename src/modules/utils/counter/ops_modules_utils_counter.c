@@ -36,7 +36,11 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
 	struct dsp_port_in *ins;
 	struct dsp_port_out *outs;
 
-	params.name = "utils_counter";  
+	params.name = "utils_counter";
+
+	/* audio input */
+	params.in = malloc(sizeof(float) * dsp_global_period);
+	
 	params.parameters = malloc(sizeof(dsp_module_parameters_t));  
 
 	params.parameters->float32_arr_type = malloc(sizeof(float *) * 7);
@@ -88,7 +92,7 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
 	dsp_add_module(target_bus,
 		       "utils_counter",
 		       dsp_utils_counter,
-		       dsp_osc_listener_utils_counter,
+		       NULL, /* dsp_osc_listener_utils_counter, */
 		       dsp_optimize_module,
 		       params,
 		       ins,
@@ -126,7 +130,7 @@ dsp_utils_counter(struct dsp_operation *utils_counter, int jack_samplerate) {
 	/* max */
 	if( utils_counter->ins->next->next->next->next->next->summands != NULL ) {
 		dsp_sum_summands(utils_counter->module->dsp_param.parameters->float32_arr_type[4], utils_counter->ins->next->next->next->next->next->summands);
-	}   
+	}
 
 	/* direction */
 	if( utils_counter->ins->next->next->next->next->next->next->summands != NULL ) {
@@ -137,7 +141,7 @@ dsp_utils_counter(struct dsp_operation *utils_counter, int jack_samplerate) {
 	if( utils_counter->ins->next->next->next->next->next->next->next->summands != NULL ) {
 		dsp_sum_summands(utils_counter->module->dsp_param.parameters->float32_arr_type[6], utils_counter->ins->next->next->next->next->next->next->next->summands);
 	}
-  
+	
 	outsamples = math_modules_utils_counter(&utils_counter->module->dsp_param,
 						jack_samplerate);
   

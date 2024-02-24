@@ -37,7 +37,6 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   struct dsp_port_out *outs;
 
   params.name = "delay_simple";  
-  params.pos = 0;
 
   /* audio input */
   params.in = malloc(sizeof(float) * dsp_global_period);

@@ -86,11 +86,12 @@ dsp_utils_equals(struct dsp_operation *utils_equals,
 		dsp_sum_summands(utils_equals->module->dsp_param.parameters->float32_arr_type[1], utils_equals->ins->next->summands);
 
 	for(int p=0; p<dsp_global_period; p++) {
-		if(utils_equals->module->dsp_param.parameters->float32_type[0] ==
-		   utils_equals->module->dsp_param.parameters->float32_type[1] )
+		if (utils_equals->module->dsp_param.parameters->float32_arr_type[0][p] ==
+		   utils_equals->module->dsp_param.parameters->float32_arr_type[1][p] ) {
 			outsamples[p] = 1.0f;
-		else
+		} else {
 			outsamples[p] = 0.0f;
+		}
 	}
   
 	/* drive outputs */
