@@ -37,8 +37,8 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
 	struct dsp_port_out *outs;
 
 	params.name = "utils_counter";  
-
 	params.parameters = malloc(sizeof(dsp_module_parameters_t));  
+
 	params.parameters->float32_arr_type = malloc(sizeof(float *) * 7);
 	params.parameters->float32_type = malloc(sizeof(float) * 8);
 

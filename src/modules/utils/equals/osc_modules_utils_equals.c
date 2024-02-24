@@ -20,7 +20,6 @@ Copyright 2015 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
 
-#include "../../../rtqueue.h"
 #include "../../../dsp_math.h"
 #include "../../../dsp.h"
 #include "../../../dsp_types.h"
@@ -40,6 +39,8 @@ int osc_add_modules_utils_equals_handler(const char *path, const char *types, lo
   struct dsp_module *temp_module, *target_module = NULL;
 
   float x, y;
+
+  int multipart;
   
   printf("path: <%s>\n", path);
 
@@ -59,9 +60,10 @@ int osc_add_modules_utils_equals_handler(const char *path, const char *types, lo
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
+  multipart = 0;
   printf("osc_add_modules_utils_equals_handler, module_id: %s\n", module_id);
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/utils/equals","sisff", request_id, 0, module_id, x, y);
+  lo_send(lo_addr_send,"/cyperus/add/module/utils/equals","siisff", request_id, 0, multipart, module_id, x, y);
   free(lo_addr_send);
   return 0;
 } /* osc_add_modules_utils_equals_handler */
@@ -74,7 +76,7 @@ osc_edit_modules_utils_equals_handler(const char *path, const char *types, lo_ar
   char *request_id, *module_id;
   struct dsp_module *target_module;
   float x, y;
-  int count;
+  int multipart;
 
   request_id = (char *)argv[0];
   module_id = (char *)argv[1];
@@ -87,8 +89,9 @@ osc_edit_modules_utils_equals_handler(const char *path, const char *types, lo_ar
   target_module = dsp_find_module(module_id);
   dsp_edit_utils_equals(target_module, x, y);
 
+  multipart = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/utils/equals","sisff", request_id, 0, module_id, x, y);
+  lo_send(lo_addr_send,"/cyperus/edit/module/utils/equals","siisff", request_id, 0, multipart, module_id, x, y);
   free(lo_addr_send);
   
   return 0;

@@ -23,7 +23,6 @@ Copyright 2015 murray foster */
 #include <string.h> //memset
 #include <stdlib.h> //exit(0);
 
-/* #include "../../../rtqueue.h" */
 /* #include "../../../dsp_math.h" */
 #include "../../../dsp.h"
 #include "../../../dsp_types.h"

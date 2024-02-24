@@ -36,8 +36,7 @@ dsp_create_utils_equals(struct dsp_bus *target_bus,
                         float y);
 extern void
 dsp_utils_equals(struct dsp_operation *utils_equals,
-                  int jack_samplerate,
-                  int pos);
+                  int jack_samplerate);
 extern void
 dsp_edit_utils_equals(struct dsp_module *utils_equals,
                       float x,
@@ -45,6 +44,5 @@ dsp_edit_utils_equals(struct dsp_module *utils_equals,
 
 extern void
 dsp_osc_listener_utils_equals(struct dsp_operation *utils_equals,
-                           int jack_samplerate,
-                           int pos);
+                           int jack_samplerate);
 #endif
