@@ -34,8 +34,9 @@ dsp_create_oscillator_clock(struct dsp_bus *target_bus,
   int p;
   
   params.name = "oscillator_clock";  
-  params.pos = 0;  
+  
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
+  
   params.parameters->float32_arr_type = malloc(sizeof(float *) * 2);
   params.parameters->float32_type = malloc(sizeof(float) * 3);
   params.parameters->int32_type = malloc(sizeof(int) * 2);
@@ -85,7 +86,7 @@ dsp_oscillator_clock(struct dsp_operation *oscillator_clock, int jack_samplerate
 	  dsp_sum_summands(oscillator_clock->module->dsp_param.parameters->float32_arr_type[1], oscillator_clock->ins->next->summands);
     
   outsamples = math_modules_oscillator_clock(oscillator_clock->module->dsp_param.parameters,
-                                                  jack_samplerate);
+					     jack_samplerate);
   
   /* drive audio outputs */
   memcpy(oscillator_clock->outs->sample->value,
