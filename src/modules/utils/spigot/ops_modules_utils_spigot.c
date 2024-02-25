@@ -33,8 +33,12 @@ dsp_create_utils_spigot(struct dsp_bus *target_bus,
 	struct dsp_port_out *outs;
 	
 	params.name = "utils_spigot";
-  
+
+	/* input */
+	params.in = malloc(sizeof(float) * dsp_global_period);
+	
 	params.parameters = malloc(sizeof(dsp_module_parameters_t));
+
 	params.parameters->float32_arr_type = malloc(sizeof(float*));
 	params.parameters->float32_type = malloc(sizeof(float));
 
@@ -76,12 +80,13 @@ dsp_utils_spigot(struct dsp_operation *utils_spigot,
 	/* open input */
 	if( utils_spigot->ins->next->summands != NULL )
 		dsp_sum_summands(utils_spigot->module->dsp_param.parameters->float32_arr_type[0], utils_spigot->ins->next->summands);
-
-	for(int p; p<dsp_global_period; p++)
-		if(utils_spigot->module->dsp_param.parameters->float32_arr_type[0][p])
+	
+	for(int p=0; p<dsp_global_period; p++) {
+		if (utils_spigot->module->dsp_param.parameters->float32_arr_type[0][p])
 			outsamples[p] = utils_spigot->module->dsp_param.in[p];
 		else
 			outsamples[p] = 0.0f;
+	}
 	
 	/* drive outputs */
 	memcpy(utils_spigot->outs->sample->value,
