@@ -18,6 +18,8 @@ Copyright 2015 murray foster */
 
 #include "dsp.h"
 
+static bool dsp_build_new_optimized_graph = false;;
+
 int dsp_global_new_operation_graph = 0;
 unsigned short dsp_global_period = 0;
 float dsp_global_load = 0.0f;
@@ -231,7 +233,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   /* TODO: check that the current processing graph isn't the same as this new one,
   */
   
-  dsp_build_optimized_graph(NULL);
+  dsp_build_new_optimized_graph = 1;
 
   /* graph changed, generate new graph id */
   dsp_graph_id_rebuild();
@@ -812,6 +814,12 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   }
 
   free(sample_block);
+
+  if (dsp_build_new_optimized_graph) {
+	  dsp_build_optimized_graph(NULL);
+	  dsp_build_new_optimized_graph = false;
+  }
+  
 } /* dsp_process */
 
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {

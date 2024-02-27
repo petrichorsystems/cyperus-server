@@ -313,7 +313,7 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 	request_id = (char *)argv[0];
 	path_out = (char *)argv[1];
 	path_in = (char *)argv[2];
-  
+
 	failed = dsp_add_connection(path_out, path_in);
 
 	multipart = false;
@@ -321,9 +321,8 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 	lo_send(lo_addr_send,"/cyperus/add/connection", "siissi", request_id, 0, multipart, path_out, path_in, failed);
 	lo_address_free(lo_addr_send);
 
-	printf("done osc_add_connection_handler()\n");
   
-  return 0;
+	return 0;
 } /* osc_add_connection_handler */
 
 int osc_remove_connection_handler(const char *path, const char *types, lo_arg **argv,

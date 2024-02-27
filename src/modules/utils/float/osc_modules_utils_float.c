@@ -79,8 +79,6 @@ osc_edit_modules_utils_float_handler(const char *path, const char *types, lo_arg
   request_id = (char *)argv[0];
   module_id = (char *)argv[1];
   value=argv[2]->f;
-
-  printf("osc_edit_modules_utils_float_handler::value: %f\n", value);
   
   target_module = dsp_find_module(module_id);
   dsp_edit_utils_float(target_module, value);

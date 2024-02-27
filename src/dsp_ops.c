@@ -234,7 +234,6 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
       temp_out = temp_out->next;
     }
   }
-
 } /* dsp_optimize_connections_main_inputs */
 
 struct dsp_operation
