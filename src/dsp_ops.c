@@ -75,7 +75,6 @@ dsp_optimize_connections_module(struct dsp_port_out *outs) {
 
 void
 dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
-  printf("dsp.c::dsp_optimize_connections_main_inputs()\n");  
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
   float temp_outsample;
