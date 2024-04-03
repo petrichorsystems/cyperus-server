@@ -36,7 +36,7 @@ jack_default_audio_sample_t **jackcli_outs;
 jack_default_audio_sample_t **jackcli_ins;
 
 int jackcli_process_callback(jack_nframes_t nframes, void *arg)
-{
+{  
   unsigned int i, n, p = 0; 
 
   struct dsp_bus *temp_bus;
@@ -71,7 +71,6 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   }
   
   clock_gettime (CLOCK_REALTIME, &mt1);
-
   dsp_process(dsp_global_operation_head,
               jackcli_samplerate,
               jackcli_samplerate_pos);
@@ -97,13 +96,13 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 
   if( dsp_global_new_operation_graph ) {
     
-    /* printf("assigning new graph\n"); */
+    printf("assigning new graph\n");
 
     dsp_global_operation_head = dsp_global_operation_head_processing;
     dsp_global_new_operation_graph = 0;
     dsp_global_operation_head_processing = NULL;
 
-    /* printf("assigned new graph\n"); */
+    printf("assigned new graph\n");
     /* printf("operations in new graph: \n"); */
     
     /* -- debug cruft */
@@ -114,9 +113,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     /*   } */
     /* } */
     /* printf("done listing\n");         */
-  }
-  threadsync_sync();
-  
+  }  
   return 0 ;
 } /* jackcli_process_callback */
 

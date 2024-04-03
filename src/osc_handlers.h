@@ -122,7 +122,7 @@ osc_edit_module_karlsen_lowpass_handler(const char *path, const char *types, lo_
 
 
 int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
-                        int argc, void *data, void *user_data);
+                        int argc, struct lo_message_ *data, void *user_data);
 
 
 /* ================= FUNCTIONS BELOW NEED TO BE CONVERTED TO USE dsp_* OBJECTS ==================== */

@@ -995,7 +995,7 @@ osc_get_graph_id_handler(const char *path, const char *types, lo_arg **argv,
 
 
 int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
-                    int argc, void *data, void *user_data)
+			int argc, struct lo_message_  *data, void *user_data)
 {
 	/* int i; */
 	/* printf("path: <%s>\n", path); */

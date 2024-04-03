@@ -788,38 +788,48 @@ void
   dsp_global_new_operation_graph = 1;
 } /* dsp_build_optimized_graph */
 
+void *
+dsp_graph_optimization_thread(void *arg) {
+	dsp_build_new_optimized_graph = false;	
+	dsp_build_optimized_graph(NULL);
+} /* dsp_graph_optimization_thread */
+
+int
+dsp_graph_optimization_thread_setup() {
+	pthread_t graph_optimization_thread_id;;
+	pthread_create(&graph_optimization_thread_id, NULL, dsp_graph_optimization_thread, NULL);
+	pthread_detach(graph_optimization_thread_id);
+	return 0;	
+} /* dsp_graph_optimization_thread_setup */
+
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {  
   struct dsp_connection *temp_connection = dsp_global_connection_graph;
   int connection_idx = 0;
   
-  float *sample_block = malloc(sizeof(float) * dsp_global_period);
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
-  
   int p;
-  while(temp_op != NULL) {    
+  while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
       if( temp_op->ins == NULL ) {
+	      temp_op->id;
         memset(temp_op->outs->sample->value, 0.0f, sizeof(float) * dsp_global_period);
       } else {
-	if( temp_op->ins != NULL ) {          
-          dsp_sum_summands(temp_op->outs->sample->value, temp_op->ins->summands);
+	if( temp_op->ins != NULL ) {
+		temp_op->id;
+		dsp_sum_summands(temp_op->outs->sample->value, temp_op->ins->summands);
         }
       }
     } else {
-      temp_op->module->dsp_function(temp_op, jack_sr);
+	    temp_op->module->name;
+	    temp_op->module->dsp_function(temp_op, jack_sr);
     }
     temp_op = temp_op->next;
   }
-
-  free(sample_block);
-
-  if (dsp_build_new_optimized_graph) {
-	  dsp_build_optimized_graph(NULL);
-	  dsp_build_new_optimized_graph = false;
+  if (dsp_build_new_optimized_graph) {	
+	  dsp_graph_optimization_thread_setup();
   }
-  
 } /* dsp_process */
 
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {
