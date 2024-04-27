@@ -1039,9 +1039,14 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 		handler_ptr = osc_edit_modules_envelope_follower_handler;
 	
 	else if (strcmp(path, "/cyperus/add/module/filter/bandpass") == 0)
-	  handler_ptr = osc_add_modules_filter_bandpass_handler;
+		handler_ptr = osc_add_modules_filter_bandpass_handler;
 	else if (strcmp(path, "/cyperus/edit/module/filter/bandpass") == 0)
-	  handler_ptr = osc_edit_modules_filter_bandpass_handler;
+		handler_ptr = osc_edit_modules_filter_bandpass_handler;
+	
+	else if (strcmp(path, "/cyperus/add/module/network/oscsend") == 0)
+		handler_ptr = osc_add_modules_network_oscsend_handler;
+	else if (strcmp(path, "/cyperus/edit/module/network/oscsend") == 0)
+		handler_ptr = osc_edit_modules_network_oscsend_handler;	
 	
 	else if (strcmp(path, "/cyperus/add/module/oscillator/sine") == 0)
 		handler_ptr = osc_add_modules_oscillator_sine_handler;
@@ -1049,14 +1054,14 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 		handler_ptr = osc_edit_modules_oscillator_sine_handler;
 	
 	else if (strcmp(path, "/cyperus/add/module/oscillator/triangle") == 0)
-	  handler_ptr = osc_add_modules_oscillator_triangle_handler;
+		handler_ptr = osc_add_modules_oscillator_triangle_handler;
 	else if (strcmp(path, "/cyperus/edit/module/oscillator/triangle") == 0)
-	  handler_ptr = osc_edit_modules_oscillator_triangle_handler;
+		handler_ptr = osc_edit_modules_oscillator_triangle_handler;
 	
 	else if (strcmp(path, "/cyperus/add/module/oscillator/clock") == 0)
-	  handler_ptr = osc_add_modules_oscillator_clock_handler;
+		handler_ptr = osc_add_modules_oscillator_clock_handler;
 	else if (strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0)
-	  handler_ptr = osc_edit_modules_oscillator_clock_handler;
+		handler_ptr = osc_edit_modules_oscillator_clock_handler;
 	
 	else if (strcmp(path, "/cyperus/add/module/utils/float") == 0)
 		handler_ptr = osc_add_modules_utils_float_handler;
@@ -1064,19 +1069,19 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 		handler_ptr = osc_edit_modules_utils_float_handler;
 	
 	else if (strcmp(path, "/cyperus/add/module/utils/counter") == 0)
-	  handler_ptr = osc_add_modules_utils_counter_handler;
+		handler_ptr = osc_add_modules_utils_counter_handler;
 	else if (strcmp(path, "/cyperus/edit/module/utils/counter") == 0)
-	  handler_ptr = osc_edit_modules_utils_counter_handler;
+		handler_ptr = osc_edit_modules_utils_counter_handler;
 	
 	else if (strcmp(path, "/cyperus/add/module/utils/equals") == 0)
-	  handler_ptr = osc_add_modules_utils_equals_handler;
+		handler_ptr = osc_add_modules_utils_equals_handler;
 	else if (strcmp(path, "/cyperus/edit/module/utils/equals") == 0)
-	  handler_ptr = osc_edit_modules_utils_equals_handler;
+		handler_ptr = osc_edit_modules_utils_equals_handler;
 	
 	else if (strcmp(path, "/cyperus/add/module/utils/spigot") == 0)
-	  handler_ptr = osc_add_modules_utils_spigot_handler;
+		handler_ptr = osc_add_modules_utils_spigot_handler;
 	else if (strcmp(path, "/cyperus/edit/module/utils/spigot") == 0)
-	  handler_ptr = osc_edit_modules_utils_spigot_handler;
+		handler_ptr = osc_edit_modules_utils_spigot_handler;
 	
 	else if (strcmp(path, "/cyperus/get/graph/id") == 0)
 		handler_ptr = osc_get_graph_id_handler;

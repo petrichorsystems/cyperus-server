@@ -26,16 +26,17 @@ Copyright 2019 murray foster */
 #include <math.h>
 
 typedef struct dsp_module_parameters {
-  int *int32_type;
-  int **int32_arr_type;
-  unsigned int *uint32_type;
-  short *int16_type;
-  float *float32_type;
-  float **float32_arr_type;
-  double *double_type;
-  uint8_t *uint8_type;
-  char **char_type;
-  void *bytes_type;
+	int *int32_type;
+	int **int32_arr_type;
+	short *int16_type;
+	float *float32_type;
+	float **float32_arr_type;
+	double *double_type;
+	uint8_t *uint8_type;
+	uint16_t *uint16_type;
+	uint32_t *uint32_type;
+	char **char_type;
+	void *bytes_type;
 } dsp_module_parameters_t;
 
 #endif

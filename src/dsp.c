@@ -233,10 +233,7 @@ dsp_add_connection(char *id_out, char *id_in) {
   /* TODO: check that the current processing graph isn't the same as this new one,
   */
   
-  dsp_build_new_optimized_graph = 1;
-
-  /* graph changed, generate new graph id */
-  dsp_graph_id_rebuild();
+  dsp_build_new_optimized_graph = true;;
   
   return 0;
 } /* dsp_add_connection */
@@ -790,13 +787,15 @@ void
 
 void *
 dsp_graph_optimization_thread(void *arg) {
-	dsp_build_new_optimized_graph = false;	
+	dsp_build_new_optimized_graph = false;
 	dsp_build_optimized_graph(NULL);
+	/* graph changed, generate new graph id */
+	dsp_graph_id_rebuild();	
 } /* dsp_graph_optimization_thread */
 
 int
 dsp_graph_optimization_thread_setup() {
-	pthread_t graph_optimization_thread_id;;
+	pthread_t graph_optimization_thread_id;
 	pthread_create(&graph_optimization_thread_id, NULL, dsp_graph_optimization_thread, NULL);
 	pthread_detach(graph_optimization_thread_id);
 	return 0;	
@@ -827,7 +826,7 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
     }
     temp_op = temp_op->next;
   }
-  if (dsp_build_new_optimized_graph) {	
+  if (dsp_build_new_optimized_graph) {
 	  dsp_graph_optimization_thread_setup();
   }
 } /* dsp_process */
