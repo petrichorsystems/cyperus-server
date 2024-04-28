@@ -27,13 +27,9 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 			    char *hostname_ip,
 			    int port,			    
 			    char *osc_path,
-			    float freq_div) {
-
-	printf("ops_modules_network_oscsend.c::dsp_create_network_oscsend()\n");
-	
+			    float freq_div) {	
 	dsp_parameter params;
 	struct dsp_port_in *ins;
-	struct dsp_port_out *outs;
 
 	params.name = "network_oscsend";  
 
@@ -61,8 +57,6 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 	params.parameters->float32_type[0] = freq_div;
 	
 	ins = dsp_port_in_init("in", 512);
-	outs = dsp_port_out_init("out", 1);
-
 	
 	dsp_add_module(target_bus,
 		       "network_oscsend",
@@ -71,7 +65,7 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 		       dsp_optimize_module,
 		       params,
 		       ins,
-		       outs);
+		       NULL);
 
 	return 0;
 } /* dsp_create_network_oscsend */
@@ -82,7 +76,6 @@ dsp_edit_network_oscsend(struct dsp_module *network_oscsend,
 			 int port,			    
 			 char *osc_path,
 			 float freq_div) {
-	printf("ops_modules_network_oscsend.c::dsp_edit_network_oscsend()\n");	
 	network_oscsend->dsp_param.parameters->char_type[0] = realloc(network_oscsend->dsp_param.parameters->char_type[0], strlen(hostname_ip) + 1);
 	strcpy(network_oscsend->dsp_param.parameters->char_type[0], hostname_ip);
 
@@ -95,7 +88,6 @@ dsp_edit_network_oscsend(struct dsp_module *network_oscsend,
 
 void
 dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) {
-	printf("ops_modules_network_oscsend.c::dsp_network_oscsend()\n");	
 	char *hostname_ip, *osc_path, *osc_port;
 	lo_address lo_addr_send;
 	int port, sample_count, i, port_len;
@@ -115,19 +107,11 @@ dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) 
 
 	if( network_oscsend->ins->summands != NULL ) {  
 		dsp_sum_summands(network_oscsend->module->dsp_param.in, network_oscsend->ins->summands);
-	} else {
-		printf("is NULL\n");
 	}
 
 	i=0;
 	while(i<dsp_global_period) {		
 		if( ((int)(jack_samplerate / freq_div) < sample_count)) {
-			printf("jack_samplerate / freq_div: %d\n", (int)(jack_samplerate / freq_div));
-			printf("sample_count: %d\n", sample_count);
-			printf("sending osc...\n");
-			printf("osc_path: %s\n", osc_path);
-			printf("port: %d\n", port);			
-			printf("osc_port: %s\n", osc_port);
 			lo_send(lo_addr_send,
 				osc_path,
 				"f",
