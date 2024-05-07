@@ -310,7 +310,6 @@ dsp_remove_connection(char *id_out, char *id_in) {
 
 void
 dsp_optimize_connections_input(struct dsp_connection *connection) {
-	printf("dsp_optimize_connections_input\n");
 	/* is the below ever actually the case? */
 	
 	/* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
