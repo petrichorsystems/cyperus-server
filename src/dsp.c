@@ -18,6 +18,7 @@ Copyright 2015 murray foster */
 
 #include "dsp.h"
 
+pthread_mutex_t dsp_global_optimization_mutex;
 static bool dsp_build_new_optimized_graph = false;;
 
 int dsp_global_new_operation_graph = 0;
@@ -94,47 +95,52 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 
 void
 dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
-  struct dsp_bus *temp_bus, *target_bus;
-  struct dsp_bus_port *temp_bus_port;
-
-  /* create bus */
-  if(ins != NULL) {
-    temp_bus_port = new_bus->ins;
-    temp_bus_port = dsp_build_bus_ports(temp_bus_port, ins, 0);
-    new_bus->ins = temp_bus_port;
-  }
-
-  if(outs != NULL) {
-    temp_bus_port = new_bus->outs;
-    temp_bus_port = dsp_build_bus_ports(temp_bus_port, outs, 1); /* output port */
-    new_bus->outs = temp_bus_port;
-  }
-
-  /* insert head bus, if that's what we're doing */
-  if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") || !strcmp(bus_id, "")) {
-    if( dsp_global_bus_head != NULL )
-      dsp_bus_insert_tail(dsp_global_bus_head, new_bus);
-    else
-      dsp_global_bus_head = new_bus;
-  } else {
-    target_bus = dsp_find_bus(bus_id);
-    if(target_bus != NULL) {
-      temp_bus = target_bus->down;
-      if (temp_bus != NULL) {
-        dsp_bus_insert_tail(temp_bus, new_bus);
-      } else {
-        target_bus->down = new_bus;
-      }
-    }
-    else {
-      target_bus = new_bus;
-    }
-  }
-
-  /* graph changed, generate new graph id */
-  dsp_graph_id_rebuild();
+	struct dsp_bus *temp_bus, *target_bus;
+	struct dsp_bus_port *temp_bus_port;
   
-  return;
+	/* create bus */
+	if(ins != NULL) {
+		temp_bus_port = new_bus->ins;
+		temp_bus_port = dsp_build_bus_ports(temp_bus_port, ins, 0);
+		new_bus->ins = temp_bus_port;
+	}
+
+	if(outs != NULL) {
+		temp_bus_port = new_bus->outs;
+		temp_bus_port = dsp_build_bus_ports(temp_bus_port, outs, 1); /* output port */
+		new_bus->outs = temp_bus_port;
+	}
+
+	/* insert head bus, if that's what we're doing */
+	if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") || !strcmp(bus_id, "")) {
+		
+		pthread_mutex_lock(&dsp_global_optimization_mutex);
+	  
+		if( dsp_global_bus_head != NULL )
+			dsp_bus_insert_tail(dsp_global_bus_head, new_bus);
+		else
+			dsp_global_bus_head = new_bus;
+
+		pthread_mutex_unlock(&dsp_global_optimization_mutex);
+		
+	} else {
+		target_bus = dsp_find_bus(bus_id);
+		if(target_bus != NULL) {
+			temp_bus = target_bus->down;
+			if (temp_bus != NULL) {
+				dsp_bus_insert_tail(temp_bus, new_bus);
+			} else {
+				target_bus->down = new_bus;
+			}
+		}
+		else {
+			target_bus = new_bus;
+		}
+	}
+	
+	/* graph changed, generate new graph id */
+	dsp_graph_id_rebuild();
+	return;
 } /* dsp_add_bus */
 
 struct dsp_module*
@@ -146,28 +152,33 @@ dsp_add_module(struct dsp_bus *target_bus,
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
 	       struct dsp_port_out *outs) {
-  struct dsp_module *new_module  = dsp_module_init(name,
-						   dsp_function,
-                                                   dsp_osc_listener_function,
-						   dsp_optimize,
-						   dsp_param,
-						   ins,
-						   outs);
-  if( target_bus->dsp_module_head == NULL )
-    target_bus->dsp_module_head = new_module;
-  else
-    dsp_module_insert_tail(target_bus->dsp_module_head, new_module);
+	struct dsp_module *new_module  = dsp_module_init(name,
+							 dsp_function,
+							 dsp_osc_listener_function,
+							 dsp_optimize,
+							 dsp_param,
+							 ins,
+							 outs);
 
-  /* graph changed, generate new graph id */
-  dsp_graph_id_rebuild();
+	pthread_mutex_lock(&dsp_global_optimization_mutex);
+
+	if( target_bus->dsp_module_head == NULL )
+		target_bus->dsp_module_head = new_module;
+	else
+		dsp_module_insert_tail(target_bus->dsp_module_head, new_module);
+
+	/* graph changed, generate new graph id */
+	dsp_graph_id_rebuild();
   
-  return new_module;
+	pthread_mutex_unlock(&dsp_global_optimization_mutex);
+		
+	return new_module;
 } /* dsp_add_module */
 
 void
 dsp_remove_module(struct dsp_module *module, int remove) {
+	
   module->remove = remove;
-
   /* graph changed, generate new graph id */
   dsp_graph_id_rebuild();
   
@@ -186,56 +197,61 @@ dsp_bypass_module(struct dsp_module *module, int bypass) {
 
 int
 dsp_add_connection(char *id_out, char *id_in) {
-  struct dsp_connection *new_connection;
-  struct dsp_bus_port *temp_bus_port = NULL;
-  struct dsp_port_out *port_out = NULL;
-  struct dsp_port_in *port_in = NULL;
+	struct dsp_connection *new_connection;
+	struct dsp_bus_port *temp_bus_port = NULL;
+	struct dsp_port_out *port_out = NULL;
+	struct dsp_port_in *port_in = NULL;
 
-  port_out = dsp_find_main_in_port_out(id_out);
-  if( port_out == NULL ) {
-    if( (temp_bus_port = dsp_find_bus_port_in(id_out)) != NULL) {
-      port_out = temp_bus_port->out;
-    } else if( (temp_bus_port = dsp_find_bus_port_out(id_out)) != NULL) {
-      port_out = temp_bus_port->out;
-    } else {
-      port_out = dsp_find_port_out(id_out);
-    }
-  }
+	port_out = dsp_find_main_in_port_out(id_out);
+	if( port_out == NULL ) {
+		if( (temp_bus_port = dsp_find_bus_port_in(id_out)) != NULL) {
+			port_out = temp_bus_port->out;
+		} else if( (temp_bus_port = dsp_find_bus_port_out(id_out)) != NULL) {
+			port_out = temp_bus_port->out;
+		} else {
+			port_out = dsp_find_port_out(id_out);
+		}
+	}
 
-  port_in = dsp_find_main_out_port_in(id_in);
-  if( port_in == NULL ) {
-    if( (temp_bus_port = dsp_find_bus_port_out(id_in)) != NULL) {
-      port_in  = temp_bus_port->in;
-    } else if( (temp_bus_port = dsp_find_bus_port_in(id_in)) != NULL) {
-      port_in  = temp_bus_port->in;
-    } else {
-      port_in = dsp_find_port_in(id_in);
-    }
-  }
-  
-  if( (port_out == NULL) ||
-      (port_in == NULL) ) {
-    printf("failed to add connection!\n");
-    return 1;
-  }
-
-  /* instantiate and add to global connection graph */
-  new_connection = dsp_connection_init(id_out,
-				       id_in,
-				       port_out,
-				       port_in);
-  if(dsp_global_connection_graph == NULL)
-    dsp_global_connection_graph = new_connection;
-  else
-    dsp_connection_insert_tail(dsp_global_connection_graph,
-			       new_connection);
-
-  /* TODO: check that the current processing graph isn't the same as this new one,
-  */
-  
-  dsp_build_new_optimized_graph = true;
-  
-  return 0;
+	port_in = dsp_find_main_out_port_in(id_in);
+	if( port_in == NULL ) {
+		if( (temp_bus_port = dsp_find_bus_port_out(id_in)) != NULL) {
+			port_in  = temp_bus_port->in;
+		} else if( (temp_bus_port = dsp_find_bus_port_in(id_in)) != NULL) {
+			port_in  = temp_bus_port->in;
+		} else {
+			port_in = dsp_find_port_in(id_in);
+		}
+	}
+	
+	if( (port_out == NULL) ||
+	    (port_in == NULL) ) {
+		printf("failed to add connection!\n");
+		return 1;
+	}
+	
+	/* instantiate and add to global connection graph */
+	new_connection = dsp_connection_init(id_out,
+					     id_in,
+					     port_out,
+					     port_in);
+	
+	pthread_mutex_lock(&dsp_global_optimization_mutex);
+	
+	if(dsp_global_connection_graph == NULL)
+		dsp_global_connection_graph = new_connection;
+	else
+		dsp_connection_insert_tail(dsp_global_connection_graph,
+					   new_connection);
+	
+	/* TODO: check that the current processing graph isn't the same as this new one,
+	 */
+	
+	dsp_build_new_optimized_graph = true;
+	
+	pthread_mutex_unlock(&dsp_global_optimization_mutex);
+	
+	return 0;
 } /* dsp_add_connection */
 
 
@@ -294,7 +310,7 @@ dsp_remove_connection(char *id_out, char *id_in) {
 
 void
 dsp_optimize_connections_input(struct dsp_connection *connection) {
-
+	printf("dsp_optimize_connections_input\n");
 	/* is the below ever actually the case? */
 	
 	/* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
@@ -644,8 +660,6 @@ dsp_optimize_connections_bus(struct dsp_bus_port *ports) {
   struct dsp_bus_port *temp_port = ports;
   struct dsp_connection *temp_connection;
 
-  int temp_port_idx = 0;
-
   while(temp_port != NULL) {
     temp_connection = dsp_global_connection_graph;
     while(temp_connection != NULL) {      
@@ -655,7 +669,6 @@ dsp_optimize_connections_bus(struct dsp_bus_port *ports) {
       temp_connection = temp_connection->next;
     }
     temp_port = temp_port->next;
-    temp_port_idx++;
 
   }
 } /* dsp_optimize_connections_bus */
@@ -664,7 +677,7 @@ void
 dsp_optimize_graph(struct dsp_bus *head_bus) {
   struct dsp_module *temp_module;
   struct dsp_bus *temp_bus = head_bus;
-
+  
   while(temp_bus != NULL) {
     /* process bus inputs */
     dsp_optimize_connections_bus(temp_bus->ins);
@@ -681,6 +694,7 @@ dsp_optimize_graph(struct dsp_bus *head_bus) {
     dsp_optimize_graph(temp_bus->down);
     temp_bus = temp_bus->next;
   }
+  
   return;
 } /* dsp_optimize_graph */
 
@@ -771,16 +785,11 @@ void
   struct dsp_port_in *temp_port_in = NULL;
 
   dsp_global_operation_head_processing = NULL;
-
   dsp_build_optimized_main_outs();
   
   dsp_optimize_connections_main_inputs(dsp_main_ins);
   
-  temp_bus = dsp_global_bus_head;
-  while( temp_bus != NULL ) {
-    dsp_optimize_graph(temp_bus);
-    temp_bus = temp_bus->next;
-  }
+  dsp_optimize_graph(dsp_global_bus_head);
 
   dsp_global_new_operation_graph = 1;
 } /* dsp_build_optimized_graph */
@@ -818,11 +827,9 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
       if( temp_op->ins == NULL ) {
-	      temp_op->id;
-        memset(temp_op->outs->sample->value, 0.0f, sizeof(float) * dsp_global_period);
+	      memset(temp_op->outs->sample->value, 0.0f, sizeof(float) * dsp_global_period);
       } else {
 	if( temp_op->ins != NULL ) {
-		temp_op->id;
 		dsp_sum_summands(temp_op->outs->sample->value, temp_op->ins->summands);
         }
       }

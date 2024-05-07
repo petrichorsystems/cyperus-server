@@ -45,7 +45,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   
   struct dsp_operation *temp_main_in = NULL;
   struct dsp_operation *temp_main_out = NULL;
-
+  
   struct timespec mt1, mt2;
   long int tt;
   long process_time = (1.0f / jackcli_samplerate) * nframes * 1000000000;
@@ -80,6 +80,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   dsp_global_load = (double)tt/(double)process_time; 
   
   temp_main_out = dsp_optimized_main_outs;
+
   for (n = 0; n < jackcli_channels_out; n++) {
     dsp_sum_summands(temp_sample_block, temp_main_out->ins->summands);
    

@@ -263,8 +263,9 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 			outs_str[i] = ',';
 
 	new_bus = dsp_bus_init(bus_str);
+
 	dsp_add_bus(target_bus_id, new_bus, ins_str, outs_str);
-  
+
 	new_id = malloc(sizeof(char) * strlen(new_bus->id));
 	strcpy(new_id, new_bus->id);
   
@@ -315,7 +316,7 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 	path_in = (char *)argv[2];
 
 	failed = dsp_add_connection(path_out, path_in);
-
+	
 	multipart = false;
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	lo_send(lo_addr_send,"/cyperus/add/connection", "siissi", request_id, 0, multipart, path_out, path_in, failed);
