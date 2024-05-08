@@ -28,7 +28,6 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
                            float frequency,
                            float q,
                            float amount) {
-  printf("ops_modules_filter_bandpass.c::dsp_create_filter_bandpass()\n");
 	
   dsp_parameter params;
   struct dsp_port_in *ins;

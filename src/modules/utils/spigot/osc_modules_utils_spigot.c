@@ -33,7 +33,6 @@ Copyright 2015 murray foster */
 int osc_add_modules_utils_spigot_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
-  printf("osc_add_modules_utils_spigot_handler()..\n");
   char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -59,7 +58,6 @@ int osc_add_modules_utils_spigot_handler(const char *path, const char *types, lo
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
 
-  printf("osc_add_modules_utils_spigot_handler, module_id: %s\n", module_id);
   multipart = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,"/cyperus/add/module/utils/spigot","siisf", request_id, 0, multipart, module_id, open);
@@ -81,8 +79,6 @@ osc_edit_modules_utils_spigot_handler(const char *path, const char *types, lo_ar
   request_id = (char *)argv[0];
   module_id = (char *)argv[1];
   open=argv[2]->f;
-
-  printf("osc_edit_modules_utils_spigot_handler::open: %f\n", open);
 
   target_module = dsp_find_module(module_id);
   dsp_edit_utils_spigot(target_module, open);

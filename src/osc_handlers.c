@@ -38,7 +38,6 @@ int osc_address_handler(const char *path, const char *types, lo_arg **argv,
 int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
-	printf("osc_list_main_handler..\n");
 	char *request_id, *mains_str = NULL;
 	struct dsp_port_out *temp_port_out;
 	struct dsp_port_in *temp_port_in;
@@ -103,8 +102,6 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	list_type = argv[2]->i;
 
 	printf("path: <%s>\n", path);
-	printf("bus_id: %s\n", bus_id);
-	printf("list_type: %d\n", list_type);
   
 	/* list types
 	   0 - peer
@@ -195,7 +192,6 @@ int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv
 	path_str = (char *)argv[1];
 
 	printf("path: <%s>\n", path);
-	printf("path_str: %s\n", path_str);
 
 	temp_bus = dsp_find_bus(path_str);
 
@@ -345,8 +341,6 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	lo_send(lo_addr_send,"/cyperus/remove/connection", "siissi", request_id, 0, path_out, path_in, failed);
 	lo_address_free(lo_addr_send);
-
-	printf("done osc_remove_connection_handler()\n");
   
   return 0;
 } /* osc_remove_connection_handler */
@@ -399,7 +393,6 @@ int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv
 int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
                                         int argc, void *data, void *user_data)
 {
-	printf("cyperus::osc_handlers.c::osc_list_module_port_handler()\n");
 	int count;
 	struct dsp_bus *temp_bus;
 	struct dsp_module *temp_module = NULL;
@@ -468,7 +461,6 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg ** argv,
                                         int argc, void *data, void *user_data)
 {
-	printf("cyperus::osc_handlers.c::osc_get_filesystem_cwd_handler()\n");
 	char *request_id = NULL;
 	char cwd[PATH_MAX];
 	bool multipart;
@@ -493,7 +485,6 @@ int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg *
 int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg ** argv,
 				     int argc, void *data, void *user_data)
 {
-	printf("cyperus::osc_handlers.c::osc_list_filesystem_path_handler()\n");
 	char *request_id, *dirpath, *filepath, *raw_str, *raw_str_tmp, *result_str;
 	char **osc_str;
 	int raw_strlen;
@@ -674,7 +665,6 @@ int _write_append_filesystem_file(char *openmode, char *filepath, char *content)
 int osc_write_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
 				     int argc, void *data, void *user_data)
 {
-	printf("cyperus::osc_handlers.c::osc_write_filesystem_file_handler()\n");
 	
 	char *request_id, *filepath, *content;
 	int error;
@@ -705,9 +695,7 @@ int osc_write_filesystem_file_handler(const char *path, const char *types, lo_ar
 
 int osc_append_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
 				     int argc, void *data, void *user_data)
-{
-	printf("cyperus::osc_handlers.c::osc_append_filesystem_file_handler()\n");
-	
+{	
 	char *request_id, *filepath, *content;
 	int error;
 	FILE *fp;
@@ -735,9 +723,7 @@ int osc_append_filesystem_file_handler(const char *path, const char *types, lo_a
 
 int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
 				     int argc, void *data, void *user_data)
-{
-	printf("cyperus::osc_handlers.c::osc_read_filesystem_file_handler()\n");
-	
+{	
 	char *request_id, *filepath, *raw_str;
 	int error;
 	unsigned long len;
@@ -796,9 +782,7 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 
 int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_arg ** argv,
 				       int argc, void *data, void *user_data)
-{
-	printf("cyperus::osc_handlers.c::osc_remove_filesystem_file_handler()\n");
-	
+{	
 	char *request_id, *filepath;
 	int error;
 	FILE *fp;
@@ -834,9 +818,7 @@ int _unlink_callback(const char *fpath, const struct stat *sb, int typeflag, str
 
 int osc_remove_filesystem_dir_handler(const char *path, const char *types, lo_arg ** argv,
 				       int argc, void *data, void *user_data)
-{
-	printf("cyperus::osc_handlers.c::osc_remove_filesystem_dir_handler()\n");
-	
+{	
 	char *request_id, *dirpath;
 	int error;
 	FILE *fp;
@@ -862,9 +844,7 @@ int osc_remove_filesystem_dir_handler(const char *path, const char *types, lo_ar
 
 int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg ** argv,
 				    int argc, void *data, void *user_data)
-{
-	printf("cyperus::osc_handlers.c::osc_make_filesystem_dir_handler()\n");
-	
+{	
 	char *request_id, *dirpath, *dirname, *fullpath;
 	int error;
 	FILE *fp;
@@ -889,8 +869,6 @@ int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg 
 		snprintf(fullpath, fullpath_strlen + 1, "%s/%s", dirpath, dirname);
 	else
 		snprintf(fullpath, fullpath_strlen + 1, "%s%s", dirpath, dirname);
-
-	printf("cyperus::osc_handlers.c::osc_make_filesystem_dir_handler(), fullpath: %s\n", fullpath);
 
 	if (mkdir(fullpath, 0755) == -1) {
 		printf("cyperus::osc_handlers.c::osc_make_filesystem_dir_handler(), fullpath: %s could not be created, exiting..\n", fullpath);
