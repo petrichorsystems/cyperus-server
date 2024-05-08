@@ -517,7 +517,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	}
 	
 	if( is_main_out_in ) {
-		temp_op_in = dsp_optimized_main_outs;
+		temp_op_in = dsp_rebuilt_optimized_main_outs;
 		while( temp_op_in != NULL ) {
 			if( strcmp(temp_op_in->dsp_id, connection->id_in) == 0 ) {
 				matched_op_in = temp_op_in;
@@ -745,57 +745,58 @@ dsp_build_mains(int channels_in, int channels_out) {
     }
   }
   dsp_build_optimized_main_outs();
+  dsp_optimized_main_outs = dsp_rebuilt_optimized_main_outs;
+  dsp_rebuilt_optimized_main_outs = NULL;
 } /* dsp_build_mains */
 
 void
-dsp_build_optimized_main_outs() {
-  struct dsp_port_in *temp_port_in = NULL;
+dsp_build_optimized_main_outs() {	
+	struct dsp_port_in *temp_port_in = NULL;
 
-  struct dsp_operation *temp_op = NULL;
-  struct dsp_operation_sample *temp_sample = NULL;
+	struct dsp_operation *temp_op = NULL;
+	struct dsp_operation_sample *temp_sample = NULL;
 
-  int i;
+	int i;
   
-  dsp_optimized_main_outs = NULL;
-  temp_port_in = dsp_main_outs;
-  while(temp_port_in != NULL) {
-    temp_op = dsp_operation_init(temp_port_in->id);
-    temp_sample = dsp_operation_sample_init("<main port in>", dsp_global_period, (float)0.0, 1);
-
-    temp_op->ins = temp_sample;
-    if( dsp_optimized_main_outs == NULL )
-      dsp_optimized_main_outs = temp_op;
-    else 
-      dsp_operation_insert_tail(dsp_optimized_main_outs, temp_op);
-    
-    temp_port_in = temp_port_in->next;
-  }
+	dsp_rebuilt_optimized_main_outs = NULL;
+	temp_port_in = dsp_main_outs;
+  
+	while(temp_port_in != NULL) {
+		temp_op = dsp_operation_init(temp_port_in->id);
+		temp_sample = dsp_operation_sample_init("<main port in>", dsp_global_period, (float)0.0, 1);
+		
+		temp_op->ins = temp_sample;
+		
+		if( dsp_rebuilt_optimized_main_outs == NULL )
+			dsp_rebuilt_optimized_main_outs = temp_op;
+		else 
+			dsp_operation_insert_tail(dsp_rebuilt_optimized_main_outs, temp_op);
+		temp_port_in = temp_port_in->next;
+	}
+  
 } /* dsp_build_optimized_main_outs */
 
 void
 *dsp_build_optimized_graph(void *arg) {
-  int i;
-  float outsample = 0.0;
+	int i;
+	float outsample = 0.0;
+	
+	struct dsp_bus *temp_bus;
+	struct dsp_module *temp_module;
 
-  struct dsp_bus *temp_bus;
-  struct dsp_module *temp_module;
-
-  struct dsp_port_out *temp_port_out = NULL;
-  struct dsp_port_in *temp_port_in = NULL;
-
-  dsp_global_operation_head_processing = NULL;
-  dsp_build_optimized_main_outs();
+	struct dsp_port_out *temp_port_out = NULL;
+	struct dsp_port_in *temp_port_in = NULL;
+	
+	dsp_global_operation_head_processing = NULL;
+	dsp_build_optimized_main_outs();
+	dsp_optimize_connections_main_inputs(dsp_main_ins);
+	dsp_optimize_graph(dsp_global_bus_head);
+	dsp_global_new_operation_graph = 1;
   
-  dsp_optimize_connections_main_inputs(dsp_main_ins);
-  
-  dsp_optimize_graph(dsp_global_bus_head);
-
-  dsp_global_new_operation_graph = 1;
 } /* dsp_build_optimized_graph */
 
 void *
 dsp_graph_optimization_thread(void *arg) {
-
 	pthread_mutex_lock(&dsp_global_optimization_mutex);
 	
 	dsp_build_new_optimized_graph = false;
@@ -804,7 +805,6 @@ dsp_graph_optimization_thread(void *arg) {
 	dsp_graph_id_rebuild();
 	
 	pthread_mutex_unlock(&dsp_global_optimization_mutex);
-
 } /* dsp_graph_optimization_thread */
 
 int

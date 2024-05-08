@@ -96,24 +96,13 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     jackcli_samplerate_pos += dsp_global_period;
 
   if( dsp_global_new_operation_graph ) {
+    /* we will want to deallocate dsp_optimized_main_outs before continuing */
+    dsp_optimized_main_outs = dsp_rebuilt_optimized_main_outs;
+    dsp_rebuilt_optimized_main_outs = NULL;
     
-    printf("assigning new graph\n");
-
     dsp_global_operation_head = dsp_global_operation_head_processing;
     dsp_global_new_operation_graph = 0;
     dsp_global_operation_head_processing = NULL;
-
-    printf("assigned new graph\n");
-    /* printf("operations in new graph: \n"); */
-    
-    /* -- debug cruft */
-    /* if(dsp_global_operation_head != NULL) { */
-    /*   temp_op = dsp_global_operation_head; */
-    /*   while(temp_op != NULL) { */
-    /*     temp_op = temp_op->next; */
-    /*   } */
-    /* } */
-    /* printf("done listing\n");         */
   }  
   return 0 ;
 } /* jackcli_process_callback */

@@ -32,6 +32,7 @@ struct dsp_port_in *dsp_main_outs;
 
 struct dsp_operation *dsp_optimized_main_ins;
 struct dsp_operation *dsp_optimized_main_outs;
+struct dsp_operation *dsp_rebuilt_optimized_main_outs;
 
 char* dsp_generate_object_id() {
   char *id;

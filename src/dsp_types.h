@@ -38,6 +38,7 @@ extern struct dsp_port_in *dsp_main_outs;
 
 extern struct dsp_operation *dsp_optimized_main_ins;
 extern struct dsp_operation *dsp_optimized_main_outs;
+extern struct dsp_operation *dsp_rebuilt_optimized_main_outs;
 
 typedef struct dsp_module_parameter {
   float *in;
