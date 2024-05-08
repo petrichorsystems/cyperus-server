@@ -49,9 +49,7 @@ int osc_add_modules_envelope_follower_handler(const char *path, const char *type
   dsp_create_envelope_follower(target_bus,
                                attack,
                                decay,
-                               scale);          
-  
-  printf("now doing module stuff\n");
+                               scale);
   
   temp_module = target_bus->dsp_module_head;
   while(temp_module != NULL) {
@@ -60,8 +58,6 @@ int osc_add_modules_envelope_follower_handler(const char *path, const char *type
   }
   module_id = malloc(sizeof(char) * 37);
   strcpy(module_id, target_module->id);
-
-  printf("about to send msg\n");
 
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
@@ -76,8 +72,6 @@ int osc_add_modules_envelope_follower_handler(const char *path, const char *type
           decay,
           scale);
   free(lo_addr_send);
-
-  printf("free'd\n");
   
   return 0;
 } /* osc_add_modules_envelope_follower_handler */
@@ -109,8 +103,6 @@ osc_edit_modules_envelope_follower_handler(const char *path, const char *types, 
                                     decay,
                                     scale);                                          
 
-  printf("about to send osc msg\n");
-
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
@@ -124,9 +116,7 @@ osc_edit_modules_envelope_follower_handler(const char *path, const char *types, 
           decay,
           scale);
 
-  printf("send osc msg\n");
   free(lo_addr_send);
-  printf("free'd\n");
   
   return 0;
 } /* osc_edit_modules_envelope_follower_handler */
