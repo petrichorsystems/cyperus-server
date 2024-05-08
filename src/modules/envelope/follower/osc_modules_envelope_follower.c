@@ -27,7 +27,6 @@ Copyright 2015 murray foster */
 int osc_add_modules_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,
                                                     int argc, void *data, void *user_data)
 {
-  printf("osc_add_modules_envelope_follower_handler()..\n");
   char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;

@@ -27,7 +27,6 @@ Copyright 2015 murray foster */
 int osc_add_modules_network_oscsend_handler(const char *path, const char *types, lo_arg ** argv,
                                                     int argc, void *data, void *user_data)
 {
-  printf("osc_add_modules_network_oscsend_handler()..\n");
   char *request_id, *bus_id, *module_id = NULL;
   struct dsp_bus *target_bus = NULL;
   struct dsp_module *temp_module, *target_module = NULL;
@@ -75,8 +74,6 @@ int osc_add_modules_network_oscsend_handler(const char *path, const char *types,
 	  osc_path,
 	  freq_div);
   free(lo_addr_send);
-
-  printf("free'd\n");
   
   return 0;
 } /* osc_add_modules_network_oscsend_handler */
@@ -110,8 +107,6 @@ osc_edit_modules_network_oscsend_handler(const char *path, const char *types, lo
 			   osc_path,
 			   freq_div);                                          
 
-  printf("about to send osc msg\n");
-
   multipart_no = 0;
   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
   lo_send(lo_addr_send,
@@ -126,9 +121,7 @@ osc_edit_modules_network_oscsend_handler(const char *path, const char *types, lo
 	  osc_path,
 	  freq_div);
 
-  printf("send osc msg\n");
   free(lo_addr_send);
-  printf("free'd\n");
   
   return 0;
 } /* osc_edit_modules_network_oscsend_handler */
