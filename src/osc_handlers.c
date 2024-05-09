@@ -325,21 +325,23 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 int osc_remove_connection_handler(const char *path, const char *types, lo_arg **argv,
                                          int argc, void *data, void *user_data)
 {
-	char *request_id, *path_out, *path_in;
+	char *request_id, *connection_id;
 	bool multipart;
-	int failed = 0;
+	int status = 0;
   
 	printf("path: <%s>\n", path);
 
 	request_id = (char *)argv[0];
-	path_out = (char *)argv[1];
-	path_in = (char *)argv[2];
+	connection_id = (char *)argv[1];
 
-	failed = dsp_remove_connection(path_out, path_in);
+	status = dsp_remove_connection(connection_id);
 
+	if( status )
+		printf("osc_handlers.c::osc_remove_connection_handler(), error removing connection: %s\n", connection_id);
+	
 	multipart = false;
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/remove/connection", "siissi", request_id, 0, path_out, path_in, failed);
+	lo_send(lo_addr_send,"/cyperus/remove/connection", "siis", request_id, status, multipart, connection_id);
 	lo_address_free(lo_addr_send);
   
   return 0;

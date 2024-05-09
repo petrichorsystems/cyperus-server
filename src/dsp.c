@@ -256,56 +256,37 @@ dsp_add_connection(char *id_out, char *id_in) {
 
 
 int
-dsp_remove_connection(char *id_out, char *id_in) {
-  struct dsp_connection *temp_connection;
-  struct dsp_connection *found_connection;
-  struct dsp_port_out *port_out = NULL;
-  struct dsp_port_in *port_in = NULL;
+dsp_remove_connection(char *connection_id) {
+	struct dsp_connection *temp_connection;
 
-  port_out = dsp_find_port_out(id_out);
-  port_in = dsp_find_port_in(id_in);
-  
-  if( (port_out == NULL) ||
-      (port_in == NULL) ) {
-    printf("failed to add connection!\n");
-    return 1;
-  }
+	if(dsp_global_connection_graph) {
+		temp_connection = dsp_global_connection_graph;
+		while(temp_connection != NULL) {
+			if( (!strcmp(temp_connection->id, connection_id)) ) {
+				printf("found target connection\n");
 
-  if(dsp_global_connection_graph) {
-    temp_connection = dsp_global_connection_graph;
-    while(temp_connection != NULL) {
-      if( (!strcmp(temp_connection->id_out, id_out)) &&
-	  (!strcmp(temp_connection->id_in, id_in)) ) {
-	printf("found target connection\n");
-	found_connection = temp_connection;
-	temp_connection = temp_connection->prev;
- 
-	/* check if previous connection is root/NULL */
-	if( temp_connection ) {
-	  temp_connection->next = found_connection->next;
-	} else {
-	  dsp_global_connection_graph = found_connection->next;
+				pthread_mutex_lock(&dsp_global_optimization_mutex);
+
+				if( temp_connection->prev == NULL )
+					dsp_global_connection_graph = temp_connection->next;
+				else
+					temp_connection->prev->next = temp_connection->next;
+				
+				dsp_connection_free(temp_connection);
+				printf("free()'d target connection\n");
+				
+				dsp_build_new_optimized_graph = true;				
+				pthread_mutex_unlock(&dsp_global_optimization_mutex);
+
+				/* successful */
+				return 0;
+			}
+			temp_connection = temp_connection->next;
+		}
 	}
-	  
-	dsp_connection_terminate(found_connection);
-	printf("free()'d target connection\n");
-	
-	dsp_build_optimized_graph(NULL);
-	return 0;
-      }
-      temp_connection = temp_connection->next;
-    }
-  }
 
-  /* TODO: check that the current processing graph isn't the same as this new one,
-           replace the actual processing graph if it's not (on the last sample cycle),
-  */
-
-  /* graph changed, generate new graph id */
-  dsp_graph_id_rebuild();
-
-  /* error return */
-  return 1;
+	/* error */
+	return 1;
 } /* dsp_remove_connection */
 
 void

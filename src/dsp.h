@@ -61,7 +61,7 @@ int
 dsp_add_connection(char *id_out, char *id_in);
 
 int
-dsp_remove_connection(char *id_out, char *id_in);
+dsp_remove_connection(char *connection_id);
 
 void
 dsp_optimize_connections_bus(struct dsp_bus_port *ports);

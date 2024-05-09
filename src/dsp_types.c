@@ -217,13 +217,9 @@ void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*
   } 
 }
 
-void dsp_connection_terminate(struct dsp_connection *connection) {
-  connection->id_out = NULL;
-  connection->id_in = NULL;
+void dsp_connection_free(struct dsp_connection *connection) {
   free((char *)connection->id);
-  connection->id = NULL;
-  free((char *)connection);
-  connection = NULL;
+  free((struct dsp_connection*)connection);
 }
 
 struct dsp_module* dsp_module_init(const char *module_name,

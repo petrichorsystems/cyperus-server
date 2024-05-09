@@ -273,7 +273,7 @@ void dsp_connection_insert_tail(struct dsp_connection *head_connection, struct d
 void dsp_connection_list(struct dsp_connection *head_connection, void (*func)(struct dsp_connection*) );
 void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*func)(struct dsp_connection*) );
 void dsp_connection_printf(struct dsp_connection *connection);
-void dsp_connection_terminate(struct dsp_connection *connection);
+void dsp_connection_free(struct dsp_connection *connection);
 
 struct dsp_module* dsp_module_init(const char *module_name,
 				   void (*dsp_function) (struct dsp_operation*, int),
