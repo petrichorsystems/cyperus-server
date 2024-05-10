@@ -58,7 +58,7 @@ void
 dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs);
 
 int
-dsp_add_connection(char *id_out, char *id_in);
+dsp_add_connection(char *id_out, char *id_in, char **new_connection_id);
 
 int
 dsp_remove_connection(char *connection_id);

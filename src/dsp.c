@@ -196,7 +196,7 @@ dsp_bypass_module(struct dsp_module *module, int bypass) {
 } /* dsp_bypass */
 
 int
-dsp_add_connection(char *id_out, char *id_in) {
+dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	struct dsp_connection *new_connection;
 	struct dsp_bus_port *temp_bus_port = NULL;
 	struct dsp_port_out *port_out = NULL;
@@ -250,6 +250,9 @@ dsp_add_connection(char *id_out, char *id_in) {
 	dsp_build_new_optimized_graph = true;
 	
 	pthread_mutex_unlock(&dsp_global_optimization_mutex);
+
+	*new_connection_id = malloc(strlen(new_connection->id) * sizeof(char) + 1);
+	strncpy(*new_connection_id, new_connection->id, strlen(new_connection->id));
 	
 	return 0;
 } /* dsp_add_connection */
