@@ -253,6 +253,7 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 
 	*new_connection_id = malloc(strlen(new_connection->id) * sizeof(char) + 1);
 	strncpy(*new_connection_id, new_connection->id, strlen(new_connection->id));
+	new_connection_id[strlen(new_connection->id)] = '\0';
 	
 	return 0;
 } /* dsp_add_connection */

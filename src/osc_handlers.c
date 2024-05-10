@@ -310,6 +310,8 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 	request_id = (char *)argv[0];
 	path_out = (char *)argv[1];
 	path_in = (char *)argv[2];
+
+	status = dsp_add_connection(path_out, path_in, &new_connection_id);
 	
 	multipart = false;
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
