@@ -251,9 +251,9 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	
 	pthread_mutex_unlock(&dsp_global_optimization_mutex);
 
-	*new_connection_id = malloc(strlen(new_connection->id) * sizeof(char) + 1);
+	*new_connection_id = malloc((strlen(new_connection->id) + 1) * sizeof(char));
 	strncpy(*new_connection_id, new_connection->id, strlen(new_connection->id));
-	new_connection_id[strlen(new_connection->id)] = '\0';
+	(*new_connection_id)[strlen(new_connection->id)] = '\0';
 	
 	return 0;
 } /* dsp_add_connection */

@@ -44,8 +44,9 @@ char* dsp_generate_object_id() {
   uuid_unparse_lower(uuid, uuid_str);
 
   id = (char *)malloc(sizeof(char) * id_len);
-  snprintf(id, id_len, "%s", uuid_str);
-
+  snprintf(id, id_len - 1, "%s", uuid_str);
+  id[id_len - 1] = '\0';
+  
   return id;
 }
 
