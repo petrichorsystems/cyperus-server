@@ -262,8 +262,6 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 int
 dsp_remove_connection(char *connection_id) {
 	struct dsp_connection *temp_connection, *prev_connection, *next_connection;
-
-	printf("connect_id: %s\n", connection_id);
 	
 	if(dsp_global_connection_graph) {
 		temp_connection = dsp_global_connection_graph;
