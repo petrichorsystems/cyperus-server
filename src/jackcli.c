@@ -103,8 +103,9 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 	  dsp_rebuilt_optimized_main_outs = NULL;
     
 	  dsp_global_operation_head = dsp_global_operation_head_processing;
-	  dsp_global_new_operation_graph = 0;
 	  dsp_global_operation_head_processing = NULL;
+
+	  dsp_global_new_operation_graph = 0;
 
 	  pthread_mutex_unlock(&dsp_global_optimization_mutex);
   }  

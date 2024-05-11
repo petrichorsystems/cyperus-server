@@ -337,6 +337,11 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 
 	status = dsp_remove_connection(connection_id);
 
+	if( connection_id == NULL ) {
+		printf("osc_remove_connection_handler(), connection_id: %s\n", connection_id);
+		return 1;
+	}
+		
 	if( status )
 		printf("osc_handlers.c::osc_remove_connection_handler(), error removing connection: %s\n", connection_id);
 	
@@ -344,8 +349,8 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	lo_send(lo_addr_send,"/cyperus/remove/connection", "siis", request_id, status, multipart, connection_id);
 	lo_address_free(lo_addr_send);
-  
-  return 0;
+
+	return 0;
 } /* osc_remove_connection_handler */
 
 int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,

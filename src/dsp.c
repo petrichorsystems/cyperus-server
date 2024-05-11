@@ -261,28 +261,39 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 
 int
 dsp_remove_connection(char *connection_id) {
-	struct dsp_connection *temp_connection;
+	struct dsp_connection *temp_connection, *prev_connection, *next_connection;
 
+	printf("connect_id: %s\n", connection_id);
+	
 	if(dsp_global_connection_graph) {
 		temp_connection = dsp_global_connection_graph;
 		while(temp_connection != NULL) {
 			if( (!strcmp(temp_connection->id, connection_id)) ) {
-				printf("found target connection\n");
 
 				pthread_mutex_lock(&dsp_global_optimization_mutex);
 
-				if( temp_connection->prev == NULL )
-					dsp_global_connection_graph = temp_connection->next;
-				else
-					temp_connection->prev->next = temp_connection->next;
+				prev_connection = temp_connection->prev;
+				next_connection = temp_connection->next;
+				
+				if( next_connection == NULL ) {
+					if( prev_connection == NULL ) {
+						dsp_global_connection_graph = NULL;
+					} else {
+						prev_connection->next = NULL;
+					}
+				} else if( prev_connection == NULL ) {
+					dsp_global_connection_graph = next_connection;
+					next_connection->prev = NULL;
+				} else {
+					prev_connection->next = next_connection;
+					next_connection->prev = prev_connection;
+				}
 				
 				dsp_connection_free(temp_connection);
-				printf("free()'d target connection\n");
 				
-				dsp_build_new_optimized_graph = true;				
+				dsp_build_new_optimized_graph = true;
 				pthread_mutex_unlock(&dsp_global_optimization_mutex);
 
-				/* successful */
 				return 0;
 			}
 			temp_connection = temp_connection->next;
@@ -786,6 +797,7 @@ dsp_graph_optimization_thread(void *arg) {
 	
 	dsp_build_new_optimized_graph = false;
 	dsp_build_optimized_graph(NULL);
+	
 	/* graph changed, generate new graph id */
 	dsp_graph_id_rebuild();
 	
@@ -802,12 +814,10 @@ dsp_graph_optimization_thread_setup() {
 
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {  
-  struct dsp_connection *temp_connection = dsp_global_connection_graph;
-  int connection_idx = 0;
-  
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
   int p;
+
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
       if( temp_op->ins == NULL ) {
