@@ -36,16 +36,15 @@ struct dsp_operation *dsp_rebuilt_optimized_main_outs;
 
 char* dsp_generate_object_id() {
   char *id;
-  int id_len = 37;
+  int id_len = 36;
   uuid_t uuid;
   char uuid_str[37];
 
   uuid_generate(uuid);
   uuid_unparse_lower(uuid, uuid_str);
 
-  id = (char *)malloc(sizeof(char) * id_len);
-  snprintf(id, id_len - 1, "%s", uuid_str);
-  id[id_len - 1] = '\0';
+  id = (char *)malloc(sizeof(char) * (id_len+1));
+  snprintf(id, id_len+1, "%s", uuid_str);
   
   return id;
 }
@@ -158,10 +157,10 @@ struct dsp_connection* dsp_connection_init(const char *id_out,
   new_connection->next = NULL;
   new_connection->remove = 0;
 
-  new_connection->id_out = malloc(sizeof(char) * strlen(id_out) + 1);
+  new_connection->id_out = malloc(sizeof(char) * (strlen(id_out) + 1));
   strcpy((char *)new_connection->id_out, id_out);
   
-  new_connection->id_in = malloc(sizeof(char) * strlen(id_in) + 1);
+  new_connection->id_in = malloc(sizeof(char) * (strlen(id_in) + 1));
   strcpy((char *)new_connection->id_in, id_in);
 
   return new_connection;
