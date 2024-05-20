@@ -841,4 +841,5 @@ void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short
 	dsp_global_operation_head = NULL;
 	dsp_global_period = period;
 	dsp_build_mains(channels_in, channels_out);
+	dsp_graph_id_init();
 } /* dsp_setup */
