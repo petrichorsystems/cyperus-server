@@ -36,6 +36,9 @@ strconcat(char *str_prefix, char *str_suffix) {
 int
 main(void) {
 
+	dsp_setup(256, 4, 4);
+	dsp_graph_id_init();
+	
 
 	exit(0);
 }
