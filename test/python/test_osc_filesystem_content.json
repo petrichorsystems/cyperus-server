@@ -1,0 +1,513 @@
+{
+    "last_node_id": 3,
+    "last_link_id": 1,
+    "nodes": [
+        {
+            "id": 1,
+            "type": "cyperus/main/inputs",
+            "pos": {
+                "0": 250,
+                "1": 200,
+                "2": 0,
+                "3": 0,
+                "4": 0,
+                "5": 0,
+                "6": 0,
+                "7": 0,
+                "8": 0,
+                "9": 0
+            },
+            "size": {
+                "0": 140,
+                "1": 86
+            },
+            "flags": {},
+            "order": 0,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "in0",
+                    "type": "number",
+                    "links": null
+                },
+                {
+                    "name": "in1",
+                    "type": "number",
+                    "links": null
+                },
+                {
+                    "name": "in2",
+                    "type": "number",
+                    "links": null
+                },
+                {
+                    "name": "in3",
+                    "type": "number",
+                    "links": null
+                }
+            ],
+            "title": "inputs",
+            "properties": {
+                "precision": 1,
+                "ids": [
+                    "1da0b724-46dd-459a-805e-fa5537699841",
+                    "c05e683b-a60d-4ae3-b50d-eaf4e679c8f9",
+                    "590bb24a-f3e1-4946-a5f3-0cd90821d2a2",
+                    "2e869b5c-a1a8-4a44-a13a-adddbf80617b"
+                ],
+                "node_type": "main_inputs"
+            }
+        },
+        {
+            "id": 2,
+            "type": "cyperus/main/outputs",
+            "pos": {
+                "0": 1000,
+                "1": 200,
+                "2": 0,
+                "3": 0,
+                "4": 0,
+                "5": 0,
+                "6": 0,
+                "7": 0,
+                "8": 0,
+                "9": 0
+            },
+            "size": {
+                "0": 140,
+                "1": 86
+            },
+            "flags": {},
+            "order": 1,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "out0",
+                    "type": "number",
+                    "link": null,
+                    "links": [
+                        1
+                    ]
+                },
+                {
+                    "name": "out1",
+                    "type": "number",
+                    "link": null
+                },
+                {
+                    "name": "out2",
+                    "type": "number",
+                    "link": null
+                },
+                {
+                    "name": "out3",
+                    "type": "number",
+                    "link": null
+                }
+            ],
+            "outputs": [],
+            "title": "outputs",
+            "properties": {
+                "precision": 1,
+                "ids": [
+                    "e54c5748-82af-43ee-8eca-18b07b948201",
+                    "bbb62b94-2d5a-465c-b22e-f58bba6670a0",
+                    "dbdd4ca4-b902-49ae-b731-0a4594a11181",
+                    "3b40c5e1-77ca-4a40-9b0f-5a5ab1507d10"
+                ],
+                "node_type": "main_outputs"
+            }
+        },
+        {
+            "id": 3,
+            "type": "cyperus/bus/add",
+            "pos": [
+                683,
+                289
+            ],
+            "size": [
+                200,
+                70
+            ],
+            "flags": {},
+            "order": 2,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "in0",
+                    "type": "number",
+                    "link": null
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "out0",
+                    "type": "number",
+                    "links": [
+                        1
+                    ]
+                }
+            ],
+            "properties": {
+                "enabled": true,
+                "id": "2f15cda5-186d-414d-8824-fa375b078a9d",
+                "is_bus": true,
+                "bus_input_ids": [
+                    "f2d405b4-94c2-4ab2-8f8a-0cd1bb7f56ab"
+                ],
+                "bus_output_ids": [
+                    "9717f325-7cb3-458b-b4b4-2fbfe97fcbca"
+                ]
+            },
+            "subgraph": {
+                "last_node_id": 5,
+                "last_link_id": 2,
+                "nodes": [
+                    {
+                        "id": 1,
+                        "type": "cyperus/bus/input",
+                        "pos": [
+                            250,
+                            400
+                        ],
+                        "size": [
+                            180,
+                            35
+                        ],
+                        "flags": {},
+                        "order": 0,
+                        "mode": 0,
+                        "outputs": [
+                            {
+                                "name": "",
+                                "type": "number",
+                                "links": null
+                            }
+                        ],
+                        "properties": {
+                            "id": "f2d405b4-94c2-4ab2-8f8a-0cd1bb7f56ab",
+                            "name": "in0",
+                            "is_bus_port": true,
+                            "parent_node_id": 3
+                        }
+                    },
+                    {
+                        "id": 2,
+                        "type": "cyperus/bus/output",
+                        "pos": [
+                            1000,
+                            400
+                        ],
+                        "size": [
+                            180,
+                            35
+                        ],
+                        "flags": {},
+                        "order": 1,
+                        "mode": 0,
+                        "inputs": [
+                            {
+                                "name": "",
+                                "type": 0,
+                                "link": null,
+                                "links": [
+                                    1
+                                ]
+                            }
+                        ],
+                        "properties": {
+                            "id": "9717f325-7cb3-458b-b4b4-2fbfe97fcbca",
+                            "name": "out0",
+                            "is_bus_port": true,
+                            "parent_node_id": 3
+                        }
+                    },
+                    {
+                        "id": 3,
+                        "type": "oscillator/sine",
+                        "pos": {
+                            "0": 758,
+                            "1": 648,
+                            "2": 0,
+                            "3": 0,
+                            "4": 0,
+                            "5": 0,
+                            "6": 0,
+                            "7": 0,
+                            "8": 0,
+                            "9": 0
+                        },
+                        "size": {
+                            "0": 210,
+                            "1": 146
+                        },
+                        "flags": {},
+                        "order": 2,
+                        "mode": 0,
+                        "inputs": [
+                            {
+                                "name": "param_frequency",
+                                "type": "number",
+                                "link": null,
+                                "id": "6641782e-6dff-4664-b974-0c4f11142e21"
+                            },
+                            {
+                                "name": "param_amplitude",
+                                "type": "number",
+                                "link": null,
+                                "id": "ff3145c4-39cd-4d81-af1d-87b25b4310b4"
+                            },
+                            {
+                                "name": "param_phase",
+                                "type": "number",
+                                "link": null,
+                                "id": "0360dbb8-84b0-415c-8ecb-454325835453"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "name": "out",
+                                "type": "number",
+                                "links": [
+                                    1
+                                ],
+                                "id": "85ae680b-c513-4f58-b523-9d80b4d857cc"
+                            }
+                        ],
+                        "title": "sine_oscillator",
+                        "properties": {
+                            "name": "",
+                            "frequency": "200",
+                            "amplitude": "1.0",
+                            "phase": "0.0",
+                            "precision": 1,
+                            "is_module": true,
+                            "module_parameters": [
+                                {
+                                    "param_name": "frequency",
+                                    "param_type": "text",
+                                    "param": 0
+                                },
+                                {
+                                    "param_name": "amplitude",
+                                    "param_type": "text",
+                                    "param": 1
+                                },
+                                {
+                                    "param_name": "phase",
+                                    "param_type": "text",
+                                    "param": 0
+                                }
+                            ],
+                            "listener": true,
+                            "id": "807c3486-37f2-4b4e-8c88-600430546590"
+                        }
+                    },
+                    {
+                        "id": 4,
+                        "type": "oscillator/sine",
+                        "pos": {
+                            "0": 201.51239013671875,
+                            "1": 654.6198120117188,
+                            "2": 0,
+                            "3": 0,
+                            "4": 0,
+                            "5": 0,
+                            "6": 0,
+                            "7": 0,
+                            "8": 0,
+                            "9": 0
+                        },
+                        "size": {
+                            "0": 210,
+                            "1": 146
+                        },
+                        "flags": {},
+                        "order": 4,
+                        "mode": 0,
+                        "inputs": [
+                            {
+                                "name": "param_frequency",
+                                "type": "number",
+                                "link": null,
+                                "id": "3d8fd619-3e5d-4a4e-975b-629118082265"
+                            },
+                            {
+                                "name": "param_amplitude",
+                                "type": "number",
+                                "link": null,
+                                "id": "fe00e674-55e7-4661-8803-1ae3f46219b4"
+                            },
+                            {
+                                "name": "param_phase",
+                                "type": "number",
+                                "link": null,
+                                "id": "5e0a1138-b7b0-4155-84c4-480a79b8591c"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "name": "out",
+                                "type": "number",
+                                "links": [
+                                    2
+                                ],
+                                "id": "de814ec5-e5bc-4867-9cdc-b55590adef1f"
+                            }
+                        ],
+                        "title": "sine_oscillator",
+                        "properties": {
+                            "name": "",
+                            "frequency": "0.06125",
+                            "amplitude": "1.0",
+                            "phase": "0.0",
+                            "precision": 1,
+                            "is_module": true,
+                            "module_parameters": [
+                                {
+                                    "param_name": "frequency",
+                                    "param_type": "text",
+                                    "param": 0
+                                },
+                                {
+                                    "param_name": "amplitude",
+                                    "param_type": "text",
+                                    "param": 1
+                                },
+                                {
+                                    "param_name": "phase",
+                                    "param_type": "text",
+                                    "param": 0
+                                }
+                            ],
+                            "listener": true,
+                            "id": "cefadbb4-3f6c-4f44-995d-9518c354c207"
+                        }
+                    },
+                    {
+                        "id": 5,
+                        "type": "envelope/follower",
+                        "pos": {
+                            "0": 483,
+                            "1": 572,
+                            "2": 0,
+                            "3": 0,
+                            "4": 0,
+                            "5": 0,
+                            "6": 0,
+                            "7": 0,
+                            "8": 0,
+                            "9": 0
+                        },
+                        "size": {
+                            "0": 210,
+                            "1": 166
+                        },
+                        "flags": {},
+                        "order": 3,
+                        "mode": 0,
+                        "inputs": [
+                            {
+                                "name": "in",
+                                "type": "number",
+                                "link": null,
+                                "id": "807046e2-5b4a-4cc9-ad8b-5f5b69246fa2",
+                                "links": [
+                                    2
+                                ]
+                            },
+                            {
+                                "name": "param_attack",
+                                "type": "number",
+                                "link": null,
+                                "id": "bdbafe45-5f0c-447b-88e3-f2ee77453c3d"
+                            },
+                            {
+                                "name": "param_decay",
+                                "type": "number",
+                                "link": null,
+                                "id": "356338b5-d802-44f9-8166-ecb22cde5763"
+                            },
+                            {
+                                "name": "param_scale",
+                                "type": "number",
+                                "link": null,
+                                "id": "dd14e1b5-4be9-4ae2-911a-4cba7d3fee12"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "name": "out",
+                                "type": "number",
+                                "links": null,
+                                "id": "b8d61700-6389-4662-8a99-ef1fa64e7a5e"
+                            }
+                        ],
+                        "title": "env follower",
+                        "properties": {
+                            "precision": 1,
+                            "is_module": true,
+                            "module_parameters": [
+                                {
+                                    "param_name": "attack",
+                                    "param_type": "text"
+                                },
+                                {
+                                    "param_name": "decay",
+                                    "param_type": "text"
+                                },
+                                {
+                                    "param_name": "scale",
+                                    "param_type": "text"
+                                }
+                            ],
+                            "attack": "1.0",
+                            "decay": "1.0",
+                            "scale": "500",
+                            "id": "5f1083ee-a478-4511-aa65-e5fd185db002"
+                        }
+                    }
+                ],
+                "links": [
+                    [
+                        1,
+                        3,
+                        0,
+                        2,
+                        0,
+                        0
+                    ],
+                    [
+                        2,
+                        4,
+                        0,
+                        5,
+                        0,
+                        "number"
+                    ]
+                ],
+                "groups": [],
+                "config": {},
+                "extra": {},
+                "version": 0.4,
+                "bus_id": "2f15cda5-186d-414d-8824-fa375b078a9d",
+                "node_id": 3
+            }
+        }
+    ],
+    "links": [
+        [
+            1,
+            3,
+            0,
+            2,
+            0,
+            "number"
+        ]
+    ],
+    "groups": [],
+    "config": {},
+    "extra": {},
+    "version": 0.4
+}
