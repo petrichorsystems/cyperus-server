@@ -18,6 +18,7 @@ Copyright 2015 murray foster */
 
 #include "dsp.h"
 
+pthread_mutex_t dsp_global_graph_state_mutex;
 pthread_mutex_t dsp_global_optimization_mutex;
 static bool dsp_build_new_optimized_graph = false;;
 
@@ -114,14 +115,14 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 	/* insert head bus, if that's what we're doing */
 	if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") || !strcmp(bus_id, "")) {
 		
-		pthread_mutex_lock(&dsp_global_optimization_mutex);
+		pthread_mutex_lock(&dsp_global_graph_state_mutex);
 	  
 		if( dsp_global_bus_head != NULL )
 			dsp_bus_insert_tail(dsp_global_bus_head, new_bus);
 		else
 			dsp_global_bus_head = new_bus;
 
-		pthread_mutex_unlock(&dsp_global_optimization_mutex);
+		pthread_mutex_unlock(&dsp_global_graph_state_mutex);
 		
 	} else {
 		target_bus = dsp_find_bus(bus_id);
@@ -160,7 +161,7 @@ dsp_add_module(struct dsp_bus *target_bus,
 							 ins,
 							 outs);
 
-	pthread_mutex_lock(&dsp_global_optimization_mutex);
+	pthread_mutex_lock(&dsp_global_graph_state_mutex);
 
 	if( target_bus->dsp_module_head == NULL )
 		target_bus->dsp_module_head = new_module;
@@ -170,7 +171,7 @@ dsp_add_module(struct dsp_bus *target_bus,
 	/* graph changed, generate new graph id */
 	dsp_graph_id_rebuild();
   
-	pthread_mutex_unlock(&dsp_global_optimization_mutex);
+	pthread_mutex_unlock(&dsp_global_graph_state_mutex);
 		
 	return new_module;
 } /* dsp_add_module */
@@ -236,7 +237,7 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 					     port_out,
 					     port_in);
 	
-	pthread_mutex_lock(&dsp_global_optimization_mutex);
+	pthread_mutex_lock(&dsp_global_graph_state_mutex);
 	
 	if(dsp_global_connection_graph == NULL)
 		dsp_global_connection_graph = new_connection;
@@ -249,7 +250,7 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	
 	dsp_build_new_optimized_graph = true;
 	
-	pthread_mutex_unlock(&dsp_global_optimization_mutex);
+	pthread_mutex_unlock(&dsp_global_graph_state_mutex);
 
 	*new_connection_id = malloc((strlen(new_connection->id) + 1) * sizeof(char));
 	strncpy(*new_connection_id, new_connection->id, strlen(new_connection->id));
@@ -268,7 +269,7 @@ dsp_remove_connection(char *connection_id) {
 		while(temp_connection != NULL) {
 			if( (!strcmp(temp_connection->id, connection_id)) ) {
 
-				pthread_mutex_lock(&dsp_global_optimization_mutex);
+				pthread_mutex_lock(&dsp_global_graph_state_mutex);
 
 				prev_connection = temp_connection->prev;
 				next_connection = temp_connection->next;
@@ -290,7 +291,7 @@ dsp_remove_connection(char *connection_id) {
 				dsp_connection_free(temp_connection);
 				
 				dsp_build_new_optimized_graph = true;
-				pthread_mutex_unlock(&dsp_global_optimization_mutex);
+				pthread_mutex_unlock(&dsp_global_graph_state_mutex);
 
 				return 0;
 			}
@@ -837,6 +838,7 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
 } /* dsp_process */
 
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {
+	pthread_mutex_init(&dsp_global_graph_state_mutex, NULL);
 	pthread_mutex_init(&dsp_global_optimization_mutex, NULL);
 	dsp_global_operation_head = NULL;
 	dsp_global_period = period;
