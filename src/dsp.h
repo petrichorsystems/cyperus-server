@@ -34,6 +34,7 @@ extern unsigned short dsp_global_period;
 extern float dsp_global_load;
 extern int dsp_global_new_operation_graph;
 
+extern pthread_mutex_t dsp_global_graph_state_mutex;
 extern pthread_mutex_t dsp_global_optimization_mutex;
 
 struct dsp_bus_port*
