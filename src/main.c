@@ -151,7 +151,6 @@ int main(int argc, char *argv[])
 
   /* dsp setup, begin */
   dsp_setup(period, input, output);
-  threadsync_init();
 
   jackcli_setup("cyperus", bitdepth, input, output);
 
