@@ -151,10 +151,7 @@ int main(int argc, char *argv[])
 
   /* dsp setup, begin */
   dsp_setup(period, input, output);
-<<<<<<< HEAD
-=======
   dsp_graph_id_init();
->>>>>>> main
 
   jackcli_setup("cyperus", bitdepth, input, output);
 
