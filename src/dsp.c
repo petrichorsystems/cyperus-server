@@ -873,9 +873,6 @@ void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short
 	dsp_global_operation_head = NULL;
 	dsp_global_period = period;
 	dsp_build_mains(channels_in, channels_out);
-<<<<<<< Updated upstream
-=======
 	dsp_graph_optimization_thread_setup();
 	dsp_graph_id_init();
->>>>>>> Stashed changes
 } /* dsp_setup */

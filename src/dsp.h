@@ -28,7 +28,6 @@ Copyright 2015 murray foster */
 #include "dsp_ops.h"
 
 #include "dsp_graph_id.h"
-#include "threadsync.h"
 
 extern unsigned short dsp_global_period;
 extern float dsp_global_load;
