@@ -108,7 +108,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 	  dsp_global_new_operation_graph = 0;
 
 	  pthread_mutex_unlock(&dsp_global_optimization_mutex);
-  }  
+  }
   return 0 ;
 } /* jackcli_process_callback */
 

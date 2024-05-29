@@ -37,6 +37,10 @@ extern int dsp_global_new_operation_graph;
 extern pthread_mutex_t dsp_global_graph_state_mutex;
 extern pthread_mutex_t dsp_global_optimization_mutex;
 
+extern pthread_mutex_t dsp_global_optimization_condition_mutex;
+extern pthread_cond_t dsp_global_optimization_condition_cond;
+
+
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_port, char *bus_ports, int out);
 

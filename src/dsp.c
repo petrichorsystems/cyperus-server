@@ -20,6 +20,10 @@ Copyright 2015 murray foster */
 
 pthread_mutex_t dsp_global_graph_state_mutex;
 pthread_mutex_t dsp_global_optimization_mutex;
+
+pthread_mutex_t dsp_global_optimization_condition_mutex;
+pthread_cond_t dsp_global_optimization_condition_cond;
+
 static bool dsp_build_new_optimized_graph = false;;
 
 int dsp_global_new_operation_graph = 0;
@@ -196,6 +200,12 @@ dsp_bypass_module(struct dsp_module *module, int bypass) {
   return;
 } /* dsp_bypass */
 
+void
+dsp_signal_graph_optimization() {
+	dsp_build_new_optimized_graph = true;
+	pthread_cond_signal(&dsp_global_optimization_condition_cond);
+} /* dsp_signal_graph_optimization */
+
 int
 dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	struct dsp_connection *new_connection;
@@ -247,8 +257,8 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	
 	/* TODO: check that the current processing graph isn't the same as this new one,
 	 */
-	
-	dsp_build_new_optimized_graph = true;
+
+	dsp_signal_graph_optimization();
 	
 	pthread_mutex_unlock(&dsp_global_graph_state_mutex);
 
@@ -289,8 +299,9 @@ dsp_remove_connection(char *connection_id) {
 				}
 				
 				dsp_connection_free(temp_connection);
+
+				dsp_signal_graph_optimization();
 				
-				dsp_build_new_optimized_graph = true;
 				pthread_mutex_unlock(&dsp_global_graph_state_mutex);
 
 				return 0;
@@ -791,16 +802,35 @@ void
 } /* dsp_build_optimized_graph */
 
 void *
-dsp_graph_optimization_thread(void *arg) {
+dsp_graph_optimization_task_thread(void *arg) {
 	pthread_mutex_lock(&dsp_global_optimization_mutex);
-	
-	dsp_build_new_optimized_graph = false;
+
 	dsp_build_optimized_graph(NULL);
+	dsp_build_new_optimized_graph = false;
 	
 	/* graph changed, generate new graph id */
 	dsp_graph_id_rebuild();
 	
 	pthread_mutex_unlock(&dsp_global_optimization_mutex);
+} /* dsp_graph_optimization_task_thread */
+
+int
+dsp_graph_optimization_task_thread_setup() {
+	pthread_t graph_optimization_task_thread_id;
+	pthread_create(&graph_optimization_task_thread_id, NULL, dsp_graph_optimization_task_thread, NULL);
+	pthread_detach(graph_optimization_task_thread_id);
+	return 0;	
+} /* dsp_graph_optimization_task_thread_setup */
+
+void *
+dsp_graph_optimization_thread(void *arg) {
+	while(true) {
+		pthread_cond_wait(&dsp_global_optimization_condition_cond, &dsp_global_optimization_condition_mutex);
+		
+		if (dsp_build_new_optimized_graph) {
+			dsp_graph_optimization_task_thread_setup();
+		}
+	}
 } /* dsp_graph_optimization_thread */
 
 int
@@ -832,15 +862,20 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
     }
     temp_op = temp_op->next;
   }
-  if (dsp_build_new_optimized_graph) {
-	  dsp_graph_optimization_thread_setup();
-  }
 } /* dsp_process */
 
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {
 	pthread_mutex_init(&dsp_global_graph_state_mutex, NULL);
 	pthread_mutex_init(&dsp_global_optimization_mutex, NULL);
+	pthread_mutex_init(&dsp_global_optimization_condition_mutex, NULL);
+	pthread_cond_init(&dsp_global_optimization_condition_cond, NULL);
+	
 	dsp_global_operation_head = NULL;
 	dsp_global_period = period;
 	dsp_build_mains(channels_in, channels_out);
+<<<<<<< Updated upstream
+=======
+	dsp_graph_optimization_thread_setup();
+	dsp_graph_id_init();
+>>>>>>> Stashed changes
 } /* dsp_setup */
