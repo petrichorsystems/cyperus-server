@@ -151,7 +151,7 @@ osc_callback_timer_callback(int signum) {
 
 	lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global_load);
   
-	temp_op = dsp_global_operation_head;
+	temp_op = dsp_global.operation_head;
 	while(temp_op != NULL) {
 		/* execute appropriate listener function */
 		if( temp_op->module != NULL )

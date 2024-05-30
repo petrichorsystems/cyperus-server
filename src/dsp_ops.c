@@ -147,7 +147,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 
           
 	  /* look for 'in' operation */
-	  temp_op_in = dsp_global_operation_head_processing;
+	  temp_op_in = dsp_global.operation_head_processing;
           
           sample_in = NULL;
 	  while( temp_op_in != NULL ) {
@@ -192,13 +192,13 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	      dsp_operation_sample_insert_tail(temp_op_in->ins, sample_in);
 
             
-	    if( dsp_global_operation_head_processing == NULL ) {
-	      dsp_global_operation_head_processing = temp_op_in;
+	    if( dsp_global.operation_head_processing == NULL ) {
+	      dsp_global.operation_head_processing = temp_op_in;
 	    } else {
-	      if(dsp_global_operation_head_processing == NULL)
-		dsp_global_operation_head_processing = temp_op_in;
+	      if(dsp_global.operation_head_processing == NULL)
+		dsp_global.operation_head_processing = temp_op_in;
 	      else
-		dsp_operation_insert_tail(dsp_global_operation_head_processing,
+		dsp_operation_insert_tail(dsp_global.operation_head_processing,
 					  temp_op_in);
 	    }
 	    temp_translation_connection = dsp_translation_connection_init(temp_connection,

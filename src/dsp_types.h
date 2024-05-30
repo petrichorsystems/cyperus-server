@@ -19,13 +19,42 @@ Copyright 2018 murray foster */
 #ifndef DSP_TYPES_H
 #define DSP_TYPES_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <uuid/uuid.h>
 
 #include "dsp_math.h"
 
-extern struct dsp_operation *dsp_global_operation_head_processing;
-extern struct dsp_operation *dsp_global_operation_head;
+struct dsp_global_t {
+	unsigned short period;
+	float cpu_load;
+
+	bool build_new_optimized_graph;
+	bool new_operation_graph;
+	
+	pthread_mutex_t graph_state_mutex;
+	pthread_mutex_t optimization_mutex;
+	
+	pthread_mutex_t optimization_condition_mutex;
+	pthread_cond_t optimization_condition_cond;
+
+	struct dsp_operation *operation_head_processing;
+	struct dsp_operation *operation_head;
+
+	struct dsp_connection *connection_graph;
+	struct dsp_connection *connection_graph_processing;
+	struct dsp_translation_connection *translation_connection_graph_processing;
+	struct dsp_bus *bus_head;
+	struct dsp_operation *translation_graph;
+
+	struct dsp_port_out *dsp_main_ins;
+	struct dsp_port_in *dsp_main_outs;
+
+	struct dsp_operation *dsp_optimized_main_ins;
+	struct dsp_operation *dsp_optimized_main_outs;
+	struct dsp_operation *dsp_rebuilt_optimized_main_outs;	
+};
+extern struct dsp_global_t dsp_global;
 
 extern struct dsp_connection *dsp_global_connection_graph;
 extern struct dsp_connection *dsp_global_connection_graph_processing;

@@ -71,10 +71,10 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   }
   
   clock_gettime (CLOCK_REALTIME, &mt1);
-  dsp_process(dsp_global_operation_head,
+  dsp_process(dsp_global.operation_head,
               jackcli_samplerate,
               jackcli_samplerate_pos);
-      
+  
   clock_gettime (CLOCK_REALTIME, &mt2);
   tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
   dsp_global_load = (double)tt/(double)process_time; 
@@ -96,18 +96,18 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     jackcli_samplerate_pos += dsp_global_period;
 
   if( dsp_global_new_operation_graph ) {
-	  if( pthread_mutex_trylock(&dsp_global_optimization_mutex) == 0 ) {
+	  if( pthread_mutex_trylock(&dsp_global.optimization_mutex) == 0 ) {
        
 		  /* we will want to deallocate dsp_optimized_main_outs before continuing */
 		  dsp_optimized_main_outs = dsp_rebuilt_optimized_main_outs;
 		  dsp_rebuilt_optimized_main_outs = NULL;
     
-		  dsp_global_operation_head = dsp_global_operation_head_processing;
-		  dsp_global_operation_head_processing = NULL;
+		  dsp_global.operation_head = dsp_global.operation_head_processing;
+		  dsp_global.operation_head_processing = NULL;
 
 		  dsp_global_new_operation_graph = 0;
 
-		  pthread_mutex_unlock(&dsp_global_optimization_mutex);
+		  pthread_mutex_unlock(&dsp_global.optimization_mutex);
 	  }
   }
   return 0 ;

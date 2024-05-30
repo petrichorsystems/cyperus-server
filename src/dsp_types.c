@@ -17,9 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Copyright 2018 murray foster */
 
 #include "dsp_types.h"
-
-struct dsp_operation *dsp_global_operation_head_processing;
-struct dsp_operation *dsp_global_operation_head;
+struct dsp_global_t dsp_global;
 
 struct dsp_connection *dsp_global_connection_graph;
 struct dsp_connection *dsp_global_connection_graph_processing;
@@ -472,8 +470,8 @@ void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struc
   new_operation->prev = existing_operation->prev;
   new_operation->next = existing_operation;
   existing_operation->prev = new_operation;
-  if( existing_operation == dsp_global_operation_head_processing )
-    dsp_global_operation_head_processing = new_operation;
+  if( existing_operation == dsp_global.operation_head_processing )
+    dsp_global.operation_head_processing = new_operation;
 }
 
 void dsp_operation_insert_ahead(struct dsp_operation *existing_operation, struct dsp_operation *new_operation) {

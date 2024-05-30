@@ -21,6 +21,7 @@ Copyright 2015 murray foster */
 
 #include <stdbool.h>
 #include <time.h>
+#include <stdbool.h>
 #include <unistd.h>
 
 #include "dsp_math.h"
@@ -31,14 +32,7 @@ Copyright 2015 murray foster */
 
 extern unsigned short dsp_global_period;
 extern float dsp_global_load;
-extern int dsp_global_new_operation_graph;
-
-extern pthread_mutex_t dsp_global_graph_state_mutex;
-extern pthread_mutex_t dsp_global_optimization_mutex;
-
-extern pthread_mutex_t dsp_global_optimization_condition_mutex;
-extern pthread_cond_t dsp_global_optimization_condition_cond;
-
+extern bool dsp_global_new_operation_graph;
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_port, char *bus_ports, int out);

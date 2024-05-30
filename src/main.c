@@ -48,13 +48,13 @@ int main(int argc, char *argv[])
   dsp_global_connection_graph = NULL;
   
   dsp_global_translation_graph = NULL;
-  dsp_global_operation_head = NULL;
+  dsp_global.operation_head = NULL;
 
   dsp_optimized_main_ins = NULL;
   dsp_optimized_main_outs = NULL;
 
   dsp_global_translation_connection_graph_processing = NULL;
-  dsp_global_operation_head_processing = NULL;
+  dsp_global.operation_head_processing = NULL;
  
   int c = 0;
   int input = 8;
