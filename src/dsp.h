@@ -31,7 +31,6 @@ Copyright 2015 murray foster */
 #include "dsp_graph_id.h"
 
 extern unsigned short dsp_global_period;
-extern float dsp_global_load;
 extern bool dsp_global_new_operation_graph;
 
 struct dsp_bus_port*

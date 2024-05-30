@@ -20,7 +20,6 @@ Copyright 2015 murray foster */
 
 bool dsp_global_new_operation_graph = false;
 unsigned short dsp_global_period = 0;
-float dsp_global_load = 0.0f;
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
@@ -864,6 +863,7 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
 } /* dsp_process */
 
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {
+	dsp_global.cpu_load = 0.0f;
 	dsp_global.build_new_optimized_graph = false;
 	
 	pthread_mutex_init(&dsp_global.graph_state_mutex, NULL);

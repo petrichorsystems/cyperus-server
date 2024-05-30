@@ -77,7 +77,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   
   clock_gettime (CLOCK_REALTIME, &mt2);
   tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-  dsp_global_load = (double)tt/(double)process_time; 
+  dsp_global.cpu_load = (double)tt/(double)process_time; 
   
   temp_main_out = dsp_optimized_main_outs;
 

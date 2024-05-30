@@ -149,7 +149,7 @@ osc_callback_timer_callback(int signum) {
 	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	struct dsp_operation *temp_op = NULL;  
 
-	lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global_load);
+	lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global.cpu_load);
   
 	temp_op = dsp_global.operation_head;
 	while(temp_op != NULL) {
