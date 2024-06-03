@@ -52,7 +52,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 					   1));
 	strcpy(mains_str, "in:\n");
 	/* process main inputs */
-	temp_port_out = dsp_main_ins;
+	temp_port_out = dsp_global.main_ins;
 	while(temp_port_out != NULL) {
 		strcat(mains_str, temp_port_out->id);
 		strcat(mains_str, "\n");
@@ -60,7 +60,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 	}
 	strcat(mains_str, "out:\n");
 	/* process main outputs */
-	temp_port_in = dsp_main_outs;
+	temp_port_in = dsp_global.main_outs;
 	while(temp_port_in != NULL) {
 		strcat(mains_str, temp_port_in->id);
 		strcat(mains_str, "\n");
@@ -111,7 +111,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 
 	if ( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") ||
 	    !strcmp(bus_id, "") ) {
-		head_bus = dsp_global_bus_head;
+		head_bus = dsp_global.bus_head;
 		root_level = 1;
 	}
 	else {

@@ -18,17 +18,7 @@ Copyright 2018 murray foster */
 
 #include "dsp_types.h"
 struct dsp_global_t dsp_global;
-
-struct dsp_connection *dsp_global_connection_graph;
-struct dsp_connection *dsp_global_connection_graph_processing;
-struct dsp_translation_connection *dsp_global_translation_connection_graph_processing;
-struct dsp_bus *dsp_global_bus_head;
-struct dsp_operation *dsp_global_translation_graph;
-
-struct dsp_port_out *dsp_main_ins;
-struct dsp_port_in *dsp_main_outs;
-
-struct dsp_operation *dsp_optimized_main_ins;
+;
 struct dsp_operation *dsp_optimized_main_outs;
 struct dsp_operation *dsp_rebuilt_optimized_main_outs;
 
@@ -619,7 +609,7 @@ _dsp_search_bus_port(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_bus_port*
 dsp_find_bus_port(char *id) {
-  return _dsp_search_bus_port(dsp_global_bus_head, id);
+  return _dsp_search_bus_port(dsp_global.bus_head, id);
 } /* dsp_find_bus_port */
 
 struct dsp_bus_port*
@@ -648,7 +638,7 @@ _dsp_search_bus_port_out(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_bus_port*
 dsp_find_bus_port_out(char *id) {
-  return _dsp_search_bus_port_out(dsp_global_bus_head, id);
+  return _dsp_search_bus_port_out(dsp_global.bus_head, id);
 } /* dsp_find_bus_port_out */
 
 struct dsp_bus_port*
@@ -677,7 +667,7 @@ _dsp_search_bus_port_in(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_bus_port*
 dsp_find_bus_port_in(char *id) {
-  return _dsp_search_bus_port_in(dsp_global_bus_head, id);
+  return _dsp_search_bus_port_in(dsp_global.bus_head, id);
 } /* dsp_find_bus_port_in */
 
 struct dsp_module*
@@ -703,7 +693,7 @@ _dsp_search_module(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_module*
 dsp_find_module(char *id) {
-  return _dsp_search_module(dsp_global_bus_head, id);
+  return _dsp_search_module(dsp_global.bus_head, id);
 } /* dsp_find_module */
 
 struct dsp_port_out*
@@ -746,14 +736,14 @@ _dsp_search_port_out(struct dsp_bus *head_bus, char *id) {
 struct dsp_port_out*
 dsp_find_port_out(char *id) {
   struct dsp_port_out *temp_port_out = NULL;
-  temp_port_out = dsp_main_ins;
+  temp_port_out = dsp_global.main_ins;
   while(temp_port_out != NULL) {
     if(strcmp(temp_port_out->id, id) == 0)
       return temp_port_out;
     temp_port_out = temp_port_out->next;
   }
   
-  return _dsp_search_port_out(dsp_global_bus_head, id);
+  return _dsp_search_port_out(dsp_global.bus_head, id);
 } /* dsp_find_port_out */
 
 struct dsp_port_in*
@@ -796,20 +786,20 @@ _dsp_search_port_in(struct dsp_bus *head_bus, char *id) {
 struct dsp_port_in*
 dsp_find_port_in(char *id) {
   struct dsp_port_in *temp_port_in = NULL;
-  temp_port_in = dsp_main_outs;
+  temp_port_in = dsp_global.main_outs;
   while(temp_port_in != NULL) {
     if(strcmp(temp_port_in->id, id) == 0)
       return temp_port_in;
     temp_port_in = temp_port_in->next;
   }
   
-  return _dsp_search_port_in(dsp_global_bus_head, id);
+  return _dsp_search_port_in(dsp_global.bus_head, id);
 } /* dsp_find_port_in */
 
 struct dsp_port_out*
 dsp_find_main_in_port_out(char *id) {
   struct dsp_port_out *temp_port_out = NULL;
-  temp_port_out = dsp_main_ins;
+  temp_port_out = dsp_global.main_ins;
   while(temp_port_out != NULL) {
     if(strcmp(temp_port_out->id, id) == 0) {
       return temp_port_out;
@@ -822,7 +812,7 @@ dsp_find_main_in_port_out(char *id) {
 struct dsp_port_in*
 dsp_find_main_out_port_in(char *id) {
   struct dsp_port_in *temp_port_in = NULL;
-  temp_port_in = dsp_main_outs;
+  temp_port_in = dsp_global.main_outs;
   while(temp_port_in != NULL) {
     if(strcmp(temp_port_in->id, id) == 0) {
       return temp_port_in;
@@ -861,7 +851,7 @@ _dsp_search_module_port_out(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_port_out*
 dsp_find_module_port_out(char *id) {
-  return _dsp_search_module_port_out(dsp_global_bus_head, id);
+  return _dsp_search_module_port_out(dsp_global.bus_head, id);
 } /* dsp_find_module_port_out */
 
 struct dsp_port_in*
@@ -893,7 +883,7 @@ _dsp_search_module_port_in(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_port_in*
 dsp_find_module_port_in(char *id) {
-  return _dsp_search_module_port_in(dsp_global_bus_head, id);
+  return _dsp_search_module_port_in(dsp_global.bus_head, id);
 } /* dsp_find_module_port_in */
 
 struct dsp_port_out*
@@ -920,7 +910,7 @@ _dsp_search_bus_port_port_out(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_port_out*
 dsp_find_bus_port_port_out(char *id) {
-  return _dsp_search_bus_port_port_out(dsp_global_bus_head, id);
+  return _dsp_search_bus_port_port_out(dsp_global.bus_head, id);
 } /* dsp_find_bus_port_port_out */
 
 struct dsp_port_in*
@@ -947,7 +937,7 @@ _dsp_search_bus_port_port_in(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_port_in*
 dsp_find_bus_port_port_in(char *id) {
-  return _dsp_search_bus_port_port_in(dsp_global_bus_head, id);
+  return _dsp_search_bus_port_port_in(dsp_global.bus_head, id);
 } /* dsp_find_bus_port_port_in */
 
 struct dsp_module*
@@ -986,7 +976,7 @@ _dsp_search_module_from_port(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_module*
 dsp_get_module_from_port(char *id) {
-  return _dsp_search_module_from_port(dsp_global_bus_head, id);
+  return _dsp_search_module_from_port(dsp_global.bus_head, id);
 } /* dsp_get_module_from_port */
 
 
@@ -1009,5 +999,5 @@ _dsp_search_bus(struct dsp_bus *head_bus, char *id) {
 
 struct dsp_bus*
 dsp_find_bus(char *id) {
-  return _dsp_search_bus(dsp_global_bus_head, id);
+  return _dsp_search_bus(dsp_global.bus_head, id);
 } /* dsp_find_bus */

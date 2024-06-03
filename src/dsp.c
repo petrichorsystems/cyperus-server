@@ -111,10 +111,10 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 	if( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") || !strcmp(bus_id, "")) {
 		pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	  
-		if( dsp_global_bus_head != NULL )
-			dsp_bus_insert_tail(dsp_global_bus_head, new_bus);
+		if( dsp_global.bus_head != NULL )
+			dsp_bus_insert_tail(dsp_global.bus_head, new_bus);
 		else
-			dsp_global_bus_head = new_bus;
+			dsp_global.bus_head = new_bus;
 
 		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 		
@@ -239,10 +239,10 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	
-	if(dsp_global_connection_graph == NULL)
-		dsp_global_connection_graph = new_connection;
+	if(dsp_global.connection_graph == NULL)
+		dsp_global.connection_graph = new_connection;
 	else
-		dsp_connection_insert_tail(dsp_global_connection_graph,
+		dsp_connection_insert_tail(dsp_global.connection_graph,
 					   new_connection);
 	
 	/* TODO: check that the current processing graph isn't the same as this new one,
@@ -264,8 +264,8 @@ int
 dsp_remove_connection(char *connection_id) {
 	struct dsp_connection *temp_connection, *prev_connection, *next_connection;
 	
-	if(dsp_global_connection_graph) {
-		temp_connection = dsp_global_connection_graph;
+	if(dsp_global.connection_graph) {
+		temp_connection = dsp_global.connection_graph;
 		while(temp_connection != NULL) {
 			if( (!strcmp(temp_connection->id, connection_id)) ) {
 
@@ -276,12 +276,12 @@ dsp_remove_connection(char *connection_id) {
 				
 				if( next_connection == NULL ) {
 					if( prev_connection == NULL ) {
-						dsp_global_connection_graph = NULL;
+						dsp_global.connection_graph = NULL;
 					} else {
 						prev_connection->next = NULL;
 					}
 				} else if( prev_connection == NULL ) {
-					dsp_global_connection_graph = next_connection;
+					dsp_global.connection_graph = next_connection;
 					next_connection->prev = NULL;
 				} else {
 					prev_connection->next = next_connection;
@@ -369,7 +369,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	}
 	
 	if( is_main_in_out ) {
-		temp_op_out = dsp_optimized_main_ins;
+		temp_op_out = dsp_global.optimized_main_ins;
 		while( temp_op_out != NULL ) {
 			if( strcmp(temp_op_out->dsp_id, connection->id_out) == 0 ) {
 				matched_op_out = temp_op_out;
@@ -514,7 +514,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	}
 	
 	if( is_main_out_in ) {
-		temp_op_in = dsp_rebuilt_optimized_main_outs;
+		temp_op_in = dsp_global.rebuilt_optimized_main_outs;
 		while( temp_op_in != NULL ) {
 			if( strcmp(temp_op_in->dsp_id, connection->id_in) == 0 ) {
 				matched_op_in = temp_op_in;
@@ -657,7 +657,7 @@ dsp_optimize_connections_bus(struct dsp_bus_port *ports) {
   struct dsp_connection *temp_connection;
 
   while(temp_port != NULL) {
-    temp_connection = dsp_global_connection_graph;
+    temp_connection = dsp_global.connection_graph;
     while(temp_connection != NULL) {      
       if(strcmp(temp_port->id, temp_connection->id_out) == 0) {        
 	dsp_optimize_connections_input(temp_connection);
@@ -711,7 +711,7 @@ dsp_build_mains(int channels_in, int channels_out) {
   for(i=0; i<channels_in; i++) {
     if( i == 0 ) {
       temp_port_out = dsp_port_out_init("main_in", 1);
-      dsp_main_ins = temp_port_out;
+      dsp_global.main_ins = temp_port_out;
     } else {
       temp_port_out->next = dsp_port_out_init("main_in", 1);
       temp_port_out = temp_port_out->next;
@@ -724,10 +724,10 @@ dsp_build_mains(int channels_in, int channels_out) {
       temp_op->outs = temp_sample;
     else
       dsp_operation_sample_insert_tail(temp_op->outs, temp_sample);
-    if(dsp_optimized_main_ins == NULL)
-      dsp_optimized_main_ins = temp_op;
+    if(dsp_global.optimized_main_ins == NULL)
+      dsp_global.optimized_main_ins = temp_op;
     else
-      dsp_operation_insert_tail(dsp_optimized_main_ins, temp_op);
+      dsp_operation_insert_tail(dsp_global.optimized_main_ins, temp_op);
 
     free(formal_main_name);
   }
@@ -735,15 +735,15 @@ dsp_build_mains(int channels_in, int channels_out) {
   for(i=0; i<channels_out; i++) {
     if( i == 0 ) {
       temp_port_in = dsp_port_in_init("main_out", fifo_size);
-      dsp_main_outs = temp_port_in;
+      dsp_global.main_outs = temp_port_in;
     } else {
       temp_port_in->next = dsp_port_in_init("main_out", fifo_size);
       temp_port_in = temp_port_in->next;
     }
   }
   dsp_build_optimized_main_outs();
-  dsp_optimized_main_outs = dsp_rebuilt_optimized_main_outs;
-  dsp_rebuilt_optimized_main_outs = NULL;
+  dsp_global.optimized_main_outs = dsp_global.rebuilt_optimized_main_outs;
+  dsp_global.rebuilt_optimized_main_outs = NULL;
 } /* dsp_build_mains */
 
 void
@@ -755,8 +755,8 @@ dsp_build_optimized_main_outs() {
 
 	int i;
   
-	dsp_rebuilt_optimized_main_outs = NULL;
-	temp_port_in = dsp_main_outs;
+	dsp_global.rebuilt_optimized_main_outs = NULL;
+	temp_port_in = dsp_global.main_outs;
   
 	while(temp_port_in != NULL) {
 		temp_op = dsp_operation_init(temp_port_in->id);
@@ -764,10 +764,10 @@ dsp_build_optimized_main_outs() {
 		
 		temp_op->ins = temp_sample;
 		
-		if( dsp_rebuilt_optimized_main_outs == NULL )
-			dsp_rebuilt_optimized_main_outs = temp_op;
+		if( dsp_global.rebuilt_optimized_main_outs == NULL )
+			dsp_global.rebuilt_optimized_main_outs = temp_op;
 		else 
-			dsp_operation_insert_tail(dsp_rebuilt_optimized_main_outs, temp_op);
+			dsp_operation_insert_tail(dsp_global.rebuilt_optimized_main_outs, temp_op);
 		temp_port_in = temp_port_in->next;
 	}
   
@@ -786,8 +786,8 @@ void
 	
 	dsp_global.operation_head_processing = NULL;
 	dsp_build_optimized_main_outs();
-	dsp_optimize_connections_main_inputs(dsp_main_ins);
-	dsp_optimize_graph(dsp_global_bus_head);
+	dsp_optimize_connections_main_inputs(dsp_global.main_ins);
+	dsp_optimize_graph(dsp_global.bus_head);
 	dsp_global_new_operation_graph = true;
   
 } /* dsp_build_optimized_graph */
@@ -865,6 +865,17 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {
 	dsp_global.cpu_load = 0.0f;
 	dsp_global.build_new_optimized_graph = false;
+
+	dsp_global.bus_head = NULL;
+	dsp_global.connection_graph = NULL;
+  
+	dsp_global.operation_head = NULL;
+
+	dsp_global.optimized_main_ins = NULL;
+	dsp_global.optimized_main_outs = NULL;
+
+	dsp_global.translation_connection_graph_processing = NULL;
+	dsp_global.operation_head_processing = NULL;
 	
 	pthread_mutex_init(&dsp_global.graph_state_mutex, NULL);
 	pthread_mutex_init(&dsp_global.optimization_mutex, NULL);

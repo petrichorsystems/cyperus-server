@@ -57,8 +57,8 @@ dsp_optimize_connections_module(struct dsp_port_out *outs) {
   temp_out = outs;
   char *current_path;
 
-  if( dsp_global_connection_graph != NULL ) {
-    temp_connection = dsp_global_connection_graph;
+  if( dsp_global.connection_graph != NULL ) {
+    temp_connection = dsp_global.connection_graph;
     while(temp_out != NULL) {
       temp_outsample = temp_out->value;
       while(temp_connection != NULL) {
@@ -90,10 +90,10 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   char *temp_result[3];
   
   temp_out = outs;
-  if( dsp_global_connection_graph != NULL ) {
+  if( dsp_global.connection_graph != NULL ) {
     while(temp_out != NULL) {
       temp_outsample = temp_out->value;
-      temp_connection = dsp_global_connection_graph;
+      temp_connection = dsp_global.connection_graph;
       while(temp_connection != NULL) {
 	/* compare each main connection 'out' with this one, enqueue each fifo with data
 	   that matches the 'out' port path */
@@ -107,7 +107,7 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
           temp_op_out = NULL;
           
 	  /* find existing 'out' operation (main in) */
-	  temp_op_out = dsp_optimized_main_ins;
+	  temp_op_out = dsp_global.optimized_main_ins;
 	  while( temp_op_out != NULL ) {
             
 	    if( strcmp(temp_op_out->dsp_id, temp_connection->id_out) == 0 ){
@@ -209,10 +209,10 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 									  temp_sample_out,
 									  temp_op_in->ins);
 
-	    if(dsp_global_translation_connection_graph_processing == NULL)
-	      dsp_global_translation_connection_graph_processing = temp_translation_connection;
+	    if(dsp_global.translation_connection_graph_processing == NULL)
+	      dsp_global.translation_connection_graph_processing = temp_translation_connection;
 	    else
-	      dsp_translation_connection_insert_tail(dsp_global_translation_connection_graph_processing,
+	      dsp_translation_connection_insert_tail(dsp_global.translation_connection_graph_processing,
 						     temp_translation_connection);  /* is this last arg always the same? */
 	  }
 

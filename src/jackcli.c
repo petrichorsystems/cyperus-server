@@ -63,7 +63,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   
   for ( i = 0; i < nframes; i++) {
     /* process main inputs */
-    temp_main_in = dsp_optimized_main_ins;
+    temp_main_in = dsp_global.optimized_main_ins;
     for (n = 0; n < jackcli_channels_in; n++) {
       temp_main_in->outs->sample->value[i] = jackcli_ins[n][i];
       temp_main_in = temp_main_in->next;
@@ -79,7 +79,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
   dsp_global.cpu_load = (double)tt/(double)process_time; 
   
-  temp_main_out = dsp_optimized_main_outs;
+  temp_main_out = dsp_global.optimized_main_outs;
 
   for (n = 0; n < jackcli_channels_out; n++) {
     dsp_sum_summands(temp_sample_block, temp_main_out->ins->summands);
@@ -98,9 +98,9 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   if( dsp_global_new_operation_graph ) {
 	  if( pthread_mutex_trylock(&dsp_global.optimization_mutex) == 0 ) {
        
-		  /* we will want to deallocate dsp_optimized_main_outs before continuing */
-		  dsp_optimized_main_outs = dsp_rebuilt_optimized_main_outs;
-		  dsp_rebuilt_optimized_main_outs = NULL;
+		  /* we will want to deallocate dsp_global.optimized_main_outs before continuing */
+		  dsp_global.optimized_main_outs = dsp_global.rebuilt_optimized_main_outs;
+		  dsp_global.rebuilt_optimized_main_outs = NULL;
     
 		  dsp_global.operation_head = dsp_global.operation_head_processing;
 		  dsp_global.operation_head_processing = NULL;
