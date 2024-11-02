@@ -169,12 +169,10 @@ dsp_osc_listener_delay_simple(struct dsp_operation *delay_simple, int jack_sampl
       char *path = (char *)malloc(sizeof(char) * path_len);
       snprintf(path, path_len, "%s%s", "/cyperus/listener/", delay_simple->module->id);    
 
-      lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-      lo_send(lo_addr_send, path, "fff",
+      osc_send_broadcast( path, "fff",
               delay_simple->module->dsp_param.parameters->float32_arr_type[1][0],
               delay_simple->module->dsp_param.parameters->float32_arr_type[2][0],
               delay_simple->module->dsp_param.parameters->float32_arr_type[3][0]);
-      free(lo_addr_send);
 
       /* assign new parameter to last parameter after we're reported the change */
       delay_simple->module->dsp_param.parameters->float32_type[0] = delay_simple->module->dsp_param.parameters->float32_arr_type[1][0];

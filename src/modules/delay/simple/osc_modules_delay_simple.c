@@ -36,7 +36,8 @@ int osc_add_modules_delay_simple_handler(const char *path, const char *types, lo
   float time;
   float feedback;
 
-  int multipart_no;
+  int multipart_no = false;
+  int errno = 0;
   
   printf("path: <%s>\n", path);
 
@@ -48,21 +49,38 @@ int osc_add_modules_delay_simple_handler(const char *path, const char *types, lo
   feedback = argv[4]->f;
   
   target_bus = dsp_find_bus(bus_id);
-  dsp_create_delay_simple(target_bus, amount, time, feedback);
+
+  if( target_bus == NULL ) {
+	  errno = E_BUS_NOT_FOUND;
+	  module_id = "";
+  } else {
+	  dsp_create_delay_simple(target_bus, amount, time, feedback);
   
-  temp_module = target_bus->dsp_module_head;
-  while(temp_module != NULL) {
-    target_module = temp_module;
-    temp_module = temp_module->next;
+	  temp_module = target_bus->dsp_module_head;
+	  while(temp_module != NULL) {
+		  target_module = temp_module;
+		  temp_module = temp_module->next;
+	  }
+	  module_id = malloc(sizeof(char) * 37);
+	  strcpy(module_id, target_module->id);
+
+	  errno = 0;
   }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
 
-  multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/delay/simple","siisfff", request_id, 0, multipart_no, module_id, amount, time, feedback);
-  free(lo_addr_send);
+  multipart_no = false;
+  osc_send_broadcast("/cyperus/add/module/delay/simple",
+		     "siisfff",
+		     request_id,
+		     errno,
+		     multipart_no,
+		     module_id,
+		     amount,
+		     time,
+		     feedback);
 
+  if(strcmp(module_id, ""))
+	  free(module_id);
+  
   return 0;
 } /* osc_add_modules_delay_simple_handler */
 
@@ -74,7 +92,9 @@ osc_edit_modules_delay_simple_handler(const char *path, const char *types, lo_ar
   char *request_id, *module_id;
   struct dsp_module *target_module;
   float amount, time, feedback, mul, add;
-  int multipart_no;
+
+  int multipart_no = false;
+  int errno = 0;
   
   printf("path: <%s>\n", path);
 
@@ -85,12 +105,21 @@ osc_edit_modules_delay_simple_handler(const char *path, const char *types, lo_ar
   feedback = argv[4]->f;
 
   target_module = dsp_find_module(module_id);
-  dsp_edit_delay_simple(target_module, amount, time, feedback);
 
-  multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/delay/simple","siisfff", request_id, 0, multipart_no, module_id, amount, time, feedback);
-  free(lo_addr_send);
+  if( target_module )
+	  dsp_edit_delay_simple(target_module, amount, time, feedback);
+  else
+	  errno = E_MODULE_NOT_FOUND;
+
+  multipart_no = false;
+  osc_send_broadcast("/cyperus/edit/module/delay/simple","siisfff",
+		     request_id,
+		     errno,
+		     multipart_no,
+		     module_id,
+		     amount,
+		     time,
+		     feedback);
   
   return 0;
 } /* osc_edit_modules_delay_simple_handler */

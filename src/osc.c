@@ -18,9 +18,7 @@ Copyright 2015 murray foster */
 
 #include "osc.h"
 
-char *send_host_out;
-char *send_port_out;
-lo_server_thread lo_thread;
+struct osc_global_t osc_global;
 
 /* osc_handler_user_defined_t *global_osc_handlers_user_defined; */
 /* pthread_mutex_t global_osc_handlers_user_defined_lock; */
@@ -124,17 +122,41 @@ lo_server_thread lo_thread;
 /*   free(lo_addr_send); */
 /* } /\* osc_execute_handler_parameter_assignment *\/ */
 
+
+/* see osc.h, called by macro defined by osc_send_broadcast() */
+int _osc_send_broadcast(const char *path, const char *types, ...) {
+	uint16_t i = 0;
+	va_list ap;
+	const char *file = "";
+	int line = 0;
+	for(i=0; i<osc_global.client_count; i++) {
+		lo_address lo_addr_send = lo_address_new(
+			(const char*)(osc_global.client_addrs[i].send_host_out),
+			(const char*)(osc_global.client_addrs[i].send_port_out)
+			);
+		lo_message lo_msg = lo_message_new();
+		va_start(ap, types);		
+		lo_message_add_varargs(lo_msg, types, ap);
+		va_end(ap);
+		lo_send_message(lo_addr_send, path, lo_msg);
+	
+		free(lo_addr_send);
+
+	}
+	return 0;
+} /* osc_broadcast_msg */
+
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out) {
 	bool multipart;
 	
-	free(send_host_out);
-	free(send_port_out);
+	free(osc_global.client_addrs[0].send_host_out);
+	free(osc_global.client_addrs[0].send_port_out);
 
-	send_host_out = malloc(sizeof(char) * strlen(new_host_out) + 1);
-	strcpy(send_host_out, new_host_out);
+	osc_global.client_addrs[0].send_host_out = malloc(sizeof(char) * strlen(new_host_out) + 1);
+	strcpy(osc_global.client_addrs[0].send_host_out, new_host_out);
 
-	send_port_out = malloc(sizeof(char) * strlen(new_port_out) + 1);
-	strcpy(send_port_out, new_port_out);
+	osc_global.client_addrs[0].send_port_out = malloc(sizeof(char) * strlen(new_port_out) + 1);
+	strcpy(osc_global.client_addrs[0].send_port_out, new_port_out);
 
 	multipart = false;
 	lo_address lo_addr_send = lo_address_new((const char*)new_host_out, (const char*)new_port_out);
@@ -146,7 +168,10 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 
 void
 osc_callback_timer_callback(int signum) {
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
+	lo_address lo_addr_send = lo_address_new(
+		(const char*)(osc_global.client_addrs[0].send_host_out),
+		(const char*)(osc_global.client_addrs[0].send_port_out)
+		);
 	struct dsp_operation *temp_op = NULL;  
 
 	lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global.cpu_load);
@@ -197,17 +222,25 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 	/*     printf("\n mutex init failed\n"); */
 	/*     return 1; */
 	/* } */
-  
-	send_host_out = malloc(sizeof(char) * 10);
-	strcpy(send_host_out, "127.0.0.1");
 
-	send_port_out = malloc(sizeof(char) * 6);
-	strcpy(send_port_out, osc_port_out);
+	struct osc_client_addr_t client_addr;
+	
+	osc_global.client_addrs = malloc(sizeof(struct osc_client_addr_t));
+	
+	osc_global.client_addrs[0].send_host_out = malloc(sizeof(char) * 10);
+	strcpy(osc_global.client_addrs[0].send_host_out, "127.0.0.1");
 
-	lo_server_thread lo_thread = lo_server_thread_new(osc_port_in, osc_error);
-	lo_server_thread_add_method(lo_thread, NULL, NULL, cyperus_osc_handler, NULL);
+	osc_global.client_addrs[0].send_port_out = malloc(sizeof(char) * 6);
+	strcpy(osc_global.client_addrs[0].send_port_out, osc_port_out);
 
-	lo_server_thread_start(lo_thread);
+	osc_global.client_addrs[0].listener_enable = true;
+	
+	osc_global.client_count = 1;
+	
+	osc_global.lo_thread = lo_server_thread_new(osc_port_in, osc_error);
+	lo_server_thread_add_method(osc_global.lo_thread, NULL, NULL, cyperus_osc_handler, NULL);
+
+	lo_server_thread_start(osc_global.lo_thread);
 
 	osc_callback_timer_setup();
 } /* osc_setup */

@@ -143,12 +143,10 @@ dsp_osc_listener_envelope_follower(struct dsp_operation *envelope_follower, int 
       char *path = (char *)malloc(sizeof(char) * path_len);
       snprintf(path, path_len, "%s%s", "/cyperus/listener/", envelope_follower->module->id);    
 
-      lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-      lo_send(lo_addr_send, path, "fff",
+      osc_send_broadcast( path, "fff",
               envelope_follower->module->dsp_param.parameters->float32_arr_type[0][0],
               envelope_follower->module->dsp_param.parameters->float32_arr_type[1][0],
               envelope_follower->module->dsp_param.parameters->float32_arr_type[2][0]);
-      free(lo_addr_send);
 
       /* assign new parameter to last parameter after we're reported the change */
       envelope_follower->module->dsp_param.parameters->float32_type[1] = envelope_follower->module->dsp_param.parameters->float32_arr_type[0][0];

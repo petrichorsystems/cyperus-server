@@ -129,9 +129,7 @@ dsp_osc_listener_utils_equals(struct dsp_operation *utils_equals,
   /*        path_len = 18 + 36 + 1; /\* len('/cyperus/listener/') + len(uuid4) + len('\n') *\/ */
   /*        path = (char *)malloc(sizeof(char) * path_len); */
   /*        snprintf(path, path_len, "%s%s", "/cyperus/listener/", utils_equals->module->id);     */
-  /*        lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out); */
-  /*        lo_send(lo_addr_send, path, "ff", utils_equals->module->dsp_param.parameters->float32_type[0], utils_equals->module->dsp_param.parameters->float32_type[1]); */
-  /*        free(lo_addr_send); */
+  /*        osc_send_broadcast(path, "ff", utils_equals->module->dsp_param.parameters->float32_type[0], utils_equals->module->dsp_param.parameters->float32_type[1]); */
   /*        utils_equals->module->dsp_param.parameters->float32_type[2] = utils_equals->module->dsp_param.parameters->float32_type[0]; */
   /*        utils_equals->module->dsp_param.parameters->float32_type[3] = utils_equals->module->dsp_param.parameters->float32_type[1]; */
   /*      } */

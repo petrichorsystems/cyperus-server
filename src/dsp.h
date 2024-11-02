@@ -30,6 +30,8 @@ Copyright 2015 murray foster */
 
 #include "dsp_graph_id.h"
 
+#include "errno.h"
+
 extern unsigned short dsp_global_period;
 extern bool dsp_global_new_operation_graph;
 
@@ -51,7 +53,7 @@ dsp_add_module(struct dsp_bus *target_bus,
 	       dsp_parameter dsp_param,
 	       struct dsp_port_in *ins,
 	       struct dsp_port_out *outs);
-void
+int
 dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs);
 
 int

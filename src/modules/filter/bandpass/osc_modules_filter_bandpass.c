@@ -55,9 +55,15 @@ int osc_add_modules_filter_bandpass_handler(const char *path, const char *types,
   strcpy(module_id, target_module->id);
 
   multipart = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/filter/bandpass","siisfff", request_id, 0, multipart, module_id, frequency, q, amount);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/add/module/filter/bandpass",
+		     "siisfff",
+		     request_id,
+		     0,
+		     multipart,
+		     module_id,
+		     frequency,
+		     q,
+		     amount);
 
   return 0;
 } /* osc_add_modules_filter_bandpass_handler */
@@ -84,9 +90,15 @@ osc_edit_modules_filter_bandpass_handler(const char *path, const char *types, lo
   dsp_edit_filter_bandpass(target_module, frequency, q, amount);
 
   multipart = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/filter/bandpass","siisfff", request_id, 0, multipart, module_id, frequency, q, amount);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/edit/module/filter/bandpass",
+		     "siisfff",
+		     request_id,
+		     0,
+		     multipart,
+		     module_id,
+		     frequency,
+		     q,
+		     amount);
   
   return 0;
 } /* osc_edit_modules_filter_bandpass_handler */

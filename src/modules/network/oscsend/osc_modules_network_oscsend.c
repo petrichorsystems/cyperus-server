@@ -61,8 +61,7 @@ int osc_add_modules_network_oscsend_handler(const char *path, const char *types,
   strcpy(module_id, target_module->id);
 
   multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,
+  osc_send_broadcast(
           "/cyperus/add/module/network/oscsend",
           "siissisf",
           request_id,
@@ -73,7 +72,6 @@ int osc_add_modules_network_oscsend_handler(const char *path, const char *types,
 	  port,
 	  osc_path,
 	  freq_div);
-  free(lo_addr_send);
   
   return 0;
 } /* osc_add_modules_network_oscsend_handler */
@@ -108,8 +106,7 @@ osc_edit_modules_network_oscsend_handler(const char *path, const char *types, lo
 			   freq_div);                                          
 
   multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,
+  osc_send_broadcast(
           "/cyperus/edit/module/envelope/follower",
           "siissisf",
           request_id,
@@ -120,8 +117,6 @@ osc_edit_modules_network_oscsend_handler(const char *path, const char *types, lo
 	  port,
 	  osc_path,
 	  freq_div);
-
-  free(lo_addr_send);
   
   return 0;
 } /* osc_edit_modules_network_oscsend_handler */

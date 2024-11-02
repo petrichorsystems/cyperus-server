@@ -105,10 +105,8 @@ dsp_osc_listener_utils_float(struct dsp_operation *utils_float, int jack_sampler
 	    char *path = (char *)malloc(sizeof(char) * path_len);
 	    snprintf(path, path_len, "%s%s", "/cyperus/listener/", utils_float->module->id);    
 	    
-	    lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-	    lo_send(lo_addr_send, path, "f",
-		    utils_float->module->dsp_param.in[0]);
-	    free(lo_addr_send);
+	    osc_send_broadcast(path, "f",
+			       utils_float->module->dsp_param.in[0]);
 
 	    /* assign new parameter to last parameter after we're reported the change */
 	    utils_float->module->dsp_param.parameters->float32_type[0] = utils_float->module->dsp_param.in[0];

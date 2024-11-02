@@ -33,6 +33,7 @@ Copyright 2015 murray foster */
 
 #include "dsp.h"
 #include "dsp_types.h"
+#include "errno.h"
 #include "jackcli.h"
 #include "osc.h"
 #include "osc_string.h"
@@ -62,7 +63,7 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
 			      int argc, void *data, void *user_data);
 
-int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_list_module_handler(const char *path, const char *types, lo_arg ** argv,
 			     int argc, void *data, void *user_data);
 
 

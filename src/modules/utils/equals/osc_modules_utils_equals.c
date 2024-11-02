@@ -60,9 +60,15 @@ int osc_add_modules_utils_equals_handler(const char *path, const char *types, lo
   strcpy(module_id, target_module->id);
 
   multipart = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/utils/equals","siisff", request_id, 0, multipart, module_id, x, y);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/add/module/utils/equals",
+		     "siisff",
+		     request_id,
+		     0,
+		     multipart,
+		     module_id,
+		     x,
+		     y);
+
   return 0;
 } /* osc_add_modules_utils_equals_handler */
 
@@ -85,9 +91,14 @@ osc_edit_modules_utils_equals_handler(const char *path, const char *types, lo_ar
   dsp_edit_utils_equals(target_module, x, y);
 
   multipart = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/utils/equals","siisff", request_id, 0, multipart, module_id, x, y);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/edit/module/utils/equals",
+		     "siisff",
+		     request_id,
+		     0,
+		     multipart,
+		     module_id,
+		     x,
+		     y);
   
   return 0;
 } /* osc_edit_modules_utils_equals_handler */

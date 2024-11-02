@@ -57,9 +57,13 @@ int osc_add_modules_oscillator_triangle_handler(const char *path, const char *ty
   strcpy(module_id, target_module->id);
 
   multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/oscillator/sine","siisff", request_id, 0, multipart_no, module_id, frequency, amplitude);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/add/module/oscillator/sine","siisff",
+		     request_id,
+		     0,
+		     multipart_no,
+		     module_id,
+		     frequency,
+		     amplitude);
 
   return 0;
 } /* osc_add_modules_oscillator_triangle_handler */
@@ -86,9 +90,14 @@ osc_edit_modules_oscillator_triangle_handler(const char *path, const char *types
   dsp_edit_oscillator_triangle(target_module, frequency, amplitude);
 
   multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/sine","siisff", request_id, 0, multipart_no, module_id, frequency, amplitude);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/edit/module/oscillator/sine",
+		     "siisff",
+		     request_id,
+		     0,
+		     multipart_no,
+		     module_id,
+		     frequency,
+		     amplitude);
   
   return 0;
 } /* osc_edit_modules_oscillator_triangle_handler */

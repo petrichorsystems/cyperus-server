@@ -27,40 +27,56 @@ Copyright 2015 murray foster */
 int osc_add_modules_oscillator_sine_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data)
 {
-  printf("osc_add_modules_oscillator_sine_handler()..\n");
-  char *request_id, *bus_id, *module_id = NULL;
-  struct dsp_bus *target_bus = NULL;
-  struct dsp_module *temp_module, *target_module = NULL;
+	printf("osc_add_modules_oscillator_sine_handler()..\n");
+	char *request_id, *bus_id, *module_id = NULL;
+	struct dsp_bus *target_bus = NULL;
+	struct dsp_module *temp_module, *target_module = NULL;
 
-  float frequency, amplitude, phase;
+	float frequency, amplitude, phase;
 
-  int multipart_no;
+	bool multipart = false;
+	int errno = 0;
   
-  printf("path: <%s>\n", path);
+	printf("path: <%s>\n", path);
 
-  request_id = (char *)argv[0];
-  bus_id = (char *)argv[1];
-
-  frequency = argv[2]->f;
-  amplitude = argv[3]->f;
-  phase = argv[4]->f;
+	request_id = (char *)argv[0];
+	bus_id = (char *)argv[1];
   
-  target_bus = dsp_find_bus(bus_id);
-  dsp_create_oscillator_sine(target_bus, frequency, amplitude, phase);
+	frequency = argv[2]->f;
+	amplitude = argv[3]->f;
+	phase = argv[4]->f;
   
-  temp_module = target_bus->dsp_module_head;
-  while(temp_module != NULL) {
-    target_module = temp_module;
-    temp_module = temp_module->next;
-  }
-  module_id = malloc(sizeof(char) * 37);
-  strcpy(module_id, target_module->id);
+	target_bus = dsp_find_bus(bus_id);
 
-  multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/oscillator/sine","siisfff", request_id, 0, multipart_no, module_id, frequency, amplitude, phase);
-  free(lo_addr_send);
+	if(target_bus == NULL)
+		errno = E_BUS_NOT_FOUND;
+	else {
+		dsp_create_oscillator_sine(target_bus,
+					   frequency,
+					   amplitude,
+					   phase);
+		
+		temp_module = target_bus->dsp_module_head;
+		while(temp_module != NULL) {
+			target_module = temp_module;
+			temp_module = temp_module->next;
+		}
+		module_id = malloc(sizeof(char) * 37);
+		strcpy(module_id, target_module->id);
+	}
+	multipart = false;
+	osc_send_broadcast("/cyperus/add/module/oscillator/sine",
+			   "siisfff",
+			   request_id,
+			   errno,
+			   multipart,
+			   module_id,
+			   frequency,
+			   amplitude,
+			   phase);
 
+	if(target_bus)
+		free(module_id);
   return 0;
 } /* osc_add_modules_oscillator_sine_handler */
 
@@ -69,30 +85,42 @@ int
 osc_edit_modules_oscillator_sine_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {  
-  char *request_id, *module_id;
-  char *bus_id;
-  struct dsp_bus *target_bus;
-  struct dsp_module *target_module;
-  float frequency, amplitude, phase;
-  int multipart_no;
-  
-  printf("path: <%s>\n", path);
+	char *request_id, *module_id = NULL;
+	char *bus_id;
+	struct dsp_bus *target_bus;
+	struct dsp_module *target_module;
+	float frequency, amplitude, phase;
 
-  request_id = (char *)argv[0];
-  module_id = (char *)argv[1];
+	int errno = 0;
+	bool multipart = false;
   
-  frequency = argv[2]->f;
-  amplitude = argv[3]->f;
-  phase = argv[4]->f;
+	printf("path: <%s>\n", path);
+	
+	request_id = (char *)argv[0];
+	module_id = (char *)argv[1];
   
-  target_module = dsp_find_module(module_id);
-  dsp_edit_oscillator_sine(target_module, frequency, amplitude, phase);
-
-  multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/oscillator/sine","siisfff", request_id, 0, multipart_no, module_id, frequency, amplitude, phase);
-  free(lo_addr_send);
+	frequency = argv[2]->f;
+	amplitude = argv[3]->f;
+	phase = argv[4]->f;
   
+	target_module = dsp_find_module(module_id);
+	if(target_module == NULL)
+		errno = E_MODULE_NOT_FOUND;
+	else
+		dsp_edit_oscillator_sine(target_module,
+					 frequency,
+					 amplitude,
+					 phase);
+	multipart = false;
+	osc_send_broadcast("/cyperus/edit/module/oscillator/sine",
+			   "siisfff",
+			   request_id,
+			   errno,
+			   multipart,
+			   module_id,
+			   frequency,
+			   amplitude,
+			   phase);  
   return 0;
 } /* osc_edit_modules_oscillator_sine_handler */
 

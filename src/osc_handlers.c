@@ -67,11 +67,16 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 		temp_port_in = temp_port_in->next;
 	}
 
+	printf("request_id: %s\n", request_id);
+	
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/list/main", "siis", request_id, 0, multipart, mains_str);
+	osc_send_broadcast("/cyperus/list/main",
+			   "siis",
+			   request_id,
+			   0,
+			   multipart,
+			   mains_str);
 	free(mains_str);
-	free(lo_addr_send);
 	return 0;
 } /* osc_list_main_handler */
 			 
@@ -96,6 +101,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	int current_index, last_break, last_cutoff, copy_index = 0;
 
 	bool multipart = false;
+	int errno = 0;
   
 	request_id = (char *)argv[0];
 	bus_id = (char *)argv[1];
@@ -103,11 +109,12 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 
 	printf("path: <%s>\n", path);
   
-	/* list types
+	/* list types --
 	   0 - peer
 	   1 - all peers
 	   2 - direct descendant
-	   3 - all descendants */
+	   3 - all descendants
+	*/
 
 	if ( !strcmp(bus_id, "00000000-0000-0000-0000-000000000000") ||
 	    !strcmp(bus_id, "") ) {
@@ -119,8 +126,12 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	}
   
 	if (head_bus == NULL) {
-		/* no buses, return new-line char-as-str */
+		/* no busses, return new-line char-as-str */
 		result_str = "\n";
+		if( !root_level ) {
+			/* target bus not found */
+			errno = E_BUS_NOT_FOUND;
+		}
 	} else {
 		switch(list_type) {
 		case 0: /* list peer */
@@ -143,8 +154,6 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	if (result_str == NULL)
 		result_str = "\n";
   
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  
 	/* split bus list into 768-byte chunks */
 	if (strlen(result_str) > 768) {
 		multipart = true;
@@ -159,7 +168,14 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 				last_cutoff = last_break;
 				if (last_cutoff == strlen(result_str - 1))
 					multipart = false;
-				lo_send(lo_addr_send,"/cyperus/list/bus", "siisis", request_id, 0, multipart, bus_id, list_type, part_result_str);
+				osc_send_broadcast("/cyperus/list/bus",
+						   "siisis",
+						   request_id,
+						   0,
+						   multipart,
+						   bus_id,
+						   list_type,
+						   part_result_str);
 				free(part_result_str);
 			}
 		}
@@ -170,9 +186,16 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 		}
 		result_str[current_index - last_cutoff] = '\0';
 	}
+	
 	multipart = false;
-	lo_send(lo_addr_send,"/cyperus/list/bus", "siisis", request_id, 0, multipart, bus_id, list_type, result_str);
-	free(lo_addr_send);
+	osc_send_broadcast("/cyperus/list/bus",
+			   "siisis",
+			   request_id,
+			   errno,
+			   multipart,
+			   bus_id,
+			   list_type,
+			   result_str);
 	if (strcmp(result_str, "\n"))
 		free(result_str);
 	return 0;
@@ -182,54 +205,70 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
 {
+	int errno = 0;
 	struct dsp_bus *temp_bus = NULL;
-	char *request_id, *path_str, *result_str = NULL;
+	char *request_id, *bus_id, *result_str = NULL;
 	size_t result_str_size = 0;
 	struct dsp_bus_port *temp_bus_port = NULL;
 	bool multipart;
   
 	request_id = (char *)argv[0];
-	path_str = (char *)argv[1];
+	bus_id = (char *)argv[1];
 
 	printf("path: <%s>\n", path);
 
-	temp_bus = dsp_find_bus(path_str);
+	temp_bus = dsp_find_bus(bus_id);
+	
+	if( temp_bus != NULL ) {		
+		result_str_size = 4;
+		result_str = malloc(sizeof(char) * (result_str_size + 1));
+		strcpy(result_str, "in:\n");
+		/* process main inputs */
+		temp_bus_port = temp_bus->ins;
+		while(temp_bus_port != NULL) {
+			result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
+			result_str = realloc(result_str, sizeof(char) * result_str_size);
+			strcat(result_str, temp_bus_port->id);
+			strcat(result_str, "|");
+			strcat(result_str, temp_bus_port->name);
+			strcat(result_str, "\n");
+			temp_bus_port = temp_bus_port->next;
+		}
 
-	result_str_size = 4;
-	result_str = malloc(sizeof(char) * (result_str_size + 1));
-	strcpy(result_str, "in:\n");
-	/* process main inputs */
-	temp_bus_port = temp_bus->ins;
-	while(temp_bus_port != NULL) {
-		result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
-		result_str = realloc(result_str, sizeof(char) * result_str_size);
-		strcat(result_str, temp_bus_port->id);
-		strcat(result_str, "|");
-		strcat(result_str, temp_bus_port->name);
-		strcat(result_str, "\n");
-		temp_bus_port = temp_bus_port->next;
+		result_str_size += 4;
+		result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
+		strcat(result_str, "out:\n");
+		/* process main outputs */
+		temp_bus_port = temp_bus->outs;
+		while(temp_bus_port != NULL) {
+			result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
+			result_str = realloc(result_str, sizeof(char) * result_str_size);
+			strcat(result_str, temp_bus_port->id);
+			strcat(result_str, "|");
+			strcat(result_str, temp_bus_port->name);
+			strcat(result_str, "\n");
+			temp_bus_port = temp_bus_port->next;
+		}
+		errno = 0;		
+		multipart = false;
+		osc_send_broadcast("/cyperus/list/bus_port",
+				   "siiss",
+				   request_id,
+				   0,
+				   multipart,
+				   bus_id,
+				   result_str);
+	} else {
+		errno = E_BUS_NOT_FOUND;
+		multipart = false;
+		osc_send_broadcast("/cyperus/list/bus_port",
+				   "siiss",
+				   request_id,
+				   errno,
+				   multipart,
+				   bus_id,
+				   "");
 	}
-
-	result_str_size += 4;
-	result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
-	strcat(result_str, "out:\n");
-	/* process main outputs */
-	temp_bus_port = temp_bus->outs;
-	while(temp_bus_port != NULL) {
-		result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
-		result_str = realloc(result_str, sizeof(char) * result_str_size);
-		strcat(result_str, temp_bus_port->id);
-		strcat(result_str, "|");
-		strcat(result_str, temp_bus_port->name);
-		strcat(result_str, "\n");
-		temp_bus_port = temp_bus_port->next;
-	}
-
-	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/list/bus_port", "siiss", request_id, 0, multipart, path_str, result_str);
-	free(lo_addr_send);
-
 	free(result_str);
 	return 0;
 } /* osc_list_bus_port_handler */
@@ -238,6 +277,7 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
                                int argc, void *data, void *user_data)
 {
 	int i;
+	int errno = 0;
 	struct dsp_bus *temp_bus;
 	char *request_id, *target_bus_id, *bus_str, *ins_str, *outs_str, *new_id = NULL;
 	bool multipart;
@@ -259,25 +299,46 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 			outs_str[i] = ',';
 
 	new_bus = dsp_bus_init(bus_str);
+	errno = dsp_add_bus(target_bus_id, new_bus, ins_str, outs_str);
 
-	dsp_add_bus(target_bus_id, new_bus, ins_str, outs_str);
-
-	new_id = malloc(sizeof(char) * strlen(new_bus->id));
-	strcpy(new_id, new_bus->id);
+	if( errno == 0 ) {
+		new_id = malloc(sizeof(char) * strlen(new_bus->id));
+		strcpy(new_id, new_bus->id);
   
-	for(i=0; i < strlen(ins_str); i++)
-		if (ins_str[i] == ',')
-			ins_str[i] = '|';
-	for(i=0; i < strlen(outs_str); i++)
-		if (outs_str[i] == ',')
-			outs_str[i] = '|';
+		for(i=0; i < strlen(ins_str); i++)
+			if (ins_str[i] == ',')
+				ins_str[i] = '|';
+		for(i=0; i < strlen(outs_str); i++)
+			if (outs_str[i] == ',')
+				outs_str[i] = '|';
+	}
 
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/add/bus", "siisssssi", request_id, 0, multipart, target_bus_id, bus_str, ins_str, outs_str, new_id,
-		strcmp(new_bus->name, bus_str));
-	free(lo_addr_send);
-	free(new_id);
+	if( !errno ) {
+		osc_send_broadcast("/cyperus/add/bus",
+				   "siisssss",
+				   request_id,
+				   errno,
+				   multipart,
+				   target_bus_id,
+				   bus_str,
+				   ins_str,
+				   outs_str,
+				   new_id);
+		free(new_id);
+	} else {
+		osc_send_broadcast("/cyperus/add/bus",
+				   "siisssss",
+				   request_id,
+				   errno,
+				   multipart,
+				   target_bus_id,
+				   bus_str,
+				   "",
+				   "",
+				   "");
+	}
+
   return 0;
 } /* osc_add_bus_handler */
 
@@ -301,24 +362,39 @@ int osc_remove_module_handler(const char *path, const char *types, lo_arg ** arg
 int osc_add_connection_handler(const char *path, const char *types, lo_arg **argv,
                                       int argc, void *data, void *user_data)
 {
-	char *request_id, *path_out, *path_in, *new_connection_id;
+	char *request_id, *port_out_id, *port_in_id, *new_connection_id = NULL;;
 	bool multipart;
-	int status = 0;
+	int errno = 0;
   
 	printf("path: <%s>\n", path);
   
 	request_id = (char *)argv[0];
-	path_out = (char *)argv[1];
-	path_in = (char *)argv[2];
+	port_out_id = (char *)argv[1];
+	port_in_id = (char *)argv[2];
 
-	status = dsp_add_connection(path_out, path_in, &new_connection_id);
+	errno = dsp_add_connection(port_out_id, port_in_id, &new_connection_id);
 	
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/add/connection", "siisss", request_id, status, multipart, path_out, path_in, new_connection_id);
-	lo_address_free(lo_addr_send);
-
-	free(new_connection_id);
+	if( errno )
+		osc_send_broadcast("/cyperus/add/connection",
+				   "siisss",
+				   request_id,
+				   errno,
+				   multipart,
+				   port_out_id,
+				   port_in_id,
+				   "");
+	else
+		osc_send_broadcast("/cyperus/add/connection",
+				   "siisss",
+				   request_id,
+				   errno,
+				   multipart,
+				   port_out_id,
+				   port_in_id,
+				   new_connection_id);
+	if( new_connection_id )
+		free(new_connection_id);
   
 	return 0;
 } /* osc_add_connection_handler */
@@ -328,75 +404,89 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 {
 	char *request_id, *connection_id;
 	bool multipart;
-	int status = 0;
+	int errno = 0;
   
 	printf("path: <%s>\n", path);
 
 	request_id = (char *)argv[0];
 	connection_id = (char *)argv[1];
 
-	status = dsp_remove_connection(connection_id);
+	errno = dsp_remove_connection(connection_id);
 
 	if( connection_id == NULL ) {
 		printf("osc_remove_connection_handler(), connection_id: %s\n", connection_id);
-		return 1;
 	}
 		
-	if( status )
+	if( errno ) {
 		printf("osc_handlers.c::osc_remove_connection_handler(), error removing connection: %s\n", connection_id);
+	}
 	
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/remove/connection", "siis", request_id, status, multipart, connection_id);
-	lo_address_free(lo_addr_send);
+	osc_send_broadcast("/cyperus/remove/connection",
+			   "siis",
+			   request_id,
+			   errno,
+			   multipart,
+			   connection_id);
 
 	return 0;
 } /* osc_remove_connection_handler */
 
-int osc_list_modules_handler(const char *path, const char *types, lo_arg ** argv,
+int osc_list_module_handler(const char *path, const char *types, lo_arg ** argv,
                                     int argc, void *data, void *user_data)
 {
 	struct dsp_bus *target_bus = NULL;
-	struct dsp_module *target_module = NULL;
+	struct dsp_module *temp_module = NULL;
 	char *request_id = NULL;
-	char *path_str = NULL;
+	char *bus_id = NULL;
 	char *module_list = NULL;
 	char *result_str = NULL;
-	bool multipart;
+	bool multipart = false;
+	int errno = 0;
+	
 	printf("path: <%s>\n", path);
 
 	request_id = (char *)argv[0];
-	path_str = (char *)argv[1];
+	bus_id = (char *)argv[1];
 
-	target_module = dsp_find_module(path_str);
+	target_bus = dsp_find_bus(bus_id);
+	temp_module = target_bus->dsp_module_head;
   
-	if (target_module) {
-		result_str = malloc(sizeof(char) * 38);
-		strcpy(result_str, target_module->id);
+	if (temp_module) {
+		result_str = malloc(sizeof(char) * (39 + strlen(temp_module->name)));
+		strcpy(result_str, temp_module->id);
+		strcat(result_str, "|");
+		strcat(result_str, temp_module->name);
 		strcat(result_str, "\n");
-		target_module = target_module->next;
-		while(target_module != NULL) {
-			printf("'in while' -- target_module->id: %s\n", target_module->id);
-			result_str = realloc(result_str, sizeof(char) * (strlen(result_str) + strlen(target_module->id) + 2));
-
-			strcat(result_str, target_module->id);
-			if ( target_module->next != NULL )
+		temp_module = temp_module->next;
+		while(temp_module != NULL) {
+			result_str = realloc(result_str,
+					     sizeof(char) * (strlen(result_str) + strlen(temp_module->id) + strlen(temp_module->name) + 3));
+			strcat(result_str, temp_module->id);
+			strcat(result_str, "|");
+			strcat(result_str, temp_module->name);
+			if ( temp_module->next != NULL )
 				strcat(result_str, "\n");
-			target_module = target_module->next;
+			temp_module = temp_module->next;
 		}
 	} else {
+		errno = E_BUS_NOT_FOUND;
 		result_str = "";
 	}
 
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/list/module","siis", request_id, 0, multipart, result_str);
-	free(lo_addr_send);
-	if ( !strcmp(result_str, "") )
+	osc_send_broadcast("/cyperus/list/module",
+			   "siis",
+			   request_id,
+			   errno,
+			   multipart,
+			   result_str);
+
+	if ( strcmp(result_str, "") )
 		free(result_str);
 	return 0;
   
-} /* osc_list_modules_handler */
+} /* osc_list_module_handler */
 
 int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
                                         int argc, void *data, void *user_data)
@@ -408,60 +498,61 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 	size_t result_str_size = 0;
 	struct dsp_port_in *temp_port_in;
 	struct dsp_port_out *temp_port_out;
-	char *module_path;
-	bool multipart;
+	bool multipart = false;
+	int errno = 0;
 	
 	request_id = (char *)argv[0];
-	module_path = (char *)argv[1];
-  
-	/* split up path */
-	bus_path = malloc(sizeof(char) * (strlen(module_path) - 36));
-	snprintf(bus_path, strlen(module_path) - 36, "%s", module_path);
-	
-	module_id = malloc(sizeof(char) * 37);
-	strncpy(module_id, module_path + strlen(module_path) - 36, 37);
-  
+	module_id = (char *)argv[1];
+    
 	temp_module = dsp_find_module(module_id);
-  
-	result_str_size = 4;
-	result_str = malloc(sizeof(char) * (result_str_size + 1));
-	strcpy(result_str, "in:\n");
-  
-	if (temp_module == NULL)
-		printf(" NULL DUDE \n");
 
-	temp_port_in = temp_module->ins;
+	if (temp_module != NULL) {
+		result_str_size = 4;
+		result_str = malloc(sizeof(char) * (result_str_size + 1));
+		strcpy(result_str, "in:\n");
   
-	while(temp_port_in != NULL) {
-		result_str_size += strlen(temp_port_in->id) + 1 + strlen(temp_port_in->name) + 2;
-		result_str = realloc(result_str, sizeof(char) * result_str_size);
-		strcat(result_str, temp_port_in->id);
-		strcat(result_str, "|");
-		strcat(result_str, temp_port_in->name);
-		strcat(result_str, "\n");
-		temp_port_in = temp_port_in->next;
-	}
+		temp_port_in = temp_module->ins;
+  
+		while(temp_port_in != NULL) {
+			result_str_size += strlen(temp_port_in->id) + 1 + strlen(temp_port_in->name) + 2;
+			result_str = realloc(result_str, sizeof(char) * result_str_size);
+			strcat(result_str, temp_port_in->id);
+			strcat(result_str, "|");
+			strcat(result_str, temp_port_in->name);
+			strcat(result_str, "\n");
+			temp_port_in = temp_port_in->next;
+		}
 
-	result_str_size += 4;
-	result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
-	strcat(result_str, "out:\n");
+		result_str_size += 4;
+		result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
+		strcat(result_str, "out:\n");
   
-	temp_port_out = temp_module->outs;
-	while(temp_port_out != NULL) {
-		result_str_size += strlen(temp_port_out->id) + 1 + strlen(temp_port_out->name) + 2;
-		result_str = realloc(result_str, sizeof(char) * result_str_size);
-		strcat(result_str, temp_port_out->id);
-		strcat(result_str, "|");
-		strcat(result_str, temp_port_out->name);
-		strcat(result_str, "\n");
-		temp_port_out = temp_port_out->next;
+		temp_port_out = temp_module->outs;
+		while(temp_port_out != NULL) {
+			result_str_size += strlen(temp_port_out->id) + 1 + strlen(temp_port_out->name) + 2;
+			result_str = realloc(result_str, sizeof(char) * result_str_size);
+			strcat(result_str, temp_port_out->id);
+			strcat(result_str, "|");
+			strcat(result_str, temp_port_out->name);
+			strcat(result_str, "\n");
+			temp_port_out = temp_port_out->next;
+		}
+		errno = 0;
+	} else {
+		result_str = "";
+		errno = E_MODULE_NOT_FOUND;
 	}
 
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/list/module_port", "siiss", request_id, 0, multipart, module_path, result_str);
-	lo_address_free(lo_addr_send);
-	free(result_str);
+	osc_send_broadcast("/cyperus/list/module_port",
+			   "siiss",
+			   request_id,
+			   errno,
+			   multipart,
+			   module_id,
+			   result_str);
+	if( errno == 0 )
+		free(result_str);
   
 	return 0;
 } /* osc_list_module_port_handler */
@@ -482,10 +573,12 @@ int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg *
 	}
 
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/get/filesystem/cwd", "siis", request_id, 0, multipart, cwd);
-	lo_address_free(lo_addr_send);
-  
+	osc_send_broadcast("/cyperus/get/filesystem/cwd",
+			   "siis",
+			   request_id,
+			   0,
+			   multipart,
+			   cwd);
   return 0;
   
 } /* osc_get_filesystem_cwd_handler */
@@ -629,21 +722,33 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 		closedir(d);
 	}
 
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
 	multipart_total = osc_str_len;	
 	if (osc_str_len > 1) {
 		for (i=0; i<osc_str_len - 1; i++) {
 			multipart_no = i+1;
-			lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "siiiss", request_id, 0, multipart_no, multipart_total, dirpath, osc_str[i]);
+			osc_send_broadcast("/cyperus/list/filesystem/path",
+					   "siiiss",
+					   request_id,
+					   0,
+					   multipart_no,
+					   multipart_total,
+					   dirpath,
+					   osc_str[i]);
 			free(osc_str[i]);
 		}
 	} else {
 		i = 0;
 	}
 	multipart_no = i+1;
-	lo_send(lo_addr_send,"/cyperus/list/filesystem/path", "siiiss", request_id, 0, multipart_no, multipart_total, dirpath, osc_str[i]);
-	lo_address_free(lo_addr_send);
+	osc_send_broadcast("/cyperus/list/filesystem/path",
+			   "siiiss",
+			   request_id,
+			   0,
+			   multipart_no,
+			   multipart_total,
+			   dirpath,
+			   osc_str[i]);
 
 	free(osc_str[i]);
 	free(osc_str);
@@ -693,9 +798,12 @@ int osc_write_filesystem_file_handler(const char *path, const char *types, lo_ar
 	}
 
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
-	lo_send(lo_addr_send,"/cyperus/write/filesystem/file", "siis", request_id, error, 0, filepath);
-	lo_address_free(lo_addr_send);
+	osc_send_broadcast("/cyperus/write/filesystem/file",
+			   "siis",
+			   request_id,
+			   error,
+			   0,
+			   filepath);
   
   return 0;
   
@@ -722,9 +830,12 @@ int osc_append_filesystem_file_handler(const char *path, const char *types, lo_a
 		error = -1;
 	}
 	
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
-	lo_send(lo_addr_send,"/cyperus/append/filesystem/file", "siis", request_id, error, multipart, filepath);
-	lo_address_free(lo_addr_send);
+	osc_send_broadcast("/cyperus/append/filesystem/file",
+			   "siis",
+			   request_id,
+			   error,
+			   multipart,
+			   filepath);
   
   return 0;
 } /* osc_append_filesystem_file_handlers */
@@ -765,7 +876,6 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 		error = -1;
 	}
 
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
 	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
 	multipart_total = osc_str_len;
 
@@ -773,16 +883,28 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 	if (osc_str_len > 1) {
 		for (i=0; i<osc_str_len - 1; i++) {
 			multipart_no = i+1;
-			lo_send(lo_addr_send,"/cyperus/read/filesystem/file", "siiiss", request_id, error, multipart_no, multipart_total, filepath, osc_str[i]);
+			osc_send_broadcast("/cyperus/read/filesystem/file",
+					   "siiiss",
+					   request_id,
+					   error,
+					   multipart_no,
+					   multipart_total,
+					   filepath,
+					   osc_str[i]);
 			free(osc_str[i]);
 		}
 	} else {
 		i = 0;
 	}
 	multipart_no = i+1;
-	lo_send(lo_addr_send,"/cyperus/read/filesystem/file", "siiiss", request_id, error, multipart_no, multipart_total, filepath, osc_str[i]);
-	lo_address_free(lo_addr_send);
-
+	osc_send_broadcast("/cyperus/read/filesystem/file",
+			   "siiiss",
+			   request_id,
+			   error,
+			   multipart_no,
+			   multipart_total,
+			   filepath,
+			   osc_str[i]);
 	free(osc_str[i]);
 	free(osc_str);
   return 0;
@@ -809,9 +931,12 @@ int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_a
 	} 
 
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
-	lo_send(lo_addr_send,"/cyperus/remove/filesystem/file", "siis", request_id, error, multipart, filepath);
-	lo_address_free(lo_addr_send);
+	osc_send_broadcast("/cyperus/remove/filesystem/file",
+			   "siis",
+			   request_id,
+			   error,
+			   multipart,
+			   filepath);
   
   return 0;
 } /* osc_remove_filesystem_file_handlers */
@@ -842,9 +967,12 @@ int osc_remove_filesystem_dir_handler(const char *path, const char *types, lo_ar
 	nftw(dirpath, _unlink_callback, 64, FTW_DEPTH | FTW_PHYS);	
 
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
-	lo_send(lo_addr_send,"/cyperus/remove/filesystem/dir", "siis", request_id, error, multipart, dirpath);
-	lo_address_free(lo_addr_send);
+	osc_send_broadcast("/cyperus/remove/filesystem/dir",
+			   "siis",
+			   request_id,
+			   error,
+			   multipart,
+			   dirpath);
   
   return 0;
 } /* osc_remove_filesystem_dir_handlers */
@@ -884,11 +1012,15 @@ int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg 
 	}
 	
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);	
-	lo_send(lo_addr_send,"/cyperus/make/filesystem/dir", "siisss", request_id, error, multipart, dirpath, dirname, fullpath);
-	lo_address_free(lo_addr_send);
-  
-  return 0;
+	osc_send_broadcast("/cyperus/make/filesystem/dir",
+			   "siisss",
+			   request_id,
+			   error,
+			   multipart,
+			   dirpath,
+			   dirname,
+			   fullpath);
+	return 0;
 } /* osc_make_filesystem_dir */
 
 /* int osc_add_modules_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data) */
@@ -924,7 +1056,7 @@ int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg 
 /*   pthread_mutex_unlock(&global_osc_handlers_user_defined_lock); */
   
 /*   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); */
-/*   lo_send(lo_addr_send,"/cyperus/add/module/osc_metronome","siss", request_id, 0, osc_path, type_str); */
+/*   osc_send_broadcast("/cyperus/add/module/osc_metronome","siss", request_id, 0, osc_path, type_str); */
 /*   free(lo_addr_send); */
 /*   return 0; */
 /* } /\* osc_add_modules_osc_parameter_assigment_handler *\/ */
@@ -958,7 +1090,7 @@ int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg 
 /*   /\* dsp_edit_osc_metronome(target_module, beats_per_minute); *\/ */
 
 /*   /\* lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); *\/ */
-/*   /\* lo_send(lo_addr_send,"/cyperus/edit/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute); *\/ */
+/*   /\* osc_send_broadcast("/cyperus/edit/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute); *\/ */
 /*   /\* free(lo_addr_send); *\/ */
   
 /*   return 0; */
@@ -973,10 +1105,11 @@ osc_get_graph_id_handler(const char *path, const char *types, lo_arg **argv,
 	bool multipart;
 	request_id = (char *)argv[0];
 	multipart = false;
-	lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-	lo_send(lo_addr_send,"/cyperus/get/graph/id","sis", request_id, 0, multipart, dsp_graph_id_get());
-	free(lo_addr_send);
-  
+	osc_send_broadcast("/cyperus/get/graph/id","sis",
+			   request_id,
+			   0,
+			   multipart,
+			   dsp_graph_id_get());
 	return 0;
 } /* osc_get_graph_id_handler */
 
@@ -1010,8 +1143,8 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 	else if (strcmp(path, "/cyperus/remove/connection") == 0)
 		handler_ptr = osc_remove_connection_handler;
 	
-	else if (strcmp(path, "/cyperus/list/modules") == 0)
-		handler_ptr = osc_list_modules_handler;
+	else if (strcmp(path, "/cyperus/list/module") == 0)
+		handler_ptr = osc_list_module_handler;
 	else if (strcmp(path, "/cyperus/list/module_port") == 0)
 		handler_ptr = osc_list_module_port_handler;
 	

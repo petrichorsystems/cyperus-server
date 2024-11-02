@@ -194,7 +194,7 @@ dsp_osc_listener_utils_counter(struct dsp_operation *utils_counter, int jack_sam
 	/* 		char *path = (char *)malloc(sizeof(char) * path_len); */
 	/* 		snprintf(path, path_len, "%s%s", "/cyperus/listener/", utils_counter->module->id); */
 	/* 		lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out); */
-	/* 		lo_send(lo_addr_send, path, "ff", */
+	/* 		osc_send_broadcast( path, "ff", */
 	/* 			utils_counter->module->dsp_param.parameters->float32_type[0], */
 	/* 			utils_counter->module->dsp_param.parameters->float32_type[1]); */
 	/* 		free(lo_addr_send); */

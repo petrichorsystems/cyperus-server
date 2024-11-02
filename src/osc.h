@@ -25,9 +25,20 @@ Copyright 2015 murray foster */
 #include "dsp.h"
 #include "osc_handlers.h"
 
-extern char *send_host_out;
-extern char *send_port_out;
-extern lo_server_thread lo_thread;
+struct osc_client_addr_t {
+	char *send_host_out;
+	char *send_port_out;
+	bool listener_enable;
+};
+
+struct osc_global_t {
+	lo_server_thread lo_thread;
+	struct osc_client_addr_t *client_addrs;
+	uint16_t client_count; 	
+};
+
+extern struct osc_global_t osc_global;
+
 
 /* typedef struct osc_handler_user_defined_type { */
 /*   char *osc_path; */
@@ -47,6 +58,12 @@ extern lo_server_thread lo_thread;
 /* void osc_handler_user_defined_insert_tail(osc_handler_user_defined_t *head_handler, osc_handler_user_defined_t *new_handler); */
 
 /* void osc_execute_handler_parameter_assignment(osc_handler_user_defined_t *handler, lo_arg** argv); */
+
+/* create macro to add LO_ARGS_END to terminate variable arg list as
+   required by liblo's lo_message_add_varargs() */
+#define osc_send_broadcast(PATH, TYPES, ...) ( \
+		_osc_send_broadcast(PATH, TYPES, __VA_ARGS__, LO_ARGS_END) )
+int _osc_send_broadcast(const char *path, const char *types, ...);
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out);

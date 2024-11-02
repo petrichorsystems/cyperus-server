@@ -118,9 +118,7 @@ dsp_osc_listener_utils_spigot(struct dsp_operation *utils_spigot,
   /*        path_len = 18 + 36 + 1; /\* len('/cyperus/listener/') + len(uuid4) + len('\n') *\/ */
   /*        path = (char *)malloc(sizeof(char) * path_len); */
   /*        snprintf(path, path_len, "%s%s", "/cyperus/listener/", utils_spigot->module->id); */
-  /*        lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out); */
-  /*        lo_send(lo_addr_send, path, "f", utils_spigot->module->dsp_param.parameters->float32_type[0]); */
-  /*        free(lo_addr_send); */
+  /*        osc_send_broadcast( path, "f", utils_spigot->module->dsp_param.parameters->float32_type[0]); */
   /*        utils_spigot->module->dsp_param.parameters->float32_type[1] = utils_spigot->module->dsp_param.parameters->float32_type[0]; */
   /*      } */
   /*      utils_spigot->module->dsp_param.parameters->int32_type[0] = 0; */

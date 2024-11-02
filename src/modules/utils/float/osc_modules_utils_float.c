@@ -58,9 +58,13 @@ int osc_add_modules_utils_float_handler(const char *path, const char *types, lo_
   strcpy(module_id, target_module->id);
 
   multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/add/module/utils/float","siisf", request_id, 0, multipart_no, module_id, value);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/add/module/utils/float",
+		     "siisf",
+		     request_id,
+		     0,
+		     multipart_no,
+		     module_id,
+		     value);
   return 0;
 } /* osc_add_modules_utils_float_handler */
 
@@ -82,9 +86,13 @@ osc_edit_modules_utils_float_handler(const char *path, const char *types, lo_arg
   dsp_edit_utils_float(target_module, value);
 
   multipart_no = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(lo_addr_send,"/cyperus/edit/module/utils/float","siisf", request_id, 0, multipart_no, module_id, value);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/edit/module/utils/float",
+		     "siisf",
+		     request_id,
+		     0,
+		     multipart_no,
+		     module_id,
+		     value);
   
   return 0;
 } /* osc_edit_modules_utils_float_handler */

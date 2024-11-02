@@ -89,7 +89,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
   return head_bus_port;
 } /* dsp_build_bus_ports */
 
-void
+int
 dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 	struct dsp_bus *temp_bus, *target_bus;
 	struct dsp_bus_port *temp_bus_port;
@@ -115,27 +115,38 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 			dsp_bus_insert_tail(dsp_global.bus_head, new_bus);
 		else
 			dsp_global.bus_head = new_bus;
-
+		target_bus = new_bus;
+		
 		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
+
+		/* graph changed, generate new graph id */
+		dsp_graph_id_rebuild();		
 		
 	} else {
 		target_bus = dsp_find_bus(bus_id);
 		if(target_bus != NULL) {
+			
+			pthread_mutex_lock(&dsp_global.graph_state_mutex);
+					
 			temp_bus = target_bus->down;
 			if (temp_bus != NULL) {
 				dsp_bus_insert_tail(temp_bus, new_bus);
 			} else {
 				target_bus->down = new_bus;
 			}
-		}
-		else {
-			target_bus = new_bus;
+
+			pthread_mutex_unlock(&dsp_global.graph_state_mutex);
+
+			/* graph changed, generate new graph id */
+			dsp_graph_id_rebuild();
 		}
 	}
+
+	if( target_bus == NULL ) {
+		return E_BUS_NOT_FOUND;
+	}
 	
-	/* graph changed, generate new graph id */
-	dsp_graph_id_rebuild();
-	return;
+	return 0;
 } /* dsp_add_bus */
 
 struct dsp_module*
@@ -202,6 +213,7 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	struct dsp_bus_port *temp_bus_port = NULL;
 	struct dsp_port_out *port_out = NULL;
 	struct dsp_port_in *port_in = NULL;
+	int errno = 0;
 
 	port_out = dsp_find_main_in_port_out(id_out);
 	if( port_out == NULL ) {
@@ -225,10 +237,12 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 		}
 	}
 	
-	if( (port_out == NULL) ||
-	    (port_in == NULL) ) {
-		printf("failed to add connection!\n");
-		return 1;
+	if( port_out == NULL ) {
+		return E_PORT_OUT_NOT_FOUND;
+	}
+	
+	if (port_in == NULL ) {
+		return E_PORT_IN_NOT_FOUND;
 	}
 	
 	/* instantiate and add to global connection graph */
@@ -301,7 +315,7 @@ dsp_remove_connection(char *connection_id) {
 	}
 
 	/* error */
-	return 1;
+	return E_CONNECTION_NOT_FOUND;
 } /* dsp_remove_connection */
 
 void

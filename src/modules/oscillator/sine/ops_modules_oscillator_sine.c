@@ -121,7 +121,6 @@ dsp_osc_listener_oscillator_sine(struct dsp_operation *oscillator_sine, int jack
       (oscillator_sine->ins->next->summands != NULL) ||
       (oscillator_sine->ins->next->next->summands != NULL) ) {
     param_connected = 1;
-    printf("PARAM CONNTECT\n");
   }
 
   /* if param_connected, activate osc listener */
@@ -135,12 +134,10 @@ dsp_osc_listener_oscillator_sine(struct dsp_operation *oscillator_sine, int jack
       int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
       char *path = (char *)malloc(sizeof(char) * path_len);
       snprintf(path, path_len, "%s%s", "/cyperus/listener/", oscillator_sine->module->id);    
-      lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-      lo_send(lo_addr_send, path, "fff",
+      osc_send_broadcast( path, "fff",
               oscillator_sine->module->dsp_param.parameters->float32_type[1],
               oscillator_sine->module->dsp_param.parameters->float32_type[2],
               oscillator_sine->module->dsp_param.parameters->float32_type[3]);
-      free(lo_addr_send);
 
       /* assign new parameter to last parameter after we're reported the change */
       oscillator_sine->module->dsp_param.parameters->float32_type[1] = oscillator_sine->module->dsp_param.parameters->float32_arr_type[0][0];

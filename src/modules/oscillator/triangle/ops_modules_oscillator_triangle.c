@@ -112,7 +112,6 @@ dsp_osc_listener_oscillator_triangle(struct dsp_operation *oscillator_triangle, 
 	if( (oscillator_triangle->ins->summands != NULL) ||
 	    (oscillator_triangle->ins->next->summands != NULL)) {
 		param_connected = 1;
-		printf("PARAM CONNTECT\n");
 	}
 
 	/* if param_connected, activate osc listener */
@@ -123,11 +122,9 @@ dsp_osc_listener_oscillator_triangle(struct dsp_operation *oscillator_triangle, 
 			int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
 			char *path = (char *)malloc(sizeof(char) * path_len);
 			snprintf(path, path_len, "%s%s", "/cyperus/listener/", oscillator_triangle->module->id);    
-			lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-			lo_send(lo_addr_send, path, "ff",
+			osc_send_broadcast( path, "ff",
 				oscillator_triangle->module->dsp_param.parameters->float32_type[0],
 				oscillator_triangle->module->dsp_param.parameters->float32_type[1]);
-			free(lo_addr_send);
 			
 			/* assign new parameter to last parameter after we're reported the change */
 			oscillator_triangle->module->dsp_param.parameters->float32_type[0] = oscillator_triangle->module->dsp_param.parameters->float32_arr_type[0][0];

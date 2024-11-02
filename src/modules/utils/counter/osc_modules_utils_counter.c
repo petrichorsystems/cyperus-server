@@ -68,23 +68,20 @@ int osc_add_modules_utils_counter_handler(const char *path, const char *types, l
   strcpy(module_id, target_module->id);
 
   multipart = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(
-          lo_addr_send,
-          "/cyperus/add/module/utils/counter","siisfffffff",
-          request_id,
-          0,
-	  multipart,
-          module_id,
-          reset,
-          start,
-          step_size,
-          min,
-          max,
-          direction,
-          auto_reset);
-  free(lo_addr_send);
-
+  osc_send_broadcast("/cyperus/add/module/utils/counter",
+		     "siisfffffff",
+		     request_id,
+		     0,
+		     multipart,
+		     module_id,
+		     reset,
+		     start,
+		     step_size,
+		     min,
+		     max,
+		     direction,
+		     auto_reset);
+  
   return 0;
 } /* osc_add_modules_utils_counter_handler */
 
@@ -124,22 +121,19 @@ osc_edit_modules_utils_counter_handler(const char *path, const char *types, lo_a
                          auto_reset);
 
   multipart = 0;
-  lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out);
-  lo_send(
-          lo_addr_send,
-          "/cyperus/edit/module/utils/counter","siisfffffff",
-          request_id,
-          0,
-	  multipart,
-          module_id,
-          reset,
-          start,
-          step_size,
-          min,
-          max,
-          direction,
-          auto_reset);
-  free(lo_addr_send);
+  osc_send_broadcast("/cyperus/edit/module/utils/counter",
+		     "siisfffffff",
+		     request_id,
+		     0,
+		     multipart,
+		     module_id,
+		     reset,
+		     start,
+		     step_size,
+		     min,
+		     max,
+		     direction,
+		     auto_reset);
   
   return 0;
 } /* osc_edit_modules_utils_counter_handler */

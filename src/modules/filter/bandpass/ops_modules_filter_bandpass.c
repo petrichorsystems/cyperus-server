@@ -167,12 +167,10 @@ dsp_osc_listener_filter_bandpass(struct dsp_operation *filter_bandpass, int jack
       char *path = (char *)malloc(sizeof(char) * path_len);
       snprintf(path, path_len, "%s%s", "/cyperus/listener/", filter_bandpass->module->id);    
 
-      lo_address lo_addr_send = lo_address_new(send_host_out, send_port_out);
-      lo_send(lo_addr_send, path, "fff",
+      osc_send_broadcast( path, "fff",
               filter_bandpass->module->dsp_param.parameters->float32_arr_type[0][0],
               filter_bandpass->module->dsp_param.parameters->float32_arr_type[1][0],
               filter_bandpass->module->dsp_param.parameters->float32_arr_type[2][0]);
-      free(lo_addr_send);
 
       /* assign new parameter to last parameter after we're reported the change */
       filter_bandpass->module->dsp_param.parameters->float32_type[0] = filter_bandpass->module->dsp_param.parameters->float32_arr_type[0][0];
