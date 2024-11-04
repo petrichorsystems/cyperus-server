@@ -29,12 +29,13 @@ struct osc_client_addr_t {
 	char *send_host_out;
 	char *send_port_out;
 	bool listener_enable;
+	struct osc_client_addr_t *next;
 };
 
 struct osc_global_t {
 	lo_server_thread lo_thread;
-	struct osc_client_addr_t *client_addrs;
-	uint16_t client_count; 	
+	struct osc_client_addr_t *client_addr;
+	pthread_mutex_t client_addr_update_mutex;
 };
 
 extern struct osc_global_t osc_global;
@@ -65,12 +66,14 @@ extern struct osc_global_t osc_global;
 		_osc_send_broadcast(PATH, TYPES, __VA_ARGS__, LO_ARGS_END) )
 int _osc_send_broadcast(const char *path, const char *types, ...);
 
-int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out);
+int osc_add_client(char *new_host_out, char *new_port_out, bool listener_enable);
 
 void osc_callback_timer_callback(int signum);
 void *osc_callback_timer_thread(void *arg);
 int osc_callback_timer_setup();
+
+int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
 
 #include "modules/delay/simple/osc_modules_delay_simple.h"
 #include "modules/oscillator/sine/osc_modules_oscillator_sine.h"

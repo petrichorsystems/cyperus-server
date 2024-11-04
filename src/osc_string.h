@@ -27,6 +27,7 @@ Copyright 2015 murray foster */
 #include <limits.h>
 
 #include "dsp_types.h"
+#include "osc.h"
 
 #define OSC_MAX_STR_LEN 768
 
@@ -37,5 +38,5 @@ char *osc_string_build_bus_list(struct dsp_bus *head_bus,
 				const char *separator,
 				int single,
 				int descendants);
-
+char *osc_string_build_osc_client_list(const char *separator);
 #endif

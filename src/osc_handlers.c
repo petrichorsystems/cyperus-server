@@ -26,14 +26,67 @@ void osc_error(int num, const char *msg, const char *path)
 
 int osc_address_handler(const char *path, const char *types, lo_arg **argv,
 			int argc, void *data, void *user_data) {
-  char *request_id = (char *) argv[0];
-  char *new_host_out = (char *)argv[1];
-  char *new_port_out = (char *)argv[2];
-  printf("hit osc_address_handler\n");
-  osc_change_address(request_id, new_host_out, new_port_out);
+	char *request_id = (char *) argv[0];
+	char *new_host_out = (char *)argv[1];
+	char *new_port_out = (char *)argv[2];
+	printf("hit osc_address_handler\n");
+	osc_change_address(request_id, new_host_out, new_port_out);
 
-  return 0;
+	return 0;
 } /* osc_address_handler */
+
+int osc_list_osc_client_handler(const char *path, const char *types, lo_arg **argv,
+				 int argc, void *data, void *user_data) {
+	char *request_id = NULL;
+	char *clients_str = NULL;
+	bool multipart = false;
+
+	printf("path: <%s>\n", path);
+	
+	request_id = (char *) argv[0];
+	clients_str = osc_string_build_osc_client_list("|");	
+	multipart = false;
+	osc_send_broadcast("/cyperus/list/osc/client",
+			   "siis",
+			   request_id,
+			   0,
+			   multipart,
+			   clients_str);
+	free(clients_str);	
+	
+	return 0;
+} /* osc_list_osc_client_handler */
+
+int osc_add_osc_client_handler(const char *path, const char *types, lo_arg **argv,
+			       int argc, void *data, void *user_data) {
+	char *request_id = NULL;
+	char *new_host_out, *new_port_out = NULL;
+	bool listener_enable = false;
+	struct osc_client_addr_t *new_client_addr = NULL;
+	bool multipart = false;
+	int errno = 0;
+
+	printf("path: <%s>\n", path);
+	
+	request_id = (char *) argv[0];
+	new_host_out = (char *) argv[1];
+	new_port_out = (char *) argv[2];
+	listener_enable = (bool) argv[3];
+	
+	errno = osc_add_client(new_host_out,
+			       new_port_out,
+			       listener_enable);
+	
+	multipart = false;
+	osc_send_broadcast("/cyperus/add/osc/client",
+			   "sii",
+			   request_id,
+			   errno,
+			   multipart);
+	
+	return 0;
+} /* osc_add_osc_client_handler */
+
 
 int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data)
@@ -66,8 +119,6 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 		strcat(mains_str, "\n");
 		temp_port_in = temp_port_in->next;
 	}
-
-	printf("request_id: %s\n", request_id);
 	
 	multipart = false;
 	osc_send_broadcast("/cyperus/list/main",
@@ -1129,6 +1180,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 	handler_ptr = NULL;
 	if (strcmp(path, "/cyperus/address") == 0)
 		handler_ptr = osc_address_handler;
+	else if (strcmp(path, "/cyperus/list/osc/client") == 0)
+		handler_ptr = osc_list_osc_client_handler;
+	else if (strcmp(path, "/cyperus/add/osc/client") == 0)
+		handler_ptr = osc_add_osc_client_handler;	
 	else if (strcmp(path, "/cyperus/list/main") == 0)
 		handler_ptr = osc_list_main_handler;
 	else if (strcmp(path, "/cyperus/add/bus") == 0)

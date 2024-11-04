@@ -27,4 +27,7 @@ Copyright 2024 murray foster
 #define E_CONNECTION_NOT_FOUND 4
 #define E_MODULE_NOT_FOUND 5
 
+#define E_OSC_CLIENT_EXISTS 6
+#define E_OSC_CLIENT_NOT_FOUND 7
+
 #endif

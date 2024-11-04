@@ -145,3 +145,42 @@ char *osc_string_build_bus_list(struct dsp_bus *head_bus,
 	return result_str;
 } /* osc_string_build_bus_list */
 			 
+char *osc_string_build_osc_client_list(const char *separator) {
+	struct osc_client_addr_t *temp_client_addr = NULL;
+	char *single_result_str, *result_str = NULL;
+	size_t single_result_str_size, result_str_size = 0;
+	uint16_t client_idx = 1;
+	temp_client_addr = osc_global.client_addr;
+	
+	while( temp_client_addr != NULL ) {
+		/* construct result string */
+		single_result_str_size = strlen(osc_string_int_to_str(client_idx)) + 1 +
+			strlen(temp_client_addr->send_host_out) + 1 +
+			strlen(temp_client_addr->send_port_out) + 1 +
+		        strlen(osc_string_int_to_str(temp_client_addr->listener_enable)) + 1 +
+			2;
+		result_str_size += single_result_str_size;
+		single_result_str = malloc(sizeof(char) * single_result_str_size);
+		strcpy(single_result_str, osc_string_int_to_str(client_idx));
+		strcat(single_result_str, separator); 
+		strcat(single_result_str, temp_client_addr->send_host_out);
+		strcat(single_result_str, separator);
+		strcat(single_result_str, temp_client_addr->send_port_out);
+		strcat(single_result_str, separator);
+		strcat(single_result_str, osc_string_int_to_str(temp_client_addr->listener_enable));
+		strcat(single_result_str, "\n");
+		
+		if(result_str == NULL) {
+			result_str = malloc(sizeof(char) * single_result_str_size);
+			strcpy(result_str, single_result_str);
+		} else {
+			result_str = realloc(result_str, sizeof(char) * (result_str_size + 1));
+			strcat(result_str, single_result_str);
+		}
+		free(single_result_str);
+
+		temp_client_addr = temp_client_addr->next;
+		client_idx++;
+	}
+	return result_str;
+} /* osc_string_build_osc_client_list */

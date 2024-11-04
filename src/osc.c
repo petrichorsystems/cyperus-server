@@ -127,12 +127,12 @@ struct osc_global_t osc_global;
 int _osc_send_broadcast(const char *path, const char *types, ...) {
 	uint16_t i = 0;
 	va_list ap;
-	const char *file = "";
-	int line = 0;
-	for(i=0; i<osc_global.client_count; i++) {
+	
+	struct osc_client_addr_t *temp_client_addr = osc_global.client_addr; 
+	while( temp_client_addr != NULL ) {
 		lo_address lo_addr_send = lo_address_new(
-			(const char*)(osc_global.client_addrs[i].send_host_out),
-			(const char*)(osc_global.client_addrs[i].send_port_out)
+			(const char*)(temp_client_addr->send_host_out),
+			(const char*)(temp_client_addr->send_port_out)
 			);
 		lo_message lo_msg = lo_message_new();
 		va_start(ap, types);		
@@ -141,22 +141,26 @@ int _osc_send_broadcast(const char *path, const char *types, ...) {
 		lo_send_message(lo_addr_send, path, lo_msg);
 	
 		free(lo_addr_send);
-
+		
+		temp_client_addr = temp_client_addr->next;
 	}
+	
 	return 0;
 } /* osc_broadcast_msg */
 
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out) {
 	bool multipart;
+
+	struct osc_client_addr_t *temp_client_addr = osc_global.client_addr; 	
 	
-	free(osc_global.client_addrs[0].send_host_out);
-	free(osc_global.client_addrs[0].send_port_out);
+	free(temp_client_addr->send_host_out);
+	free(temp_client_addr->send_port_out);
 
-	osc_global.client_addrs[0].send_host_out = malloc(sizeof(char) * strlen(new_host_out) + 1);
-	strcpy(osc_global.client_addrs[0].send_host_out, new_host_out);
+	temp_client_addr->send_host_out = malloc(sizeof(char) * strlen(new_host_out) + 1);
+	strcpy(temp_client_addr->send_host_out, new_host_out);
 
-	osc_global.client_addrs[0].send_port_out = malloc(sizeof(char) * strlen(new_port_out) + 1);
-	strcpy(osc_global.client_addrs[0].send_port_out, new_port_out);
+	temp_client_addr->send_port_out = malloc(sizeof(char) * strlen(new_port_out) + 1);
+	strcpy(temp_client_addr->send_port_out, new_port_out);
 
 	multipart = false;
 	lo_address lo_addr_send = lo_address_new((const char*)new_host_out, (const char*)new_port_out);
@@ -166,24 +170,63 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 	return 0;
 } /* osc_change_address */
 
+int osc_add_client(char *new_host_out, char *new_port_out, bool listener_enable) {
+	struct osc_client_addr_t *last_client_addr, *new_client_addr = NULL;
+	struct osc_client_addr_t *temp_client_addr = osc_global.client_addr;
+
+	pthread_mutex_lock(&osc_global.client_addr_update_mutex);
+	
+	while( temp_client_addr != NULL ) {
+		if( strcmp(new_host_out, temp_client_addr->send_host_out) == 0 &&
+		    strcmp(new_port_out, temp_client_addr->send_port_out) == 0 ) {
+			new_client_addr = NULL;
+			return E_OSC_CLIENT_EXISTS;
+		}
+		if( temp_client_addr->next == NULL )
+			last_client_addr = temp_client_addr;
+		temp_client_addr = temp_client_addr->next;
+	}
+	
+	new_client_addr = malloc(sizeof(struct osc_client_addr_t));
+	new_client_addr->next = NULL;
+
+	new_client_addr->send_host_out = malloc(sizeof(char) * strlen(new_host_out) + 1);
+	strcpy(new_client_addr->send_host_out, new_host_out);
+	new_client_addr->send_port_out = malloc(sizeof(char) * strlen(new_port_out) + 1);
+	strcpy(new_client_addr->send_port_out, new_port_out);
+	new_client_addr->listener_enable = listener_enable;
+	last_client_addr->next = new_client_addr;
+
+	pthread_mutex_unlock(&osc_global.client_addr_update_mutex);
+	
+	return 0;
+} /* osc_add_client */
+
 void
 osc_callback_timer_callback(int signum) {
-	lo_address lo_addr_send = lo_address_new(
-		(const char*)(osc_global.client_addrs[0].send_host_out),
-		(const char*)(osc_global.client_addrs[0].send_port_out)
-		);
-	struct dsp_operation *temp_op = NULL;  
+	
+	struct osc_client_addr_t *temp_client_addr = osc_global.client_addr;	
+	while( temp_client_addr != NULL ) {
+		if( temp_client_addr->listener_enable ) {
+			lo_address lo_addr_send = lo_address_new(
+				(const char*)(temp_client_addr->send_host_out),
+				(const char*)(temp_client_addr->send_port_out)
+				);
+			struct dsp_operation *temp_op = NULL;  
 
-	lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global.cpu_load);
+			lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global.cpu_load);
   
-	temp_op = dsp_global.operation_head;
-	while(temp_op != NULL) {
-		/* execute appropriate listener function */
-		if( temp_op->module != NULL )
-			if( temp_op->module->dsp_osc_listener_function != NULL )
-				temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
-		temp_op = temp_op->next;
-	}
+			temp_op = dsp_global.operation_head;
+			while(temp_op != NULL) {
+				/* execute appropriate listener function */
+				if( temp_op->module != NULL )
+					if( temp_op->module->dsp_osc_listener_function != NULL )
+						temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
+				temp_op = temp_op->next;
+			}
+		}
+		temp_client_addr = temp_client_addr->next;
+	}	
 } /* osc_callback_timer_callback */
 
 void *
@@ -223,19 +266,19 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 	/*     return 1; */
 	/* } */
 
-	struct osc_client_addr_t client_addr;
-	
-	osc_global.client_addrs = malloc(sizeof(struct osc_client_addr_t));
-	
-	osc_global.client_addrs[0].send_host_out = malloc(sizeof(char) * 10);
-	strcpy(osc_global.client_addrs[0].send_host_out, "127.0.0.1");
+	struct osc_client_addr_t *client_addr = malloc(sizeof(struct osc_client_addr_t));
 
-	osc_global.client_addrs[0].send_port_out = malloc(sizeof(char) * 6);
-	strcpy(osc_global.client_addrs[0].send_port_out, osc_port_out);
-
-	osc_global.client_addrs[0].listener_enable = true;
+	pthread_mutex_init(&osc_global.client_addr_update_mutex, NULL);
 	
-	osc_global.client_count = 1;
+	client_addr->send_host_out = malloc(sizeof(char) * 10);
+	strcpy(client_addr->send_host_out, "127.0.0.1");
+
+	client_addr->send_port_out = malloc(sizeof(char) * 6);
+	strcpy(client_addr->send_port_out, osc_port_out);
+
+	client_addr->listener_enable = true;
+
+	osc_global.client_addr = client_addr;
 	
 	osc_global.lo_thread = lo_server_thread_new(osc_port_in, osc_error);
 	lo_server_thread_add_method(osc_global.lo_thread, NULL, NULL, cyperus_osc_handler, NULL);
