@@ -608,6 +608,38 @@ int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** 
 	return 0;
 } /* osc_list_module_port_handler */
 
+int osc_get_system_env_variable_handler(const char *path, const char *types, lo_arg ** argv,
+					int argc, void *data, void *user_data)
+{
+	char *request_id = NULL;
+
+	char *temp_env_var = NULL;
+	char env_var[PATH_MAX];
+	char *var_name = NULL;
+	int errno = 0;
+	bool multipart = false;
+	
+  
+	request_id = (char *)argv[0];
+	var_name = (char *)argv[1];
+
+	if( (temp_env_var = getenv((const char*) var_name) ) != NULL )
+		strncpy(env_var, temp_env_var, PATH_MAX - 1);
+	else
+		strncpy(env_var, "", PATH_MAX - 1);
+
+	multipart = false;
+	osc_send_broadcast("/cyperus/get/system/env_variable",
+			   "siiss",
+			   request_id,
+			   errno,
+			   multipart,
+			   (char *)var_name,
+			   env_var);
+  return 0;
+  
+} /* osc_get_system_env_variable_handler */
+
 int osc_get_filesystem_cwd_handler(const char *path, const char *types, lo_arg ** argv,
                                         int argc, void *data, void *user_data)
 {
@@ -1260,6 +1292,9 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 	
 	else if (strcmp(path, "/cyperus/get/graph/id") == 0)
 		handler_ptr = osc_get_graph_id_handler;
+
+	else if (strcmp(path, "/cyperus/get/system/env_variable") == 0)
+		handler_ptr = osc_get_system_env_variable_handler;	
 	
 	else if (strcmp(path, "/cyperus/get/filesystem/cwd") == 0)
 		handler_ptr = osc_get_filesystem_cwd_handler;
