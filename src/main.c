@@ -28,18 +28,11 @@ void print_usage() {
 	 " -rp,  --receive-port  osc interface receiving port. default: 97211\n"
 	 " -sp,  --send-port     osc interface sending port. default: 97217\n"
          " -p,   --period        frames per period. default: 128\n"
-	 "documentation available soon\n\n");
+	 "\n\n");
 } /* print_usage */
 
 void print_header(void) {
-  printf("\n\n"
-	 "welcome to the\n"	                             
-	 ",-. . . ,-. ,-. ,-. . . ,-. \n"
-	 "|   | | | | |-' |   | | `-. \n"
-	 "`-' `-| |-' `-' '   `-' `-' \n"
-	 "     /| |                   \n"
-	 "    `-' '                   \n"
-	 "\t\trealtime music system\n\n\n");
+  printf("cyperus-server\n");
 } /* print_header */
 
 int main(int argc, char *argv[])
@@ -141,7 +134,7 @@ int main(int argc, char *argv[])
   dsp_setup(period, input, output);
   dsp_graph_id_init();
 
-  jackcli_setup("cyperus", bitdepth, input, output);
+  jackcli_setup("cyperus-server", bitdepth, input, output);
 
   printf("channels in: %d\n", input);
   printf("channels out: %d\n", output);
@@ -149,11 +142,9 @@ int main(int argc, char *argv[])
   printf("bitdepth: %dbits\n", bitdepth);
   printf("period: %d frames\n", period);
   printf("osc receive port: %s\n", osc_port_in);
-  printf("osc send port: %s\n\n\n", osc_port_out);
+  printf("osc send port: %s\n", osc_port_out);
   
   osc_setup(osc_port_in, osc_port_out, "127.0.0.1");
-  
-  printf("press <ENTER> to quit\n\n");
   
   while(1) {
     usleep(500000);

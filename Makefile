@@ -5,7 +5,7 @@ module_utils = src/modules/math_utils.c
 
 all:
 	mkdir -p build/
-	gcc -o build/cyperus $(core) $(module_utils) $(dsp_module_sources) -lm -lpthread -ljack -llo -luuid
+	gcc -o build/cyperus-server $(core) $(module_utils) $(dsp_module_sources) -lm -lpthread -ljack -llo -luuid
 
 clean:
 	rm -r build/
