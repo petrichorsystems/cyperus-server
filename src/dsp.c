@@ -684,7 +684,7 @@ dsp_optimize_connections_bus(struct dsp_bus_port *ports) {
 } /* dsp_optimize_connections_bus */
 
 void
-dsp_optimize_graph(struct dsp_bus *head_bus) {
+dsp_optimize_bus(struct dsp_bus *head_bus) {
   struct dsp_module *temp_module;
   struct dsp_bus *temp_bus = head_bus;
   
@@ -701,12 +701,12 @@ dsp_optimize_graph(struct dsp_bus *head_bus) {
     
     /* process bus outputs */
     dsp_optimize_connections_bus(temp_bus->outs);
-    dsp_optimize_graph(temp_bus->down);
+    dsp_optimize_bus(temp_bus->down);
     temp_bus = temp_bus->next;
   }
   
   return;
-} /* dsp_optimize_graph */
+} /* dsp_optimize_bus */
 
 void
 dsp_build_mains(int channels_in, int channels_out) {
@@ -801,7 +801,7 @@ void
 	dsp_global.operation_head_processing = NULL;
 	dsp_build_optimized_main_outs();
 	dsp_optimize_connections_main_inputs(dsp_global.main_ins);
-	dsp_optimize_graph(dsp_global.bus_head);
+	dsp_optimize_bus(dsp_global.bus_head);
 	dsp_global_new_operation_graph = true;
   
 } /* dsp_build_optimized_graph */

@@ -69,7 +69,7 @@ void
 dsp_optimize_connections_input(struct dsp_connection *connection);
 
 void
-dsp_optimize_graph(struct dsp_bus *head_bus);
+dsp_optimize_bus(struct dsp_bus *head_bus);
 
 void
 dsp_build_mains(int channels_in, int channels_out);
