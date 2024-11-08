@@ -78,16 +78,16 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
 	params.parameters->float32_type[6] = direction;  /* old direction */
 	params.parameters->float32_type[7] = auto_reset; /* old auto_reset */
   
-	ins = dsp_port_in_init("trigger", 512);
-	ins->next = dsp_port_in_init("param_reset", 512);
-	ins->next->next = dsp_port_in_init("param_start", 512);
-	ins->next->next->next = dsp_port_in_init("param_step_size", 512);
-	ins->next->next->next->next = dsp_port_in_init("param_min", 512);
-	ins->next->next->next->next->next = dsp_port_in_init("param_max", 512);
-	ins->next->next->next->next->next->next = dsp_port_in_init("param_direction", 512);
-	ins->next->next->next->next->next->next->next = dsp_port_in_init("param_auto_reset", 512);
+	ins = dsp_port_in_init("trigger");
+	ins->next = dsp_port_in_init("param_reset");
+	ins->next->next = dsp_port_in_init("param_start");
+	ins->next->next->next = dsp_port_in_init("param_step_size");
+	ins->next->next->next->next = dsp_port_in_init("param_min");
+	ins->next->next->next->next->next = dsp_port_in_init("param_max");
+	ins->next->next->next->next->next->next = dsp_port_in_init("param_direction");
+	ins->next->next->next->next->next->next->next = dsp_port_in_init("param_auto_reset");
 	
-	outs = dsp_port_out_init("out", 1);
+	outs = dsp_port_out_init("out");
 
 	dsp_add_module(target_bus,
 		       "utils_counter",

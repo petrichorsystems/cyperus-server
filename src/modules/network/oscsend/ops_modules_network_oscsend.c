@@ -56,7 +56,7 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 	params.parameters->int32_type[0] = port;
 	params.parameters->float32_type[0] = freq_div;
 	
-	ins = dsp_port_in_init("in", 512);
+	ins = dsp_port_in_init("in");
 	
 	dsp_add_module(target_bus,
 		       "network_oscsend",

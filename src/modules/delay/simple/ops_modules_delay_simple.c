@@ -83,11 +83,11 @@ dsp_create_delay_simple(struct dsp_bus *target_bus,
   params.parameters->float32_type[2] = feedback;
 
   
-  ins = dsp_port_in_init("in", 512);
-  ins->next = dsp_port_in_init("param_amount", 512);
-  ins->next->next = dsp_port_in_init("param_time", 512);
-  ins->next->next->next = dsp_port_in_init("param_feedback", 512);  
-  outs = dsp_port_out_init("out", 1);
+  ins = dsp_port_in_init("in");
+  ins->next = dsp_port_in_init("param_amount");
+  ins->next->next = dsp_port_in_init("param_time");
+  ins->next->next->next = dsp_port_in_init("param_feedback");  
+  outs = dsp_port_out_init("out");
   
   dsp_add_module(target_bus,
 		 "delay_simple",

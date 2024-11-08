@@ -59,9 +59,9 @@ dsp_create_oscillator_clock(struct dsp_bus *target_bus,
   params.parameters->float32_type[1] = amplitude; /* old amplitude */
   
   
-  ins = dsp_port_in_init("param_frequency", 512);
-  ins->next = dsp_port_in_init("param_amplitude", 512);
-  outs = dsp_port_out_init("out", 1);
+  ins = dsp_port_in_init("param_frequency");
+  ins->next = dsp_port_in_init("param_amplitude");
+  outs = dsp_port_out_init("out");
 
   dsp_add_module(target_bus,
 		 "oscillator_clock",

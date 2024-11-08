@@ -53,10 +53,10 @@ dsp_create_utils_equals(struct dsp_bus *target_bus,
 	params.parameters->float32_type[2] = x; /* last x */
 	params.parameters->float32_type[3] = y; /* last y */
 
-	ins = dsp_port_in_init("x", 512);
-	ins->next = dsp_port_in_init("y", 512);
+	ins = dsp_port_in_init("x");
+	ins->next = dsp_port_in_init("y");
   
-	outs = dsp_port_out_init("out", 1);
+	outs = dsp_port_out_init("out");
   
 	dsp_add_module(target_bus,
 		       "utils_equals",

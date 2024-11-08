@@ -172,7 +172,6 @@ struct dsp_port_out {
   struct dsp_port_out *next;
   struct dsp_port_out *prev;
   float value;
-  int audio;
   int remove; /* boolean remove flag */
 };
 
@@ -271,11 +270,11 @@ struct dsp_translation_sample {
 
 char *dsp_generate_object_id();
 
-struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size);
+struct dsp_port_in* dsp_port_in_init(const char *port_name);
 void dsp_port_in_insert_head(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
 void dsp_port_in_insert_tail(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
 
-struct dsp_port_out* dsp_port_out_init(const char *port_name, int audio);
+struct dsp_port_out* dsp_port_out_init(const char *port_name);
 void dsp_port_out_insert_head(struct dsp_port_out *head_port, struct dsp_port_out *port_out);
 void dsp_port_out_insert_tail(struct dsp_port_out *head_port, struct dsp_port_out *port_out);
 

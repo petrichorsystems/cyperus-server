@@ -62,10 +62,10 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
   params.parameters->float32_type[3] = phase;
   
   
-  ins = dsp_port_in_init("param_frequency", 512);
-  ins->next = dsp_port_in_init("param_amplitude", 512);
-  ins->next->next = dsp_port_in_init("param_phase", 512);
-  outs = dsp_port_out_init("out", 1);
+  ins = dsp_port_in_init("param_frequency");
+  ins->next = dsp_port_in_init("param_amplitude");
+  ins->next->next = dsp_port_in_init("param_phase");
+  outs = dsp_port_out_init("out");
 
   dsp_add_module(target_bus,
 		 "oscillator_sine",

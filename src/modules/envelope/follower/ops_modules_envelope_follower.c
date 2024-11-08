@@ -63,11 +63,11 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
   params.parameters->float32_type[2] = decay;
   params.parameters->float32_type[3] = scale;
   
-  ins = dsp_port_in_init("in", 512);
-  ins->next = dsp_port_in_init("param_attack", 512);
-  ins->next->next = dsp_port_in_init("param_decay", 512);
-  ins->next->next->next = dsp_port_in_init("param_scale", 512);
-  outs = dsp_port_out_init("out", 1);
+  ins = dsp_port_in_init("in");
+  ins->next = dsp_port_in_init("param_attack");
+  ins->next->next = dsp_port_in_init("param_decay");
+  ins->next->next->next = dsp_port_in_init("param_scale");
+  outs = dsp_port_out_init("out");
 
   dsp_add_module(target_bus,
 		 "envelope_follower",

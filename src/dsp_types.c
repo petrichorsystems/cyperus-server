@@ -37,7 +37,7 @@ char* dsp_generate_object_id() {
   return id;
 }
 
-struct dsp_port_in* dsp_port_in_init(const char *port_name, int fifo_size) {
+struct dsp_port_in* dsp_port_in_init(const char *port_name) {
 
   struct dsp_port_in *new_port = (struct dsp_port_in*)malloc(sizeof(struct dsp_port_in));
   new_port->prev = NULL;
@@ -92,7 +92,7 @@ void dsp_port_in_list_reverse(struct dsp_port_in *head_port) {
   } 
 }
 
-struct dsp_port_out* dsp_port_out_init(const char *port_name, int audio) {
+struct dsp_port_out* dsp_port_out_init(const char *port_name) {
   struct dsp_port_out *new_port = (struct dsp_port_out*)malloc(sizeof(struct dsp_port_out));
   new_port->prev = NULL;
   new_port->next = NULL;
@@ -100,7 +100,6 @@ struct dsp_port_out* dsp_port_out_init(const char *port_name, int audio) {
   strcpy((char *)new_port->name, port_name);
   new_port->id = dsp_generate_object_id();
   new_port->remove = 0;
-  new_port->audio = audio;
   new_port->value = (float)0; /* should we init this at 0? */
   return new_port;
 }

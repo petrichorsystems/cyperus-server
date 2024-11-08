@@ -83,12 +83,12 @@ dsp_create_filter_bandpass(struct dsp_bus *target_bus,
   
   math_modules_filter_bandpass_init(&params);
   
-  ins = dsp_port_in_init("in", 512);
-  ins->next = dsp_port_in_init("param_frequency", 512);
-  ins->next->next = dsp_port_in_init("param_q", 512);
-  ins->next->next->next = dsp_port_in_init("param_amount", 512);  
+  ins = dsp_port_in_init("in");
+  ins->next = dsp_port_in_init("param_frequency");
+  ins->next->next = dsp_port_in_init("param_q");
+  ins->next->next->next = dsp_port_in_init("param_amount");  
 
-  outs = dsp_port_out_init("out", 1);
+  outs = dsp_port_out_init("out");
 
   dsp_add_module(target_bus,
 		 "filter_bandpass",

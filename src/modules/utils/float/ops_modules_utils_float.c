@@ -52,8 +52,8 @@ dsp_create_utils_float(struct dsp_bus *target_bus,
   /* osc listener parameters */
   params.parameters->float32_type[0] = value;
 
-  ins = dsp_port_in_init("value", 512);
-  outs = dsp_port_out_init("out", 1);
+  ins = dsp_port_in_init("value");
+  outs = dsp_port_out_init("out");
 
   dsp_add_module(target_bus,
 		 "utils_float",

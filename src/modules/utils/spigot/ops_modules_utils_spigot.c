@@ -52,10 +52,10 @@ dsp_create_utils_spigot(struct dsp_bus *target_bus,
 	/* internal parameter assignment */
 	params.parameters->float32_type[0] = open; /* last open state */
   
-	ins = dsp_port_in_init("in", 512);
-	ins->next = dsp_port_in_init("open", 512);
+	ins = dsp_port_in_init("in");
+	ins->next = dsp_port_in_init("open");
 
-	outs = dsp_port_out_init("out", 1);
+	outs = dsp_port_out_init("out");
 	
 	dsp_add_module(target_bus,
 		       "utils_spigot",
