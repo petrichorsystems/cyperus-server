@@ -708,6 +708,118 @@ dsp_optimize_bus(struct dsp_bus *head_bus) {
   return;
 } /* dsp_optimize_bus */
 
+void
+dsp_remove_bus_recursive(struct dsp_bus *head_bus) {
+	struct dsp_module *temp_module;
+	struct dsp_bus *temp_bus = head_bus;
+	struct dsp_bus *target_bus = NULL;
+
+	struct dsp_bus_port *temp_bus_port_in = NULL;
+	struct dsp_bus_port *temp_bus_port_out = NULL;
+	struct dsp_bus_port *target_bus_port = NULL;
+
+	struct dsp_port_in *temp_port_in = NULL;
+	struct dsp_port_in *target_port_in = NULL;
+
+	struct dsp_port_out *temp_port_out = NULL;
+	struct dsp_port_out *target_port_out = NULL;
+	
+	struct dsp_connection *temp_connection = NULL;
+
+	while(temp_bus != NULL) {
+	  
+		temp_bus_port_in = temp_bus->ins;
+		while(temp_bus_port_in != NULL) {
+			target_bus_port = temp_bus_port_in;
+			temp_connection = dsp_global.connection_graph;
+			while(temp_connection != NULL) {
+				if( strcmp(temp_connection->id_in,
+					   temp_bus_port_in->id) == 0 )
+					dsp_remove_connection((char *)temp_connection->id);
+				temp_connection = temp_connection->next;
+			}
+
+			/* free bus port's ports */
+			
+			free((char *)target_bus_port->name);
+			free((char *)target_bus_port->id);
+			temp_bus_port_in = temp_bus_port_in->next;
+			free(target_bus_port);
+		}
+		temp_bus->ins = NULL;
+
+		temp_module = temp_bus->dsp_module_head;
+		while(temp_module != NULL) {
+
+			temp_port_in = temp_module->ins;
+			while(temp_port_in != NULL) {
+				target_port_in = temp_port_in;
+
+				temp_connection = dsp_global.connection_graph;
+				while(temp_connection != NULL) {
+					if( strcmp(temp_connection->id_in,
+						   temp_port_in->id) == 0 )
+						dsp_remove_connection((char *)temp_connection->id);
+					temp_connection = temp_connection->next;
+				}
+				
+				free((char *)target_port_in->id);
+				temp_port_in = temp_port_in->next;
+				free(target_port_in);
+			}
+
+			temp_port_out = temp_module->outs;
+			while(temp_port_out != NULL) {
+				target_port_out = temp_port_out;
+
+				temp_connection = dsp_global.connection_graph;
+				while(temp_connection != NULL) {
+					if( strcmp(temp_connection->id_out,
+						   temp_port_out->id) == 0 )
+						dsp_remove_connection((char *)temp_connection->id);
+					temp_connection = temp_connection->next;
+				}
+				
+				free((char *)target_port_out->id);
+				temp_port_out = temp_port_out->next;
+				free(target_port_out);
+			}
+			
+			temp_module = temp_module->next;
+		}
+		temp_bus->dsp_module_head = NULL;
+		
+		temp_bus_port_out = temp_bus->outs;
+		while(temp_bus_port_out != NULL) {
+			target_bus_port = temp_bus_port_out;
+
+			temp_connection = dsp_global.connection_graph;
+			while(temp_connection != NULL) {
+				if( strcmp(temp_connection->id_out,
+					   temp_bus_port_out->id) == 0 )
+					dsp_remove_connection((char *)temp_connection->id);
+				temp_connection = temp_connection->next;
+			}
+
+			/* free bus port's ports */
+			
+			free((char *)target_bus_port->name);
+			free((char *)target_bus_port->id);
+			temp_bus_port_out = temp_bus_port_out->next;
+			free(target_bus_port);
+		}
+		temp_bus->outs = NULL;
+		
+		dsp_remove_bus_recursive(temp_bus->down);
+		
+		target_bus = temp_bus;
+		temp_bus = temp_bus->next;
+		free((char *)target_bus->id);
+		free(target_bus);
+	}
+  
+	return;
+} /* dsp_remove_bus_recursive */
 
 
 void
