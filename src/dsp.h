@@ -60,7 +60,7 @@ int
 dsp_add_connection(char *id_out, char *id_in, char **new_connection_id);
 
 int
-dsp_remove_connection(char *connection_id);
+dsp_remove_connection(char *connection_id, bool mutex);
 
 void
 dsp_optimize_connections_bus(struct dsp_bus_port *ports);
@@ -70,6 +70,12 @@ dsp_optimize_connections_input(struct dsp_connection *connection);
 
 void
 dsp_optimize_bus(struct dsp_bus *head_bus);
+
+void
+dsp_remove_bus_descendants_recursive(struct dsp_bus *head_bus);
+
+void
+dsp_remove_bus(struct dsp_bus *target_bus, bool recursive);
 
 void
 dsp_build_mains(int channels_in, int channels_out);

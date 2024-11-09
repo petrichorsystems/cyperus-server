@@ -51,6 +51,9 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg ** argv,
 
 int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 			int argc, void *data, void *user_data);
+int osc_remove_bus_handler(const char *path, const char *types, lo_arg **argv,
+			   int argc, void *data, void *user_data);
+
 int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 			int argc, void *data, void *user_data);
 
@@ -61,13 +64,13 @@ int osc_add_connection_handler(const char *path, const char *types, lo_arg **arg
 			       int argc, void *data, void *user_data);
 
 int osc_remove_connection_handler(const char *path, const char *types, lo_arg **argv,
-			       int argc, void *data, void *user_data);
+				  int argc, void *data, void *user_data);
 
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
 			      int argc, void *data, void *user_data);
 
 int osc_list_module_handler(const char *path, const char *types, lo_arg ** argv,
-			     int argc, void *data, void *user_data);
+			    int argc, void *data, void *user_data);
 
 int osc_get_system_env_variable_handler(const char *path, const char *types, lo_arg ** argv,
 					int argc, void *data, void *user_data);

@@ -393,6 +393,40 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
   return 0;
 } /* osc_add_bus_handler */
 
+int osc_remove_bus_handler(const char *path, const char *types, lo_arg **argv,
+			   int argc, void *data, void *user_data)
+{
+	char *request_id = NULL;
+	char *bus_id = NULL;
+
+	struct dsp_bus *target_bus = NULL;
+	bool multipart = false;
+	int errno = 0;
+  
+	request_id = (char *)argv[0];
+	bus_id = (char *)argv[1];
+
+	printf("path: <%s>\n", path);
+
+	target_bus = dsp_find_bus(bus_id);
+
+	if( target_bus == NULL )
+		errno = E_BUS_NOT_FOUND;
+	else
+		dsp_remove_bus(target_bus, true);
+	
+	multipart = false;
+	osc_send_broadcast("/cyperus/remove/bus",
+			   "siis",
+			   request_id,
+			   errno,
+			   multipart,
+			   bus_id);
+
+	return 0;
+} /* osc_remove_bus_handler */
+
+
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
                                      int argc, void *data, void *user_data)
 {
@@ -462,7 +496,7 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 	request_id = (char *)argv[0];
 	connection_id = (char *)argv[1];
 
-	errno = dsp_remove_connection(connection_id);
+	errno = dsp_remove_connection(connection_id, true);
 
 	if( connection_id == NULL ) {
 		printf("osc_remove_connection_handler(), connection_id: %s\n", connection_id);
@@ -1218,8 +1252,12 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 		handler_ptr = osc_add_osc_client_handler;	
 	else if (strcmp(path, "/cyperus/list/main") == 0)
 		handler_ptr = osc_list_main_handler;
+
 	else if (strcmp(path, "/cyperus/add/bus") == 0)
 		handler_ptr = osc_add_bus_handler;
+	else if (strcmp(path, "/cyperus/remove/bus") == 0)
+		handler_ptr = osc_remove_bus_handler;
+
 	else if (strcmp(path, "/cyperus/list/bus") == 0)
 		handler_ptr = osc_list_bus_handler;
 	else if (strcmp(path, "/cyperus/list/bus_port") == 0)
