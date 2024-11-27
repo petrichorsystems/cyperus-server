@@ -31,6 +31,7 @@ struct dsp_global_t {
 
 	bool build_new_optimized_graph;
 	bool new_operation_graph;
+	bool graph_cleanup_do;
 	
 	pthread_mutex_t graph_state_mutex;
 	pthread_mutex_t optimization_mutex;
@@ -38,6 +39,9 @@ struct dsp_global_t {
 	pthread_mutex_t optimization_condition_mutex;
 	pthread_cond_t optimization_condition_cond;
 
+	pthread_mutex_t graph_cleanup_condition_mutex;
+	pthread_cond_t graph_cleanup_condition_cond;	
+	
 	struct dsp_operation *operation_head_processing;
 	struct dsp_operation *operation_head;
 
@@ -190,6 +194,7 @@ struct dsp_module {
   struct dsp_module *next;
   struct dsp_module *prev;
   void (*dsp_function) (struct dsp_operation*, int);
+  int (*dsp_destroy_function) (struct dsp_module*);	
   void (*dsp_osc_listener_function) (struct dsp_operation*, int);
   struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*);
   dsp_parameter dsp_param;
@@ -201,14 +206,17 @@ struct dsp_module {
 };
 
 struct dsp_bus_port {
-  const char *id;
-  char *name;
-  struct dsp_bus_port    *next;
-  struct dsp_bus_port    *prev;
-  struct dsp_port_in *in;
-  struct dsp_port_out *out;
-  int output; /* boolean "is output" flag */
-  int remove; /* boolean remove flag */
+	const char *id;
+	char *name;
+	struct dsp_bus_port    *next;
+	struct dsp_bus_port    *prev;
+	struct dsp_port_in *in;
+	struct dsp_port_out *out;
+
+	struct dsp_bus *parent_bus;
+	
+	int output; /* boolean "is output" flag */
+	int remove; /* boolean remove flag */
 };
   
 struct dsp_bus {
@@ -221,8 +229,8 @@ struct dsp_bus {
   struct dsp_module *dsp_module_head;
   struct dsp_bus_port *ins;
   struct dsp_bus_port *outs;
-  int remove; /* boolean remove flag */
-  int bypass; /* boolean bypass flag */
+  bool remove; /* boolean remove flag */
+  bool bypass; /* boolean bypass flag */
 };
 
 struct dsp_sample {
@@ -240,13 +248,13 @@ struct dsp_operation_sample {
 };
 
 struct dsp_operation {
-  const char *id;
-  const char *dsp_id;
-  struct dsp_operation *next;
-  struct dsp_operation *prev;
-  struct dsp_module *module;
-  struct dsp_operation_sample *ins;
-  struct dsp_operation_sample *outs;
+	const char *id;
+	const char *dsp_id;
+	struct dsp_operation *next;
+	struct dsp_operation *prev;
+	struct dsp_module *module;
+	struct dsp_operation_sample *ins;
+	struct dsp_operation_sample *outs;
 };
 
 struct dsp_translation_connection {
@@ -292,11 +300,15 @@ void dsp_connection_free(struct dsp_connection *connection);
 
 struct dsp_module* dsp_module_init(const char *module_name,
 				   void (*dsp_function) (struct dsp_operation*, int),
+				   int (*dsp_destroy_function) (struct dsp_module*),
                                    void (*dsp_osc_listener_function) (struct dsp_operation*, int),
 				   struct dsp_operation *(*dsp_optimize) (char *, struct dsp_module*),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,
 				   struct dsp_port_out *outs);
+
+int dsp_module_free(struct dsp_module *target_module);
+
 void dsp_module_insert_head(struct dsp_module *head_module, struct dsp_module *new_module);
 void dsp_module_insert_tail(struct dsp_module *head_module, struct dsp_module *new_module);
 

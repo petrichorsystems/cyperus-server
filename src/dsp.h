@@ -36,10 +36,13 @@ extern unsigned short dsp_global_period;
 extern bool dsp_global_new_operation_graph;
 
 struct dsp_bus_port*
-dsp_build_bus_ports(struct dsp_bus_port *head_port, char *bus_ports, int out);
+dsp_build_bus_ports(struct dsp_bus *parent_bus, struct dsp_bus_port *head_port, char *bus_ports, int out);
 
-void
-dsp_remove_module(struct dsp_module *module, int remove);
+int
+dsp_free_module(struct dsp_bus *parent_bus, struct dsp_module *target_module, bool mutex);
+
+int
+dsp_remove_module(struct dsp_module *target_module);
 
 void
 dsp_bypass_module(struct dsp_module *module, int bypass);
@@ -48,6 +51,7 @@ struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (struct dsp_operation*, int),
+	       int (*dsp_destroy_function) (struct dsp_module*),	       
                void (*dsp_osc_listener_function) (struct dsp_operation*, int),
 	       struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
@@ -71,11 +75,14 @@ dsp_optimize_connections_input(struct dsp_connection *connection);
 void
 dsp_optimize_bus(struct dsp_bus *head_bus);
 
-void
-dsp_remove_bus_descendants_recursive(struct dsp_bus *head_bus);
+int
+dsp_free_bus_descendants_recursive(struct dsp_bus *head_bus);
 
-void
-dsp_remove_bus(struct dsp_bus *target_bus, bool recursive);
+int
+dsp_free_bus(struct dsp_bus *target_bus, bool recursive, bool mutex);
+
+int
+dsp_remove_bus(struct dsp_bus *target_bus);
 
 void
 dsp_build_mains(int channels_in, int channels_out);
@@ -85,6 +92,9 @@ dsp_build_optimized_main_outs();
 
 void
 *dsp_build_optimized_graph(void *arg);
+
+void
+dsp_signal_graph_cleanup();
 
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos);

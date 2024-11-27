@@ -22,7 +22,8 @@ bool dsp_global_new_operation_graph = false;
 unsigned short dsp_global_period = 0;
 
 struct dsp_bus_port*
-dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
+dsp_build_bus_ports(struct dsp_bus *parent_bus,
+		    struct dsp_bus_port *head_bus_port,
 		    char *bus_ports, int out) {
 
   char *target_bus_ports = malloc(sizeof(char) * strlen(bus_ports) + 1);
@@ -53,6 +54,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
     port_out = dsp_port_out_init("out");
     temp_bus_port->in = port_in;
     temp_bus_port->out = port_out;
+    temp_bus_port->parent_bus = parent_bus;
 
     if(head_bus_port != NULL) {
       dsp_bus_port_insert_tail(head_bus_port, temp_bus_port);
@@ -76,6 +78,7 @@ dsp_build_bus_ports(struct dsp_bus_port *head_bus_port,
 	    port_out = dsp_port_out_init("out");
 	    temp_bus_port->in = port_in;
 	    temp_bus_port->out = port_out;
+	    temp_bus_port->parent_bus = parent_bus;	    
 	    if(head_bus_port != NULL)
 	      dsp_bus_port_insert_tail(head_bus_port, temp_bus_port);
 	    else
@@ -97,13 +100,13 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 	/* create bus */
 	if(ins != NULL) {
 		temp_bus_port = new_bus->ins;
-		temp_bus_port = dsp_build_bus_ports(temp_bus_port, ins, 0);
+		temp_bus_port = dsp_build_bus_ports(new_bus, temp_bus_port, ins, 0);
 		new_bus->ins = temp_bus_port;
 	}
 
 	if(outs != NULL) {
 		temp_bus_port = new_bus->outs;
-		temp_bus_port = dsp_build_bus_ports(temp_bus_port, outs, 1); /* output port */
+		temp_bus_port = dsp_build_bus_ports(new_bus, temp_bus_port, outs, 1); /* output port */
 		new_bus->outs = temp_bus_port;
 	}
 
@@ -153,6 +156,7 @@ struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
 	       void (*dsp_function) (struct dsp_operation*, int),
+	       int (*dsp_destroy_function) (struct dsp_module*),
                void (*dsp_osc_listener_function) (struct dsp_operation*, int),
 	       struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 	       dsp_parameter dsp_param,
@@ -160,6 +164,7 @@ dsp_add_module(struct dsp_bus *target_bus,
 	       struct dsp_port_out *outs) {
 	struct dsp_module *new_module  = dsp_module_init(name,
 							 dsp_function,
+							 dsp_destroy_function,
 							 dsp_osc_listener_function,
 							 dsp_optimize,
 							 dsp_param,
@@ -182,16 +187,6 @@ dsp_add_module(struct dsp_bus *target_bus,
 } /* dsp_add_module */
 
 void
-dsp_remove_module(struct dsp_module *module, int remove) {
-	
-  module->remove = remove;
-  /* graph changed, generate new graph id */
-  dsp_graph_id_rebuild();
-  
-  return;
-} /* dsp_remove_module */
-
-void
 dsp_bypass_module(struct dsp_module *module, int bypass) {
   module->bypass = bypass;
 
@@ -206,6 +201,12 @@ dsp_signal_graph_optimization() {
 	dsp_global.build_new_optimized_graph = true;
 	pthread_cond_signal(&dsp_global.optimization_condition_cond);
 } /* dsp_signal_graph_optimization */
+
+void
+dsp_signal_graph_cleanup() {
+	dsp_global.graph_cleanup_do = true;
+	pthread_cond_signal(&dsp_global.graph_cleanup_condition_cond);
+} /* dsp_signal_graph_cleanup */
 
 int
 dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
@@ -277,14 +278,18 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 int
 dsp_remove_connection(char *connection_id, bool mutex) {
 	struct dsp_connection *temp_connection, *prev_connection, *next_connection;
+
+	printf("dsp.c::dsp_remove_connection()\n");
+
+
+	if( mutex )
+		pthread_mutex_lock(&dsp_global.graph_state_mutex);
+
 	
 	if(dsp_global.connection_graph) {
 		temp_connection = dsp_global.connection_graph;
 		while(temp_connection != NULL) {
 			if( (!strcmp(temp_connection->id, connection_id)) ) {
-
-				if( mutex )
-					pthread_mutex_lock(&dsp_global.graph_state_mutex);
 
 				prev_connection = temp_connection->prev;
 				next_connection = temp_connection->next;
@@ -303,18 +308,18 @@ dsp_remove_connection(char *connection_id, bool mutex) {
 					next_connection->prev = prev_connection;
 				}
 				
-				dsp_connection_free(temp_connection);
+				/* dsp_connection_free(temp_connection); */
 
 				dsp_signal_graph_optimization();
-
-				if( mutex )
-					pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 
 				return 0;
 			}
 			temp_connection = temp_connection->next;
 		}
 	}
+
+	if( mutex )
+		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 
 	/* error */
 	return E_CONNECTION_NOT_FOUND;
@@ -327,7 +332,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	
 	/* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
 	   versus dsp_global.operation_head_processing is not populated? do we care? */
-
+	
 	struct dsp_port_out *temp_port_out = NULL;
 	struct dsp_port_in *temp_port_in = NULL;
 
@@ -353,8 +358,9 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 
 	struct dsp_translation_connection *temp_translation_conn = NULL;
 
-	struct dsp_bus *temp_bus;
-	struct dsp_module *temp_module;
+	struct dsp_bus *temp_bus = NULL;
+	struct dsp_module *temp_module = NULL;
+	struct dsp_bus_port *temp_bus_port = NULL;
 
 	int is_main_in_out = 0;
 	int is_bus_port_out = 0;
@@ -367,22 +373,49 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	int module_out_exists = 0;
 	
 	int error_not_found;
-  
-	/* OUTPUT PROCESSING */
-	error_not_found = 0;
 
 	if( dsp_find_main_in_port_out((char *)connection->id_out) != NULL ) {
 		is_main_in_out = 1;
 	} else if( dsp_find_module_port_out((char *)connection->id_out) != NULL ) {
 		is_module_out = 1;
-	} else if( dsp_find_bus_port_out((char *)connection->id_out) != NULL ) {
+		temp_module = dsp_get_module_from_port((char *)connection->id_out);
+		if( temp_module-> remove )
+			return;
+	} else if( (temp_bus_port = dsp_find_bus_port_out((char *)connection->id_out)) != NULL ) {
+		/* printf("dsp.c::dsp_optimize_connections_input(), temp_bus_port->id: %s\n", temp_bus_port->id); */
+		/* printf("dsp.c::dsp_optimize_connections_input(), temp_bus_port->parent_bus->remove: %d\n", temp_bus_port->parent_bus->remove); */
 		is_bus_port_out = 1;
-	} else if( dsp_find_bus_port_in((char *)connection->id_out) != NULL ) {
+	} else if( (temp_bus_port = dsp_find_bus_port_in((char *)connection->id_out)) != NULL ) {
+		/* printf("dsp.c::dsp_optimize_connections_input(), temp_bus_port->id: %s\n", temp_bus_port->id); */
+		/* printf("dsp.c::dsp_optimize_connections_input(), temp_bus_port->parent_bus->remove: %d\n", temp_bus_port->parent_bus->remove); */
 		is_bus_port_out = 1;
 	} else {
 		printf("dsp.c::dsp_optimize_connections_input(), unexpected connection output -- id: '%s', exiting..\n", connection->id_out);
 		exit(1);
 	}
+
+	if( dsp_find_main_out_port_in((char *)connection->id_in) != NULL ) {
+		is_main_out_in = 1;
+	} else if( dsp_find_module_port_in((char *)connection->id_in) != NULL ) {
+		is_module_in = 1;
+		temp_module = dsp_get_module_from_port((char *)connection->id_in);
+		if( temp_module-> remove )
+			return;		
+	} else if( (temp_bus_port = dsp_find_bus_port_in((char *)connection->id_in)) != NULL ) {
+		/* printf("dsp.c::dsp_optimize_connections_input(), temp_bus_port->id: %s\n", temp_bus_port->id); */
+		/* printf("dsp.c::dsp_optimize_connections_input(), temp_bus_port->parent_bus->remove: %d\n", temp_bus_port->parent_bus->remove); */
+		is_bus_port_in = 1;
+	} else if( (temp_bus_port = dsp_find_bus_port_out((char *)connection->id_in)) != NULL ) {
+		/* printf("dsp.c::dsp_optimize_connections_input(), temp_bus_port->id: %s\n", temp_bus_port->id); */
+		/* printf("dsp.c::dsp_optimize_connections_input(), temp_bus_port->parent_bus->remove: %d\n", temp_bus_port->parent_bus->remove); */
+		is_bus_port_in = 1;    
+	} else {
+		printf("unexpected connection input -- id: '%s', exiting..\n", connection->id_in);
+		exit(1);
+	}
+	
+	/* OUTPUT PROCESSING */
+	error_not_found = 0;
 	
 	if( is_main_in_out ) {
 		temp_op_out = dsp_global.optimized_main_ins;
@@ -515,20 +548,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	
 	/* INPUT PROCESSING */
 	error_not_found = 0;
-	
-	if( dsp_find_main_out_port_in((char *)connection->id_in) != NULL ) {
-		is_main_out_in = 1;
-	} else if( dsp_find_module_port_in((char *)connection->id_in) != NULL ) {
-		is_module_in = 1;
-	} else if( dsp_find_bus_port_in((char *)connection->id_in) != NULL ) {
-		is_bus_port_in = 1;
-	} else if( dsp_find_bus_port_out((char *)connection->id_in) != NULL ) {
-		is_bus_port_in = 1;    
-	} else {
-		printf("unexpected connection input -- id: '%s', exiting..\n", connection->id_in);
-		exit(1);
-	}
-	
+		
 	if( is_main_out_in ) {
 		temp_op_in = dsp_global.rebuilt_optimized_main_outs;
 		while( temp_op_in != NULL ) {
@@ -560,7 +580,7 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	
 	if( is_module_in )  {
 		temp_module = dsp_get_module_from_port((char *)connection->id_in);
-		
+
 		if( temp_module == NULL ) {
 			printf("dsp.c::dsp_optimize_connections_input(), parent module not found for module port id: %s\n", connection->id_in);      
 			error_not_found = 1;
@@ -697,21 +717,25 @@ dsp_optimize_bus(struct dsp_bus *head_bus) {
     /* handle dsp modules */
     temp_module = temp_bus->dsp_module_head;
     while(temp_module != NULL) {
-      dsp_optimize_connections_module(temp_module->outs);
+	    if( temp_module->remove == false )
+		    dsp_optimize_connections_module(temp_module->outs);
       temp_module = temp_module->next;
     }
     
     /* process bus outputs */
     dsp_optimize_connections_bus(temp_bus->outs);
-    dsp_optimize_bus(temp_bus->down);
+
+    if( temp_bus->remove == false)
+	    dsp_optimize_bus(temp_bus->down);
+    
     temp_bus = temp_bus->next;
   }
   
   return;
 } /* dsp_optimize_bus */
 
-void
-dsp_remove_bus_descendants_recursive(struct dsp_bus *head_bus) {
+int
+dsp_free_bus_descendants_recursive(struct dsp_bus *head_bus) {
 	struct dsp_module *temp_module;
 	struct dsp_bus *temp_bus = NULL;
 	struct dsp_bus *target_bus = NULL;
@@ -816,20 +840,20 @@ dsp_remove_bus_descendants_recursive(struct dsp_bus *head_bus) {
 		}
 		temp_bus->outs = NULL;
 
-		dsp_remove_bus_descendants_recursive(temp_bus->down);
-
+		dsp_free_bus_descendants_recursive(temp_bus->down);
+		
 		target_bus = temp_bus;
 		temp_bus = temp_bus->next;
 		free((char *)target_bus->id);
 		free(target_bus);
 	}
-	return;
-} /* dsp_remove_bus_descendants_recursive */
+	return 0;
+} /* dsp_free_bus_descendants_recursive */
 
-void
-dsp_remove_bus(struct dsp_bus *target_bus, bool recursive) {
+int
+dsp_free_bus(struct dsp_bus *target_bus, bool recursive, bool mutex) {
 	struct dsp_module *temp_module;
-	struct dsp_bus *temp_bus = NULL;
+	struct dsp_bus *temp_bus, *prev_bus, *next_bus = NULL;
 
 	struct dsp_bus_port *temp_bus_port_in = NULL;
 	struct dsp_bus_port *temp_bus_port_out = NULL;
@@ -843,7 +867,8 @@ dsp_remove_bus(struct dsp_bus *target_bus, bool recursive) {
 	
 	struct dsp_connection *temp_connection = NULL;
 
-	pthread_mutex_lock(&dsp_global.graph_state_mutex);
+	if( mutex )
+		pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	
 	temp_bus = target_bus;
 	temp_bus_port_in = temp_bus->ins;
@@ -870,41 +895,7 @@ dsp_remove_bus(struct dsp_bus *target_bus, bool recursive) {
 
 	temp_module = temp_bus->dsp_module_head;
 	while(temp_module != NULL) {
-
-		temp_port_in = temp_module->ins;
-		while(temp_port_in != NULL) {
-			target_port_in = temp_port_in;
-
-			temp_connection = dsp_global.connection_graph;
-			while(temp_connection != NULL) {
-				if( strcmp(temp_connection->id_in,
-					   temp_port_in->id) == 0 )
-					dsp_remove_connection((char *)temp_connection->id, false);
-				temp_connection = temp_connection->next;
-			}
-
-			free((char *)target_port_in->id);
-			temp_port_in = temp_port_in->next;
-			free(target_port_in);
-		}
-
-		temp_port_out = temp_module->outs;
-		while(temp_port_out != NULL) {
-			target_port_out = temp_port_out;
-
-			temp_connection = dsp_global.connection_graph;
-			while(temp_connection != NULL) {
-				if( strcmp(temp_connection->id_out,
-					   temp_port_out->id) == 0 )
-					dsp_remove_connection((char *)temp_connection->id, false);
-				temp_connection = temp_connection->next;
-			}
-
-			free((char *)target_port_out->id);
-			temp_port_out = temp_port_out->next;
-			free(target_port_out);
-		}
-
+		dsp_free_module(temp_bus, temp_module, false);
 		temp_module = temp_module->next;
 	}
 	temp_bus->dsp_module_head = NULL;
@@ -933,16 +924,117 @@ dsp_remove_bus(struct dsp_bus *target_bus, bool recursive) {
 	temp_bus->outs = NULL;
 
 	if( recursive )
-		dsp_remove_bus_descendants_recursive(temp_bus->down);
+		dsp_free_bus_descendants_recursive(temp_bus->down);
+
+	if( temp_bus->prev != NULL ) {
+		prev_bus = temp_bus->prev;
+		prev_bus->next = temp_bus->next;
+	}
+
+	if( temp_bus->next != NULL ) {
+		next_bus = temp_bus->next;
+		if( prev_bus != NULL )
+			next_bus->prev  = prev_bus;
+		else
+			next_bus->prev = NULL;
+	}
 
 	free((char *)temp_bus->id);
 	free(temp_bus);
 
-	dsp_signal_graph_optimization();
+	if( mutex )
+		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 
-	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
+	return 0;	
+} /* dsp_free_bus */
+
+int
+dsp_free_module(struct dsp_bus *parent_bus, struct dsp_module *target_module, bool mutex) {
+	struct dsp_connection *temp_connection = NULL;
+	struct dsp_port_in *temp_port_in = NULL;
+	struct dsp_port_in *target_port_in = NULL;
+	struct dsp_port_out *temp_port_out = NULL;
+	struct dsp_port_out *target_port_out = NULL;
+	struct dsp_module *prev_module, *next_module = NULL;
+
+	if(mutex)
+		pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	
-	return;	
+	temp_port_in = target_module->ins;
+	while(temp_port_in != NULL) {
+		target_port_in = temp_port_in;
+		
+		temp_connection = dsp_global.connection_graph;
+		while(temp_connection != NULL) {
+			if( strcmp(temp_connection->id_in,
+				   temp_port_in->id) == 0 )
+				dsp_remove_connection((char *)temp_connection->id, false);
+			temp_connection = temp_connection->next;
+		}
+		
+		free((char *)target_port_in->id);
+		temp_port_in = temp_port_in->next;
+		free(target_port_in);
+	}
+	
+	temp_port_out = target_module->outs;
+	while(temp_port_out != NULL) {
+		target_port_out = temp_port_out;
+		
+		temp_connection = dsp_global.connection_graph;
+		while(temp_connection != NULL) {
+			if( strcmp(temp_connection->id_out,
+				   temp_port_out->id) == 0 )
+				dsp_remove_connection((char *)temp_connection->id, false);
+			temp_connection = temp_connection->next;
+		}
+		
+		free((char *)target_port_out->id);
+		temp_port_out = temp_port_out->next;
+		free(target_port_out);
+	}
+
+	next_module = target_module->next;
+	prev_module = target_module->prev;
+
+	if( next_module == NULL ) {
+		if( prev_module == NULL ) {
+			parent_bus->dsp_module_head = NULL;
+		} else {
+			prev_module->next = NULL;
+		}
+	} else if( prev_module == NULL ) {
+		parent_bus->dsp_module_head = next_module;
+		next_module->prev = NULL;
+	} else {
+		prev_module->next = next_module;
+		next_module->prev = prev_module;
+	}
+	
+	/* clean up module parameters and allocated datatype by calling module-specific destroy function */
+	target_module->dsp_destroy_function(target_module);	
+	dsp_module_free(target_module);
+	
+	if(mutex)
+		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
+	
+	return 0;
+} /* dsp_free_module */
+
+int
+dsp_remove_module(struct dsp_module *target_module) {
+	pthread_mutex_lock(&dsp_global.graph_state_mutex);	
+	target_module->remove = true;
+	dsp_signal_graph_optimization();
+	pthread_mutex_unlock(&dsp_global.graph_state_mutex);	
+} /* dsp_remove_module */
+
+int
+dsp_remove_bus(struct dsp_bus *target_bus) {
+	pthread_mutex_lock(&dsp_global.graph_state_mutex);
+	target_bus->remove = true;
+	dsp_signal_graph_optimization();
+	pthread_mutex_unlock(&dsp_global.graph_state_mutex);	
 } /* dsp_remove_bus */
 
 void
@@ -1029,9 +1121,6 @@ void
 	
 	struct dsp_bus *temp_bus;
 	struct dsp_module *temp_module;
-
-	struct dsp_port_out *temp_port_out = NULL;
-	struct dsp_port_in *temp_port_in = NULL;
 	
 	dsp_global.operation_head_processing = NULL;
 	dsp_build_optimized_main_outs();
@@ -1044,7 +1133,8 @@ void
 void *
 dsp_graph_optimization_task_thread(void *arg) {
 	pthread_mutex_lock(&dsp_global.optimization_mutex);
-
+	pthread_mutex_lock(&dsp_global.graph_state_mutex);
+	
 	dsp_build_optimized_graph(NULL);
 	dsp_global.build_new_optimized_graph = false;
 	
@@ -1052,6 +1142,7 @@ dsp_graph_optimization_task_thread(void *arg) {
 	dsp_graph_id_rebuild();
 	
 	pthread_mutex_unlock(&dsp_global.optimization_mutex);
+	pthread_mutex_unlock(&dsp_global.graph_state_mutex);	
 } /* dsp_graph_optimization_task_thread */
 
 int
@@ -1081,12 +1172,92 @@ dsp_graph_optimization_thread_setup() {
 	return 0;	
 } /* dsp_graph_optimization_thread_setup */
 
+
+void
+dsp_cleanup_graph(struct dsp_bus *head_bus) {	
+	struct dsp_module *temp_module, *next_module = NULL;
+	struct dsp_bus *next_bus = NULL;
+	struct dsp_bus *temp_bus = head_bus;
+
+	if( !dsp_global.graph_cleanup_do ) {
+		printf("dsp.c::dsp_cleanup_graph(), graph_cleanup_do=false, aborting..\n");
+	}
+	
+	while(temp_bus != NULL) {
+
+		temp_module = temp_bus->dsp_module_head;
+		while(temp_module != NULL) {
+			next_module = temp_module->next;
+			if( temp_module->remove ) {
+				printf("dsp.c::dsp_cleanup_graph(), removing module..\n");
+				dsp_free_module(temp_bus, temp_module, false);
+			}
+			temp_module = next_module;
+		}
+
+		next_bus = temp_bus->next;
+		
+		if( temp_bus->remove ) {
+			printf("dsp.c::dsp_cleanup_graph(), removing bus..\n");
+			dsp_free_bus(temp_bus, true, false);
+		} else
+			dsp_cleanup_graph(temp_bus->down);
+		
+		temp_bus = next_bus;
+	}
+	return;
+} /* dsp_cleanup_graph */
+
+void *
+dsp_graph_cleanup_task_thread(void *arg) {
+	pthread_mutex_lock(&dsp_global.graph_state_mutex);
+
+	printf("dsp.c::dsp_graph_cleanup_task_thread(), calling dsp_cleanup_graph()\n");
+	dsp_cleanup_graph(dsp_global.bus_head);
+	dsp_global.graph_cleanup_do = false;
+
+	dsp_graph_id_rebuild();
+	
+	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
+	
+	/* graph changed, generate new graph id */
+
+	/* how do we know for certain if the graph actually changed? -- maybe this is the wrong place for this */
+} /* dsp_graph_cleanup_task_thread */
+
+int
+dsp_graph_cleanup_task_thread_setup() {
+	pthread_t graph_cleanup_task_thread_id;
+	pthread_create(&graph_cleanup_task_thread_id, NULL, dsp_graph_cleanup_task_thread, NULL);
+	pthread_detach(graph_cleanup_task_thread_id);
+	return 0;
+} /* dsp_graph_cleanup_task_thread_setup */
+
+void *
+dsp_graph_cleanup_thread(void *arg) {
+	while(true) {
+		pthread_cond_wait(&dsp_global.graph_cleanup_condition_cond, &dsp_global.graph_cleanup_condition_mutex);
+		
+		if (dsp_global.graph_cleanup_do) {
+			dsp_graph_cleanup_task_thread_setup();
+		}
+	}
+} /* dsp_graph_cleanup_thread */
+
+int
+dsp_graph_cleanup_thread_setup() {
+	pthread_t graph_cleanup_thread_id;
+	pthread_create(&graph_cleanup_thread_id, NULL, dsp_graph_cleanup_thread, NULL);
+	pthread_detach(graph_cleanup_thread_id);
+	return 0;
+} /* dsp_graph_cleanup_thread_setup */
+
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {  
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
   int p;
-
+  
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {
       if( temp_op->ins == NULL ) {
@@ -1097,7 +1268,6 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
         }
       }
     } else {
-	    temp_op->module->name;
 	    temp_op->module->dsp_function(temp_op, jack_sr);
     }
 
@@ -1106,14 +1276,16 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
 		    printf("dsp.c::dsp_process(), ERROR -> circular operation list!\n");
 		    break;
 	    }
-    }    
+    }
     temp_op = temp_op->next;
   }
+  
 } /* dsp_process */
 
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {
 	dsp_global.cpu_load = 0.0f;
 	dsp_global.build_new_optimized_graph = false;
+	dsp_global.graph_cleanup_do = false;
 
 	dsp_global.bus_head = NULL;
 	dsp_global.connection_graph = NULL;
@@ -1128,12 +1300,17 @@ void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short
 	
 	pthread_mutex_init(&dsp_global.graph_state_mutex, NULL);
 	pthread_mutex_init(&dsp_global.optimization_mutex, NULL);
+
 	pthread_mutex_init(&dsp_global.optimization_condition_mutex, NULL);
 	pthread_cond_init(&dsp_global.optimization_condition_cond, NULL);
+
+	pthread_mutex_init(&dsp_global.graph_cleanup_condition_mutex, NULL);
+	pthread_cond_init(&dsp_global.graph_cleanup_condition_cond, NULL);	
 	
 	dsp_global.operation_head = NULL;
 	dsp_global_period = period;
 	dsp_build_mains(channels_in, channels_out);
 	dsp_graph_optimization_thread_setup();
+	dsp_graph_cleanup_thread_setup();
 	dsp_graph_id_init();
 } /* dsp_setup */

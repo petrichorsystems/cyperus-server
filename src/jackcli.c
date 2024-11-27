@@ -107,9 +107,15 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 
 		  dsp_global_new_operation_graph = 0;
 
+		  /* deallocate removed object resources */
+		  dsp_signal_graph_cleanup();
+		  
 		  pthread_mutex_unlock(&dsp_global.optimization_mutex);
 	  }
   }
+
+  free(temp_sample_block);
+  
   return 0 ;
 } /* jackcli_process_callback */
 

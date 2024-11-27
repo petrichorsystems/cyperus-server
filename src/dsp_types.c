@@ -211,30 +211,52 @@ void dsp_connection_free(struct dsp_connection *connection) {
 
 struct dsp_module* dsp_module_init(const char *module_name,
 				   void (*dsp_function) (struct dsp_operation*, int),
+				   int (*dsp_destroy_function) (struct dsp_module*),
                                    void (*dsp_osc_listener_function) (struct dsp_operation*, int),
 				   struct dsp_operation *(*dsp_optimize) (char*, struct dsp_module*),
 				   dsp_parameter dsp_param,
 				   struct dsp_port_in *ins,
 				   struct dsp_port_out *outs) {
-  struct dsp_module *new_module = (struct dsp_module*)malloc(sizeof(struct dsp_module));
-  new_module->prev = NULL;
-  new_module->next = NULL;
-  new_module->name = malloc(sizeof(char) * strlen(module_name) + 1);
-  strcpy((char *)new_module->name, module_name);
-  new_module->id = dsp_generate_object_id();
-  new_module->dsp_function = dsp_function;
-  new_module->dsp_osc_listener_function = dsp_osc_listener_function;
-  new_module->dsp_optimize = dsp_optimize;
-  new_module->dsp_param = dsp_param;
+	struct dsp_module *new_module = (struct dsp_module*)malloc(sizeof(struct dsp_module));
+	new_module->prev = NULL;
+	new_module->next = NULL;
+	new_module->name = malloc(sizeof(char) * strlen(module_name) + 1);
+	strcpy((char *)new_module->name, module_name);
+	new_module->id = dsp_generate_object_id();
+	new_module->dsp_function = dsp_function;
+	new_module->dsp_destroy_function = dsp_destroy_function;
+	new_module->dsp_osc_listener_function = dsp_osc_listener_function;
+	new_module->dsp_optimize = dsp_optimize;
+	new_module->dsp_param = dsp_param;
 
-  new_module->remove = 0;
-  new_module->bypass = 0;
-  new_module->osc_listener = 0;
+	new_module->remove = 0;
+	new_module->bypass = 0;
+	new_module->osc_listener = 0;
 
-  new_module->ins = ins;
-  new_module->outs = outs;
-  return new_module;
+	new_module->ins = ins;
+	new_module->outs = outs;
+	return new_module;
 }
+
+int dsp_module_free(struct dsp_module *target_module) {
+	target_module->dsp_function = NULL;
+	target_module->dsp_osc_listener_function = NULL;
+	target_module->dsp_optimize = NULL;
+	
+	/* target_module->dsp_param = dsp_param; */
+	
+	target_module->remove = 0;
+	target_module->bypass = 0;
+	target_module->osc_listener = 0;
+	
+	/* target_module->ins = ins; */
+	/* target_module->outs = outs; */
+
+	free((char *)target_module->name);
+	free((char *)target_module->id);
+	free(target_module);
+}
+
 
 void dsp_module_insert_head(struct dsp_module *head_module, struct dsp_module *new_module) {
   if(head_module == NULL) {
