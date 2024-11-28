@@ -39,7 +39,7 @@ struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus *parent_bus, struct dsp_bus_port *head_port, char *bus_ports, int out);
 
 int
-dsp_free_module(struct dsp_bus *parent_bus, struct dsp_module *target_module, bool mutex);
+dsp_purge_object_module(struct dsp_bus *parent_bus, struct dsp_module *target_module, bool mutex);
 
 int
 dsp_remove_module(struct dsp_module *target_module);
@@ -64,7 +64,7 @@ int
 dsp_add_connection(char *id_out, char *id_in, char **new_connection_id);
 
 int
-dsp_remove_connection(char *connection_id, bool mutex);
+dsp_remove_connection(char *connection_id);
 
 void
 dsp_optimize_connections_bus(struct dsp_bus_port *ports);
@@ -76,10 +76,10 @@ void
 dsp_optimize_bus(struct dsp_bus *head_bus);
 
 int
-dsp_free_bus_descendants_recursive(struct dsp_bus *head_bus);
+dsp_purge_object_bus_descendants_recursive(struct dsp_bus *head_bus);
 
 int
-dsp_free_bus(struct dsp_bus *target_bus, bool recursive, bool mutex);
+dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex);
 
 int
 dsp_remove_bus(struct dsp_bus *target_bus);

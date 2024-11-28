@@ -132,6 +132,10 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 	    is_bus_port = 1;
 	  } else if( (temp_module_in = dsp_get_module_from_port((char *)temp_connection->id_in)) != NULL ) {
             if( dsp_find_module_port_in((char *)temp_connection->id_in) != NULL ) {
+
+	      if( temp_module_in->remove )
+		return;
+		    
               temp_op_in_id = (char *)temp_module_in->id;
             } else if( dsp_find_module_port_out((char *)temp_connection->id_in) != NULL ) {
               printf("temp_connection->id_in: '%s', contains output! aborting..\n", (char *)temp_connection->id_in);
