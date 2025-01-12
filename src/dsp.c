@@ -154,6 +154,47 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 	return 0;
 } /* dsp_add_bus */
 
+int
+dsp_add_bus_port(struct dsp_bus *target_bus, char *bus_port_name, char *ret_bus_port_id, bool is_output, bool mutex) {
+	struct dsp_bus_port *new_bus_port = NULL;
+	struct dsp_port_in *port_in = NULL;
+	struct dsp_port_out *port_out = NULL;
+
+	if( target_bus == NULL ) {
+		return E_BUS_NOT_FOUND;
+	}
+
+	new_bus_port = dsp_bus_port_init(bus_port_name, is_output);
+
+	port_in = dsp_port_in_init("in");
+	port_out = dsp_port_out_init("out");
+
+	new_bus_port->in = port_in;
+	new_bus_port->out = port_out;
+	new_bus_port->parent_bus = target_bus;
+
+	if( mutex )
+		pthread_mutex_lock(&dsp_global.graph_state_mutex);
+	
+	if( is_output )
+		if( target_bus->outs == NULL )
+			target_bus->outs = new_bus_port;
+		else		
+			dsp_bus_port_insert_tail(target_bus->outs, new_bus_port);
+	else
+		if( target_bus->ins == NULL )
+			target_bus->ins = new_bus_port;
+		else		
+			dsp_bus_port_insert_tail(target_bus->ins, new_bus_port);
+
+	if( mutex )
+		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
+	
+	strncpy(ret_bus_port_id, new_bus_port->id, 36);;
+	
+	return 0;
+} /* dsp_add_bus_port */
+
 struct dsp_module*
 dsp_add_module(struct dsp_bus *target_bus,
 	       char *name,
@@ -326,7 +367,6 @@ dsp_purge_object_connection(char *connection_id, bool mutex) {
 
 int
 dsp_remove_connection(char *connection_id) {
-	printf("dsp.c::dsp_remove_connection()\n");
 	int errno = 0;
 	if( (errno = dsp_purge_object_connection(connection_id, true)) == 0 )
 		dsp_signal_graph_optimization();
@@ -717,8 +757,6 @@ void
 dsp_optimize_bus(struct dsp_bus *head_bus) {
 	struct dsp_module *temp_module;
 	struct dsp_bus *temp_bus = head_bus;
-
-	printf("dsp_optimize_bus()\n");
   
 	while( temp_bus != NULL ) {
 		if( temp_bus->remove == false ) {
@@ -762,7 +800,7 @@ dsp_purge_object_bus_descendants_recursive(struct dsp_bus *head_bus) {
 	struct dsp_port_out *target_port_out = NULL;
 	
 	struct dsp_connection *temp_connection, *target_connection = NULL;
-
+	
 	temp_bus = head_bus;
 	while(temp_bus != NULL) {
 		temp_bus_port_in = temp_bus->ins;
@@ -883,8 +921,6 @@ dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex) {
 	}
 	temp_bus->ins = NULL;
 
-	printf("dsp.c::dsp_purge_object_bus(), removed bus port in's\n");
-
 	temp_module = temp_bus->dsp_module_head;
 	while(temp_module != NULL) {
 		target_module = temp_module;
@@ -892,8 +928,6 @@ dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex) {
 		dsp_purge_object_module(temp_bus, target_module, false);
 	}
 	temp_bus->dsp_module_head = NULL;
-
-	printf("dsp.c::dsp_purge_object_bus(), removed modules\n");
 	
 	temp_bus_port_out = temp_bus->outs;
 	while(temp_bus_port_out != NULL) {
@@ -922,15 +956,11 @@ dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex) {
 	}
 	temp_bus->outs = NULL;
 
-	printf("dsp.c::dsp_purge_object_bus(), removed bus port out's\n");
-
 	if( temp_bus->down != NULL )
 		dsp_purge_object_bus_descendants_recursive(temp_bus->down);
 	
 	free((char *)temp_bus->id);
 	free(temp_bus);
-
-	printf("dsp.c::dsp_purge_object_bus(), free'd bus\n");
 	
 	if( mutex )
 		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
@@ -940,14 +970,10 @@ dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex) {
 
 int
 dsp_remove_bus(struct dsp_bus *target_bus) {
-	printf("dsp.c::dsp_remove_bus(), starting\n");
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
-	printf("dsp.c::dsp_remove_bus(), acquired lock\n");	
 	target_bus->remove = true;
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
-	printf("dsp.c::dsp_remove_bus(), released lock\n");
 	dsp_signal_graph_optimization();
-	printf("dsp.c::dsp_remove_bus(), returning\n");	
 } /* dsp_remove_bus */
 
 int
@@ -1194,8 +1220,6 @@ dsp_cleanup_graph(struct dsp_bus *head_bus) {
 		temp_bus = temp_bus->next;
 		
 		if( target_bus->remove ) {
-			printf("dsp.c::dsp_cleanup_graph(), removing bus..\n");
-
 			next_bus = target_bus->next;
 			prev_bus = target_bus->prev;
 
@@ -1231,9 +1255,7 @@ dsp_graph_cleanup_task_thread(void *arg) {
 		return NULL;
 	}
 
-	printf("dsp.c::dsp_graph_cleanup_task_thread(), calling dsp_cleanup_graph()\n");
 	dsp_global.bus_head = dsp_cleanup_graph(dsp_global.bus_head);
-	printf("dsp.c::dsp_graph_cleanup_task_thread(), dsp_cleanup_graph() returned\n");	
 	dsp_global.graph_cleanup_do = false;
 
 	dsp_graph_id_rebuild();
@@ -1253,9 +1275,6 @@ void *
 dsp_graph_cleanup_thread(void *arg) {
 	while(true) {
 		pthread_cond_wait(&dsp_global.graph_cleanup_condition_cond, &dsp_global.graph_cleanup_condition_mutex);
-
-		printf("going for it!\n");
-		
 		if (dsp_global.graph_cleanup_do) {
 			dsp_graph_cleanup_task_thread_setup();
 		}

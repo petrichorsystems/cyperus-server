@@ -75,17 +75,17 @@ int osc_callback_timer_setup();
 
 int osc_setup(char *osc_port_in, char *osc_port_out, char *addr);
 
-#include "modules/delay/simple/osc_modules_delay_simple.h"
+/* #include "modules/delay/simple/osc_modules_delay_simple.h" */
 #include "modules/oscillator/sine/osc_modules_oscillator_sine.h"
 #include "modules/envelope/follower/osc_modules_envelope_follower.h"
-#include "modules/filter/bandpass/osc_modules_filter_bandpass.h"
-#include "modules/network/oscsend/osc_modules_network_oscsend.h"
-#include "modules/oscillator/triangle/osc_modules_oscillator_triangle.h"
-#include "modules/oscillator/clock/osc_modules_oscillator_clock.h"
-#include "modules/utils/float/osc_modules_utils_float.h"
-#include "modules/utils/counter/osc_modules_utils_counter.h"
-#include "modules/utils/equals/osc_modules_utils_equals.h"
-#include "modules/utils/spigot/osc_modules_utils_spigot.h"
+/* #include "modules/filter/bandpass/osc_modules_filter_bandpass.h" */
+/* #include "modules/network/oscsend/osc_modules_network_oscsend.h" */
+/* #include "modules/oscillator/triangle/osc_modules_oscillator_triangle.h" */
+/* #include "modules/oscillator/clock/osc_modules_oscillator_clock.h" */
+/* #include "modules/utils/float/osc_modules_utils_float.h" */
+/* #include "modules/utils/counter/osc_modules_utils_counter.h" */
+/* #include "modules/utils/equals/osc_modules_utils_equals.h" */
+/* #include "modules/utils/spigot/osc_modules_utils_spigot.h" */
 
 #endif
 

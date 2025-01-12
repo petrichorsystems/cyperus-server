@@ -215,7 +215,10 @@ osc_callback_timer_callback(int signum) {
 			struct dsp_operation *temp_op = NULL;  
 
 			lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global.cpu_load);
-  
+
+			/* pthread_mutex_lock(&dsp_global.graph_state_mutex); */
+			/* pthread_mutex_lock(&dsp_global.optimization_mutex); */
+			
 			temp_op = dsp_global.operation_head;
 			while(temp_op != NULL) {
 				/* execute appropriate listener function */
@@ -224,6 +227,9 @@ osc_callback_timer_callback(int signum) {
 						temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
 				temp_op = temp_op->next;
 			}
+
+			/* pthread_mutex_unlock(&dsp_global.graph_state_mutex); */
+			/* pthread_mutex_unlock(&dsp_global.optimization_mutex); */
 		}
 		temp_client_addr = temp_client_addr->next;
 	}	

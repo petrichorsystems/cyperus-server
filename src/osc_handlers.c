@@ -250,79 +250,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	if (strcmp(result_str, "\n"))
 		free(result_str);
 	return 0;
-} /* osc_list_bus_handler */
-
-			 
-int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv,
-			   int argc, void *data, void *user_data)
-{
-	int errno = 0;
-	struct dsp_bus *temp_bus = NULL;
-	char *request_id, *bus_id, *result_str = NULL;
-	size_t result_str_size = 0;
-	struct dsp_bus_port *temp_bus_port = NULL;
-	bool multipart;
-  
-	request_id = (char *)argv[0];
-	bus_id = (char *)argv[1];
-
-	printf("path: <%s>\n", path);
-
-	temp_bus = dsp_find_bus(bus_id);
-	
-	if( temp_bus != NULL ) {		
-		result_str_size = 4;
-		result_str = malloc(sizeof(char) * (result_str_size + 1));
-		strcpy(result_str, "in:\n");
-		/* process main inputs */
-		temp_bus_port = temp_bus->ins;
-		while(temp_bus_port != NULL) {
-			result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
-			result_str = realloc(result_str, sizeof(char) * result_str_size);
-			strcat(result_str, temp_bus_port->id);
-			strcat(result_str, "|");
-			strcat(result_str, temp_bus_port->name);
-			strcat(result_str, "\n");
-			temp_bus_port = temp_bus_port->next;
-		}
-
-		result_str_size += 4;
-		result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
-		strcat(result_str, "out:\n");
-		/* process main outputs */
-		temp_bus_port = temp_bus->outs;
-		while(temp_bus_port != NULL) {
-			result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
-			result_str = realloc(result_str, sizeof(char) * result_str_size);
-			strcat(result_str, temp_bus_port->id);
-			strcat(result_str, "|");
-			strcat(result_str, temp_bus_port->name);
-			strcat(result_str, "\n");
-			temp_bus_port = temp_bus_port->next;
-		}
-		errno = 0;		
-		multipart = false;
-		osc_send_broadcast("/cyperus/list/bus_port",
-				   "siiss",
-				   request_id,
-				   0,
-				   multipart,
-				   bus_id,
-				   result_str);
-	} else {
-		errno = E_BUS_NOT_FOUND;
-		multipart = false;
-		osc_send_broadcast("/cyperus/list/bus_port",
-				   "siiss",
-				   request_id,
-				   errno,
-				   multipart,
-				   bus_id,
-				   "");
-	}
-	free(result_str);
-	return 0;
-} /* osc_list_bus_port_handler */
+} /* osc_list_bus_handler */			 
 
 int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
                                int argc, void *data, void *user_data)
@@ -413,7 +341,7 @@ int osc_remove_bus_handler(const char *path, const char *types, lo_arg **argv,
 	if( target_bus == NULL )
 		errno = E_BUS_NOT_FOUND;
 	else
-		dsp_remove_bus(target_bus, true);
+		dsp_remove_bus(target_bus);
 	
 	multipart = false;
 	osc_send_broadcast("/cyperus/remove/bus",
@@ -426,21 +354,161 @@ int osc_remove_bus_handler(const char *path, const char *types, lo_arg **argv,
 	return 0;
 } /* osc_remove_bus_handler */
 
+int osc_add_bus_port_handler(const char *path, const char *types, lo_arg **argv,
+			   int argc, void *data, void *user_data)
+{
+	int errno = 0;
+	struct dsp_bus *target_bus = NULL;
+	char *request_id, *bus_id, *bus_port_name, *ret_bus_port_id = NULL;
+	struct dsp_bus_port *target_bus_port = NULL;
+	bool is_output, multipart = false;
+
+	request_id = (char *)argv[0];
+	bus_id = (char *)argv[1];
+	bus_port_name = (char *)argv[2];
+	is_output = argv[3]->i;
+
+	printf("path: <%s>\n", path);
+	
+	target_bus = dsp_find_bus(bus_id);
+	ret_bus_port_id = malloc(sizeof(char) * 37);
+	ret_bus_port_id[36] = '\0';
+	
+	if( target_bus != NULL )
+		errno = dsp_add_bus_port(target_bus,
+					 bus_port_name,
+					 ret_bus_port_id,
+					 is_output,
+					 true);
+	if( !errno ) {
+		multipart = false;
+		osc_send_broadcast("/cyperus/add/bus_port",
+				   "siissis",
+				   request_id,
+				   0,
+				   multipart,
+				   bus_id,
+				   bus_port_name,
+				   is_output,
+				   ret_bus_port_id);
+	} else {
+		multipart = false;
+		osc_send_broadcast("/cyperus/add/bus_port",
+				   "siissis",
+				   request_id,
+				   errno,
+				   multipart,
+				   bus_id,
+				   bus_port_name,
+				   is_output,
+				   "");
+	}
+
+	free(ret_bus_port_id);	
+	return 0;
+} /* osc_add_bus_port_handler */
+
+int osc_list_bus_port_handler(const char *path, const char *types, lo_arg **argv,
+			   int argc, void *data, void *user_data)
+{
+	int errno = 0;
+	struct dsp_bus *temp_bus = NULL;
+	char *request_id, *bus_id, *result_str = NULL;
+	size_t result_str_size = 0;
+	struct dsp_bus_port *temp_bus_port = NULL;
+	bool multipart;
+  
+	request_id = (char *)argv[0];
+	bus_id = (char *)argv[1];
+
+	printf("path: <%s>\n", path);
+
+	temp_bus = dsp_find_bus(bus_id);
+	
+	if( temp_bus != NULL ) {		
+		result_str_size = 4;
+		result_str = malloc(sizeof(char) * (result_str_size + 1));
+		strcpy(result_str, "in:\n");
+		/* process main inputs */
+		temp_bus_port = temp_bus->ins;
+		while(temp_bus_port != NULL) {
+			result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
+			result_str = realloc(result_str, sizeof(char) * result_str_size);
+			strcat(result_str, temp_bus_port->id);
+			strcat(result_str, "|");
+			strcat(result_str, temp_bus_port->name);
+			strcat(result_str, "\n");
+			temp_bus_port = temp_bus_port->next;
+		}
+
+		result_str_size += 4;
+		result_str = realloc(result_str, sizeof(char) * (result_str_size) + 1);
+		strcat(result_str, "out:\n");
+		/* process main outputs */
+		temp_bus_port = temp_bus->outs;
+		while(temp_bus_port != NULL) {
+			result_str_size += strlen(temp_bus_port->id) + 1 + strlen(temp_bus_port->name) + 2;
+			result_str = realloc(result_str, sizeof(char) * result_str_size);
+			strcat(result_str, temp_bus_port->id);
+			strcat(result_str, "|");
+			strcat(result_str, temp_bus_port->name);
+			strcat(result_str, "\n");
+			temp_bus_port = temp_bus_port->next;
+		}
+		errno = 0;		
+		multipart = false;
+		osc_send_broadcast("/cyperus/list/bus_port",
+				   "siiss",
+				   request_id,
+				   0,
+				   multipart,
+				   bus_id,
+				   result_str);
+	} else {
+		errno = E_BUS_NOT_FOUND;
+		multipart = false;
+		osc_send_broadcast("/cyperus/list/bus_port",
+				   "siiss",
+				   request_id,
+				   errno,
+				   multipart,
+				   bus_id,
+				   "");
+	}
+	free(result_str);
+	return 0;
+} /* osc_list_bus_port_handler */
 
 int osc_remove_module_handler(const char *path, const char *types, lo_arg ** argv,
                                      int argc, void *data, void *user_data)
 {
-	int voice;
-	int module_no;
-  
-	printf("path: <%s>\n", path);
-	module_no=argv[0]->i;
+	char *request_id = NULL;
+	char *module_id = NULL;
 
-	printf("removing module #%d..\n",module_no);
-	
-	dsp_remove_module(0,module_no);
+	struct dsp_module *target_module = NULL;
+	bool multipart = false;
+	int errno = 0;
   
-  return 0;
+	request_id = (char *)argv[0];
+	module_id = (char *)argv[1];
+
+	printf("path: <%s>\n", path);
+
+	target_module = dsp_find_module(module_id);
+	
+	if( target_module == NULL )
+		errno = E_MODULE_NOT_FOUND;
+	else
+		dsp_remove_module(target_module);
+	
+	multipart = false;
+	osc_send_broadcast("/cyperus/remove/module",
+			   "siis",
+			   request_id,
+			   errno,
+			   multipart,
+			   module_id);
+	return 0;
 } /* osc_remove_module_handler */
 
 
@@ -496,8 +564,8 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 	request_id = (char *)argv[0];
 	connection_id = (char *)argv[1];
 
-	errno = dsp_remove_connection(connection_id, true);
-
+	errno = dsp_remove_connection(connection_id);
+	
 	if( connection_id == NULL ) {
 		printf("osc_remove_connection_handler(), connection_id: %s\n", connection_id);
 	}
@@ -1260,6 +1328,9 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 
 	else if (strcmp(path, "/cyperus/list/bus") == 0)
 		handler_ptr = osc_list_bus_handler;
+
+	else if (strcmp(path, "/cyperus/add/bus_port") == 0)
+		handler_ptr = osc_add_bus_port_handler;
 	else if (strcmp(path, "/cyperus/list/bus_port") == 0)
 		handler_ptr = osc_list_bus_port_handler;
 	
@@ -1267,66 +1338,69 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 		handler_ptr = osc_add_connection_handler;
 	else if (strcmp(path, "/cyperus/remove/connection") == 0)
 		handler_ptr = osc_remove_connection_handler;
+
+	else if (strcmp(path, "/cyperus/remove/module") == 0)
+		handler_ptr = osc_remove_module_handler;
 	
 	else if (strcmp(path, "/cyperus/list/module") == 0)
 		handler_ptr = osc_list_module_handler;
 	else if (strcmp(path, "/cyperus/list/module_port") == 0)
 		handler_ptr = osc_list_module_port_handler;
 	
-	else if (strcmp(path, "/cyperus/add/module/delay/simple") == 0)
-		handler_ptr = osc_add_modules_delay_simple_handler;
-	else if (strcmp(path, "/cyperus/edit/module/delay/simple") == 0)
-		handler_ptr = osc_edit_modules_delay_simple_handler;
+	/* else if (strcmp(path, "/cyperus/add/module/delay/simple") == 0) */
+	/* 	handler_ptr = osc_add_modules_delay_simple_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/delay/simple") == 0) */
+	/* 	handler_ptr = osc_edit_modules_delay_simple_handler; */
   
 	else if (strcmp(path, "/cyperus/add/module/envelope/follower") == 0)
 		handler_ptr = osc_add_modules_envelope_follower_handler;
 	else if (strcmp(path, "/cyperus/edit/module/envelope/follower") == 0)
 		handler_ptr = osc_edit_modules_envelope_follower_handler;
 	
-	else if (strcmp(path, "/cyperus/add/module/filter/bandpass") == 0)
-		handler_ptr = osc_add_modules_filter_bandpass_handler;
-	else if (strcmp(path, "/cyperus/edit/module/filter/bandpass") == 0)
-		handler_ptr = osc_edit_modules_filter_bandpass_handler;
+	/* else if (strcmp(path, "/cyperus/add/module/filter/bandpass") == 0) */
+	/* 	handler_ptr = osc_add_modules_filter_bandpass_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/filter/bandpass") == 0) */
+	/* 	handler_ptr = osc_edit_modules_filter_bandpass_handler; */
 	
-	else if (strcmp(path, "/cyperus/add/module/network/oscsend") == 0)
-		handler_ptr = osc_add_modules_network_oscsend_handler;
-	else if (strcmp(path, "/cyperus/edit/module/network/oscsend") == 0)
-		handler_ptr = osc_edit_modules_network_oscsend_handler;	
+	/* else if (strcmp(path, "/cyperus/add/module/network/oscsend") == 0) */
+	/* 	handler_ptr = osc_add_modules_network_oscsend_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/network/oscsend") == 0) */
+	/* 	handler_ptr = osc_edit_modules_network_oscsend_handler;	 */
 	
 	else if (strcmp(path, "/cyperus/add/module/oscillator/sine") == 0)
 		handler_ptr = osc_add_modules_oscillator_sine_handler;
 	else if (strcmp(path, "/cyperus/edit/module/oscillator/sine") == 0)
 		handler_ptr = osc_edit_modules_oscillator_sine_handler;
 	
-	else if (strcmp(path, "/cyperus/add/module/oscillator/triangle") == 0)
-		handler_ptr = osc_add_modules_oscillator_triangle_handler;
-	else if (strcmp(path, "/cyperus/edit/module/oscillator/triangle") == 0)
-		handler_ptr = osc_edit_modules_oscillator_triangle_handler;
+	/* else if (strcmp(path, "/cyperus/add/module/oscillator/triangle") == 0) */
+	/* 	handler_ptr = osc_add_modules_oscillator_triangle_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/triangle") == 0) */
+	/* 	handler_ptr = osc_edit_modules_oscillator_triangle_handler; */
 	
-	else if (strcmp(path, "/cyperus/add/module/oscillator/clock") == 0)
-		handler_ptr = osc_add_modules_oscillator_clock_handler;
-	else if (strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0)
-		handler_ptr = osc_edit_modules_oscillator_clock_handler;
+	/* else if (strcmp(path, "/cyperus/add/module/oscillator/clock") == 0) */
+	/* 	handler_ptr = osc_add_modules_oscillator_clock_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0) */
+	/* 	handler_ptr = osc_edit_modules_oscillator_clock_handler; */
 	
-	else if (strcmp(path, "/cyperus/add/module/utils/float") == 0)
-		handler_ptr = osc_add_modules_utils_float_handler;
-	else if (strcmp(path, "/cyperus/edit/module/utils/float") == 0)
-		handler_ptr = osc_edit_modules_utils_float_handler;
+	/* else if (strcmp(path, "/cyperus/add/module/utils/float") == 0) */
+	/* 	handler_ptr = osc_add_modules_utils_float_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/utils/float") == 0) */
+	/* 	handler_ptr = osc_edit_modules_utils_float_handler; */
 	
-	else if (strcmp(path, "/cyperus/add/module/utils/counter") == 0)
-		handler_ptr = osc_add_modules_utils_counter_handler;
-	else if (strcmp(path, "/cyperus/edit/module/utils/counter") == 0)
-		handler_ptr = osc_edit_modules_utils_counter_handler;
+	/* else if (strcmp(path, "/cyperus/add/module/utils/counter") == 0) */
+	/* 	handler_ptr = osc_add_modules_utils_counter_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/utils/counter") == 0) */
+	/* 	handler_ptr = osc_edit_modules_utils_counter_handler; */
 	
-	else if (strcmp(path, "/cyperus/add/module/utils/equals") == 0)
-		handler_ptr = osc_add_modules_utils_equals_handler;
-	else if (strcmp(path, "/cyperus/edit/module/utils/equals") == 0)
-		handler_ptr = osc_edit_modules_utils_equals_handler;
+	/* else if (strcmp(path, "/cyperus/add/module/utils/equals") == 0) */
+	/* 	handler_ptr = osc_add_modules_utils_equals_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/utils/equals") == 0) */
+	/* 	handler_ptr = osc_edit_modules_utils_equals_handler; */
 	
-	else if (strcmp(path, "/cyperus/add/module/utils/spigot") == 0)
-		handler_ptr = osc_add_modules_utils_spigot_handler;
-	else if (strcmp(path, "/cyperus/edit/module/utils/spigot") == 0)
-		handler_ptr = osc_edit_modules_utils_spigot_handler;
+	/* else if (strcmp(path, "/cyperus/add/module/utils/spigot") == 0) */
+	/* 	handler_ptr = osc_add_modules_utils_spigot_handler; */
+	/* else if (strcmp(path, "/cyperus/edit/module/utils/spigot") == 0) */
+	/* 	handler_ptr = osc_edit_modules_utils_spigot_handler; */
 	
 	else if (strcmp(path, "/cyperus/get/graph/id") == 0)
 		handler_ptr = osc_get_graph_id_handler;

@@ -61,6 +61,9 @@ int
 dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs);
 
 int
+dsp_add_bus_port(struct dsp_bus *target_bus, char *bus_port_name, char *ret_bus_port_id, bool is_output, bool mutex);
+
+int
 dsp_add_connection(char *id_out, char *id_in, char **new_connection_id);
 
 int
