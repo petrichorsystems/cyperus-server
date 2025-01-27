@@ -87,6 +87,12 @@ dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex);
 int
 dsp_remove_bus(struct dsp_bus *target_bus);
 
+int
+dsp_purge_object_bus_port(struct dsp_bus_port *target_bus_port, bool mutex);
+
+int
+dsp_remove_bus_port(struct dsp_bus_port *target_bus_port);
+
 void
 dsp_build_mains(int channels_in, int channels_out);
 

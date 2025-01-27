@@ -24,10 +24,11 @@ Copyright 2024 murray foster
 #define E_BUS_NOT_FOUND 1
 #define E_PORT_OUT_NOT_FOUND 2
 #define E_PORT_IN_NOT_FOUND 3
-#define E_CONNECTION_NOT_FOUND 4
-#define E_MODULE_NOT_FOUND 5
+#define E_BUS_PORT_NOT_FOUND 4
+#define E_CONNECTION_NOT_FOUND 5
+#define E_MODULE_NOT_FOUND 6
 
-#define E_OSC_CLIENT_EXISTS 6
-#define E_OSC_CLIENT_NOT_FOUND 7
+#define E_OSC_CLIENT_EXISTS 7
+#define E_OSC_CLIENT_NOT_FOUND 8
 
 #endif

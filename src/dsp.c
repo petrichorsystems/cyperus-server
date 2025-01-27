@@ -977,6 +977,56 @@ dsp_remove_bus(struct dsp_bus *target_bus) {
 } /* dsp_remove_bus */
 
 int
+dsp_purge_object_bus_port(struct dsp_bus_port *target_bus_port, bool mutex) {
+	struct dsp_connection *temp_connection, *target_connection = NULL;
+
+	if( mutex )
+		pthread_mutex_lock(&dsp_global.graph_state_mutex);
+	
+	if(target_bus_port != NULL) {
+		temp_connection = dsp_global.connection_graph;
+		while(temp_connection != NULL) {
+			if((strcmp(temp_connection->id_in,
+				   target_bus_port->id) == 0) ||
+			   (strcmp(temp_connection->id_out,
+				   target_bus_port->id) == 0)
+				) {
+				target_connection = temp_connection;
+				temp_connection = temp_connection->next;
+				dsp_purge_object_connection((char *)target_connection->id, false);
+			} else {
+				temp_connection = temp_connection->next;
+			}
+		}
+		
+		free((char *)target_bus_port->in->id);
+		free(target_bus_port->in);
+		target_bus_port->in = NULL;
+
+		free((char *)target_bus_port->out->id);
+		free(target_bus_port->out);
+		target_bus_port->out = NULL;
+		
+		free((char *)target_bus_port->name);
+		free((char *)target_bus_port->id);
+		free(target_bus_port);
+	}
+	
+	if( mutex )
+		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
+
+	return 0;	
+} /* dsp_purge_object_bus_port */
+
+int
+dsp_remove_bus_port(struct dsp_bus_port *target_bus_port) {
+	pthread_mutex_lock(&dsp_global.graph_state_mutex);	
+	target_bus_port->remove = true;
+	pthread_mutex_unlock(&dsp_global.graph_state_mutex);		
+	dsp_signal_graph_optimization();
+} /* dsp_remove_bus_port */
+
+int
 dsp_purge_object_module(struct dsp_bus *parent_bus, struct dsp_module *target_module, bool mutex) {	
 	struct dsp_connection *temp_connection, *target_connection = NULL;
 	struct dsp_port_in *temp_port_in = NULL;
@@ -1064,6 +1114,7 @@ dsp_remove_module(struct dsp_module *target_module) {
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);		
 	dsp_signal_graph_optimization();
 } /* dsp_remove_module */
+
 
 void
 dsp_build_mains(int channels_in, int channels_out) {
@@ -1203,6 +1254,7 @@ struct dsp_bus*
 dsp_cleanup_graph(struct dsp_bus *head_bus) {	
 	struct dsp_module *temp_module, *next_module = NULL;
 	struct dsp_bus *target_bus, *prev_bus, *next_bus = NULL;
+	struct dsp_bus_port *target_bus_port, *temp_bus_port, *prev_bus_port, *next_bus_port = NULL;
 	struct dsp_bus *temp_bus = head_bus;
 	struct dsp_bus *return_bus = head_bus;
 	
@@ -1236,9 +1288,61 @@ dsp_cleanup_graph(struct dsp_bus *head_bus) {
 				prev_bus->next = next_bus;
 				next_bus->prev = prev_bus;
 			}
-			
 			dsp_purge_object_bus(target_bus, true, false);
 		} else {
+
+			temp_bus_port = target_bus->ins;
+			while( temp_bus_port != NULL ) {
+
+				target_bus_port = temp_bus_port;
+				temp_bus_port = temp_bus_port->next;
+
+				if( target_bus_port->remove ) {
+					next_bus_port = target_bus_port->next;
+					prev_bus_port = target_bus_port->prev;
+				
+					if( next_bus_port == NULL ) {
+						if( prev_bus_port == NULL ) {
+							target_bus->ins = NULL;
+						} else {
+							prev_bus_port->next = NULL;
+						}
+					} else if( prev_bus_port == NULL ) {
+						target_bus->ins = next_bus_port;
+						next_bus_port->prev = NULL;
+					} else {
+						prev_bus_port->next = next_bus_port;
+						next_bus_port->prev = prev_bus_port;
+					}
+				}
+			}
+			
+			temp_bus_port = target_bus->outs;
+			while( temp_bus_port != NULL ) {
+
+				target_bus_port = temp_bus_port;
+				temp_bus_port = temp_bus_port->next;
+
+				if( target_bus_port->remove ) {
+					next_bus_port = target_bus_port->next;
+					prev_bus_port = target_bus_port->prev;
+				
+					if( next_bus_port == NULL ) {
+						if( prev_bus_port == NULL ) {
+							target_bus->ins = NULL;
+						} else {
+							prev_bus_port->next = NULL;
+						}
+					} else if( prev_bus_port == NULL ) {
+						target_bus->ins = next_bus_port;
+						next_bus_port->prev = NULL;
+					} else {
+						prev_bus_port->next = next_bus_port;
+						next_bus_port->prev = prev_bus_port;
+					}
+				}
+			}
+			
 			target_bus->down = dsp_cleanup_graph(target_bus->down);
 		}
 	}
