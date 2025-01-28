@@ -72,6 +72,7 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "envelope_follower",
 		 dsp_envelope_follower,
+		 dsp_destroy_envelope_follower,
                  dsp_osc_listener_envelope_follower,
 		 dsp_optimize_module,
 		 params,
@@ -80,6 +81,17 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
 
   return 0;
 } /* dsp_create_envelope_follower */
+
+int
+dsp_destroy_envelope_follower(struct dsp_module *target_module) {
+	free(target_module->dsp_param.parameters->float32_arr_type[0]);
+	free(target_module->dsp_param.parameters->float32_arr_type[1]);
+	free(target_module->dsp_param.parameters->float32_arr_type[2]);
+	free(target_module->dsp_param.parameters->float32_type);
+	free(target_module->dsp_param.parameters);
+	free(target_module->dsp_param.in);
+	return 0;
+} /* dsp_destroy_envelope_follower */
 
 void
 dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate) {

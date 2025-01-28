@@ -70,6 +70,7 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "oscillator_sine",
 		 dsp_oscillator_sine,
+		 dsp_destroy_oscillator_sine,
                  dsp_osc_listener_oscillator_sine,
 		 dsp_optimize_module,
 		 params,
@@ -77,6 +78,19 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
 		 outs);
   return 0;
 } /* dsp_create_oscillator_sine */
+
+int
+dsp_destroy_oscillator_sine(struct dsp_module *target_module) {
+	free(target_module->dsp_param.parameters->float32_arr_type[0]);
+	free(target_module->dsp_param.parameters->float32_arr_type[1]);
+	free(target_module->dsp_param.parameters->float32_arr_type[2]);
+	free(target_module->dsp_param.parameters->float32_arr_type);
+	free(target_module->dsp_param.parameters->float32_type);
+	free(target_module->dsp_param.parameters->int32_type);
+	free(target_module->dsp_param.parameters);
+  return 0;
+} /* dsp_destroy_oscillator_sine */
+
 
 void
 dsp_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate) {
