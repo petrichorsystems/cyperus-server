@@ -87,8 +87,6 @@ osc_edit_modules_oscillator_sine_handler(const char *path, const char *types, lo
 						int argc, void *data, void *user_data)
 {  
 	char *request_id, *module_id = NULL;
-	char *bus_id;
-	struct dsp_bus *target_bus;
 	struct dsp_module *target_module;
 	float frequency, amplitude, phase;
 

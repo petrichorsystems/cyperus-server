@@ -22,11 +22,6 @@ Copyright 2018 murray foster */
 #include "params_modules_utils_equals.h"
 #include "ops_modules_utils_equals.h"
 
-void*
-_utils_equals_thread(void *arg) {
-  
-} /* _utils_equals_thread */
-
 
 int
 dsp_create_utils_equals(struct dsp_bus *target_bus,

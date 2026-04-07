@@ -92,7 +92,7 @@ osc_edit_modules_delay_simple_handler(const char *path, const char *types, lo_ar
 {  
   char *request_id, *module_id;
   struct dsp_module *target_module;
-  float amount, time, feedback, mul, add;
+  float amount, time, feedback;
 
   int multipart_no = false;
   int errno = 0;

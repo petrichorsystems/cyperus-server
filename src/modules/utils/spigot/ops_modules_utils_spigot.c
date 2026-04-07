@@ -22,11 +22,6 @@ Copyright 2018 murray foster */
 #include "params_modules_utils_spigot.h"
 #include "ops_modules_utils_spigot.h"
 
-void*
-_utils_spigot_thread(void *arg) {
-  
-} /* _utils_spigot_thread */
-
 
 int
 dsp_create_utils_spigot(struct dsp_bus *target_bus,

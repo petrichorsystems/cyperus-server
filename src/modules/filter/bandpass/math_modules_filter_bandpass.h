@@ -20,7 +20,7 @@ static inline int PD_BIGORSMALL(float f)  /* exponent outside (-64,64) */
 extern void
 math_modules_filter_bandpass(dsp_parameter *filter, int samplerate);
 
-extern float
+extern void
 math_modules_filter_bandpass_init(dsp_parameter *filter);
 
 #endif

@@ -79,13 +79,15 @@ char *osc_string_build_bus_list(struct dsp_bus *head_bus,
 	int count_bus_ports;;
 	char *bus_ins_str, *bus_outs_str;
 	
-	if( temp_bus != NULL )
-		if(!root_level)
+	if( temp_bus != NULL ) {
+		if(!root_level) {
 			if(descendants)
 				temp_bus = temp_bus->down;
 			else
 				while(temp_bus->prev != NULL)
 					temp_bus = temp_bus->prev;
+		}
+	}
 
 	/* else */
 	/* 	temp_bus = temp_bus->next; */

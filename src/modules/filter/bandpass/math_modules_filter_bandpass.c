@@ -66,7 +66,7 @@ static void _bandpass_docoeff(dsp_parameter *filter, int samplerate, int idx)
 	filter->parameters->float32_arr_type[PARAM_INTERNAL_GAIN][idx] = 2 * oneminusr * (oneminusr + r * omega); /* gain */
 }
 
-extern float math_modules_filter_bandpass_init(dsp_parameter *filter)
+extern void math_modules_filter_bandpass_init(dsp_parameter *filter)
 {
 	for(int p=0; p<dsp_global_period; p++)
 		_bandpass_docoeff(filter, jackcli_samplerate, p);

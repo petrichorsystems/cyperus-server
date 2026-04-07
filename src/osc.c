@@ -127,7 +127,6 @@ struct osc_global_t osc_global;
 
 /* see osc.h, called by macro defined by osc_send_broadcast() */
 int _osc_send_broadcast(const char *path, const char *types, ...) {
-	uint16_t i = 0;
 	va_list ap;
 	
 	struct osc_client_addr_t *temp_client_addr = osc_global.client_addr; 
@@ -294,4 +293,6 @@ int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
 	lo_server_thread_start(osc_global.lo_thread);
 
 	osc_callback_timer_setup();
+
+	return 0;
 } /* osc_setup */

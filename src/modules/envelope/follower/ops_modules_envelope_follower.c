@@ -97,7 +97,6 @@ dsp_destroy_envelope_follower(struct dsp_module *target_module) {
 
 void
 dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate) {
-  int p;
 
   dsp_sum_summands(envelope_follower->module->dsp_param.in, envelope_follower->ins->summands);
 

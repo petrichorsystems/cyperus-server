@@ -62,7 +62,6 @@ int osc_add_osc_client_handler(const char *path, const char *types, lo_arg **arg
 	char *request_id = NULL;
 	char *new_host_out, *new_port_out = NULL;
 	bool listener_enable = false;
-	struct osc_client_addr_t *new_client_addr = NULL;
 	bool multipart = false;
 	int errno = 0;
 
@@ -94,7 +93,7 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 	char *request_id, *mains_str = NULL;
 	struct dsp_port_out *temp_port_out;
 	struct dsp_port_in *temp_port_in;
-	bool multipart;
+	bool multipart = false;
   
 
 	request_id = (char *)argv[0];
@@ -120,7 +119,6 @@ int osc_list_main_handler(const char *path, const char *types, lo_arg **argv,
 		temp_port_in = temp_port_in->next;
 	}
 	
-	multipart = false;
 	osc_send_broadcast("/cyperus/list/main",
 			   "siis",
 			   request_id,
@@ -137,15 +135,8 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	char *request_id = NULL;
 	char *bus_id, *result_str = NULL;
 	int list_type = 0;
-	size_t result_str_size = 0;
-
-	char *partial_result_str = NULL;
-	size_t partial_result_str_size = 0;
   
 	struct dsp_bus *head_bus = NULL;
-	struct dsp_bus_port *temp_bus_port = NULL;
-	int count_bus_ports;;
-	char *bus_ins_str, *bus_outs_str;
 	int root_level = 0;
 
 	char *part_result_str = NULL;
@@ -257,7 +248,6 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 {
 	int i;
 	int errno = 0;
-	struct dsp_bus *temp_bus;
 	char *request_id, *target_bus_id, *bus_str, *ins_str, *outs_str, *new_id = NULL;
 	bool multipart;
 	struct dsp_bus *new_bus;
@@ -360,7 +350,6 @@ int osc_add_bus_port_handler(const char *path, const char *types, lo_arg **argv,
 	int errno = 0;
 	struct dsp_bus *target_bus = NULL;
 	char *request_id, *bus_id, *bus_port_name, *ret_bus_port_id = NULL;
-	struct dsp_bus_port *target_bus_port = NULL;
 	bool is_output, multipart = false;
 
 	request_id = (char *)argv[0];
@@ -624,7 +613,6 @@ int osc_list_module_handler(const char *path, const char *types, lo_arg ** argv,
 	struct dsp_module *temp_module = NULL;
 	char *request_id = NULL;
 	char *bus_id = NULL;
-	char *module_list = NULL;
 	char *result_str = NULL;
 	bool multipart = false;
 	int errno = 0;
@@ -676,10 +664,8 @@ int osc_list_module_handler(const char *path, const char *types, lo_arg ** argv,
 int osc_list_module_port_handler(const char *path, const char *types, lo_arg ** argv,
                                         int argc, void *data, void *user_data)
 {
-	int count;
-	struct dsp_bus *temp_bus;
 	struct dsp_module *temp_module = NULL;
-	char *request_id, *bus_path, *module_id, *result_str = NULL;
+	char *request_id, *module_id, *result_str = NULL;
 	size_t result_str_size = 0;
 	struct dsp_port_in *temp_port_in;
 	struct dsp_port_out *temp_port_out;
@@ -998,8 +984,6 @@ int osc_write_filesystem_file_handler(const char *path, const char *types, lo_ar
 	
 	char *request_id, *filepath, *content;
 	int error;
-	FILE *fp;
-	bool multipart;
 	
 	request_id = filepath = content = NULL;
 	error = 0;
@@ -1014,7 +998,6 @@ int osc_write_filesystem_file_handler(const char *path, const char *types, lo_ar
 		error = -1;
 	}
 
-	multipart = false;
 	osc_send_broadcast("/cyperus/write/filesystem/file",
 			   "siis",
 			   request_id,
@@ -1031,8 +1014,7 @@ int osc_append_filesystem_file_handler(const char *path, const char *types, lo_a
 {	
 	char *request_id, *filepath, *content;
 	int error;
-	FILE *fp;
-	bool multipart;
+	bool multipart = false;
 	
 	request_id = filepath = content = NULL;
 	error = 0;
@@ -1065,7 +1047,6 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 	unsigned long len;
 	FILE *fp;
 	char **osc_str;
-	int raw_strlen;
 	int osc_str_len;
 	int i;
 	int multipart_no, multipart_total;
@@ -1132,7 +1113,6 @@ int osc_remove_filesystem_file_handler(const char *path, const char *types, lo_a
 {	
 	char *request_id, *filepath;
 	int error;
-	FILE *fp;
 	bool multipart;
 	
 	request_id = filepath = NULL;
@@ -1171,7 +1151,6 @@ int osc_remove_filesystem_dir_handler(const char *path, const char *types, lo_ar
 {	
 	char *request_id, *dirpath;
 	int error;
-	FILE *fp;
 	bool multipart;
 	
 	request_id = dirpath = NULL;
@@ -1200,10 +1179,8 @@ int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg 
 {	
 	char *request_id, *dirpath, *dirname, *fullpath;
 	int error;
-	FILE *fp;
 	bool multipart;
 	int fullpath_strlen;
-	struct stat dirstat = {0};
 	
 	request_id = dirpath = dirname = fullpath = NULL;
 	error = 0;

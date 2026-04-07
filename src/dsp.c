@@ -29,12 +29,9 @@ dsp_build_bus_ports(struct dsp_bus *parent_bus,
   char *target_bus_ports = malloc(sizeof(char) * strlen(bus_ports) + 1);
   char *output_token;
   int i;
-  char *port_id;
   struct dsp_bus_port *temp_bus_port = NULL;
-  struct dsp_bus_port *target_bus_port = NULL;
   struct dsp_port_in *port_in = NULL;
   struct dsp_port_out *port_out = NULL;
-  int match_found = 0;
   char *p;
 
   int multi_port = 0;
@@ -257,7 +254,6 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	struct dsp_bus_port *temp_bus_port = NULL;
 	struct dsp_port_out *port_out = NULL;
 	struct dsp_port_in *port_in = NULL;
-	int errno = 0;
 
 	port_out = dsp_find_main_in_port_out(id_out);
 	if( port_out == NULL ) {
@@ -380,18 +376,12 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	
 	/* do we need to account for whether dsp_global_translation_connection_raph_processing is populated
 	   versus dsp_global.operation_head_processing is not populated? do we care? */
-	
-	struct dsp_port_out *temp_port_out = NULL;
-	struct dsp_port_in *temp_port_in = NULL;
 
 	struct dsp_operation *temp_op_out = NULL;
 	struct dsp_operation *temp_op_in = NULL;
 
 	struct dsp_operation *matched_op_out = NULL;
 	struct dsp_operation *matched_op_in = NULL;
-
-	struct dsp_operation *op_out = NULL;
-	struct dsp_operation *op_in = NULL;
 
 	struct dsp_operation_sample *found_sample_out = NULL;
 	struct dsp_operation_sample *found_sample_in = NULL;
@@ -404,9 +394,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	
 	struct dsp_operation_sample *new_summand = NULL;
 
-	struct dsp_translation_connection *temp_translation_conn = NULL;
-
-	struct dsp_bus *temp_bus = NULL;
 	struct dsp_module *temp_module = NULL;
 	struct dsp_bus_port *temp_bus_port = NULL;
 
@@ -417,8 +404,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 	int is_main_out_in = 0;
 	int is_bus_port_in = 0;
 	int is_module_in = 0;
-
-	int module_out_exists = 0;
 	
 	int error_not_found;
 
@@ -490,7 +475,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 			exit(1);
 		}
 
-		op_out = matched_op_out;
 		sample_out = found_sample_out;
 	}
 
@@ -543,7 +527,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 			exit(1);
 		}
 		
-		op_out = matched_op_out;
 		sample_out = found_sample_out;
 		
 	}
@@ -590,7 +573,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 			exit(1);
 		}
 		
-		op_out = matched_op_out;
 		sample_out = found_sample_out;
 	}
 	
@@ -622,7 +604,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 			exit(1);
 		}
 		
-		op_in = matched_op_in;
 		sample_in = found_sample_in;
 	}
 	
@@ -676,7 +657,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 			exit(1);
 		}
 		
-		op_in = matched_op_in;
 		sample_in = found_sample_in;
 	}
 	
@@ -721,7 +701,6 @@ dsp_optimize_connections_input(struct dsp_connection *connection) {
 			exit(1);
 		}
 		
-		op_in = matched_op_in;
 		sample_in = found_sample_in;
 	}
 	
@@ -792,12 +771,6 @@ dsp_purge_object_bus_descendants_recursive(struct dsp_bus *head_bus) {
 	struct dsp_bus_port *temp_bus_port_in = NULL;
 	struct dsp_bus_port *temp_bus_port_out = NULL;
 	struct dsp_bus_port *target_bus_port = NULL;
-
-	struct dsp_port_in *temp_port_in = NULL;
-	struct dsp_port_in *target_port_in = NULL;
-
-	struct dsp_port_out *temp_port_out = NULL;
-	struct dsp_port_out *target_port_out = NULL;
 	
 	struct dsp_connection *temp_connection, *target_connection = NULL;
 	
@@ -876,17 +849,11 @@ dsp_purge_object_bus_descendants_recursive(struct dsp_bus *head_bus) {
 int
 dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex) {
 	struct dsp_module *temp_module, *target_module = NULL;
-	struct dsp_bus *temp_bus, *prev_bus, *next_bus = NULL;
+	struct dsp_bus *temp_bus = NULL;
 
 	struct dsp_bus_port *temp_bus_port_in = NULL;
 	struct dsp_bus_port *temp_bus_port_out = NULL;
 	struct dsp_bus_port *target_bus_port = NULL;
-
-	struct dsp_port_in *temp_port_in = NULL;
-	struct dsp_port_in *target_port_in = NULL;
-
-	struct dsp_port_out *temp_port_out = NULL;
-	struct dsp_port_out *target_port_out = NULL;
 	
 	struct dsp_connection *temp_connection, *target_connection = NULL;
 
@@ -974,6 +941,7 @@ dsp_remove_bus(struct dsp_bus *target_bus) {
 	target_bus->remove = true;
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 	dsp_signal_graph_optimization();
+	return 0;
 } /* dsp_remove_bus */
 
 int
@@ -1024,6 +992,7 @@ dsp_remove_bus_port(struct dsp_bus_port *target_bus_port) {
 	target_bus_port->remove = true;
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);		
 	dsp_signal_graph_optimization();
+	return 0;
 } /* dsp_remove_bus_port */
 
 int
@@ -1113,6 +1082,7 @@ dsp_remove_module(struct dsp_module *target_module) {
 	target_module->remove = true;
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);		
 	dsp_signal_graph_optimization();
+	return 0;
 } /* dsp_remove_module */
 
 
@@ -1172,8 +1142,6 @@ dsp_build_optimized_main_outs() {
 
 	struct dsp_operation *temp_op = NULL;
 	struct dsp_operation_sample *temp_sample = NULL;
-
-	int i;
   
 	dsp_global.rebuilt_optimized_main_outs = NULL;
 	temp_port_in = dsp_global.main_outs;
@@ -1194,19 +1162,13 @@ dsp_build_optimized_main_outs() {
 } /* dsp_build_optimized_main_outs */
 
 void
-*dsp_build_optimized_graph(void *arg) {
-	int i;
-	float outsample = 0.0;
-	
-	struct dsp_bus *temp_bus;
-	struct dsp_module *temp_module;
-	
+*dsp_build_optimized_graph(void *arg) {	
 	dsp_global.operation_head_processing = NULL;
 	dsp_build_optimized_main_outs();
 	dsp_optimize_connections_main_inputs(dsp_global.main_ins);
 	dsp_optimize_bus(dsp_global.bus_head);
 	dsp_global_new_operation_graph = true;
-  
+	return NULL;
 } /* dsp_build_optimized_graph */
 
 void *
@@ -1220,6 +1182,7 @@ dsp_graph_optimization_task_thread(void *arg) {
 	dsp_graph_id_rebuild();
 	
 	pthread_mutex_unlock(&dsp_global.optimization_mutex);
+	return NULL;
 } /* dsp_graph_optimization_task_thread */
 
 int
@@ -1365,6 +1328,8 @@ dsp_graph_cleanup_task_thread(void *arg) {
 	dsp_graph_id_rebuild();
 	
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
+
+	return NULL;
 } /* dsp_graph_cleanup_task_thread */
 
 int
@@ -1383,6 +1348,7 @@ dsp_graph_cleanup_thread(void *arg) {
 			dsp_graph_cleanup_task_thread_setup();
 		}
 	}
+	return NULL;
 } /* dsp_graph_cleanup_thread */
 
 int
@@ -1397,7 +1363,6 @@ void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {  
   struct dsp_operation *temp_op = NULL;
   temp_op = head_op;
-  int p;
   
   while(temp_op != NULL) {
     if( temp_op->module == NULL ) {

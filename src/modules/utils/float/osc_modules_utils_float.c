@@ -68,7 +68,7 @@ int
 osc_edit_modules_utils_float_handler(const char *path, const char *types, lo_arg ** argv,
 						int argc, void *data, void *user_data)
 {
-  char *request_id, *module_path, *module_id;
+  char *request_id, *module_id;
   struct dsp_module *target_module;
   float value;
   int multipart_no;

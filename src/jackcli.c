@@ -37,11 +37,7 @@ jack_default_audio_sample_t **jackcli_ins;
 
 int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 {  
-  unsigned int i, n, p = 0; 
-
-  struct dsp_bus *temp_bus;
-
-  struct dsp_operation *temp_op;
+  unsigned int i, n = 0; 
   
   struct dsp_operation *temp_main_in = NULL;
   struct dsp_operation *temp_main_out = NULL;
@@ -188,6 +184,7 @@ int jackcli_close()
   free (jackcli_outs);
   free (jackcli_ports_output);
   free (jackcli_ports_input);
+  return 0;
 } /* jackcli_close() */
 
 float* jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out)

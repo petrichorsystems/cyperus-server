@@ -6,7 +6,6 @@
 
 extern void math_modules_utils_counter(dsp_parameter *counter, int samplerate) {
 	float *reset = counter->parameters->float32_arr_type[PARAM_USER_RESET];
-	float *start = counter->parameters->float32_arr_type[PARAM_USER_START];
 	float *step_size = counter->parameters->float32_arr_type[PARAM_USER_STEP_SIZE];
 	float *min = counter->parameters->float32_arr_type[PARAM_USER_MIN];
 	float *max = counter->parameters->float32_arr_type[PARAM_USER_MAX];

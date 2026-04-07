@@ -26,7 +26,6 @@ float
 
   /* TODO: Properly sum inputs? (be careful, what if not audio) */
 
-  int p = 0;
   int summand_idx = 0;
   unsigned short period_idx = 0;
 
@@ -53,20 +52,16 @@ void
 dsp_optimize_connections_module(struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
-  float temp_outsample;
   temp_out = outs;
-  char *current_path;
-
+  
   if( dsp_global.connection_graph != NULL ) {
     temp_connection = dsp_global.connection_graph;
     while(temp_out != NULL) {
-      temp_outsample = temp_out->value;
       while(temp_connection != NULL) {
 	if(strcmp(temp_out->id, temp_connection->id_out) == 0) {
 	  dsp_optimize_connections_input(temp_connection);
 	}
 	temp_connection = temp_connection->next;
-	free(current_path);
       }
       temp_out = temp_out->next;
     }
@@ -77,22 +72,18 @@ void
 dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
   struct dsp_port_out *temp_out;
   struct dsp_connection *temp_connection;
-  float temp_outsample;
-  char *current_path, *temp_op_in_id;
+  char *temp_op_in_id;
 
   struct dsp_module *temp_module_in = NULL;
   struct dsp_operation *temp_op_out, *temp_op_in = NULL;
-  struct dsp_operation_sample *temp_sample, *temp_sample_out, *temp_sample_in, *sample_in, *sample_out = NULL;
+  struct dsp_operation_sample *temp_sample_out, *temp_sample_in, *sample_in, *sample_out = NULL;
   struct dsp_operation_sample *new_summand = NULL;
 
   struct dsp_translation_connection *temp_translation_connection = NULL;
-
-  char *temp_result[3];
   
   temp_out = outs;
   if( dsp_global.connection_graph != NULL ) {
     while(temp_out != NULL) {
-      temp_outsample = temp_out->value;
       temp_connection = dsp_global.connection_graph;
       while(temp_connection != NULL) {
 	/* compare each main connection 'out' with this one, enqueue each fifo with data
@@ -241,8 +232,6 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 
 struct dsp_operation
 *dsp_optimize_module(char *id, struct dsp_module *module) {
-  dsp_parameter dsp_param = module->dsp_param;
-
   struct dsp_port_in *temp_port_in = NULL;
   struct dsp_port_out *temp_port_out = NULL;
   struct dsp_operation_sample *temp_sample = NULL;
