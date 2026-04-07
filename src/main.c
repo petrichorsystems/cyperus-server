@@ -47,8 +47,6 @@ int main(int argc, char *argv[])
 
   char *store_flag=NULL;
   char *store_input=NULL;
-
-  int exit_key;
   
   if( argc > 1 )
     if( !strcmp(argv[1], "-h") ||
@@ -134,8 +132,13 @@ int main(int argc, char *argv[])
   dsp_setup(period, input, output);
   dsp_graph_id_init();
 
-  jackcli_setup("cyperus-server", bitdepth, input, output);
+  float *sample_block = jackcli_setup("cyperus-server", bitdepth, input, output);
 
+  if(sample_block == NULL) {
+	  printf("something bad happened during jackcli_setup(), returning..");
+	  return 0;
+  }
+  
   printf("channels in: %d\n", input);
   printf("channels out: %d\n", output);
   printf("buffer size: %d\n", jackcli_buffer_size);
@@ -150,7 +153,7 @@ int main(int argc, char *argv[])
     usleep(500000);
   }
   
-  jackcli_teardown();
+  jackcli_teardown(sample_block);
   
   return 0;
 }
