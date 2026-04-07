@@ -17,24 +17,17 @@
 #ifndef OPS_MODULES_DELAY_SIMPLE_H
 #define OPS_MODULES_DELAY_SIMPLE_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include "../../../dsp.h"
-#include "../../../dsp_ops.h"
 #include "../../../dsp_types.h"
-#include "../../../dsp_math.h"
-#include "../../../osc.h"
-#include "../../../osc_handlers.h"
-
-#include "../../../jackcli.h"
 
 int
 dsp_create_delay_simple(struct dsp_bus *target_bus,
                          float amount,
                          float time,
                          float feedback);
+
+int
+dsp_destroy_delay_simple(struct dsp_module *target_module);
+
 void
 dsp_delay_simple(struct dsp_operation *delay_simple,
                   int jack_samplerate);

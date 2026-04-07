@@ -17,18 +17,7 @@
 #ifndef OPS_MODULES_UTILS_COUNTER_H
 #define OPS_MODULES_UTILS_COUNTER_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include "../../../dsp.h"
-#include "../../../dsp_ops.h"
 #include "../../../dsp_types.h"
-#include "../../../dsp_math.h"
-#include "../../../osc.h"
-#include "../../../osc_handlers.h"
-
-#include "../../../jackcli.h"
 
 int
 dsp_create_utils_counter(struct dsp_bus *target_bus,
@@ -39,6 +28,9 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
                          float max,
                          float direction,
                          float auto_reset);
+int
+dsp_destroy_utils_counter(struct dsp_module *target_module);
+
 void
 dsp_utils_counter(struct dsp_operation *utils_counter,
 		  int jack_samplerate);

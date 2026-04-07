@@ -17,22 +17,15 @@
 #ifndef OPS_MODULES_UTILS_SPIGOT_H
 #define OPS_MODULES_UTILS_SPIGOT_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
 #include "../../../dsp_types.h"
-#include "../../../dsp_ops.h"
-#include "../../../jackcli.h"
-#include "../../../osc.h"
-
-#include <lo/lo.h>
-
-
 
 extern int
 dsp_create_utils_spigot(struct dsp_bus *target_bus,
                         float open);
+
+int
+dsp_destroy_utils_spigot(struct dsp_module *target_module);
+
 extern void
 dsp_utils_spigot(struct dsp_operation *utils_spigot,
                   int jack_samplerate);

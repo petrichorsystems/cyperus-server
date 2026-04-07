@@ -16,10 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
+#include "../../../dsp.h"
+#include "../../../osc.h"
 
+#include "params_modules_oscillator_clock.h"
 #include "math_modules_oscillator_clock.h"
 #include "ops_modules_oscillator_clock.h"
 
@@ -34,30 +34,32 @@ dsp_create_oscillator_clock(struct dsp_bus *target_bus,
   int p;
   
   params.name = "oscillator_clock";  
+
+  /* signal output */
+  params.out = malloc(sizeof(float) * dsp_global_period);
   
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
   
   params.parameters->float32_arr_type = malloc(sizeof(float *) * 2);
-  params.parameters->float32_type = malloc(sizeof(float) * 3);
-  params.parameters->int32_type = malloc(sizeof(int) * 2);
+  params.parameters->float32_type = malloc(sizeof(float) * 2);
+  params.parameters->int32_type = malloc(sizeof(int) * 1);
 
   /* user-facing parameters */
-  params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float)); /* frequency */
-  params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float)); /* amplitude */
+  params.parameters->float32_arr_type[PARAM_USER_FREQUENCY] = calloc(dsp_global_period, sizeof(float)); /* frequency */
+  params.parameters->float32_arr_type[PARAM_USER_AMPLITUDE] = calloc(dsp_global_period, sizeof(float)); /* amplitude */
 
   for (p=0; p<dsp_global_period; p++) {
 	  /* user-facing parameter assignment */
-	  params.parameters->float32_arr_type[0][p] = frequency;
-	  params.parameters->float32_arr_type[1][p] = amplitude;
+	  params.parameters->float32_arr_type[PARAM_USER_FREQUENCY][p] = frequency;
+	  params.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][p] = amplitude;
   }
 
   /* internal parameters */
-  params.parameters->int32_type[0] = 0;
+  params.parameters->int32_type[PARAM_INTERNAL_SAMPLES_COUNT] = 0;
                                             
   /* osc listener param state parameters */                                            
-  params.parameters->float32_type[0] = frequency; /* old frequency */
-  params.parameters->float32_type[1] = amplitude; /* old amplitude */
-  
+  params.parameters->float32_type[PARAM_LISTENER_FREQUENCY] = frequency; /* old frequency */
+  params.parameters->float32_type[PARAM_LISTENER_AMPLITUDE] = amplitude; /* old amplitude */  
   
   ins = dsp_port_in_init("param_frequency");
   ins->next = dsp_port_in_init("param_amplitude");
@@ -66,6 +68,7 @@ dsp_create_oscillator_clock(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "oscillator_clock",
 		 dsp_oscillator_clock,
+		 dsp_destroy_oscillator_clock,
                  dsp_osc_listener_oscillator_clock,
 		 dsp_optimize_module,
 		 params,
@@ -74,26 +77,35 @@ dsp_create_oscillator_clock(struct dsp_bus *target_bus,
   return 0;
 } /* dsp_create_oscillator_clock */
 
+int
+dsp_destroy_oscillator_clock(struct dsp_module *target_module) {
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY]);
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE]);
+	free(target_module->dsp_param.parameters->float32_arr_type);
+	free(target_module->dsp_param.parameters->float32_type);
+	free(target_module->dsp_param.parameters->int32_type);
+	free(target_module->dsp_param.parameters);
+	free(target_module->dsp_param.out);
+  return 0;
+} /* dsp_destroy_oscillator_clock */
+
 void
 dsp_oscillator_clock(struct dsp_operation *oscillator_clock, int jack_samplerate)
-{
-  float *outsamples;
-  
+{  
   /* handle params with connected inputs */
   if( oscillator_clock->ins->summands != NULL ) /* frequency */
-	  dsp_sum_summands(oscillator_clock->module->dsp_param.parameters->float32_arr_type[0], oscillator_clock->ins->summands);
+	  dsp_sum_summands(oscillator_clock->module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY], oscillator_clock->ins->summands);
   if( oscillator_clock->ins->next->summands != NULL ) /* amplitude */
-	  dsp_sum_summands(oscillator_clock->module->dsp_param.parameters->float32_arr_type[1], oscillator_clock->ins->next->summands);
+	  dsp_sum_summands(oscillator_clock->module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE], oscillator_clock->ins->next->summands);
     
-  outsamples = math_modules_oscillator_clock(oscillator_clock->module->dsp_param.parameters,
-					     jack_samplerate);
+  math_modules_oscillator_clock(&oscillator_clock->module->dsp_param,
+				jack_samplerate);
   
   /* drive audio outputs */
   memcpy(oscillator_clock->outs->sample->value,
-	 outsamples,
+	 oscillator_clock->module->dsp_param.out,
 	 sizeof(float) * dsp_global_period);
-  
-  free(outsamples);
+
 } /* dsp_oscillator_clock */
 
 
@@ -102,8 +114,8 @@ void dsp_edit_oscillator_clock(struct dsp_module *oscillator_clock,
                                float amplitude)
 {
 	for (int p=0; p<dsp_global_period; p++) {
-		oscillator_clock->dsp_param.parameters->float32_arr_type[0][p] = frequency;
-		oscillator_clock->dsp_param.parameters->float32_arr_type[1][p] = amplitude;
+		oscillator_clock->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY][p] = frequency;
+		oscillator_clock->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][p] = amplitude;
 		
 	}  
 } /* dsp_edit_oscillator_clock */
@@ -122,18 +134,18 @@ dsp_osc_listener_oscillator_clock(struct dsp_operation *oscillator_clock, int ja
   /* if param_connected, activate osc listener */
   if(param_connected) {
        /* if new value is different than old value, send osc messages */
-	  if (oscillator_clock->module->dsp_param.parameters->float32_type[0] != oscillator_clock->module->dsp_param.parameters->float32_arr_type[0][0] ||
-	      oscillator_clock->module->dsp_param.parameters->float32_type[1] != oscillator_clock->module->dsp_param.parameters->float32_arr_type[1][0]) {
+	  if (oscillator_clock->module->dsp_param.parameters->float32_type[PARAM_LISTENER_FREQUENCY] != oscillator_clock->module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY][0] ||
+	      oscillator_clock->module->dsp_param.parameters->float32_type[PARAM_LISTENER_AMPLITUDE] != oscillator_clock->module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][0]) {
 		  int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
 		  char *path = (char *)malloc(sizeof(char) * path_len);
 		  snprintf(path, path_len, "%s%s", "/cyperus/listener/", oscillator_clock->module->id);    
 		  osc_send_broadcast(path, "ff",
-			  oscillator_clock->module->dsp_param.parameters->float32_type[0],
-			  oscillator_clock->module->dsp_param.parameters->float32_type[1]);
+			  oscillator_clock->module->dsp_param.parameters->float32_type[PARAM_LISTENER_FREQUENCY],
+			  oscillator_clock->module->dsp_param.parameters->float32_type[PARAM_LISTENER_AMPLITUDE]);
 		  
 		  /* assign new parameter to last parameter after we're reported the change */
-		  oscillator_clock->module->dsp_param.parameters->float32_type[0] = oscillator_clock->module->dsp_param.parameters->float32_arr_type[0][0];
-		  oscillator_clock->module->dsp_param.parameters->float32_type[1] = oscillator_clock->module->dsp_param.parameters->float32_arr_type[1][0];
+		  oscillator_clock->module->dsp_param.parameters->float32_type[PARAM_LISTENER_FREQUENCY] = oscillator_clock->module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY][0];
+		  oscillator_clock->module->dsp_param.parameters->float32_type[PARAM_LISTENER_AMPLITUDE] = oscillator_clock->module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][0];
 	  }
   }
   

@@ -16,12 +16,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <math.h>
+#include "../../../osc.h"
 
+#include "ops_modules_envelope_follower.h"
 #include "osc_modules_envelope_follower.h"
 
 int osc_add_modules_envelope_follower_handler(const char *path, const char *types, lo_arg ** argv,

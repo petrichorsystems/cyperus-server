@@ -16,6 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#include "../../../dsp.h"
+#include "../../../osc.h"
+
+#include "params_modules_utils_spigot.h"
 #include "ops_modules_utils_spigot.h"
 
 void*
@@ -34,23 +38,20 @@ dsp_create_utils_spigot(struct dsp_bus *target_bus,
 	
 	params.name = "utils_spigot";
 
-	/* input */
+	/* input+output */
 	params.in = malloc(sizeof(float) * dsp_global_period);
+	params.out = malloc(sizeof(float) * dsp_global_period);	
 	
 	params.parameters = malloc(sizeof(dsp_module_parameters_t));
 
 	params.parameters->float32_arr_type = malloc(sizeof(float*));
-	params.parameters->float32_type = malloc(sizeof(float));
 
 	/* user-facing parameter allocation */
-	params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float)); /* current open state */
+	params.parameters->float32_arr_type[PARAM_USER_OPEN] = calloc(dsp_global_period, sizeof(float)); /* current open state */
 
 	/* parameter assignment */
 	for (int p=0; p<dsp_global_period; p++)
 		params.parameters->float32_arr_type[0][p] = open;
-
-	/* internal parameter assignment */
-	params.parameters->float32_type[0] = open; /* last open state */
   
 	ins = dsp_port_in_init("in");
 	ins->next = dsp_port_in_init("open");
@@ -60,6 +61,7 @@ dsp_create_utils_spigot(struct dsp_bus *target_bus,
 	dsp_add_module(target_bus,
 		       "utils_spigot",
 		       dsp_utils_spigot,
+		       dsp_destroy_utils_spigot,
 		       dsp_osc_listener_utils_spigot,
 		       dsp_optimize_module,
 		       params,
@@ -68,39 +70,45 @@ dsp_create_utils_spigot(struct dsp_bus *target_bus,
 	return 0;
 } /* dsp_create_utils_spigot */
 
+int
+dsp_destroy_utils_spigot(struct dsp_module *target_module) {
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_OPEN]);	     
+	free(target_module->dsp_param.parameters->float32_arr_type);
+	free(target_module->dsp_param.parameters);
+	free(target_module->dsp_param.out);
+	free(target_module->dsp_param.in);	
+  return 0;
+} /* dsp_destroy_utils_spigot */
+
 void
 dsp_utils_spigot(struct dsp_operation *utils_spigot,
 		 int jack_samplerate) {
-	float *outsamples;
-  
-	outsamples = calloc(dsp_global_period, sizeof(float));
 
 	dsp_sum_summands(utils_spigot->module->dsp_param.in, utils_spigot->ins->summands);
   
 	/* open input */
 	if( utils_spigot->ins->next->summands != NULL )
-		dsp_sum_summands(utils_spigot->module->dsp_param.parameters->float32_arr_type[0], utils_spigot->ins->next->summands);
+		dsp_sum_summands(utils_spigot->module->dsp_param.parameters->float32_arr_type[PARAM_USER_OPEN], utils_spigot->ins->next->summands);
 	
 	for(int p=0; p<dsp_global_period; p++) {
-		if (utils_spigot->module->dsp_param.parameters->float32_arr_type[0][p])
-			outsamples[p] = utils_spigot->module->dsp_param.in[p];
+		if (utils_spigot->module->dsp_param.parameters->float32_arr_type[PARAM_USER_OPEN][p])
+			utils_spigot->module->dsp_param.out[p] = utils_spigot->module->dsp_param.in[p];
 		else
-			outsamples[p] = 0.0f;
+			utils_spigot->module->dsp_param.out[p] = 0.0f;
 	}
 	
 	/* drive outputs */
 	memcpy(utils_spigot->outs->sample->value,
-	       outsamples,
+	       utils_spigot->module->dsp_param.out,
 	       sizeof(float) * dsp_global_period);
 
-	free(outsamples);
 } /* dsp_utils_spigot */
 
 
 void dsp_edit_utils_spigot(struct dsp_module *utils_spigot,
                            float open) {
 	for (int p=0; p<dsp_global_period; p++)
-		utils_spigot->dsp_param.parameters->float32_arr_type[0][p] = open;
+		utils_spigot->dsp_param.parameters->float32_arr_type[PARAM_USER_OPEN][p] = open;
 } /* dsp_edit_utils_spigot */
 
 void

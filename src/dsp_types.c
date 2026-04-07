@@ -16,9 +16,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <uuid/uuid.h>
+
 #include "dsp_types.h"
+
 struct dsp_global_t dsp_global;
-;
+
 struct dsp_operation *dsp_optimized_main_outs;
 struct dsp_operation *dsp_rebuilt_optimized_main_outs;
 

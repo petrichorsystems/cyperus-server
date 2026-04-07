@@ -16,9 +16,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
+#include <math.h>
+
+#include "../../../dsp_types.h"
+#include "../../../dsp.h"
+
+#include "params_modules_filter_bandpass.h"
 #include "math_modules_filter_bandpass.h"
-
-
 
 static float _bandpass_qcos(float f)
 {
@@ -32,8 +36,8 @@ static float _bandpass_qcos(float f)
 
 static void _bandpass_docoeff(dsp_parameter *filter, int samplerate, int idx)
 {
-	float *frequency = filter->parameters->float32_arr_type[0];
-	float *q = filter->parameters->float32_arr_type[1];
+	float *frequency = filter->parameters->float32_arr_type[PARAM_USER_FREQUENCY];
+	float *q = filter->parameters->float32_arr_type[PARAM_USER_Q];
 
 	float r, oneminusr, omega;
 
@@ -42,8 +46,8 @@ static void _bandpass_docoeff(dsp_parameter *filter, int samplerate, int idx)
 	if (q[idx] < 0)
 		q[idx] = 0.0f;
   
-	filter->parameters->float32_arr_type[0][idx] = frequency[idx];
-	filter->parameters->float32_arr_type[1][idx] = q[idx];
+	filter->parameters->float32_arr_type[PARAM_USER_FREQUENCY][idx] = frequency[idx];
+	filter->parameters->float32_arr_type[PARAM_USER_Q][idx] = q[idx];
   
 	omega = frequency[idx] * (2.0f * 3.14159f) / samplerate;
   
@@ -57,9 +61,9 @@ static void _bandpass_docoeff(dsp_parameter *filter, int samplerate, int idx)
   
 	r = 1.0f - oneminusr;
   
-	filter->parameters->float32_arr_type[7][idx] = 2.0f * _bandpass_qcos(omega) * r; /* coef1 */
-	filter->parameters->float32_arr_type[8][idx] = - r * r; /* coef2 */
-	filter->parameters->float32_arr_type[9][idx] = 2 * oneminusr * (oneminusr + r * omega); /* gain */
+	filter->parameters->float32_arr_type[PARAM_INTERNAL_COEF1][idx] = 2.0f * _bandpass_qcos(omega) * r; /* coef1 */
+	filter->parameters->float32_arr_type[PARAM_INTERNAL_COEF2][idx] = - r * r; /* coef2 */
+	filter->parameters->float32_arr_type[PARAM_INTERNAL_GAIN][idx] = 2 * oneminusr * (oneminusr + r * omega); /* gain */
 }
 
 extern float math_modules_filter_bandpass_init(dsp_parameter *filter)
@@ -68,28 +72,25 @@ extern float math_modules_filter_bandpass_init(dsp_parameter *filter)
 		_bandpass_docoeff(filter, jackcli_samplerate, p);
 }
 
-extern float* math_modules_filter_bandpass(dsp_parameter *filter, int samplerate)
+extern void math_modules_filter_bandpass(dsp_parameter *filter, int samplerate)
 {
 	float *frequency, *q, *amount;
-	float output, outsample, *outsamples;
+	float output, outsample;
 
 	float *frequency_old, *q_old, *last, *prev, *coef1, *coef2, *gain;
-
-	outsamples = malloc(sizeof(float) * dsp_global_period);
   
-	frequency = filter->parameters->float32_arr_type[0];
-	q = filter->parameters->float32_arr_type[1];
-	amount = filter->parameters->float32_arr_type[2];
+	frequency = filter->parameters->float32_arr_type[PARAM_USER_FREQUENCY];
+	q = filter->parameters->float32_arr_type[PARAM_USER_Q];
+	amount = filter->parameters->float32_arr_type[PARAM_USER_AMOUNT];
 
-	frequency_old = filter->parameters->float32_arr_type[3];
-	q_old = filter->parameters->float32_arr_type[4];
+	frequency_old = filter->parameters->float32_arr_type[PARAM_INTERNAL_FREQUENCY_OLD];
+	q_old = filter->parameters->float32_arr_type[PARAM_INTERNAL_Q_OLD];
 
-	last = filter->parameters->float32_arr_type[5];
-	prev = filter->parameters->float32_arr_type[6];
-	coef1 = filter->parameters->float32_arr_type[7];
-	coef2 = filter->parameters->float32_arr_type[8];
-	gain = filter->parameters->float32_arr_type[9];  
-
+	last = filter->parameters->float32_arr_type[PARAM_INTERNAL_LAST];
+	prev = filter->parameters->float32_arr_type[PARAM_INTERNAL_PREV];
+	coef1 = filter->parameters->float32_arr_type[PARAM_INTERNAL_COEF1];
+	coef2 = filter->parameters->float32_arr_type[PARAM_INTERNAL_COEF2];
+	gain = filter->parameters->float32_arr_type[PARAM_INTERNAL_GAIN];  
   
 	for (int p=0; p<dsp_global_period; p++) {	  
 		if( (frequency[p] != frequency_old[p]) ||
@@ -98,7 +99,6 @@ extern float* math_modules_filter_bandpass(dsp_parameter *filter, int samplerate
 			frequency_old[p] = frequency[p];
 			q_old[p] = q[p];		  
 		}
-	  
 
 		output = filter->in[p] + coef1[p] * last[p] + coef2[p] * prev[p];
 		outsample = gain[p] * output;
@@ -111,7 +111,6 @@ extern float* math_modules_filter_bandpass(dsp_parameter *filter, int samplerate
 		if (PD_BIGORSMALL(prev[p]))
 			prev[p] = 0;
   
-		outsamples[p] = outsample * amount[p];
-	}
-	return outsamples;
+		filter->out[p] = outsample * amount[p];
+	};
 }

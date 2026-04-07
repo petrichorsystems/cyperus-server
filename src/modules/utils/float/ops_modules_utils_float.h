@@ -17,30 +17,24 @@
 #ifndef OPS_MODULES_UTILS_FLOAT_H
 #define OPS_MODULES_UTILS_FLOAT_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
 #include "../../../dsp_types.h"
-#include "../../../dsp_ops.h"
-#include "../../../jackcli.h"
-#include "../../../osc.h"
-
-#include <lo/lo.h>
-
-
 
 extern int
 dsp_create_utils_float(struct dsp_bus *target_bus,
-                         float value);
+		       float value);
+
+int
+dsp_destroy_utils_float(struct dsp_module *target_module);
+
 extern void
 dsp_utils_float(struct dsp_operation *utils_float,
-                  int jack_samplerate);
+		int jack_samplerate);
+
 extern void
 dsp_edit_utils_float(struct dsp_module *utils_float,
-                       float value);
+		     float value);
 
 extern void
 dsp_osc_listener_utils_float(struct dsp_operation *utils_float,
-                           int jack_samplerateo);
+			     int jack_samplerateo);
 #endif

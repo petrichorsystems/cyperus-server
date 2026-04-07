@@ -24,7 +24,6 @@ Copyright 2015 murray foster */
 #include <stdbool.h>
 #include <unistd.h>
 
-#include "dsp_math.h"
 #include "dsp_types.h"
 #include "dsp_ops.h"
 

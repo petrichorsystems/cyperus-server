@@ -19,24 +19,18 @@ Copyright 2021 murray foster */
 #ifndef OPS_MODULES_ENVELOPE_FOLLOWER_H
 #define OPS_MODULES_ENVELOPE_FOLLOWER_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include "../../../dsp.h"
-#include "../../../dsp_ops.h"
 #include "../../../dsp_types.h"
-#include "../../../dsp_math.h"
-#include "../../../osc.h"
-#include "../../../osc_handlers.h"
 
-#include "../../../jackcli.h"
 
 int
 dsp_create_envelope_follower(struct dsp_bus *target_bus,
                                     float attack,
                                     float decay,
                                     float scale);
+
+int
+dsp_destroy_envelope_follower(struct dsp_module *target_module);
+
 void
 dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate);
 

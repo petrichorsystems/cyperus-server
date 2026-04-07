@@ -19,18 +19,7 @@ Copyright 2021 murray foster */
 #ifndef OPS_MODULES_NETWORK_OSCSEND_H
 #define OPS_MODULES_NETWORK_OSCSEND_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include "../../../dsp.h"
-#include "../../../dsp_ops.h"
 #include "../../../dsp_types.h"
-#include "../../../dsp_math.h"
-#include "../../../osc.h"
-#include "../../../osc_handlers.h"
-
-#include "../../../jackcli.h"
 
 int
 dsp_create_network_oscsend(struct dsp_bus *target_bus,
@@ -38,6 +27,10 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 			   int port,			    
 			   char *osc_path,
 			   float freq_div);
+
+int
+dsp_destroy_network_oscsend(struct dsp_module *target_module);
+
 void
 dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate);
 

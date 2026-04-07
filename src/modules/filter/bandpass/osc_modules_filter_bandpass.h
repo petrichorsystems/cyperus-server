@@ -19,18 +19,7 @@ Copyright 2015 murray foster */
 #ifndef OSC_MODULES_FILTER_BANDPASS_H
 #define OSC_MODULES_FILTER_BANDPASS_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include "../../../dsp.h"
-#include "../../../dsp_ops.h"
-#include "../../../dsp_types.h"
-#include "../../../dsp_math.h"
-#include "../../../osc.h"
-#include "../../../osc_handlers.h"
-
-#include "ops_modules_filter_bandpass.h"
+#include <lo/lo.h>
 
 int osc_add_modules_filter_bandpass_handler(const char *path, const char *types, lo_arg ** argv,
 						   int argc, void *data, void *user_data);

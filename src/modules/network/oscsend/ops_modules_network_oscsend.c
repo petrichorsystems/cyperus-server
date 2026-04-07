@@ -16,10 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
+#include "../../../dsp.h"
+#include "../../../osc.h"
 
+#include "params_modules_network_oscsend.h"
 #include "ops_modules_network_oscsend.h"
 
 int
@@ -40,27 +40,25 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 
 	params.parameters->char_type = malloc(sizeof(char*) * 2);
 	params.parameters->int32_type = malloc(sizeof(int) * 2);
-	params.parameters->float32_type = malloc(sizeof(float) * 2);
-
+	params.parameters->float32_type = malloc(sizeof(float) * 1);
+	
 	/* user-facing parameter allocation */
-	params.parameters->char_type[0] = malloc(sizeof(char) * (strlen(hostname_ip) + 1));
-	params.parameters->char_type[1] = malloc(sizeof(char) * (strlen(osc_path) + 1));
-
+	params.parameters->char_type[PARAM_USER_HOSTNAME_IP] = malloc(sizeof(char) * (strlen(hostname_ip) + 1));
+	strcpy(params.parameters->char_type[PARAM_USER_HOSTNAME_IP], hostname_ip);	
+	params.parameters->char_type[PARAM_USER_OSC_PATH] = malloc(sizeof(char) * (strlen(osc_path) + 1));
+	strcpy(params.parameters->char_type[PARAM_USER_OSC_PATH], osc_path);	
+	params.parameters->int32_type[PARAM_USER_PORT] = port;
+	params.parameters->float32_type[PARAM_USER_FREQ_DIV] = freq_div;	
+	
 	/* internal parameter assignment */
-	params.parameters->int32_type[1] = 1;  /* samplerate counter */
-	params.parameters->float32_type[1] = 0.0f; /* last output sample */
-
-	/* osc listener parameters */
-	strcpy(params.parameters->char_type[0], hostname_ip);
-	strcpy(params.parameters->char_type[1], osc_path);
-	params.parameters->int32_type[0] = port;
-	params.parameters->float32_type[0] = freq_div;
+	params.parameters->int32_type[PARAM_INTERNAL_SAMPLERATE_COUNTER] = 1;  /* samplerate counter */
 	
 	ins = dsp_port_in_init("in");
 	
 	dsp_add_module(target_bus,
 		       "network_oscsend",
 		       dsp_network_oscsend,
+		       dsp_destroy_network_oscsend,
 		       NULL,
 		       dsp_optimize_module,
 		       params,
@@ -70,20 +68,33 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 	return 0;
 } /* dsp_create_network_oscsend */
 
+int
+dsp_destroy_network_oscsend(struct dsp_module *target_module) {
+	free(target_module->dsp_param.parameters->char_type[PARAM_USER_HOSTNAME_IP]);
+	free(target_module->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH]);
+	free(target_module->dsp_param.parameters->char_type);	
+	free(target_module->dsp_param.parameters->int32_type);	
+	free(target_module->dsp_param.parameters->float32_type);	
+	free(target_module->dsp_param.parameters);
+	free(target_module->dsp_param.out);
+	free(target_module->dsp_param.in);
+	return 0;	
+} /* dsp_destroy_network_oscsend */
+
 void
 dsp_edit_network_oscsend(struct dsp_module *network_oscsend,
 			 char *hostname_ip,
 			 int port,			    
 			 char *osc_path,
 			 float freq_div) {
-	network_oscsend->dsp_param.parameters->char_type[0] = realloc(network_oscsend->dsp_param.parameters->char_type[0], strlen(hostname_ip) + 1);
-	strcpy(network_oscsend->dsp_param.parameters->char_type[0], hostname_ip);
+	network_oscsend->dsp_param.parameters->char_type[PARAM_USER_HOSTNAME_IP] = realloc(network_oscsend->dsp_param.parameters->char_type[PARAM_USER_HOSTNAME_IP], strlen(hostname_ip) + 1);
+	strcpy(network_oscsend->dsp_param.parameters->char_type[PARAM_USER_HOSTNAME_IP], hostname_ip);
 
-	network_oscsend->dsp_param.parameters->int32_type[0] = port;
-	network_oscsend->dsp_param.parameters->float32_type[0] = freq_div;
+	network_oscsend->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH] = realloc(network_oscsend->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH], strlen(osc_path) + 1);
+	strcpy(network_oscsend->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH], osc_path);	
 	
-	network_oscsend->dsp_param.parameters->char_type[1] = realloc(network_oscsend->dsp_param.parameters->char_type[1], strlen(osc_path) + 1);
-	strcpy(network_oscsend->dsp_param.parameters->char_type[1], osc_path);		
+	network_oscsend->dsp_param.parameters->int32_type[PARAM_USER_PORT] = port;
+	network_oscsend->dsp_param.parameters->float32_type[PARAM_USER_FREQ_DIV] = freq_div;	
 } /* dsp_edit_network_oscsend */
 
 void
@@ -93,12 +104,12 @@ dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) 
 	int port, sample_count, i, port_len;
 	float freq_div;
 
-	hostname_ip = network_oscsend->module->dsp_param.parameters->char_type[0];
-	port = network_oscsend->module->dsp_param.parameters->int32_type[0];
-	osc_path = network_oscsend->module->dsp_param.parameters->char_type[1];
-	freq_div = network_oscsend->module->dsp_param.parameters->float32_type[0];	
+	hostname_ip = network_oscsend->module->dsp_param.parameters->char_type[PARAM_USER_HOSTNAME_IP];
+	osc_path = network_oscsend->module->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH];	
+	port = network_oscsend->module->dsp_param.parameters->int32_type[PARAM_USER_PORT];
+	freq_div = network_oscsend->module->dsp_param.parameters->float32_type[PARAM_USER_FREQ_DIV];	
 
-	sample_count = network_oscsend->module->dsp_param.parameters->int32_type[2];
+	sample_count = network_oscsend->module->dsp_param.parameters->int32_type[PARAM_INTERNAL_SAMPLERATE_COUNTER];
 
 	port_len = snprintf(NULL, 0,"%d",port);
 	osc_port = malloc(sizeof(char) * port_len);
@@ -124,7 +135,7 @@ dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) 
 		}
 		i++;
 	}
-	network_oscsend->module->dsp_param.parameters->int32_type[2] = sample_count;
+	network_oscsend->module->dsp_param.parameters->int32_type[PARAM_INTERNAL_SAMPLERATE_COUNTER] = sample_count;
 
 	free(osc_port);
 	free(lo_addr_send);  

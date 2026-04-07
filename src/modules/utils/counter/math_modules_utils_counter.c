@@ -1,18 +1,19 @@
 
-#include "math_modules_utils_counter.h"
+#include "../../../dsp_types.h"
+#include "../../../dsp.h"
 
-extern float* math_modules_utils_counter(dsp_parameter *counter, int samplerate) {
-	float *reset = counter->parameters->float32_arr_type[0];
-	float *start = counter->parameters->float32_arr_type[1];
-	float *step_size = counter->parameters->float32_arr_type[2];
-	float *min = counter->parameters->float32_arr_type[3];
-	float *max = counter->parameters->float32_arr_type[4];
-	float *direction = counter->parameters->float32_arr_type[5];
-	float *auto_reset = counter->parameters->float32_arr_type[6];
+#include "params_modules_utils_counter.h"
 
-	float current_step = counter->parameters->float32_type[0];
+extern void math_modules_utils_counter(dsp_parameter *counter, int samplerate) {
+	float *reset = counter->parameters->float32_arr_type[PARAM_USER_RESET];
+	float *start = counter->parameters->float32_arr_type[PARAM_USER_START];
+	float *step_size = counter->parameters->float32_arr_type[PARAM_USER_STEP_SIZE];
+	float *min = counter->parameters->float32_arr_type[PARAM_USER_MIN];
+	float *max = counter->parameters->float32_arr_type[PARAM_USER_MAX];
+	float *direction = counter->parameters->float32_arr_type[PARAM_USER_DIRECTION];
+	float *auto_reset = counter->parameters->float32_arr_type[PARAM_USER_AUTO_RESET];
 
-	float *out = calloc(dsp_global_period, sizeof(float));
+	float current_step = counter->parameters->float32_type[PARAM_INTERNAL_START];
 	
 	for (int p=0; p<dsp_global_period; p++) {
 		if( reset[p] ) {
@@ -46,12 +47,10 @@ extern float* math_modules_utils_counter(dsp_parameter *counter, int samplerate)
 				/* direction is 0, so do nothing */
 			}
 		}
-		out[p] = current_step;
+		counter->out[p] = current_step;
 	}
 	
 	if( current_step != counter->parameters->float32_type[0] ) {
-		counter->parameters->float32_type[0] = current_step;
+		counter->parameters->float32_type[PARAM_INTERNAL_START] = current_step;
 	}
-  
-	return out;
 }

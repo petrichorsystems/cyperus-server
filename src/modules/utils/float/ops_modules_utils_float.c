@@ -16,13 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#include "../../../dsp.h"
+#include "../../../osc.h"
+
+#include "params_modules_utils_float.h"
 #include "ops_modules_utils_float.h"
-
-void*
-_utils_float_thread(void *arg) {
-  
-} /* _utils_float_thread */
-
 
 int
 dsp_create_utils_float(struct dsp_bus *target_bus,
@@ -34,15 +32,13 @@ dsp_create_utils_float(struct dsp_bus *target_bus,
   params.name = "utils_float";
   params.pos = 0;
 
-  /* audio input */
+  /* audio input/output */
   params.in = malloc(sizeof(float) * dsp_global_period);
+  params.out = malloc(sizeof(float) * dsp_global_period);  
 
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
   
   params.parameters->float32_type = malloc(sizeof(float));
-
-  /* user-facing parameter allocation */
-  params.parameters->float32_arr_type = calloc(dsp_global_period, sizeof(float *));
 
   for(int p=0; p<dsp_global_period; p++) {
     /* user-facing parameter assignment */
@@ -50,7 +46,7 @@ dsp_create_utils_float(struct dsp_bus *target_bus,
   }
   
   /* osc listener parameters */
-  params.parameters->float32_type[0] = value;
+  params.parameters->float32_type[PARAM_LISTENER_FLOAT_VAL] = value;
 
   ins = dsp_port_in_init("value");
   outs = dsp_port_out_init("out");
@@ -58,6 +54,7 @@ dsp_create_utils_float(struct dsp_bus *target_bus,
   dsp_add_module(target_bus,
 		 "utils_float",
 		 dsp_utils_float,
+		 dsp_destroy_utils_float,
                  dsp_osc_listener_utils_float,
 		 dsp_optimize_module,
 		 params,
@@ -65,6 +62,15 @@ dsp_create_utils_float(struct dsp_bus *target_bus,
 		 outs);
   return 0;
 } /* dsp_create_utils_float */
+
+int
+dsp_destroy_utils_float(struct dsp_module *target_module) {
+	free(target_module->dsp_param.parameters->float32_type);	
+	free(target_module->dsp_param.parameters);
+	free(target_module->dsp_param.out);
+	free(target_module->dsp_param.in);
+	return 0;
+} /* dsp_destroy_utils_float */
 
 void
 dsp_utils_float(struct dsp_operation *utils_float,
@@ -100,7 +106,7 @@ dsp_osc_listener_utils_float(struct dsp_operation *utils_float, int jack_sampler
   /* if param_connected, activate osc listener */
   if(param_connected) {
     /* if new value is different than old value, send osc messages */
-    if( utils_float->module->dsp_param.parameters->float32_type[0] != utils_float->module->dsp_param.in[0] ) {
+    if( utils_float->module->dsp_param.parameters->float32_type[PARAM_LISTENER_FLOAT_VAL] != utils_float->module->dsp_param.in[0] ) {
 	    int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
 	    char *path = (char *)malloc(sizeof(char) * path_len);
 	    snprintf(path, path_len, "%s%s", "/cyperus/listener/", utils_float->module->id);    
@@ -109,7 +115,7 @@ dsp_osc_listener_utils_float(struct dsp_operation *utils_float, int jack_sampler
 			       utils_float->module->dsp_param.in[0]);
 
 	    /* assign new parameter to last parameter after we're reported the change */
-	    utils_float->module->dsp_param.parameters->float32_type[0] = utils_float->module->dsp_param.in[0];
+	    utils_float->module->dsp_param.parameters->float32_type[PARAM_LISTENER_FLOAT_VAL] = utils_float->module->dsp_param.in[0];
     }
   }
   

@@ -16,12 +16,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-#include <math.h>
+#include "../../../osc.h"
 
+#include "ops_modules_filter_bandpass.h"
 #include "osc_modules_filter_bandpass.h"
 
 int osc_add_modules_filter_bandpass_handler(const char *path, const char *types, lo_arg ** argv,

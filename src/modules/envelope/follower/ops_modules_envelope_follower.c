@@ -16,10 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
+#include "../../../dsp.h"
+#include "../../../osc.h"
 
+#include "params_modules_envelope_follower.h"
 #include "math_modules_envelope_follower.h"
 #include "ops_modules_envelope_follower.h"
 
@@ -33,10 +33,10 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
   struct dsp_port_out *outs;
 
   params.name = "envelope_follower";  
-  params.pos = 0;
 
-  /* signal input */
+  /* signal input/output */
   params.in = malloc(sizeof(float) * dsp_global_period);
+  params.out = malloc(sizeof(float) * dsp_global_period);
   
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
 
@@ -44,24 +44,24 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
   params.parameters->float32_arr_type = malloc(sizeof(float *) * 3);  
 
   /* user-facing parameter allocation */
-  params.parameters->float32_arr_type[0] = calloc(dsp_global_period, sizeof(float));
-  params.parameters->float32_arr_type[1] = calloc(dsp_global_period, sizeof(float));
-  params.parameters->float32_arr_type[2] = calloc(dsp_global_period, sizeof(float));
+  params.parameters->float32_arr_type[PARAM_USER_ATTACK_MS] = calloc(dsp_global_period, sizeof(float)); /* attack_ms */
+  params.parameters->float32_arr_type[PARAM_USER_DECAY_MS] = calloc(dsp_global_period, sizeof(float)); /* decay_ms */
+  params.parameters->float32_arr_type[PARAM_USER_SCALE] = calloc(dsp_global_period, sizeof(float)); /* scale */
 
   for(int p=0; p<dsp_global_period; p++) {
     /* user-facing parameter assignment */
-    params.parameters->float32_arr_type[0][p] = attack; 
-    params.parameters->float32_arr_type[1][p] = decay;
-    params.parameters->float32_arr_type[2][p] = scale;
+    params.parameters->float32_arr_type[PARAM_USER_ATTACK_MS][p] = attack; 
+    params.parameters->float32_arr_type[PARAM_USER_DECAY_MS][p] = decay;
+    params.parameters->float32_arr_type[PARAM_USER_SCALE][p] = scale;
   }
   
   /* internal parameter assignment */
-  params.parameters->float32_type[0] = 0.0f; /* last output sample */
+  params.parameters->float32_type[PARAM_INTERNAL_LAST_OUTPUT] = 0.0f; /* last output sample */
 
   /* osc listener parameters */
-  params.parameters->float32_type[1] = attack;
-  params.parameters->float32_type[2] = decay;
-  params.parameters->float32_type[3] = scale;
+  params.parameters->float32_type[PARAM_LISTENER_ATTACK_MS] = attack;
+  params.parameters->float32_type[PARAM_LISTENER_DECAY_MS] = decay;
+  params.parameters->float32_type[PARAM_LISTENER_SCALE] = scale;
   
   ins = dsp_port_in_init("in");
   ins->next = dsp_port_in_init("param_attack");
@@ -84,41 +84,44 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
 
 int
 dsp_destroy_envelope_follower(struct dsp_module *target_module) {
-	free(target_module->dsp_param.parameters->float32_arr_type[0]);
-	free(target_module->dsp_param.parameters->float32_arr_type[1]);
-	free(target_module->dsp_param.parameters->float32_arr_type[2]);
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS]);
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS]);
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE]);
+	free(target_module->dsp_param.parameters->float32_arr_type);	
 	free(target_module->dsp_param.parameters->float32_type);
 	free(target_module->dsp_param.parameters);
+	free(target_module->dsp_param.out);
 	free(target_module->dsp_param.in);
 	return 0;
 } /* dsp_destroy_envelope_follower */
 
 void
 dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate) {
-  float *outsamples;
   int p;
 
   dsp_sum_summands(envelope_follower->module->dsp_param.in, envelope_follower->ins->summands);
 
   /* handle params with connected inputs */
   if( envelope_follower->ins->next->summands != NULL ) { /* attack */
-    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[0], envelope_follower->ins->next->summands);
+    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS],
+		     envelope_follower->ins->next->summands);
   }
   if( envelope_follower->ins->next->next->summands != NULL ) { /* decay */
-    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[1], envelope_follower->ins->next->next->summands);
+    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS],
+		     envelope_follower->ins->next->next->summands);
   }
   if( envelope_follower->ins->next->next->next->summands != NULL ) { /* scale */
-    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[2], envelope_follower->ins->next->next->next->summands);
+    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE],
+		     envelope_follower->ins->next->next->next->summands);
   }  
 
-  outsamples = math_modules_envelope_follower(&envelope_follower->module->dsp_param,
-                                             jack_samplerate);
-  /* drive audio outputs */
-  memcpy(envelope_follower->outs->sample->value,
-         outsamples,
-         sizeof(float) * dsp_global_period);
+  math_modules_envelope_follower(&envelope_follower->module->dsp_param,
+				 jack_samplerate);
 
-  free(outsamples);
+  memcpy(envelope_follower->outs->sample->value,
+         envelope_follower->module->dsp_param.out,
+         sizeof(float) * dsp_global_period);
+  
 } /* dsp_envelope_follower */
 
 
@@ -128,9 +131,9 @@ dsp_edit_envelope_follower(struct dsp_module *envelope_follower,
                            float decay,
                            float scale) {
   for(int p=0; p<dsp_global_period; p++) {
-    envelope_follower->dsp_param.parameters->float32_arr_type[0][p] = attack;  
-    envelope_follower->dsp_param.parameters->float32_arr_type[1][p] = decay; 
-    envelope_follower->dsp_param.parameters->float32_arr_type[2][p] = scale;
+    envelope_follower->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS][p] = attack;  
+    envelope_follower->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS][p] = decay; 
+    envelope_follower->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE][p] = scale;
   }
 } /* dsp_edit_envelope_follower */
 
@@ -147,23 +150,23 @@ dsp_osc_listener_envelope_follower(struct dsp_operation *envelope_follower, int 
   if(param_connected) {
     /* if new value is different than old value, send osc messages */
     if(
-       envelope_follower->module->dsp_param.parameters->float32_type[1] != envelope_follower->module->dsp_param.parameters->float32_arr_type[0][0] ||
-       envelope_follower->module->dsp_param.parameters->float32_type[2] != envelope_follower->module->dsp_param.parameters->float32_arr_type[1][0] ||
-       envelope_follower->module->dsp_param.parameters->float32_type[3] != envelope_follower->module->dsp_param.parameters->float32_arr_type[2][0]
+       envelope_follower->module->dsp_param.parameters->float32_type[PARAM_LISTENER_ATTACK_MS] != envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS][0] ||
+       envelope_follower->module->dsp_param.parameters->float32_type[PARAM_LISTENER_DECAY_MS] != envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS][0] ||
+       envelope_follower->module->dsp_param.parameters->float32_type[PARAM_LISTENER_SCALE] != envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE][0]
        ) {
       int path_len = 18 + 36 + 1; /* len('/cyperus/listener/') + len(uuid4) + len('\n') */
       char *path = (char *)malloc(sizeof(char) * path_len);
       snprintf(path, path_len, "%s%s", "/cyperus/listener/", envelope_follower->module->id);    
 
       osc_send_broadcast( path, "fff",
-              envelope_follower->module->dsp_param.parameters->float32_arr_type[0][0],
-              envelope_follower->module->dsp_param.parameters->float32_arr_type[1][0],
-              envelope_follower->module->dsp_param.parameters->float32_arr_type[2][0]);
+              envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS][0],
+              envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS][0],
+              envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE][0]);
 
       /* assign new parameter to last parameter after we're reported the change */
-      envelope_follower->module->dsp_param.parameters->float32_type[1] = envelope_follower->module->dsp_param.parameters->float32_arr_type[0][0];
-      envelope_follower->module->dsp_param.parameters->float32_type[2] = envelope_follower->module->dsp_param.parameters->float32_arr_type[1][0];
-      envelope_follower->module->dsp_param.parameters->float32_type[3] = envelope_follower->module->dsp_param.parameters->float32_arr_type[2][0];
+      envelope_follower->module->dsp_param.parameters->float32_type[PARAM_LISTENER_ATTACK_MS] = envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS][0];
+      envelope_follower->module->dsp_param.parameters->float32_type[PARAM_LISTENER_DECAY_MS] = envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS][0];
+      envelope_follower->module->dsp_param.parameters->float32_type[PARAM_LISTENER_SCALE] = envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE][0];
     }
   }
   

@@ -26,7 +26,6 @@ Copyright 2018 murray foster */
 #include <lo/lo.h>
 
 #include "dsp_types.h"
-#include "dsp_math.h"
 #include "dsp.h"
 #include "jackcli.h"
 

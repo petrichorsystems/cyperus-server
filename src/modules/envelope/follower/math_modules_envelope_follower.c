@@ -16,20 +16,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#include "math_modules_envelope_follower.h"
+#include <math.h>
+
+#include "../../../dsp_types.h"
+#include "../../../dsp.h"
+
+#include "params_modules_envelope_follower.h"
 
 extern
-float *math_modules_envelope_follower(dsp_parameter *follower, int samplerate) {
-  float *out = malloc(sizeof(float) * dsp_global_period);
-  
-  float *attack_ms = follower->parameters->float32_arr_type[0];
-  float *decay_ms = follower->parameters->float32_arr_type[1];
-  float *scale = follower->parameters->float32_arr_type[2];
+void math_modules_envelope_follower(dsp_parameter *follower, int samplerate) {
+  float *attack_ms = follower->parameters->float32_arr_type[PARAM_USER_ATTACK_MS];
+  float *decay_ms = follower->parameters->float32_arr_type[PARAM_USER_DECAY_MS];
+  float *scale = follower->parameters->float32_arr_type[PARAM_USER_SCALE];
 
-  float last_sample = follower->parameters->float32_type[0];
+  float last_sample = follower->parameters->float32_type[PARAM_INTERNAL_LAST_OUTPUT];
   
-  float coeff_attack;
-  float coeff_decay;
+  float coeff_attack = 0.0f;
+  float coeff_decay = 0.0f;
   float absin = 0.0f;
   
   for(int p=0; p<dsp_global_period; p++) {
@@ -38,13 +41,12 @@ float *math_modules_envelope_follower(dsp_parameter *follower, int samplerate) {
   
     absin = fabs(follower->in[p]);
     if(absin > last_sample)
-      out[p] = coeff_attack * (last_sample - absin) + absin;
+      follower->out[p] = coeff_attack * (last_sample - absin) + absin;
     else
-      out[p] = coeff_decay * (last_sample - absin) + absin;
+      follower->out[p] = coeff_decay * (last_sample - absin) + absin;
     
-    last_sample = out[p];
-    out[p] = fabs(out[p]) * scale[p];
+    last_sample = follower->out[p];
+    follower->out[p] = fabs(follower->out[p]) * scale[p];
   }  
-  follower->parameters->float32_type[0] = last_sample;
-  return out;
+  follower->parameters->float32_type[PARAM_INTERNAL_LAST_OUTPUT] = last_sample;
 }

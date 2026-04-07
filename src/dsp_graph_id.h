@@ -18,10 +18,7 @@ Copyright 2015 murray foster */
 
 #ifndef DSP_GRAPH_ID_H
 
-#include <stdio.h> //printf
 #include <pthread.h>
-
-#include "dsp_types.h"
 
 extern char *dsp_global_graph_id;
 extern pthread_mutex_t dsp_graph_id_mutex;

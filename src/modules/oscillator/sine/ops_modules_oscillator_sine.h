@@ -17,27 +17,21 @@
 #ifndef OPS_MODULES_OSCILLATOR_SINE_H
 #define OPS_MODULES_OSCILLATOR_SINE_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include "../../../dsp.h"
-#include "../../../dsp_ops.h"
 #include "../../../dsp_types.h"
-#include "../../../dsp_math.h"
-#include "../../../osc.h"
-#include "../../../osc_handlers.h"
-
-#include "../../../jackcli.h"
 
 int
 dsp_create_oscillator_sine(struct dsp_bus *target_bus,
                            float frequency,
                            float amplitude,
                            float phase);
+
+int
+dsp_destroy_oscillator_sine(struct dsp_module *target_module);
+
 void
 dsp_oscillator_sine(struct dsp_operation *oscillator_sine,
-			    int jack_samplerate);
+		    int jack_samplerate);
+
 void
 dsp_edit_oscillator_sine(struct dsp_module *oscillator_sine,
                          float frequency,

@@ -16,6 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
+#include <sys/time.h>
+
 #include "osc.h"
 
 struct osc_global_t osc_global;

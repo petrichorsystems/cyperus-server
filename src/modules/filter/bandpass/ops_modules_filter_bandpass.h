@@ -17,24 +17,16 @@
 #ifndef OPS_MDOULES_FILTER_BANDPASS_H
 #define OPS_MDOULES_FILTER_BANDPASS_H
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0)
-
-#include "../../../dsp.h"
-#include "../../../dsp_ops.h"
 #include "../../../dsp_types.h"
-#include "../../../dsp_math.h"
-#include "../../../osc.h"
-#include "../../../osc_handlers.h"
-
-#include "../../../jackcli.h"
 
 int
 dsp_create_filter_bandpass(struct dsp_bus *target_bus,
                            float frequency,
                            float q,
                            float amount);
+
+int dsp_destroy_filter_bandpass(struct dsp_module *target_module);
+
 void
 dsp_filter_bandpass(struct dsp_operation *filter_bandpass,
 		    int jack_samplerate);

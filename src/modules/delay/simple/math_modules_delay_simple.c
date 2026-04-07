@@ -16,21 +16,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
-#include "math_modules_delay_simple.h"
+#include <math.h>
+
+#include "../../../dsp_types.h"
+#include "../../../dsp.h"
+
+#include "params_modules_delay_simple.h"
 
 extern
-float *math_modules_delay_simple(dsp_parameter *delay, int samplerate) {
+void math_modules_delay_simple(dsp_parameter *delay, int samplerate) {
   /* printf("math_modules_delay_simple.c::math_modules_delay_simple()\n"); */
-  
-  float *out = malloc(sizeof(float) * dsp_global_period);
 
-  float *amount = delay->parameters->float32_arr_type[1];
-  float *feedback = delay->parameters->float32_arr_type[3];
+  float *amount = delay->parameters->float32_arr_type[PARAM_USER_AMOUNT];
+  float *feedback = delay->parameters->float32_arr_type[PARAM_USER_FEEDBACK];
   
-  int *time_samples = delay->parameters->int32_arr_type[0];
+  int *time_samples = delay->parameters->int32_arr_type[PARAM_INTERNAL_TIME_SAMPLES];
   
-  int delay_pos = delay->parameters->int32_type[0];
-  int delay_time_pos = delay->parameters->int32_type[1];
+  int delay_pos = delay->parameters->int32_type[PARAM_INTERNAL_DELAY_POS];
+  int delay_time_pos = delay->parameters->int32_type[PARAM_INTERNAL_DELAY_TIME_POS];
   
   for(int p=0; p<dsp_global_period; p++) {
     if( delay_pos >= time_samples[p] )
@@ -41,12 +44,11 @@ float *math_modules_delay_simple(dsp_parameter *delay, int samplerate) {
     if( delay_time_pos < 0 ) {
       delay_time_pos = delay_time_pos + time_samples[p];
     }    
-    out[p] = delay->parameters->float32_arr_type[0][delay_pos] = delay->in[p] + (delay->parameters->float32_arr_type[0][delay_time_pos] * feedback[p]);
+    delay->out[p] = delay->parameters->float32_arr_type[PARAM_INTERNAL_SAMPLE_BUFFER][delay_pos] = delay->in[p] + (delay->parameters->float32_arr_type[PARAM_INTERNAL_SAMPLE_BUFFER][delay_time_pos] * feedback[p]);
   
     delay_pos += 1;
-    out[p] *= amount[p];    
+    delay->out[p] *= amount[p];    
   }
-  delay->parameters->int32_type[0] = delay_pos;
-  delay->parameters->int32_type[1] = delay_time_pos;
-  return out;
+  delay->parameters->int32_type[PARAM_INTERNAL_DELAY_POS] = delay_pos;
+  delay->parameters->int32_type[PARAM_INTERNAL_DELAY_TIME_POS] = delay_time_pos;
 }

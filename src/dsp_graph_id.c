@@ -16,7 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "dsp_graph_id.h"
+#include "dsp_types.h"
 
 char *dsp_global_graph_id;
 pthread_mutex_t dsp_graph_id_mutex;

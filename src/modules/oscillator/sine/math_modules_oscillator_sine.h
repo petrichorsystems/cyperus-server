@@ -2,15 +2,9 @@
 #ifndef MATH_MODULES_OSCILLATOR_SINE_H
 #define MATH_MODULES_OSCILLATOR_SINE_H
 
-#include <float.h>
-#include <math.h>
-#include <string.h>
-#include <stddef.h>
-
-#include "../../../jackcli.h"
-#include "../../../dsp_math.h"
 #include "../../../dsp_types.h"
 
-extern float* math_modules_oscillator_sine(dsp_module_parameters_t *parameters, int samplerate);
+extern void math_modules_oscillator_sine(dsp_parameter *sine,
+					 int samplerate);
 
 #endif

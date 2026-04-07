@@ -19,11 +19,9 @@ Copyright 2018 murray foster */
 #ifndef DSP_TYPES_H
 #define DSP_TYPES_H
 
+#include <pthread.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <uuid/uuid.h>
-
-#include "dsp_math.h"
+#include <stdint.h>
 
 struct dsp_global_t {
 	unsigned short period;
@@ -60,106 +58,28 @@ struct dsp_global_t {
 };
 extern struct dsp_global_t dsp_global;
 
+typedef struct dsp_module_parameters {
+	int *int32_type;
+	int **int32_arr_type;
+	short *int16_type;
+	float *float32_type;
+	float **float32_arr_type;
+	double *double_type;
+	uint8_t *uint8_type;
+	uint16_t *uint16_type;
+	uint32_t *uint32_type;
+	char **char_type;
+	void *bytes_type;
+} dsp_module_parameters_t;
+
 typedef struct dsp_module_parameter {
   float *in;
-  
+  float *out;
+	
   int pos;
-
+	
   char *name;
   dsp_module_parameters_t *parameters;
-  
-  union {
-    struct {
-      char *name;
-    } null;
-    struct {
-      char *name;
-      struct cyperus_parameters *cyperus_params;
-    } block_processor;
-    struct {
-      char *name;
-      struct cyperus_parameters *cyperus_params;
-      float freq;
-      float amp;
-      float phase;
-    } sine;
-    struct {
-      char *name;
-      struct cyperus_parameters *cyperus_params;
-      float freq;
-      float amp;
-    } square;
-    struct {
-      char *name;
-      struct cyperus_parameters *cyperus_params;
-    } pinknoise;
-    struct {
-      char *name;
-      float amp;
-      float freq;
-      float res;
-      struct cyperus_parameters *cyperus_params;
-    } butterworth_biquad_lowpass;
-    struct {
-      char *name;
-      float amt; /* 0-1 */
-      float time; /* seconds */
-      float feedback;
-      struct cyperus_parameters *cyperus_params;
-    } delay;
-    struct {
-      char *name;
-      float amp; /* 0-1 */
-      float freq; /* hertz */
-      struct cyperus_parameters *cyperus_params;
-    } vocoder;
-    struct {
-      char *name;
-      float amp; /* 0-1 */
-      float mix; /* 0-1, dry/wet mix */
-      float shift; /* 1.0 -> 2.0 octave up,  1.0 -> 0.0 octave down */
-      struct cyperus_parameters *cyperus_params;
-    } pitch_shift;
-    struct {
-      char *name;
-      float attack; /* ms */
-      float decay; /* ms */
-      float scale;
-      struct cyperus_parameters *cyperus_params;
-    } envelope_follower;
-    struct {
-      char *name;
-      float amp; /* range 0.0/1.0 */
-      float freq; /* range 20/20000hz */
-      float res; /* range -25/25db */
-      struct cyperus_parameters *cyperus_params;
-    } karlsen_lowpass;
-    struct {
-      char *name;
-      float amt;
-      float freq; 
-      struct cyperus_parameters *cyperus_params;
-    } highpass;
-    struct {
-      char *name;
-      float amt;
-      float freq;
-      float q;
-      struct cyperus_parameters *cyperus_params;
-    } bandpass;
-    struct {
-      char *name;
-      struct cyperus_parameters *cyperus_params;
-      float freq;
-      float amp;
-    } triangle;
-    struct {
-      char *name;
-      struct cyperus_parameters *cyperus_params;
-      float freq;
-      float amp;
-    } sawtooth;
-  };
 }dsp_parameter;
 
 struct dsp_port_in {

@@ -16,15 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2015 murray foster */
 
-#include <stdio.h> //printf
-#include <string.h> //memset
-#include <stdlib.h> //exit(0);
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-#include "../../../dsp_math.h"
-#include "../../../dsp.h"
-#include "../../../dsp_types.h"
-#include "../../../dsp_ops.h"
-#include "../../../jackcli.h"
 #include "../../../osc.h"
 
 #include "ops_modules_utils_spigot.h"
