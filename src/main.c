@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
   dsp_setup(period, input, output);
   dsp_graph_id_init();
 
-  float *sample_block = jackcli_setup("cyperus-server", bitdepth, input, output);
+  float *sample_block = jackcli_setup("cyperus-server", input, output);
 
   if(sample_block == NULL) {
 	  printf("something bad happened during jackcli_setup(), returning..");
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
   printf("osc receive port: %s\n", osc_port_in);
   printf("osc send port: %s\n", osc_port_out);
   
-  osc_setup(osc_port_in, osc_port_out, "127.0.0.1");
+  osc_setup(osc_port_in, osc_port_out);
   
   while(1) {
     usleep(500000);

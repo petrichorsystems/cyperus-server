@@ -141,9 +141,7 @@ void dsp_port_out_list(struct dsp_port_out *head_port) {
 }
 
 struct dsp_connection* dsp_connection_init(const char *id_out,
-					   const char *id_in,
-					   struct dsp_port_out *port_out,
-					   struct dsp_port_in *port_in) {
+					   const char *id_in) {
   struct dsp_connection *new_connection = (struct dsp_connection*)malloc(sizeof(struct dsp_connection));
   new_connection->id = dsp_generate_object_id();
   new_connection->prev = NULL;

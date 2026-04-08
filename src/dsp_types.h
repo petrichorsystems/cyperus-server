@@ -207,9 +207,7 @@ void dsp_port_out_insert_head(struct dsp_port_out *head_port, struct dsp_port_ou
 void dsp_port_out_insert_tail(struct dsp_port_out *head_port, struct dsp_port_out *port_out);
 
 struct dsp_connection* dsp_connection_init(const char *id_out,
-					   const char *id_in,
-					   struct dsp_port_out *port_out,
-					   struct dsp_port_in *port_in);
+					   const char *id_in);
 
 void dsp_connection_insert_head(struct dsp_connection *head_connection, struct dsp_connection *connection);
 void dsp_connection_insert_tail(struct dsp_connection *head_connection, struct dsp_connection *connection);

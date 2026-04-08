@@ -21,10 +21,10 @@ Copyright 2015 murray foster */
 
 unsigned int jackcli_samplerate_pos;
 
-int jackcli_samplerate;
+unsigned int jackcli_samplerate;
 int jackcli_buffer_size;
-int jackcli_channels_in;
-int jackcli_channels_out;
+unsigned int jackcli_channels_in;
+unsigned int jackcli_channels_out;
 int jackcli_fifo_size;
 
 const size_t jackcli_sample_size = sizeof (jack_default_audio_sample_t) ;
@@ -139,7 +139,7 @@ void jackcli_allocate_ports(int channels_in, int channels_out)
 } /* jackcli_allocate_ports */
 
 
-void jackcli_shutdown_callback(void *arg)
+void jackcli_shutdown_callback()
 {
   exit(1);
 } /* jackcli_shutdown_callback */
@@ -187,7 +187,7 @@ int jackcli_close()
   return 0;
 } /* jackcli_close() */
 
-float* jackcli_setup(char *jackcli_client_name, int bit_depth, int channels_in, int channels_out)
+float* jackcli_setup(char *jackcli_client_name, int channels_in, int channels_out)
 {
   float *sample_block = malloc(sizeof(float) * dsp_global_period);
 

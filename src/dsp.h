@@ -81,7 +81,7 @@ int
 dsp_purge_object_bus_descendants_recursive(struct dsp_bus *head_bus);
 
 int
-dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex);
+dsp_purge_object_bus(struct dsp_bus *target_bus, bool mutex);
 
 int
 dsp_remove_bus(struct dsp_bus *target_bus);
@@ -99,7 +99,7 @@ void
 dsp_build_optimized_main_outs();
 
 void
-*dsp_build_optimized_graph(void *arg);
+*dsp_build_optimized_graph();
 
 void
 dsp_signal_graph_cleanup();

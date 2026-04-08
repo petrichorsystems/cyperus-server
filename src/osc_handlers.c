@@ -140,7 +140,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	int root_level = 0;
 
 	char *part_result_str = NULL;
-	int current_index, last_break, last_cutoff, copy_index = 0;
+	size_t current_index, last_break, last_cutoff, copy_index = 0;
 
 	bool multipart = false;
 	int errno = 0;
@@ -246,7 +246,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
                                int argc, void *data, void *user_data)
 {
-	int i;
+	size_t i;
 	int errno = 0;
 	char *request_id, *target_bus_id, *bus_str, *ins_str, *outs_str, *new_id = NULL;
 	bool multipart;

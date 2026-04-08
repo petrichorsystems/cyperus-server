@@ -28,7 +28,7 @@ dsp_build_bus_ports(struct dsp_bus *parent_bus,
 
   char *target_bus_ports = malloc(sizeof(char) * strlen(bus_ports) + 1);
   char *output_token;
-  int i;
+  size_t i;
   struct dsp_bus_port *temp_bus_port = NULL;
   struct dsp_port_in *port_in = NULL;
   struct dsp_port_out *port_out = NULL;
@@ -287,9 +287,7 @@ dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
 	
 	/* instantiate and add to global connection graph */
 	new_connection = dsp_connection_init(id_out,
-					     id_in,
-					     port_out,
-					     port_in);
+					     id_in);
 	
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	
@@ -847,7 +845,7 @@ dsp_purge_object_bus_descendants_recursive(struct dsp_bus *head_bus) {
 } /* dsp_purge_object_bus_descendants_recursive */
 
 int
-dsp_purge_object_bus(struct dsp_bus *target_bus, bool recursive, bool mutex) {
+dsp_purge_object_bus(struct dsp_bus *target_bus, bool mutex) {
 	struct dsp_module *temp_module, *target_module = NULL;
 	struct dsp_bus *temp_bus = NULL;
 
@@ -1162,7 +1160,7 @@ dsp_build_optimized_main_outs() {
 } /* dsp_build_optimized_main_outs */
 
 void
-*dsp_build_optimized_graph(void *arg) {	
+*dsp_build_optimized_graph() {	
 	dsp_global.operation_head_processing = NULL;
 	dsp_build_optimized_main_outs();
 	dsp_optimize_connections_main_inputs(dsp_global.main_ins);
@@ -1172,7 +1170,7 @@ void
 } /* dsp_build_optimized_graph */
 
 void *
-dsp_graph_optimization_task_thread(void *arg) {
+dsp_graph_optimization_task_thread() {
 	pthread_mutex_lock(&dsp_global.optimization_mutex);
 	
 	dsp_build_optimized_graph(NULL);
@@ -1194,7 +1192,7 @@ dsp_graph_optimization_task_thread_setup() {
 } /* dsp_graph_optimization_task_thread_setup */
 
 void *
-dsp_graph_optimization_thread(void *arg) {
+dsp_graph_optimization_thread() {
 	while(true) {
 		pthread_cond_wait(&dsp_global.optimization_condition_cond, &dsp_global.optimization_condition_mutex);
 		
@@ -1251,7 +1249,7 @@ dsp_cleanup_graph(struct dsp_bus *head_bus) {
 				prev_bus->next = next_bus;
 				next_bus->prev = prev_bus;
 			}
-			dsp_purge_object_bus(target_bus, true, false);
+			dsp_purge_object_bus(target_bus, false);
 		} else {
 
 			temp_bus_port = target_bus->ins;
@@ -1313,7 +1311,7 @@ dsp_cleanup_graph(struct dsp_bus *head_bus) {
 } /* dsp_cleanup_graph */
 
 void *
-dsp_graph_cleanup_task_thread(void *arg) {
+dsp_graph_cleanup_task_thread() {
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
 
 	if( !dsp_global.graph_cleanup_do ) {
@@ -1341,7 +1339,7 @@ dsp_graph_cleanup_task_thread_setup() {
 } /* dsp_graph_cleanup_task_thread_setup */
 
 void *
-dsp_graph_cleanup_thread(void *arg) {
+dsp_graph_cleanup_thread() {
 	while(true) {
 		pthread_cond_wait(&dsp_global.graph_cleanup_condition_cond, &dsp_global.graph_cleanup_condition_mutex);
 		if (dsp_global.graph_cleanup_do) {

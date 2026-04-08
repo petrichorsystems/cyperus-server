@@ -30,7 +30,7 @@ char **osc_string_build_osc_str(int *osc_str_len, char *str) {
 	 * payloads that are too big. i'm not sure what this limit is, but
 	 * 768 bytes feels good to me */
 	char *tmp, **osc_str, **osc_str_tmp = NULL;
-	int idx, osc_str_idx = 0;
+	size_t idx, osc_str_idx = 0;
 	
 	if(strlen(str) > OSC_MAX_STR_LEN) {
 		for (idx=0; idx<strlen(str); idx+=OSC_MAX_STR_LEN) {

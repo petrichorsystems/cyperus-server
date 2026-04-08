@@ -237,7 +237,7 @@ osc_callback_timer_callback(int signum) {
 } /* osc_callback_timer_callback */
 
 void *
-osc_callback_timer_thread(void *arg) {
+osc_callback_timer_thread() {
 	struct itimerval callback_timer;
 	struct itimerval callback_timer_old;
 	unsigned short fps = 30;
@@ -265,7 +265,7 @@ osc_callback_timer_setup() {
 } /* osc_callback_timer_setup */
 
 
-int osc_setup(char *osc_port_in, char *osc_port_out, char *addr_out) {
+int osc_setup(char *osc_port_in, char *osc_port_out) {
 	/* global_osc_handlers_user_defined = NULL; */
 	
 	/* if(pthread_mutex_init(&global_osc_handlers_user_defined_lock, NULL) != 0) { */
