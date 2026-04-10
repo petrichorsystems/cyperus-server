@@ -140,7 +140,7 @@ int osc_list_bus_handler(const char *path, const char *types, lo_arg **argv,
 	int root_level = 0;
 
 	char *part_result_str = NULL;
-	size_t current_index, last_break, last_cutoff, copy_index = 0;
+	size_t current_index = 0, last_break = 0, last_cutoff = 0, copy_index = 0;
 
 	bool multipart = false;
 	int errno = 0;
@@ -586,11 +586,6 @@ int osc_remove_connection_handler(const char *path, const char *types, lo_arg **
 	connection_id = (char *)argv[1];
 
 	errno = dsp_remove_connection(connection_id);
-	
-	if( connection_id == NULL ) {
-		printf("osc_remove_connection_handler(), connection_id: %s\n", connection_id);
-	}
-		
 	if( errno ) {
 		printf("osc_handlers.c::osc_remove_connection_handler(), error removing connection: %s\n", connection_id);
 	}
@@ -1050,6 +1045,7 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 	int osc_str_len;
 	int i;
 	int multipart_no, multipart_total;
+	size_t read_count = 0;
 	
 	request_id = filepath = raw_str = NULL;
 	error = 0;
@@ -1065,7 +1061,10 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 		fseek(fp, 0, SEEK_SET);
 		raw_str = malloc(len+1);
 		if (raw_str) {
-			fread(raw_str, len, 1, fp);
+			read_count = fread(raw_str, len, 1, fp);
+		}
+		if (read_count < 1 ) {
+			printf("error-handling\n");
 		}
 		fclose (fp);
 		raw_str[len] = '\0';

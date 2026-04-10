@@ -50,9 +50,8 @@ float
 
 void
 dsp_optimize_connections_module(struct dsp_port_out *outs) {
-  struct dsp_port_out *temp_out;
-  struct dsp_connection *temp_connection;
-  temp_out = outs;
+  struct dsp_port_out *temp_out = outs;
+  struct dsp_connection *temp_connection = NULL;
   
   if( dsp_global.connection_graph != NULL ) {
     temp_connection = dsp_global.connection_graph;
@@ -70,13 +69,13 @@ dsp_optimize_connections_module(struct dsp_port_out *outs) {
 
 void
 dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
-  struct dsp_port_out *temp_out;
-  struct dsp_connection *temp_connection;
-  char *temp_op_in_id;
+  struct dsp_port_out *temp_out = NULL;
+  struct dsp_connection *temp_connection = NULL;
+  char *temp_op_in_id = NULL;
 
   struct dsp_module *temp_module_in = NULL;
   struct dsp_operation *temp_op_out, *temp_op_in = NULL;
-  struct dsp_operation_sample *temp_sample_out, *temp_sample_in, *sample_in, *sample_out = NULL;
+  struct dsp_operation_sample *temp_sample_out = NULL, *temp_sample_in = NULL, *sample_in = NULL, *sample_out = NULL;
   struct dsp_operation_sample *new_summand = NULL;
 
   struct dsp_translation_connection *temp_translation_connection = NULL;

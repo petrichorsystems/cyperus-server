@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
   int c = 0;
   int input = 8;
   int output = 8;
-  int bitdepth;
+  int bitdepth = 24;
   char *osc_port_in = NULL;
   char *osc_port_out = NULL;
   int period = 128;

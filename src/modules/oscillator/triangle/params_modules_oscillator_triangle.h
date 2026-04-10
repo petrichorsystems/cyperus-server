@@ -9,7 +9,7 @@
 #define PARAM_INTERNAL_X 0
 
 /* listener-exposed parameters */
-#define PARAM_LISTENER_FREQUENCY 1
-#define PARAM_LISTENER_AMPLITUDE 2
+#define PARAM_LISTENER_FREQUENCY 0
+#define PARAM_LISTENER_AMPLITUDE 1
 
 #endif

@@ -172,7 +172,7 @@ int osc_change_address(char *request_id, char *new_host_out, char *new_port_out)
 } /* osc_change_address */
 
 int osc_add_client(char *new_host_out, char *new_port_out, bool listener_enable) {
-	struct osc_client_addr_t *last_client_addr, *new_client_addr = NULL;
+	struct osc_client_addr_t *last_client_addr = NULL, *new_client_addr = NULL;
 	struct osc_client_addr_t *temp_client_addr = osc_global.client_addr;
 
 	pthread_mutex_lock(&osc_global.client_addr_update_mutex);
