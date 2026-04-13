@@ -158,7 +158,8 @@ dsp_osc_listener_oscillator_sine(struct dsp_operation *oscillator_sine, int jack
               oscillator_sine->module->dsp_param.parameters->float32_type[PARAM_LISTENER_FREQUENCY],
               oscillator_sine->module->dsp_param.parameters->float32_type[PARAM_LISTENER_AMPLITUDE],
               oscillator_sine->module->dsp_param.parameters->float32_type[PARAM_LISTENER_PHASE]);
-
+      free(path);
+      
       /* assign new parameter to last parameter after we're reported the change */
       oscillator_sine->module->dsp_param.parameters->float32_type[PARAM_LISTENER_FREQUENCY] = oscillator_sine->module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY][0];
       oscillator_sine->module->dsp_param.parameters->float32_type[PARAM_LISTENER_AMPLITUDE] = oscillator_sine->module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][0];

@@ -913,12 +913,14 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 				raw_str = raw_str_tmp;
 				raw_str[raw_strlen - strlen(file_metadata_str) - 2] = '\n';
 				memcpy(raw_str+(raw_strlen - strlen(file_metadata_str))-1,
-				       file_metadata_str, strlen(file_metadata_str)+1);	      
+				       file_metadata_str, strlen(file_metadata_str)+1);
 			}
 			free(file_metadata_str);
+			free(filesize_str);			
 		}
 		closedir(d);
 	}
+	free(raw_str_tmp);
 
 	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
 	multipart_total = osc_str_len;	
@@ -1102,6 +1104,10 @@ int osc_read_filesystem_file_handler(const char *path, const char *types, lo_arg
 			   multipart_total,
 			   filepath,
 			   osc_str[i]);
+
+	if(raw_str != NULL)
+		free(raw_str);
+
 	free(osc_str[i]);
 	free(osc_str);
   return 0;

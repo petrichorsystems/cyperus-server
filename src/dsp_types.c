@@ -29,7 +29,7 @@ struct dsp_operation *dsp_optimized_main_outs;
 struct dsp_operation *dsp_rebuilt_optimized_main_outs;
 
 char* dsp_generate_object_id() {
-  char *id;
+  char *id = NULL;
   int id_len = 36;
   uuid_t uuid;
   char uuid_str[37];

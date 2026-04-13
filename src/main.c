@@ -130,7 +130,6 @@ int main(int argc, char *argv[])
 
   /* dsp setup, begin */
   dsp_setup(period, input, output);
-  dsp_graph_id_init();
 
   float *sample_block = jackcli_setup("cyperus-server", input, output);
 

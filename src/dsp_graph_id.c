@@ -34,9 +34,13 @@ void
 dsp_graph_id_rebuild() {
   char *temp_str = NULL;
   temp_str = dsp_generate_object_id();  
+
   pthread_mutex_lock(&dsp_graph_id_mutex);
+	      
   strcpy(dsp_global_graph_id, temp_str);
+  
   pthread_mutex_unlock(&dsp_graph_id_mutex);
+
   free(temp_str);
 } /* dsp_graph_id_rebuild */
 

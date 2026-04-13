@@ -140,8 +140,9 @@ int _osc_send_broadcast(const char *path, const char *types, ...) {
 		lo_message_add_varargs(lo_msg, types, ap);
 		va_end(ap);
 		lo_send_message(lo_addr_send, path, lo_msg);
-	
-		free(lo_addr_send);
+
+		lo_message_free(lo_msg);
+		lo_address_free(lo_addr_send);
 		
 		temp_client_addr = temp_client_addr->next;
 	}
@@ -229,6 +230,8 @@ osc_callback_timer_callback(int signum) {
 				temp_op = temp_op->next;
 			}
 
+			lo_address_free(lo_addr_send);
+
 			/* pthread_mutex_unlock(&dsp_global.graph_state_mutex); */
 			/* pthread_mutex_unlock(&dsp_global.optimization_mutex); */
 		}
@@ -274,6 +277,10 @@ int osc_setup(char *osc_port_in, char *osc_port_out) {
 	/* } */
 
 	struct osc_client_addr_t *client_addr = malloc(sizeof(struct osc_client_addr_t));
+	client_addr->send_host_out = NULL;
+	client_addr->send_port_out = NULL;
+	client_addr->listener_enable = false;
+	client_addr->next = NULL;
 
 	pthread_mutex_init(&osc_global.client_addr_update_mutex, NULL);
 	

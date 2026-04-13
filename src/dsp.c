@@ -86,6 +86,10 @@ dsp_build_bus_ports(struct dsp_bus *parent_bus,
 	while (*p && *p == ',') p++;   /* find next non-space */
       }
   }
+
+  if(target_bus_ports != NULL)
+	  free(target_bus_ports);
+  
   return head_bus_port;
 } /* dsp_build_bus_ports */
 
@@ -116,12 +120,11 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 		else
 			dsp_global.bus_head = new_bus;
 		target_bus = new_bus;
-		
-		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 
 		/* graph changed, generate new graph id */
 		dsp_graph_id_rebuild();		
 		
+		pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 	} else {
 		target_bus = dsp_find_bus(bus_id);
 		if(target_bus != NULL) {
@@ -135,10 +138,10 @@ dsp_add_bus(char *bus_id, struct dsp_bus *new_bus, char *ins, char *outs) {
 				target_bus->down = new_bus;
 			}
 
-			pthread_mutex_unlock(&dsp_global.graph_state_mutex);
-
 			/* graph changed, generate new graph id */
 			dsp_graph_id_rebuild();
+			
+			pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 		} else {
 			return E_BUS_NOT_FOUND;
 		}
@@ -1140,7 +1143,15 @@ dsp_build_optimized_main_outs() {
 
 	struct dsp_operation *temp_op = NULL;
 	struct dsp_operation_sample *temp_sample = NULL;
-  
+
+	if(dsp_global.rebuilt_optimized_main_outs != NULL) {
+
+		/*
+		 * clean up main outs objects here
+		 */
+
+	}		
+	
 	dsp_global.rebuilt_optimized_main_outs = NULL;
 	temp_port_in = dsp_global.main_outs;
   
@@ -1162,7 +1173,15 @@ dsp_build_optimized_main_outs() {
 void
 *dsp_build_optimized_graph() {	
 	dsp_global.operation_head_processing = NULL;
-	dsp_build_optimized_main_outs();
+
+	
+	/*
+	 *
+	 * DO WE NEED THIS?????
+	 *
+	 * dsp_build_optimized_main_outs();
+	 */
+
 	dsp_optimize_connections_main_inputs(dsp_global.main_ins);
 	dsp_optimize_bus(dsp_global.bus_head);
 	dsp_global_new_operation_graph = true;
