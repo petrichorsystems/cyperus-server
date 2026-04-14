@@ -916,11 +916,9 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 				       file_metadata_str, strlen(file_metadata_str)+1);
 			}
 			free(file_metadata_str);
-			free(filesize_str);			
 		}
 		closedir(d);
 	}
-	free(raw_str_tmp);
 
 	osc_str = osc_string_build_osc_str(&osc_str_len, raw_str);
 	multipart_total = osc_str_len;	

@@ -1175,12 +1175,8 @@ void
 	dsp_global.operation_head_processing = NULL;
 
 	
-	/*
-	 *
-	 * DO WE NEED THIS?????
-	 *
-	 * dsp_build_optimized_main_outs();
-	 */
+	 dsp_build_optimized_main_outs();
+
 
 	dsp_optimize_connections_main_inputs(dsp_global.main_ins);
 	dsp_optimize_bus(dsp_global.bus_head);
