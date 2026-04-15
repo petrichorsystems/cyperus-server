@@ -9,5 +9,7 @@
 
 /* internal module parameters */
 #define PARAM_INTERNAL_SAMPLERATE_COUNTER 1
+#define PARAM_INTERNAL_PTHREAD_SPINLOCK 0
+#define PARAM_INTERNAL_LO_ADDR_SEND 0
 
 #endif

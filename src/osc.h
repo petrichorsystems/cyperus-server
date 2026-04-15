@@ -69,7 +69,7 @@ int _osc_send_broadcast(const char *path, const char *types, ...);
 int osc_change_address(char *request_id, char *new_host_out, char *new_port_out);
 int osc_add_client(char *new_host_out, char *new_port_out, bool listener_enable);
 
-void osc_callback_timer_callback(int signum);
+void osc_callback_timer_callback(union sigval sv);
 void *osc_callback_timer_thread();
 int osc_callback_timer_setup();
 

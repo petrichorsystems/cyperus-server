@@ -916,6 +916,7 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 				       file_metadata_str, strlen(file_metadata_str)+1);
 			}
 			free(file_metadata_str);
+			free(filesize_str);
 		}
 		closedir(d);
 	}
@@ -948,6 +949,7 @@ int osc_list_filesystem_path_handler(const char *path, const char *types, lo_arg
 			   dirpath,
 			   osc_str[i]);
 
+	free(raw_str);
 	free(osc_str[i]);
 	free(osc_str);
   

@@ -19,6 +19,7 @@ Copyright 2018 murray foster */
 #ifndef DSP_TYPES_H
 #define DSP_TYPES_H
 
+#include <lo/lo.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -59,6 +60,7 @@ struct dsp_global_t {
 extern struct dsp_global_t dsp_global;
 
 typedef struct dsp_module_parameters {
+	bool *bool_type;
 	int *int32_type;
 	int **int32_arr_type;
 	short *int16_type;
@@ -70,6 +72,10 @@ typedef struct dsp_module_parameters {
 	uint32_t *uint32_type;
 	char **char_type;
 	void *bytes_type;
+	pthread_cond_t *pthread_cond_type;	
+	pthread_mutex_t *pthread_mutex_type;
+	pthread_spinlock_t *pthread_spinlock_type;	
+	lo_address *lo_address_type;
 } dsp_module_parameters_t;
 
 typedef struct dsp_module_parameter {

@@ -16,11 +16,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
+#include <lo/lo.h>
+#include <pthread.h>
+
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
 #include "params_modules_network_oscsend.h"
 #include "ops_modules_network_oscsend.h"
+
+lo_address
+_build_new_lo_address(char *hostname_ip, int port) {
+	char *osc_port;
+	int port_len;
+	lo_address lo_addr = malloc(sizeof(lo_address));
+
+	port_len = snprintf(NULL, 0,"%d",port);
+	osc_port = malloc(sizeof(char) * port_len);
+	snprintf(osc_port, port_len+1, "%d", port);
+	lo_addr = lo_address_new(hostname_ip, (const char*)osc_port);
+
+	free(osc_port);
+	
+	return lo_addr;
+} /* _build_new_lo_address */
 
 int
 dsp_create_network_oscsend(struct dsp_bus *target_bus,
@@ -30,7 +49,7 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 			    float freq_div) {	
 	dsp_parameter params;
 	struct dsp_port_in *ins;
-
+	
 	params.name = "network_oscsend";  
 
 	/* signal input */
@@ -41,6 +60,9 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 	params.parameters->char_type = malloc(sizeof(char*) * 2);
 	params.parameters->int32_type = malloc(sizeof(int) * 2);
 	params.parameters->float32_type = malloc(sizeof(float) * 1);
+
+	params.parameters->pthread_spinlock_type = malloc(sizeof(pthread_spinlock_t) * 1);
+	params.parameters->lo_address_type = malloc(sizeof(lo_address) * 1);
 	
 	/* user-facing parameter allocation */
 	params.parameters->char_type[PARAM_USER_HOSTNAME_IP] = malloc(sizeof(char) * (strlen(hostname_ip) + 1));
@@ -52,6 +74,8 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 	
 	/* internal parameter assignment */
 	params.parameters->int32_type[PARAM_INTERNAL_SAMPLERATE_COUNTER] = 1;  /* samplerate counter */
+	pthread_spin_init(&params.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK], PTHREAD_PROCESS_PRIVATE);
+	params.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND] = _build_new_lo_address(hostname_ip, port);
 	
 	ins = dsp_port_in_init("in");
 	
@@ -73,11 +97,19 @@ dsp_destroy_network_oscsend(struct dsp_module *target_module) {
 	free(target_module->dsp_param.parameters->char_type[PARAM_USER_HOSTNAME_IP]);
 	free(target_module->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH]);
 	free(target_module->dsp_param.parameters->char_type);	
+
 	free(target_module->dsp_param.parameters->int32_type);	
-	free(target_module->dsp_param.parameters->float32_type);	
+	free(target_module->dsp_param.parameters->float32_type);
+	
+	lo_address_free(target_module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND]);	
+	free(target_module->dsp_param.parameters->lo_address_type);
+	
+	pthread_spin_destroy(target_module->dsp_param.parameters->pthread_spinlock_type);	
+
 	free(target_module->dsp_param.parameters);
 	free(target_module->dsp_param.out);
 	free(target_module->dsp_param.in);
+
 	return 0;	
 } /* dsp_destroy_network_oscsend */
 
@@ -94,27 +126,24 @@ dsp_edit_network_oscsend(struct dsp_module *network_oscsend,
 	strcpy(network_oscsend->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH], osc_path);	
 	
 	network_oscsend->dsp_param.parameters->int32_type[PARAM_USER_PORT] = port;
-	network_oscsend->dsp_param.parameters->float32_type[PARAM_USER_FREQ_DIV] = freq_div;	
+	network_oscsend->dsp_param.parameters->float32_type[PARAM_USER_FREQ_DIV] = freq_div;
+
+	pthread_spin_lock(&network_oscsend->dsp_param.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK]);
+	lo_address_free(network_oscsend->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND]);
+	network_oscsend->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND] = _build_new_lo_address(hostname_ip, port);
+	pthread_spin_unlock(&network_oscsend->dsp_param.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK]);	
+	
 } /* dsp_edit_network_oscsend */
 
 void
 dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) {
-	char *hostname_ip, *osc_path, *osc_port;
-	lo_address lo_addr_send;
-	int port, sample_count, i, port_len;
+	char *osc_path;
+	int sample_count, i;
 	float freq_div;
 
-	hostname_ip = network_oscsend->module->dsp_param.parameters->char_type[PARAM_USER_HOSTNAME_IP];
 	osc_path = network_oscsend->module->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH];	
-	port = network_oscsend->module->dsp_param.parameters->int32_type[PARAM_USER_PORT];
-	freq_div = network_oscsend->module->dsp_param.parameters->float32_type[PARAM_USER_FREQ_DIV];	
-
+	freq_div = network_oscsend->module->dsp_param.parameters->float32_type[PARAM_USER_FREQ_DIV];
 	sample_count = network_oscsend->module->dsp_param.parameters->int32_type[PARAM_INTERNAL_SAMPLERATE_COUNTER];
-
-	port_len = snprintf(NULL, 0,"%d",port);
-	osc_port = malloc(sizeof(char) * port_len);
-	snprintf(osc_port, port_len+1, "%d", port);
-	lo_addr_send = lo_address_new(hostname_ip, (const char*)osc_port);
 
 	if( network_oscsend->ins->summands != NULL ) {  
 		dsp_sum_summands(network_oscsend->module->dsp_param.in, network_oscsend->ins->summands);
@@ -123,10 +152,13 @@ dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) 
 	i=0;
 	while(i<dsp_global_period) {		
 		if( ((int)(jack_samplerate / freq_div) < sample_count)) {
-			lo_send(lo_addr_send,
-				osc_path,
-				"f",
-				network_oscsend->module->dsp_param.in[i]);
+			if( pthread_spin_trylock(&network_oscsend->module->dsp_param.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK]) == 0 ) {
+				lo_send(network_oscsend->module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND],
+					osc_path,
+					"f",
+					network_oscsend->module->dsp_param.in[i]);
+				pthread_spin_unlock(&network_oscsend->module->dsp_param.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK]);		
+			}
 		}
 		if((int)(jack_samplerate / freq_div) < sample_count) {
 			sample_count=1;
@@ -137,7 +169,5 @@ dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) 
 	}
 	network_oscsend->module->dsp_param.parameters->int32_type[PARAM_INTERNAL_SAMPLERATE_COUNTER] = sample_count;
 
-	free(osc_port);
-	free(lo_addr_send);  
 } /* dsp_network_oscsend */
 

@@ -19,11 +19,6 @@ Copyright 2015 murray foster */
 #ifndef OSC_HANDLERS_H
 #define OSC_HANDLERS_H
 
-/* #include <stdio.h> printf */
-/* #include <string.h> memset */
-/* #include <stdlib.h> exit(0); */
-#define _XOPEN_SOURCE 500
-
 #include <dirent.h>
 #include <ftw.h>
 #include <limits.h>

@@ -205,7 +205,7 @@ int osc_add_client(char *new_host_out, char *new_port_out, bool listener_enable)
 } /* osc_add_client */
 
 void
-osc_callback_timer_callback(int signum) {
+osc_callback_timer_callback(union sigval sv) {
 	
 	struct osc_client_addr_t *temp_client_addr = osc_global.client_addr;	
 	while( temp_client_addr != NULL ) {
@@ -241,22 +241,25 @@ osc_callback_timer_callback(int signum) {
 
 void *
 osc_callback_timer_thread() {
-	struct itimerval callback_timer;
-	struct itimerval callback_timer_old;
-	unsigned short fps = 30;
-	long sample_duration_usec = (long)(1000 * 1000 / fps);
-
-	callback_timer.it_value.tv_sec = 1;
-	callback_timer.it_value.tv_usec = 0;
-	callback_timer.it_interval.tv_sec = 0;
-	callback_timer.it_interval.tv_usec = sample_duration_usec;
-  
-	setitimer(ITIMER_REAL, &callback_timer, &callback_timer_old);
-	signal(SIGALRM, osc_callback_timer_callback);
-
-	while(1) {
-		sleep(1);
-	}
+    struct sigevent sev;
+    timer_t timer_id;
+    struct itimerspec its;
+    
+    sev.sigev_notify = SIGEV_THREAD;
+    sev.sigev_notify_function = osc_callback_timer_callback;
+    sev.sigev_notify_attributes = NULL;
+    sev.sigev_value.sival_ptr = &timer_id;
+    
+    timer_create(CLOCK_MONOTONIC, &sev, &timer_id);
+    
+    its.it_value.tv_sec = 1;
+    its.it_value.tv_nsec = 0;
+    its.it_interval.tv_sec = 0;
+    its.it_interval.tv_nsec = (1000000000L / 60); /* 30fps */
+    
+    timer_settime(timer_id, 0, &its, NULL);
+    
+    while(1) { sleep(1); }
 } /* osc_callback_timer_thread */
 
 int
