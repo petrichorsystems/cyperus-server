@@ -33,7 +33,8 @@ struct dsp_global_t {
 	bool graph_cleanup_do;
 	
 	pthread_mutex_t graph_state_mutex;
-	pthread_mutex_t optimization_mutex;
+
+	pthread_spinlock_t optimization_spinlock;
 	
 	pthread_mutex_t optimization_condition_mutex;
 	pthread_cond_t optimization_condition_cond;

@@ -1186,7 +1186,7 @@ void
 
 void *
 dsp_graph_optimization_task_thread() {
-	pthread_mutex_lock(&dsp_global.optimization_mutex);
+	pthread_spin_lock(&dsp_global.optimization_spinlock);
 	
 	dsp_build_optimized_graph(NULL);
 	dsp_global.build_new_optimized_graph = false;
@@ -1194,7 +1194,7 @@ dsp_graph_optimization_task_thread() {
 	/* graph changed, generate new graph id */
 	dsp_graph_id_rebuild();
 	
-	pthread_mutex_unlock(&dsp_global.optimization_mutex);
+	pthread_spin_unlock(&dsp_global.optimization_spinlock);
 	return NULL;
 } /* dsp_graph_optimization_task_thread */
 
@@ -1418,7 +1418,8 @@ void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short
 	dsp_global.operation_head_processing = NULL;
 	
 	pthread_mutex_init(&dsp_global.graph_state_mutex, NULL);
-	pthread_mutex_init(&dsp_global.optimization_mutex, NULL);
+
+	pthread_spin_init(&dsp_global.optimization_spinlock, PTHREAD_PROCESS_PRIVATE);
 
 	pthread_mutex_init(&dsp_global.optimization_condition_mutex, NULL);
 	pthread_cond_init(&dsp_global.optimization_condition_cond, NULL);

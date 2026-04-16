@@ -92,7 +92,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     jackcli_samplerate_pos += dsp_global_period;
 
   if( dsp_global_new_operation_graph ) {
-	  if( pthread_mutex_trylock(&dsp_global.optimization_mutex) == 0 ) {
+	  if( pthread_spin_trylock(&dsp_global.optimization_spinlock) == 0 ) {
        
 		  /* we will want to deallocate dsp_global.optimized_main_outs before continuing */
 		  dsp_global.optimized_main_outs = dsp_global.rebuilt_optimized_main_outs;
@@ -106,7 +106,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 		  /* deallocate removed object resources */
 		  dsp_signal_graph_cleanup();
 		  
-		  pthread_mutex_unlock(&dsp_global.optimization_mutex);
+		  pthread_spin_unlock(&dsp_global.optimization_spinlock);
 	  }
   }
   
