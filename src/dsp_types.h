@@ -19,6 +19,7 @@ Copyright 2018 murray foster */
 #ifndef DSP_TYPES_H
 #define DSP_TYPES_H
 
+#include <stdatomic.h>
 #include <lo/lo.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -30,7 +31,6 @@ struct dsp_global_t {
 
 	bool build_new_optimized_graph;
 	bool new_operation_graph;
-	bool graph_cleanup_do;
 	
 	pthread_mutex_t graph_state_mutex;
 

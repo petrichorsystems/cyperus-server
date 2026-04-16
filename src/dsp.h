@@ -33,6 +33,7 @@ Copyright 2015 murray foster */
 
 extern unsigned short dsp_global_period;
 extern bool dsp_global_new_operation_graph;
+extern atomic_flag dsp_global_graph_cleanup_do;
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus *parent_bus, struct dsp_bus_port *head_port, char *bus_ports, int out);
@@ -100,9 +101,6 @@ dsp_build_optimized_main_outs();
 
 void
 *dsp_build_optimized_graph();
-
-void
-dsp_signal_graph_cleanup();
 
 void
 dsp_process(struct dsp_operation *head_op, int jack_sr, int pos);

@@ -20,6 +20,7 @@ Copyright 2015 murray foster */
 
 bool dsp_global_new_operation_graph = false;
 unsigned short dsp_global_period = 0;
+atomic_flag dsp_global_graph_cleanup_do = ATOMIC_FLAG_INIT;
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus *parent_bus,
@@ -244,12 +245,6 @@ dsp_signal_graph_optimization() {
 	dsp_global.build_new_optimized_graph = true;
 	pthread_cond_signal(&dsp_global.optimization_condition_cond);
 } /* dsp_signal_graph_optimization */
-
-void
-dsp_signal_graph_cleanup() {
-	dsp_global.graph_cleanup_do = true;
-	pthread_cond_signal(&dsp_global.graph_cleanup_condition_cond);
-} /* dsp_signal_graph_cleanup */
 
 int
 dsp_add_connection(char *id_out, char *id_in, char **new_connection_id) {
@@ -1328,20 +1323,10 @@ dsp_cleanup_graph(struct dsp_bus *head_bus) {
 void *
 dsp_graph_cleanup_task_thread() {
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
-
-	if( !dsp_global.graph_cleanup_do ) {
-		printf("dsp.c::dsp_cleanup_graph(), graph_cleanup_do=false, aborting..\n");
-		pthread_mutex_unlock(&dsp_global.graph_state_mutex);		
-		return NULL;
-	}
-
 	dsp_global.bus_head = dsp_cleanup_graph(dsp_global.bus_head);
-	dsp_global.graph_cleanup_do = false;
-
-	dsp_graph_id_rebuild();
-	
+	dsp_graph_id_rebuild();	
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
-
+	atomic_flag_clear(&dsp_global_graph_cleanup_do);
 	return NULL;
 } /* dsp_graph_cleanup_task_thread */
 
@@ -1355,11 +1340,15 @@ dsp_graph_cleanup_task_thread_setup() {
 
 void *
 dsp_graph_cleanup_thread() {
+	long poll_ns = (long)(1000000000.0 * dsp_global_period / jackcli_samplerate / 2.0);
+	struct timespec ts = {0, poll_ns};
 	while(true) {
-		pthread_cond_wait(&dsp_global.graph_cleanup_condition_cond, &dsp_global.graph_cleanup_condition_mutex);
-		if (dsp_global.graph_cleanup_do) {
+		if( atomic_flag_test_and_set(&dsp_global_graph_cleanup_do) ) {
 			dsp_graph_cleanup_task_thread_setup();
+		} else {
+			atomic_flag_clear(&dsp_global_graph_cleanup_do);
 		}
+		nanosleep(&ts, NULL);	
 	}
 	return NULL;
 } /* dsp_graph_cleanup_thread */
@@ -1404,7 +1393,6 @@ dsp_process(struct dsp_operation *head_op, int jack_sr, int pos) {
 void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short channels_out) {
 	dsp_global.cpu_load = 0.0f;
 	dsp_global.build_new_optimized_graph = false;
-	dsp_global.graph_cleanup_do = false;
 
 	dsp_global.bus_head = NULL;
 	dsp_global.connection_graph = NULL;
