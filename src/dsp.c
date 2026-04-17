@@ -1340,16 +1340,25 @@ dsp_graph_cleanup_task_thread_setup() {
 
 void *
 dsp_graph_cleanup_thread() {
-	long poll_ns = (long)(1000000000.0 * dsp_global_period / jackcli_samplerate / 2.0);
-	struct timespec ts = {0, poll_ns};
+	long poll_ns = 0L;	
+	struct timespec ts = {0, 0};
+
+	ts.tv_nsec = 100000000L;
+	while(!jackcli_samplerate) { nanosleep(&ts, NULL); }
+	
+	poll_ns = 100000000L * dsp_global_period / jackcli_samplerate * 50;	
+	ts.tv_nsec = poll_ns;
+	
 	while(true) {
 		if( atomic_flag_test_and_set(&dsp_global_graph_cleanup_do) ) {
 			dsp_graph_cleanup_task_thread_setup();
+			atomic_flag_clear(&dsp_global_graph_cleanup_do);
 		} else {
 			atomic_flag_clear(&dsp_global_graph_cleanup_do);
 		}
-		nanosleep(&ts, NULL);	
+		nanosleep(&ts, NULL);
 	}
+
 	return NULL;
 } /* dsp_graph_cleanup_thread */
 
