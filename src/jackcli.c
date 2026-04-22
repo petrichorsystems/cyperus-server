@@ -95,6 +95,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 	  if( pthread_spin_trylock(&dsp_global.optimization_spinlock) == 0 ) {
        
 		  /* we will want to deallocate dsp_global.optimized_main_outs before continuing */
+		  
 		  dsp_global.optimized_main_outs = dsp_global.rebuilt_optimized_main_outs;
 		  dsp_global.rebuilt_optimized_main_outs = NULL;
     

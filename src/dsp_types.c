@@ -209,8 +209,10 @@ void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*
 }
 
 void dsp_connection_free(struct dsp_connection *connection) {
-  free((char *)connection->id);
-  free((struct dsp_connection*)connection);
+	free((char *)connection->id_out);
+	free((char *)connection->id_in);
+	free((char *)connection->id);
+	free((struct dsp_connection*)connection);
 }
 
 struct dsp_module* dsp_module_init(const char *module_name,
@@ -500,6 +502,85 @@ void dsp_operation_insert_ahead(struct dsp_operation *existing_operation, struct
   }
 }
 
+void dsp_operation_free(struct dsp_operation *operation) {
+	struct dsp_operation_sample *temp_op_sample = NULL;
+	struct dsp_operation_sample *temp_op_sample_next = NULL;
+	struct dsp_operation_sample *temp_op_sample_summand = NULL;
+	struct dsp_operation_sample *temp_op_sample_summand_next = NULL;	
+
+	temp_op_sample = operation->ins;
+	while( temp_op_sample != NULL ) {
+		temp_op_sample_next = temp_op_sample->next;
+
+		temp_op_sample_summand = temp_op_sample->summands;
+		while( temp_op_sample_summand != NULL ) {
+			temp_op_sample_summand_next = temp_op_sample_summand->next;
+			dsp_operation_sample_free(temp_op_sample_summand);
+			temp_op_sample_summand = temp_op_sample_summand_next;
+		}
+		
+		dsp_operation_sample_free(temp_op_sample);
+		temp_op_sample = temp_op_sample_next;
+	}
+
+	temp_op_sample = operation->outs;
+	while( temp_op_sample != NULL ) {
+		temp_op_sample_next = temp_op_sample->next;
+
+		temp_op_sample_summand = temp_op_sample->summands;
+		while( temp_op_sample_summand != NULL ) {
+			temp_op_sample_summand_next = temp_op_sample_summand->next;
+			dsp_operation_sample_free(temp_op_sample_summand);
+			temp_op_sample_summand = temp_op_sample_summand_next;
+		}
+		
+		dsp_operation_sample_free(temp_op_sample);
+		temp_op_sample = temp_op_sample_next;
+	}
+	
+	dsp_operation_sample_free(operation->ins);
+	dsp_operation_sample_free(operation->outs);
+	free((char *)operation->dsp_id);
+	free((char *)operation->id);
+	free(operation);
+}
+
+struct dsp_garbage_container_operation* dsp_garbage_container_operation_init() {
+  struct dsp_garbage_container_operation *new_container = (struct dsp_garbage_container_operation*)malloc(sizeof(struct dsp_garbage_container_operation));
+  new_container->id = dsp_generate_object_id();
+  new_container->operation_head = NULL;
+  new_container->next = NULL;
+  return new_container;
+}
+
+void dsp_garbage_container_operation_insert_tail(struct dsp_garbage_container_operation *head_container, struct dsp_garbage_container_operation *new_container) {
+  struct dsp_garbage_container_operation *temp_container = head_container;
+
+  if(temp_container == NULL) {
+    head_container = new_container;
+    return;
+  }
+
+  while(temp_container->next != NULL)
+    {
+      temp_container = temp_container->next;
+    }
+  temp_container->next = new_container;
+}
+
+void dsp_garbage_container_operation_free(struct dsp_garbage_container_operation *container) {
+	struct dsp_operation *temp_op = NULL, *temp_op_next = NULL;
+	temp_op = container->operation_head;
+	while(temp_op != NULL) {
+		temp_op_next = temp_op->next;
+		dsp_operation_free(temp_op);
+		temp_op = temp_op_next;
+	}
+	free((char *)container->id);
+	free(container);
+	
+}
+
 struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_connection *connection,
 								   char *id_out,
 								   char *id_in,
@@ -561,6 +642,12 @@ struct dsp_sample* dsp_sample_init(unsigned short blocksize, float value) {
   return new_sample;
 }
 
+void dsp_sample_free(struct dsp_sample *sample) {
+	free(sample->value);
+	free((char *)sample->id);
+	free(sample);
+}
+
 struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, unsigned short blocksize, float value, int init_sample) {
   struct dsp_operation_sample *new_operation_sample = (struct dsp_operation_sample*)malloc(sizeof(struct dsp_operation_sample));
   new_operation_sample->id = dsp_generate_object_id();
@@ -574,6 +661,13 @@ struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, unsigned sh
     new_operation_sample->sample = dsp_sample_init(blocksize, value);
   
   return new_operation_sample;
+}
+
+void dsp_operation_sample_free(struct dsp_operation_sample *operation_sample) {
+	dsp_sample_free(operation_sample->sample);
+	free((char *)operation_sample->dsp_id);
+	free((char *)operation_sample->id);
+	free(operation_sample);
 }
 
 void dsp_operation_sample_insert_head(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample) {

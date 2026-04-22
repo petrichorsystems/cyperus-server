@@ -38,9 +38,6 @@ struct dsp_global_t {
 	
 	pthread_mutex_t optimization_condition_mutex;
 	pthread_cond_t optimization_condition_cond;
-
-	pthread_mutex_t graph_cleanup_condition_mutex;
-	pthread_cond_t graph_cleanup_condition_cond;	
 	
 	struct dsp_operation *operation_head_processing;
 	struct dsp_operation *operation_head;
@@ -56,7 +53,12 @@ struct dsp_global_t {
 
 	struct dsp_operation *optimized_main_ins;
 	struct dsp_operation *optimized_main_outs;
-	struct dsp_operation *rebuilt_optimized_main_outs;	
+	struct dsp_operation *rebuilt_optimized_main_outs;
+
+	struct dsp_garbage_container_operation *garbage_main_outs;
+	struct dsp_garbage_container_operation *garbage_operation_head;
+
+	pthread_mutex_t garbage_cleanup_mutex;
 };
 extern struct dsp_global_t dsp_global;
 
@@ -80,13 +82,13 @@ typedef struct dsp_module_parameters {
 } dsp_module_parameters_t;
 
 typedef struct dsp_module_parameter {
-  float *in;
-  float *out;
+	float *in;
+	float *out;
 	
-  int pos;
+	int pos;
 	
-  char *name;
-  dsp_module_parameters_t *parameters;
+	char *name;
+	dsp_module_parameters_t *parameters;
 }dsp_parameter;
 
 struct dsp_port_in {
@@ -184,6 +186,12 @@ struct dsp_operation {
 	struct dsp_operation_sample *outs;
 };
 
+struct dsp_garbage_container_operation {
+	const char *id;
+	struct dsp_operation *operation_head;
+	struct dsp_garbage_container_operation *next;
+};
+
 struct dsp_translation_connection {
   char *id_out;
   char *id_in;
@@ -261,11 +269,19 @@ void dsp_operation_insert_head(struct dsp_operation *head_operation, struct dsp_
 void dsp_operation_insert_tail(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
 void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struct dsp_operation *new_operation);
 void dsp_operation_insert_ahead(struct dsp_operation *existing_operation, struct dsp_operation *new_operation);
+void dsp_operation_free(struct dsp_operation *operation);
+
+struct dsp_garbage_container_operation* dsp_garbage_container_operation_init();
+void dsp_garbage_container_operation_insert_tail(struct dsp_garbage_container_operation *head_container, struct dsp_garbage_container_operation *new_container);
+void dsp_garbage_container_operation_free(struct dsp_garbage_container_operation *container);
+
 struct dsp_sample* dsp_sample_init(unsigned short blocksize, float value);
+void dsp_sample_free(struct dsp_sample *sample);
 
 struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, unsigned short blocksize, float value, int init_sample);
 void dsp_operation_sample_insert_head(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample);
 void dsp_operation_sample_insert_tail(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample);
+void dsp_operation_sample_free(struct dsp_operation_sample *operation_sample);
 
 struct dsp_bus_port*
 dsp_find_bus_port(char *id);
