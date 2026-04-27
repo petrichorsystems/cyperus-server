@@ -121,10 +121,9 @@ void jackcli_allocate_ports(int channels_in, int channels_out)
   int i = 0;
   char name [256];
 
-  size_t in_size = channels_in * sizeof (jack_default_audio_sample_t*);
-  jackcli_ports_input = (jack_port_t **) malloc (sizeof (jack_port_t *) * channels_in);
-  jackcli_ins = (jack_default_audio_sample_t **) malloc (in_size);
-  memset(jackcli_ins, 0, in_size);
+  jackcli_ports_input = calloc (channels_out, sizeof (jack_port_t *));
+  jackcli_ins = calloc (channels_in, sizeof (jack_default_audio_sample_t *));
+  
   for( i = 0; i < channels_in; i++)
     {
       snprintf(name, sizeof(name), "in_%d", i);
@@ -133,6 +132,7 @@ void jackcli_allocate_ports(int channels_in, int channels_out)
 
   jackcli_ports_output = calloc (channels_out, sizeof (jack_port_t *));
   jackcli_outs = calloc (channels_out, sizeof (jack_default_audio_sample_t *));
+
   for (i = 0 ; i < channels_out; i++)
     {     
       snprintf(name, sizeof(name), "out_%d", i) ;
