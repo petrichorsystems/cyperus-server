@@ -37,13 +37,13 @@ char* dsp_generate_object_id() {
   uuid_generate(uuid);
   uuid_unparse_lower(uuid, uuid_str);
 
-  id = (char *)malloc(sizeof(char) * (id_len+1));
+  id = malloc(sizeof(char) * (id_len+1));
   snprintf(id, id_len+1, "%s", uuid_str);
   
   return id;
 }
 
-struct dsp_port_in* dsp_port_in_init(const char *port_name) {
+struct dsp_port_in* dsp_port_in_init(char *port_name) {
 
   struct dsp_port_in *new_port = (struct dsp_port_in*)malloc(sizeof(struct dsp_port_in));
   new_port->prev = NULL;
@@ -98,7 +98,7 @@ void dsp_port_in_list_reverse(struct dsp_port_in *head_port) {
   } 
 }
 
-struct dsp_port_out* dsp_port_out_init(const char *port_name) {
+struct dsp_port_out* dsp_port_out_init(char *port_name) {
   struct dsp_port_out *new_port = (struct dsp_port_out*)malloc(sizeof(struct dsp_port_out));
   new_port->prev = NULL;
   new_port->next = NULL;
@@ -140,8 +140,8 @@ void dsp_port_out_list(struct dsp_port_out *head_port) {
   }
 }
 
-struct dsp_connection* dsp_connection_init(const char *id_out,
-					   const char *id_in) {
+struct dsp_connection* dsp_connection_init(char *id_out,
+					   char *id_in) {
   struct dsp_connection *new_connection = (struct dsp_connection*)malloc(sizeof(struct dsp_connection));
   new_connection->id = dsp_generate_object_id();
   new_connection->prev = NULL;
@@ -215,7 +215,7 @@ void dsp_connection_free(struct dsp_connection *connection) {
 	free((struct dsp_connection*)connection);
 }
 
-struct dsp_module* dsp_module_init(const char *module_name,
+struct dsp_module* dsp_module_init(char *module_name,
 				   void (*dsp_function) (struct dsp_operation*, int),
 				   int (*dsp_destroy_function) (struct dsp_module*),
                                    void (*dsp_osc_listener_function) (struct dsp_operation*, int),
@@ -362,7 +362,7 @@ void dsp_bus_port_list_reverse(struct dsp_bus_port *head_port) {
   } 
 }
 
-struct dsp_bus* dsp_bus_init(const char *bus_name) {
+struct dsp_bus* dsp_bus_init(char *bus_name) {
   struct dsp_bus *new_bus = (struct dsp_bus*)malloc(sizeof(struct dsp_bus));
   new_bus->name = malloc(sizeof(char) * strlen(bus_name) + 1);
   strcpy((char *)new_bus->name, bus_name);
@@ -444,9 +444,10 @@ void dsp_bus_list_reverse(struct dsp_bus *head_bus) {
 }
 
 struct dsp_operation* dsp_operation_init(char *dsp_id) {
-  struct dsp_operation *new_operation = (struct dsp_operation*)malloc(sizeof(struct dsp_operation));
+  struct dsp_operation *new_operation = malloc(sizeof(struct dsp_operation));
   new_operation->id = dsp_generate_object_id();
-  new_operation->dsp_id = malloc(sizeof(char) * strlen(dsp_id) + 1);
+  
+  new_operation->dsp_id = malloc(sizeof(char) * (strlen(dsp_id) + 1));
   strcpy((char *)new_operation->dsp_id, dsp_id);
   new_operation->prev = NULL;
   new_operation->next = NULL;
@@ -508,6 +509,9 @@ void dsp_operation_free(struct dsp_operation *operation) {
 	struct dsp_operation_sample *temp_op_sample_summand = NULL;
 	struct dsp_operation_sample *temp_op_sample_summand_next = NULL;	
 
+	if( operation == NULL )
+		return;
+	
 	temp_op_sample = operation->ins;
 	while( temp_op_sample != NULL ) {
 		temp_op_sample_next = temp_op_sample->next;
@@ -515,31 +519,20 @@ void dsp_operation_free(struct dsp_operation *operation) {
 		temp_op_sample_summand = temp_op_sample->summands;
 		while( temp_op_sample_summand != NULL ) {
 			temp_op_sample_summand_next = temp_op_sample_summand->next;
-			dsp_operation_sample_free(temp_op_sample_summand);
+			dsp_operation_sample_free(temp_op_sample_summand, false);
 			temp_op_sample_summand = temp_op_sample_summand_next;
 		}
-		
-		dsp_operation_sample_free(temp_op_sample);
+		dsp_operation_sample_free(temp_op_sample, true);
 		temp_op_sample = temp_op_sample_next;
 	}
 
 	temp_op_sample = operation->outs;
 	while( temp_op_sample != NULL ) {
-		temp_op_sample_next = temp_op_sample->next;
-
-		temp_op_sample_summand = temp_op_sample->summands;
-		while( temp_op_sample_summand != NULL ) {
-			temp_op_sample_summand_next = temp_op_sample_summand->next;
-			dsp_operation_sample_free(temp_op_sample_summand);
-			temp_op_sample_summand = temp_op_sample_summand_next;
-		}
-		
-		dsp_operation_sample_free(temp_op_sample);
+		temp_op_sample_next = temp_op_sample->next;	
+		dsp_operation_sample_free(temp_op_sample, true);
 		temp_op_sample = temp_op_sample_next;
 	}
-	
-	dsp_operation_sample_free(operation->ins);
-	dsp_operation_sample_free(operation->outs);
+
 	free((char *)operation->dsp_id);
 	free((char *)operation->id);
 	free(operation);
@@ -576,9 +569,9 @@ void dsp_garbage_container_operation_free(struct dsp_garbage_container_operation
 		dsp_operation_free(temp_op);
 		temp_op = temp_op_next;
 	}
+	container->operation_head = NULL;
 	free((char *)container->id);
 	free(container);
-	
 }
 
 struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_connection *connection,
@@ -663,8 +656,12 @@ struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, unsigned sh
   return new_operation_sample;
 }
 
-void dsp_operation_sample_free(struct dsp_operation_sample *operation_sample) {
-	dsp_sample_free(operation_sample->sample);
+void dsp_operation_sample_free(struct dsp_operation_sample *operation_sample, bool free_sample) {
+	if( free_sample ) {
+		if( operation_sample->sample != NULL ) {
+			dsp_sample_free(operation_sample->sample);
+		}
+	}
 	free((char *)operation_sample->dsp_id);
 	free((char *)operation_sample->id);
 	free(operation_sample);

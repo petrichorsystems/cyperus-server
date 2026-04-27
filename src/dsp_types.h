@@ -92,16 +92,16 @@ typedef struct dsp_module_parameter {
 }dsp_parameter;
 
 struct dsp_port_in {
-  const char *id;
-  const char *name;
+  char *id;
+  char *name;
   struct dsp_port_in *next;
   struct dsp_port_in *prev;
   int remove; /* boolean remove flag */
 };
 
 struct dsp_port_out {
-  const char *id;
-  const char *name;
+  char *id;
+  char *name;
   struct dsp_port_out *next;
   struct dsp_port_out *prev;
   float value;
@@ -109,17 +109,17 @@ struct dsp_port_out {
 };
 
 struct dsp_connection {
-  const char *id;
+  char *id;
   struct dsp_connection *next;
   struct dsp_connection *prev;
-  const char *id_out;
-  const char *id_in;
+  char *id_out;
+  char *id_in;
   int remove; /* boolean remove flag */
 };
 
 struct dsp_module {
-  const char *id;
-  const char *name;
+  char *id;
+  char *name;
   struct dsp_module *next;
   struct dsp_module *prev;
   void (*dsp_function) (struct dsp_operation*, int);
@@ -135,7 +135,7 @@ struct dsp_module {
 };
 
 struct dsp_bus_port {
-	const char *id;
+	char *id;
 	char *name;
 	struct dsp_bus_port    *next;
 	struct dsp_bus_port    *prev;
@@ -149,8 +149,8 @@ struct dsp_bus_port {
 };
   
 struct dsp_bus {
-  const char *id;
-  const char *name;
+  char *id;
+  char *name;
   struct dsp_bus *next;
   struct dsp_bus *prev;
   struct dsp_bus *down;
@@ -163,13 +163,13 @@ struct dsp_bus {
 };
 
 struct dsp_sample {
-  const char *id;
+  char *id;
   float *value;
 };
 
 struct dsp_operation_sample {
-  const char *id;
-  const char *dsp_id;
+  char *id;
+  char *dsp_id;
   struct dsp_operation_sample *next;
   struct dsp_operation_sample *prev;
   struct dsp_operation_sample *summands;
@@ -177,8 +177,8 @@ struct dsp_operation_sample {
 };
 
 struct dsp_operation {
-	const char *id;
-	const char *dsp_id;
+	char *id;
+	char *dsp_id;
 	struct dsp_operation *next;
 	struct dsp_operation *prev;
 	struct dsp_module *module;
@@ -187,7 +187,7 @@ struct dsp_operation {
 };
 
 struct dsp_garbage_container_operation {
-	const char *id;
+	char *id;
 	struct dsp_operation *operation_head;
 	struct dsp_garbage_container_operation *next;
 };
@@ -213,16 +213,16 @@ struct dsp_translation_sample {
 
 char *dsp_generate_object_id();
 
-struct dsp_port_in* dsp_port_in_init(const char *port_name);
+struct dsp_port_in* dsp_port_in_init(char *port_name);
 void dsp_port_in_insert_head(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
 void dsp_port_in_insert_tail(struct dsp_port_in *head_port, struct dsp_port_in *port_in);
 
-struct dsp_port_out* dsp_port_out_init(const char *port_name);
+struct dsp_port_out* dsp_port_out_init(char *port_name);
 void dsp_port_out_insert_head(struct dsp_port_out *head_port, struct dsp_port_out *port_out);
 void dsp_port_out_insert_tail(struct dsp_port_out *head_port, struct dsp_port_out *port_out);
 
-struct dsp_connection* dsp_connection_init(const char *id_out,
-					   const char *id_in);
+struct dsp_connection* dsp_connection_init(char *id_out,
+					   char *id_in);
 
 void dsp_connection_insert_head(struct dsp_connection *head_connection, struct dsp_connection *connection);
 void dsp_connection_insert_tail(struct dsp_connection *head_connection, struct dsp_connection *connection);
@@ -231,7 +231,7 @@ void dsp_connection_list_reverse(struct dsp_connection *head_connection, void (*
 void dsp_connection_printf(struct dsp_connection *connection);
 void dsp_connection_free(struct dsp_connection *connection);
 
-struct dsp_module* dsp_module_init(const char *module_name,
+struct dsp_module* dsp_module_init(char *module_name,
 				   void (*dsp_function) (struct dsp_operation*, int),
 				   int (*dsp_destroy_function) (struct dsp_module*),
                                    void (*dsp_osc_listener_function) (struct dsp_operation*, int),
@@ -249,7 +249,7 @@ struct dsp_bus_port* dsp_bus_port_init(char *port_name, int output);
 void dsp_bus_port_insert_head(struct dsp_bus_port *head_port, struct dsp_bus_port *bus_port);
 void dsp_bus_port_insert_tail(struct dsp_bus_port *head_port, struct dsp_bus_port *bus_port);
 
-struct dsp_bus* dsp_bus_init(const char *bus_name);
+struct dsp_bus* dsp_bus_init(char *bus_name);
 void dsp_bus_insert_head(struct dsp_bus *head_bus, struct dsp_bus *new_bus);
 void dsp_bus_insert_tail(struct dsp_bus *head_bus, struct dsp_bus *new_bus);
 void dsp_bus_insert_tail_deep(struct dsp_bus *head_bus, struct dsp_bus *new_bus);
@@ -281,7 +281,7 @@ void dsp_sample_free(struct dsp_sample *sample);
 struct dsp_operation_sample* dsp_operation_sample_init(char *dsp_id, unsigned short blocksize, float value, int init_sample);
 void dsp_operation_sample_insert_head(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample);
 void dsp_operation_sample_insert_tail(struct dsp_operation_sample *head_sample, struct dsp_operation_sample *new_sample);
-void dsp_operation_sample_free(struct dsp_operation_sample *operation_sample);
+void dsp_operation_sample_free(struct dsp_operation_sample *operation_sample, bool free_sample);
 
 struct dsp_bus_port*
 dsp_find_bus_port(char *id);

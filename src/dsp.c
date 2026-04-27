@@ -1139,16 +1139,6 @@ dsp_build_optimized_main_outs() {
 
 	struct dsp_operation *temp_op = NULL;
 	struct dsp_operation_sample *temp_sample = NULL;
-
-	struct dsp_garbage_container_operation *container_op = NULL;
-	
-	if(dsp_global.rebuilt_optimized_main_outs != NULL) {
-
-		/*
-		 * clean up main outs objects here
-		 */
-
-	}		
 	
 	dsp_global.rebuilt_optimized_main_outs = NULL;
 	temp_port_in = dsp_global.main_outs;
@@ -1166,41 +1156,66 @@ dsp_build_optimized_main_outs() {
 		temp_port_in = temp_port_in->next;
 	}
 
-	/* store old optimized main outs for deallocation */
-	pthread_mutex_lock(&dsp_global.garbage_cleanup_mutex);
-	if( dsp_global.optimized_main_outs != NULL ) {
-		container_op = dsp_garbage_container_operation_init();
-		container_op->operation_head = dsp_global.optimized_main_outs;
-		if( dsp_global.garbage_main_outs == NULL ) {
-			dsp_global.garbage_main_outs = container_op;
-		} else {
-			dsp_garbage_container_operation_insert_tail(dsp_global.garbage_main_outs, container_op);
-		}
-	}
-	pthread_mutex_unlock(&dsp_global.garbage_cleanup_mutex);
-
 } /* dsp_build_optimized_main_outs */
 
 void
 *dsp_build_optimized_graph() {
 	struct dsp_garbage_container_operation *container_op = NULL;
+	struct dsp_garbage_container_operation *temp_container_op = NULL;
+
+	bool new_garbage = false;
 	
 	dsp_global.operation_head_processing = NULL;
 	dsp_build_optimized_main_outs();
+
 	dsp_optimize_connections_main_inputs(dsp_global.main_ins);
 	dsp_optimize_bus(dsp_global.bus_head);
 
-	/* store old optimized graph for deallocation */
-	pthread_mutex_lock(&dsp_global.garbage_cleanup_mutex);	
-	if( dsp_global.operation_head != NULL ) {
-		container_op = dsp_garbage_container_operation_init();
-		container_op->operation_head = dsp_global.operation_head;
-		if( dsp_global.garbage_operation_head == NULL ) {
-			dsp_global.garbage_operation_head = container_op;
-		} else {
-			dsp_garbage_container_operation_insert_tail(dsp_global.garbage_operation_head, container_op);
+	/* store old optimized main outs for deallocation */
+	pthread_mutex_lock(&dsp_global.garbage_cleanup_mutex);
+	
+	if( dsp_global.optimized_main_outs != NULL ) {
+		new_garbage = true;
+		temp_container_op = dsp_global.garbage_main_outs;
+		while( temp_container_op != NULL ) {
+			if( strcmp(temp_container_op->operation_head->id, dsp_global.optimized_main_outs->id) == 0) {
+				new_garbage = false;
+			}
+			temp_container_op = temp_container_op->next;
+		}
+
+		if( new_garbage ) {
+			container_op = dsp_garbage_container_operation_init();
+			container_op->operation_head = dsp_global.optimized_main_outs;
+			if( dsp_global.garbage_main_outs == NULL ) {
+				dsp_global.garbage_main_outs = container_op;
+			} else {
+				dsp_garbage_container_operation_insert_tail(dsp_global.garbage_main_outs, container_op);
+			}
 		}
 	}
+	
+	if( dsp_global.operation_head != NULL ) {
+		new_garbage = true;
+		temp_container_op = dsp_global.garbage_operation_head;
+		while( temp_container_op != NULL ) {
+			if( strcmp(temp_container_op->operation_head->id, dsp_global.operation_head->id) == 0) {
+				new_garbage = false;
+			}
+			temp_container_op = temp_container_op->next;
+		}
+
+		if( new_garbage ) {
+			container_op = dsp_garbage_container_operation_init();
+			container_op->operation_head = dsp_global.operation_head;
+			if( dsp_global.garbage_operation_head == NULL ) {
+				dsp_global.garbage_operation_head = container_op;
+			} else {
+				dsp_garbage_container_operation_insert_tail(dsp_global.garbage_operation_head, container_op);
+			}
+		}
+	}
+	
 	pthread_mutex_unlock(&dsp_global.garbage_cleanup_mutex);	
 	
 	dsp_global_new_operation_graph = true;
@@ -1219,6 +1234,7 @@ dsp_cleanup_old_optimized_graph() {
 		dsp_garbage_container_operation_free(temp_container);
 		temp_container = temp_container_next;
 	}
+	dsp_global.garbage_main_outs = NULL;
 
 	temp_container = dsp_global.garbage_operation_head;
 	while( temp_container != NULL ) {
@@ -1226,6 +1242,7 @@ dsp_cleanup_old_optimized_graph() {
 		dsp_garbage_container_operation_free(temp_container);
 		temp_container = temp_container_next;
 	}
+	dsp_global.garbage_operation_head = NULL;
 	
 	pthread_mutex_unlock(&dsp_global.garbage_cleanup_mutex);	
 	return 0;
@@ -1235,13 +1252,15 @@ dsp_cleanup_old_optimized_graph() {
 void *
 dsp_graph_optimization_task_thread() {
 	pthread_spin_lock(&dsp_global.optimization_spinlock);
+	pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	
 	dsp_build_optimized_graph(NULL);
 	dsp_global.build_new_optimized_graph = false;
 	
 	/* graph changed, generate new graph id */
 	dsp_graph_id_rebuild();
-	
+
+	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 	pthread_spin_unlock(&dsp_global.optimization_spinlock);
 	return NULL;
 } /* dsp_graph_optimization_task_thread */
@@ -1373,12 +1392,11 @@ dsp_cleanup_graph(struct dsp_bus *head_bus) {
 	return return_bus;
 } /* dsp_cleanup_graph */
 
-
-
 void *
 dsp_graph_cleanup_task_thread() {
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	dsp_global.bus_head = dsp_cleanup_graph(dsp_global.bus_head);
+	dsp_cleanup_old_optimized_graph();
 	dsp_graph_id_rebuild();	
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 	atomic_flag_clear(&dsp_global_graph_cleanup_do);
@@ -1406,6 +1424,7 @@ dsp_graph_cleanup_thread() {
 	
 	while(true) {
 		if( atomic_flag_test_and_set(&dsp_global_graph_cleanup_do) ) {
+			printf("dsp.c::dsp_graph_cleanup_thread(), running task thread\n");
 			dsp_graph_cleanup_task_thread_setup();
 			atomic_flag_clear(&dsp_global_graph_cleanup_do);
 		} else {

@@ -182,9 +182,10 @@ dsp_optimize_connections_main_inputs(struct dsp_port_out *outs) {
 
 	    if(temp_op_in->ins == NULL)
 	      temp_op_in->ins = sample_in;
-	    else
-	      dsp_operation_sample_insert_tail(temp_op_in->ins, sample_in);
-
+	    else {
+		    if( strcmp(temp_op_in->ins->id, sample_in->id) != 0 )
+			    dsp_operation_sample_insert_tail(temp_op_in->ins, sample_in);
+	    }
             
 	    if( dsp_global.operation_head_processing == NULL ) {
 	      dsp_global.operation_head_processing = temp_op_in;

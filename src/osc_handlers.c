@@ -270,8 +270,10 @@ int osc_add_bus_handler(const char *path, const char *types, lo_arg **argv,
 	new_bus = dsp_bus_init(bus_str);
 	errno = dsp_add_bus(target_bus_id, new_bus, ins_str, outs_str);
 
+	printf("osc_handlers.c::osc_add_bus_handler(), new_bus->id: %s\n", new_bus->id);
+	
 	if( errno == 0 ) {
-		new_id = malloc(sizeof(char) * strlen(new_bus->id));
+		new_id = malloc(sizeof(char) * (strlen(new_bus->id)+1));
 		strcpy(new_id, new_bus->id);
   
 		for(i=0; i < strlen(ins_str); i++)
@@ -1221,80 +1223,6 @@ int osc_make_filesystem_dir_handler(const char *path, const char *types, lo_arg 
 			   fullpath);
 	return 0;
 } /* osc_make_filesystem_dir */
-
-/* int osc_add_modules_osc_parameter_assignment_handler(const char *path, const char *types, lo_arg ** argv, int argc, void *data, void *user_data) */
-/* { */
-/*   printf("osc_add_modules_osc_parameter_assignment()..\n"); */
-
-/*   int idx, num_params, temp_port_path_len; */
-/*   char *request_id, *osc_path, *type_str, *temp_port_path = NULL, **port_paths; */
-/*   osc_handler_user_defined_t* new_handler; */
-  
-/*   struct dsp_bus *target_bus = NULL; */
-/*   struct dsp_module *temp_module, *target_module = NULL; */
-  
-/*   printf("path: <%s>\n", path); */
-
-/*   request_id = (char *)argv[0]; */
-/*   osc_path = (char *)argv[1]; */
-/*   type_str = (char *)argv[2]; */
-  
-/*   num_params = strlen(type_str); */
-
-/*   port_paths = malloc(sizeof(char*)*num_params); */
-/*   for(idx=0; idx<num_params; idx++) { */
-/*     temp_port_path = (char *)argv[3+idx]; */
-/*     temp_port_path_len = strlen(temp_port_path); */
-/*     snprintf(port_paths[idx], temp_port_path_len+1, "%s", temp_port_path); */
-/*   } */
-/*   new_handler = osc_handler_user_defined_init(osc_path, type_str, num_params, port_paths); */
-  
-/*   pthread_mutex_lock(&global_osc_handlers_user_defined_lock); */
-/*   osc_handler_user_defined_insert_tail(global_osc_handlers_user_defined, */
-/*                                        new_handler); */
-/*   pthread_mutex_unlock(&global_osc_handlers_user_defined_lock); */
-  
-/*   lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); */
-/*   osc_send_broadcast("/cyperus/add/module/osc_metronome","siss", request_id, 0, osc_path, type_str); */
-/*   free(lo_addr_send); */
-/*   return 0; */
-/* } /\* osc_add_modules_osc_parameter_assigment_handler *\/ */
-
-/* int */
-/* osc_edit_modules_osc_parameter_assigment_handler(const char *path, const char *types, lo_arg ** argv, */
-/* 						int argc, void *data, void *user_data) */
-/* { */
-/*   char *request_id, *module_path, *module_id; */
-/*   char *bus_path; */
-/*   struct dsp_bus *target_bus; */
-/*   struct dsp_module *target_module; */
-/*   float beats_per_minute; */
-/*   int count; */
-
-/*   request_id = (char *)argv[0]; */
-/*   module_path = (char *)argv[1]; */
-/*   beats_per_minute=argv[2]->f; */
-
-/*   /\* printf("osc_edit_modules_osc_parameter_assigment_handler::beats_per_minute: %f\n", beats_per_minute); *\/ */
-  
-/*   /\* bus_path = malloc(sizeof(char) * (strlen(module_path) - 36)); *\/ */
-/*   /\* strncpy(bus_path, module_path, strlen(module_path) - 37); *\/ */
-
-/*   /\* module_id = malloc(sizeof(char) * 37);   *\/ */
-/*   /\* strncpy(module_id, module_path + strlen(module_path) - 36, 37);  *\/ */
-
-/*   /\* target_bus = dsp_parse_bus_path(bus_path);   *\/ */
-/*   /\* target_module = dsp_find_module(target_bus->dsp_module_head, module_id); *\/ */
-
-/*   /\* dsp_edit_osc_metronome(target_module, beats_per_minute); *\/ */
-
-/*   /\* lo_address lo_addr_send = lo_address_new((const char*)send_host_out, (const char*)send_port_out); *\/ */
-/*   /\* osc_send_broadcast("/cyperus/edit/module/osc_metronome","sisf", request_id, 0, module_id, beats_per_minute); *\/ */
-/*   /\* free(lo_addr_send); *\/ */
-  
-/*   return 0; */
-/* } /\* osc_edit_modules_osc_parameter_assigment_handler *\/ */
-
 
 int
 osc_get_graph_id_handler(const char *path, const char *types, lo_arg **argv,

@@ -106,7 +106,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
 
 		  /* deallocate removed object resources */
 		  /* dsp_signal_graph_cleanup(); */
-		  atomic_flag_clear(&dsp_global_graph_cleanup_do); 
+		  atomic_flag_test_and_set(&dsp_global_graph_cleanup_do); 
 		  
 		  pthread_spin_unlock(&dsp_global.optimization_spinlock);
 	  }
