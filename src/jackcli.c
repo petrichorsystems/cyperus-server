@@ -44,7 +44,7 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
   
   struct timespec mt1, mt2;
   long int tt;
-  long process_time = (1.0f / jackcli_samplerate) * nframes * 1000000000;
+  long process_time = (1.0 / jackcli_samplerate) * nframes * 1000000000;
 
   float *sample_block = (float *)arg;
   
@@ -66,12 +66,11 @@ int jackcli_process_callback(jack_nframes_t nframes, void *arg)
     }
   }
   
-  clock_gettime (CLOCK_REALTIME, &mt1);
+  clock_gettime (CLOCK_MONOTONIC, &mt1);
   dsp_process(dsp_global.operation_head,
               jackcli_samplerate,
               jackcli_samplerate_pos);
-  
-  clock_gettime (CLOCK_REALTIME, &mt2);
+  clock_gettime (CLOCK_MONOTONIC, &mt2);
   tt=1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
   dsp_global.cpu_load = (double)tt/(double)process_time; 
   

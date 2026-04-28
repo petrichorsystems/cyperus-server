@@ -5,7 +5,7 @@ module_utils = src/modules/math_utils.c
 
 all:
 	mkdir -p build/
-	gcc -D_XOPEN_SOURCE=600 -march=native -O3 -fno-math-errno -fno-trapping-math -ffinite-math-only -Wall -pthread -o build/cyperus-server $(core) $(module_utils) $(dsp_module_sources) -lm -ljack -llo -luuid
+	gcc -D_XOPEN_SOURCE=600 -march=native -O3 -fno-math-errno -fno-trapping-math -ffinite-math-only -Wall -pthread -o build/cyperus-server $(core) $(module_utils) $(dsp_module_sources) -lm -ljack -llo -luuid 
 
 clean:
 	rm -r build/
