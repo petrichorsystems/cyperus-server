@@ -115,22 +115,21 @@ osc_callback_timer_callback(union sigval sv) {
 
 			lo_send(lo_addr_send,"/cyperus/dsp/load", "f", dsp_global.cpu_load);
 
-			/* pthread_mutex_lock(&dsp_global.graph_state_mutex); */
-			/* pthread_mutex_lock(&dsp_global.optimization_mutex); */
-			
-			temp_op = dsp_global.operation_head;
-			while(temp_op != NULL) {
-				/* execute appropriate listener function */
-				if( temp_op->module != NULL )
-					if( temp_op->module->dsp_osc_listener_function != NULL )
-						temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
-				temp_op = temp_op->next;
+			pthread_mutex_lock(&dsp_global.graph_state_mutex);
+			if( pthread_spin_trylock(&dsp_global.optimization_spinlock) == 0 ) {			
+				temp_op = dsp_global.operation_head;
+				while(temp_op != NULL) {
+					/* execute appropriate listener function */
+					if( temp_op->module != NULL )
+						if( temp_op->module->dsp_osc_listener_function != NULL )
+							temp_op->module->dsp_osc_listener_function(temp_op, jackcli_samplerate);
+					temp_op = temp_op->next;
+				}
+				
+				lo_address_free(lo_addr_send);
+				pthread_spin_unlock(&dsp_global.optimization_spinlock);
 			}
-
-			lo_address_free(lo_addr_send);
-
-			/* pthread_mutex_unlock(&dsp_global.graph_state_mutex); */
-			/* pthread_mutex_unlock(&dsp_global.optimization_mutex); */
+			pthread_mutex_unlock(&dsp_global.graph_state_mutex);
 		}
 		temp_client_addr = temp_client_addr->next;
 	}	
