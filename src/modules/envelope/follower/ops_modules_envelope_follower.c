@@ -41,8 +41,9 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
   params.parameters = malloc(sizeof(dsp_module_parameters_t));
 
   params.parameters->float32_type = malloc(sizeof(float) * 4);
-  params.parameters->float32_arr_type = malloc(sizeof(float *) * 3);  
-
+  params.parameters->float32_arr_type = malloc(sizeof(float *) * 7);  
+  params.parameters->bool_type = malloc(sizeof(bool) * 2);
+  
   /* user-facing parameter allocation */
   params.parameters->float32_arr_type[PARAM_USER_ATTACK_MS] = calloc(dsp_global_period, sizeof(float)); /* attack_ms */
   params.parameters->float32_arr_type[PARAM_USER_DECAY_MS] = calloc(dsp_global_period, sizeof(float)); /* decay_ms */
@@ -57,6 +58,12 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
   
   /* internal parameter assignment */
   params.parameters->float32_type[PARAM_INTERNAL_LAST_OUTPUT] = 0.0f; /* last output sample */
+  params.parameters->float32_arr_type[PARAM_INTERNAL_ATTACK_MS] = calloc(dsp_global_period, sizeof(float));
+  params.parameters->float32_arr_type[PARAM_INTERNAL_DECAY_MS] = calloc(dsp_global_period, sizeof(float));
+  params.parameters->float32_arr_type[PARAM_INTERNAL_COEFF_ATTACK] = calloc(dsp_global_period, sizeof(float));
+  params.parameters->float32_arr_type[PARAM_INTERNAL_COEFF_DECAY] = calloc(dsp_global_period, sizeof(float));
+  params.parameters->bool_type[PARAM_INTERNAL_ATTACK_MS_CONNECTED] = false;
+  params.parameters->bool_type[PARAM_INTERNAL_DECAY_MS_CONNECTED] = false;	  
 
   /* osc listener parameters */
   params.parameters->float32_type[PARAM_LISTENER_ATTACK_MS] = attack;
@@ -87,6 +94,10 @@ dsp_destroy_envelope_follower(struct dsp_module *target_module) {
 	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS]);
 	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS]);
 	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE]);
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_INTERNAL_ATTACK_MS]);
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_INTERNAL_DECAY_MS]);
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_INTERNAL_COEFF_ATTACK]);
+	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_INTERNAL_COEFF_DECAY]);
 	free(target_module->dsp_param.parameters->float32_arr_type);	
 	free(target_module->dsp_param.parameters->float32_type);
 	free(target_module->dsp_param.parameters);
@@ -104,15 +115,23 @@ dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplera
   if( envelope_follower->ins->next->summands != NULL ) { /* attack */
     dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS],
 		     envelope_follower->ins->next->summands);
+    envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_ATTACK_MS_CONNECTED] = true;	  
+  } else {
+	  envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_ATTACK_MS_CONNECTED] = false;	  
   }
+  
   if( envelope_follower->ins->next->next->summands != NULL ) { /* decay */
     dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS],
 		     envelope_follower->ins->next->next->summands);
+    envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_DECAY_MS_CONNECTED] = true;    
+  } else {
+	  envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_DECAY_MS_CONNECTED] = false;    
   }
+  
   if( envelope_follower->ins->next->next->next->summands != NULL ) { /* scale */
     dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE],
 		     envelope_follower->ins->next->next->next->summands);
-  }  
+  }
 
   math_modules_envelope_follower(&envelope_follower->module->dsp_param,
 				 jack_samplerate);
