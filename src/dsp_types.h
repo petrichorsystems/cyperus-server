@@ -59,6 +59,8 @@ struct dsp_global_t {
 	struct dsp_garbage_container_operation *garbage_operation_head;
 
 	pthread_mutex_t garbage_cleanup_mutex;
+
+	atomic_flag graph_cleanup_do;
 };
 extern struct dsp_global_t dsp_global;
 
@@ -77,7 +79,8 @@ typedef struct dsp_module_parameters {
 	void *bytes_type;
 	pthread_cond_t *pthread_cond_type;	
 	pthread_mutex_t *pthread_mutex_type;
-	pthread_spinlock_t *pthread_spinlock_type;	
+	pthread_spinlock_t *pthread_spinlock_type;
+	atomic_flag *atomic_flag_type;
 	lo_address *lo_address_type;
 } dsp_module_parameters_t;
 

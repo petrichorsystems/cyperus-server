@@ -61,8 +61,8 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 	params.parameters->int32_type = malloc(sizeof(int) * 2);
 	params.parameters->float32_type = malloc(sizeof(float) * 1);
 
-	params.parameters->pthread_spinlock_type = malloc(sizeof(pthread_spinlock_t) * 1);
-	params.parameters->lo_address_type = malloc(sizeof(lo_address) * 1);
+	params.parameters->lo_address_type = malloc(sizeof(lo_address) * 3);
+	params.parameters->atomic_flag_type = malloc(sizeof(atomic_flag) * 2);
 	
 	/* user-facing parameter allocation */
 	params.parameters->char_type[PARAM_USER_HOSTNAME_IP] = malloc(sizeof(char) * (strlen(hostname_ip) + 1));
@@ -74,8 +74,11 @@ dsp_create_network_oscsend(struct dsp_bus *target_bus,
 	
 	/* internal parameter assignment */
 	params.parameters->int32_type[PARAM_INTERNAL_SAMPLERATE_COUNTER] = 1;  /* samplerate counter */
-	pthread_spin_init(&params.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK], PTHREAD_PROCESS_PRIVATE);
 	params.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND] = _build_new_lo_address(hostname_ip, port);
+	params.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_STAGED] = NULL;
+	params.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_EXPIRED] = NULL;
+	atomic_flag_clear(params.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_STAGED_STATE]);
+	atomic_flag_clear(params.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_GARBAGE_STATE]);	
 	
 	ins = dsp_port_in_init("in");
 	
@@ -103,8 +106,6 @@ dsp_destroy_network_oscsend(struct dsp_module *target_module) {
 	
 	lo_address_free(target_module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND]);	
 	free(target_module->dsp_param.parameters->lo_address_type);
-	
-	pthread_spin_destroy(target_module->dsp_param.parameters->pthread_spinlock_type);	
 
 	free(target_module->dsp_param.parameters);
 	free(target_module->dsp_param.out);
@@ -128,10 +129,17 @@ dsp_edit_network_oscsend(struct dsp_module *network_oscsend,
 	network_oscsend->dsp_param.parameters->int32_type[PARAM_USER_PORT] = port;
 	network_oscsend->dsp_param.parameters->float32_type[PARAM_USER_FREQ_DIV] = freq_div;
 
-	pthread_spin_lock(&network_oscsend->dsp_param.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK]);
-	lo_address_free(network_oscsend->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND]);
-	network_oscsend->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND] = _build_new_lo_address(hostname_ip, port);
-	pthread_spin_unlock(&network_oscsend->dsp_param.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK]);	
+	network_oscsend->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_STAGED] = _build_new_lo_address(hostname_ip, port);
+	atomic_flag_test_and_set(&network_oscsend->dsp_param.parameters->atomic_flag_type[PARAM_INTERNAL_LO_ADDR_SEND_STAGED_STATE]);
+
+	if( atomic_flag_test_and_set(&network_oscsend->dsp_param.parameters->atomic_flag_type[PARAM_INTERNAL_LO_ADDR_SEND_GARBAGE_STATE]) &&
+	    network_oscsend->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_EXPIRED] != NULL) {
+		lo_address_free(network_oscsend->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_EXPIRED]);
+		network_oscsend->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_EXPIRED] = NULL;
+		atomic_flag_clear(&network_oscsend->dsp_param.parameters->atomic_flag_type[PARAM_INTERNAL_LO_ADDR_SEND_GARBAGE_STATE]);
+	} else {
+		atomic_flag_clear(&network_oscsend->dsp_param.parameters->atomic_flag_type[PARAM_INTERNAL_LO_ADDR_SEND_GARBAGE_STATE]);
+	}
 	
 } /* dsp_edit_network_oscsend */
 
@@ -141,6 +149,15 @@ dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) 
 	int sample_count, i;
 	float freq_div;
 
+	if( atomic_flag_test_and_set(&network_oscsend->module->dsp_param.parameters->atomic_flag_type[PARAM_INTERNAL_LO_ADDR_SEND_STAGED_STATE]) ) {
+		network_oscsend->module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_EXPIRED] = network_oscsend->module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND];		
+		network_oscsend->module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND] = network_oscsend->module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND_STAGED];
+		atomic_flag_clear(&network_oscsend->module->dsp_param.parameters->atomic_flag_type[PARAM_INTERNAL_LO_ADDR_SEND_STAGED_STATE]);
+		atomic_flag_test_and_set(&network_oscsend->module->dsp_param.parameters->atomic_flag_type[PARAM_INTERNAL_LO_ADDR_SEND_GARBAGE_STATE]);
+	} else {
+		atomic_flag_clear(&network_oscsend->module->dsp_param.parameters->atomic_flag_type[PARAM_INTERNAL_LO_ADDR_SEND_STAGED_STATE]);
+	}
+	
 	osc_path = network_oscsend->module->dsp_param.parameters->char_type[PARAM_USER_OSC_PATH];	
 	freq_div = network_oscsend->module->dsp_param.parameters->float32_type[PARAM_USER_FREQ_DIV];
 	sample_count = network_oscsend->module->dsp_param.parameters->int32_type[PARAM_INTERNAL_SAMPLERATE_COUNTER];
@@ -152,13 +169,10 @@ dsp_network_oscsend(struct dsp_operation *network_oscsend, int jack_samplerate) 
 	i=0;
 	while(i<dsp_global_period) {		
 		if( ((int)(jack_samplerate / freq_div) < sample_count)) {
-			if( pthread_spin_trylock(&network_oscsend->module->dsp_param.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK]) == 0 ) {
-				lo_send(network_oscsend->module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND],
-					osc_path,
-					"f",
-					network_oscsend->module->dsp_param.in[i]);
-				pthread_spin_unlock(&network_oscsend->module->dsp_param.parameters->pthread_spinlock_type[PARAM_INTERNAL_PTHREAD_SPINLOCK]);		
-			}
+			lo_send(network_oscsend->module->dsp_param.parameters->lo_address_type[PARAM_INTERNAL_LO_ADDR_SEND],
+				osc_path,
+				"f",
+				network_oscsend->module->dsp_param.in[i]);
 		}
 		if((int)(jack_samplerate / freq_div) < sample_count) {
 			sample_count=1;

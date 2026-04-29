@@ -20,7 +20,6 @@ Copyright 2015 murray foster */
 
 bool dsp_global_new_operation_graph = false;
 unsigned short dsp_global_period = 0;
-atomic_flag dsp_global_graph_cleanup_do = ATOMIC_FLAG_INIT;
 
 struct dsp_bus_port*
 dsp_build_bus_ports(struct dsp_bus *parent_bus,
@@ -1399,7 +1398,7 @@ dsp_graph_cleanup_task_thread() {
 	dsp_cleanup_old_optimized_graph();
 	dsp_graph_id_rebuild();	
 	pthread_mutex_unlock(&dsp_global.graph_state_mutex);
-	atomic_flag_clear(&dsp_global_graph_cleanup_do);
+	atomic_flag_clear(&dsp_global.graph_cleanup_do);
 	return NULL;
 } /* dsp_graph_cleanup_task_thread */
 
@@ -1423,12 +1422,12 @@ dsp_graph_cleanup_thread() {
 	ts.tv_nsec = poll_ns;
 	
 	while(true) {
-		if( atomic_flag_test_and_set(&dsp_global_graph_cleanup_do) ) {
+		if( atomic_flag_test_and_set(&dsp_global.graph_cleanup_do) ) {
 			printf("dsp.c::dsp_graph_cleanup_thread(), running task thread\n");
 			dsp_graph_cleanup_task_thread_setup();
-			atomic_flag_clear(&dsp_global_graph_cleanup_do);
+			atomic_flag_clear(&dsp_global.graph_cleanup_do);
 		} else {
-			atomic_flag_clear(&dsp_global_graph_cleanup_do);
+			atomic_flag_clear(&dsp_global.graph_cleanup_do);
 		}
 		nanosleep(&ts, NULL);
 	}
@@ -1500,6 +1499,8 @@ void dsp_setup(unsigned short period, unsigned short channels_in, unsigned short
 	dsp_global.garbage_main_outs = NULL;
 	dsp_global.garbage_operation_head = NULL;
 
+	atomic_flag_clear(&dsp_global.graph_cleanup_do);
+	
 	pthread_mutex_init(&dsp_global.garbage_cleanup_mutex, NULL);
 	
 	dsp_global_period = period;
