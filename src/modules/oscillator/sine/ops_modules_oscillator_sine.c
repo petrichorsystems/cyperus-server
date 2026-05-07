@@ -32,39 +32,11 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
   dsp_parameter params;
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
-  int p;
   
-  params.name = "oscillator_sine";  
-
-  /* signal output */
-  params.out = malloc(sizeof(float) * dsp_global_period);
-  
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));
-  
-  params.parameters->float32_arr_type = malloc(sizeof(float*) * 3);
-  params.parameters->float32_type = malloc(sizeof(float) * 7);
-  params.parameters->int32_type = malloc(sizeof(int) * 2);
-
-  /* user-facing parameter allocation */
-  params.parameters->float32_arr_type[PARAM_USER_FREQUENCY] = calloc(dsp_global_period, sizeof(float)); /* frequency */
-  params.parameters->float32_arr_type[PARAM_USER_AMPLITUDE] = calloc(dsp_global_period, sizeof(float)); /* amplitude */
-  params.parameters->float32_arr_type[PARAM_USER_PHASE] = calloc(dsp_global_period, sizeof(float)); /* phase */
-
-  for(p=0; p<dsp_global_period; p++) {
-    /* user-facing parameter assignment */    
-    params.parameters->float32_arr_type[PARAM_USER_FREQUENCY][p] = frequency;
-    params.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][p] = amplitude;
-    params.parameters->float32_arr_type[PARAM_USER_PHASE][p] = phase;
-
-    /* internal parameter assignment */
-    params.parameters->float32_type[PARAM_INTERNAL_PHASE_DELTA] = 0.0f; /* phase_delta */ 
-  }
-
-  /* osc listener param state parameters */
-  params.parameters->float32_type[PARAM_LISTENER_FREQUENCY] = frequency;
-  params.parameters->float32_type[PARAM_LISTENER_AMPLITUDE] = amplitude;
-  params.parameters->float32_type[PARAM_LISTENER_PHASE] = phase;
-  
+  params_modules_oscillator_sine_init(&params,
+				      frequency,
+				      amplitude,
+				      phase);
   
   ins = dsp_port_in_init("param_frequency");
   ins->next = dsp_port_in_init("param_amplitude");
@@ -85,40 +57,32 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
 
 int
 dsp_destroy_oscillator_sine(struct dsp_module *target_module) {
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_PHASE]);
-	free(target_module->dsp_param.parameters->float32_arr_type);
-	free(target_module->dsp_param.parameters->float32_type);
-	free(target_module->dsp_param.parameters->int32_type);
-	free(target_module->dsp_param.parameters);
-	free(target_module->dsp_param.out);
+	params_modules_oscillator_sine_free(&target_module->dsp_param);
   return 0;
 } /* dsp_destroy_oscillator_sine */
 
-
 void
 dsp_oscillator_sine(struct dsp_operation *oscillator_sine, int jack_samplerate) {
-  
-  /* handle params with connected inputs */
-  if( oscillator_sine->ins->summands != NULL ) /* frequency */
-    dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY],
-		     oscillator_sine->ins->summands);
-  if( oscillator_sine->ins->next->summands != NULL ) /* amplitude */
-    dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE],
-		     oscillator_sine->ins->next->summands);
-  if( oscillator_sine->ins->next->next->summands != NULL ) /* phase */
-    dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[PARAM_USER_PHASE],
-		     oscillator_sine->ins->next->next->summands);
+	params_modules_oscillator_sine_edit_apply(&oscillator_sine->module->dsp_param);
+	
+	/* handle params with connected inputs */
+	if( oscillator_sine->ins->summands != NULL )
+		dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY],
+				 oscillator_sine->ins->summands);
+	if( oscillator_sine->ins->next->summands != NULL )
+		dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE],
+				 oscillator_sine->ins->next->summands);
+	if( oscillator_sine->ins->next->next->summands != NULL )
+		dsp_sum_summands(oscillator_sine->module->dsp_param.parameters->float32_arr_type[PARAM_USER_PHASE],
+				 oscillator_sine->ins->next->next->summands);
 
-  math_modules_oscillator_sine(&oscillator_sine->module->dsp_param,
-			       jack_samplerate);
+	math_modules_oscillator_sine(&oscillator_sine->module->dsp_param,
+				     jack_samplerate);
   
-  /* drive audio outputs */
-  memcpy(oscillator_sine->outs->sample->value,
-         oscillator_sine->module->dsp_param.out,
-         sizeof(float) * dsp_global_period);
-
+	/* drive audio outputs */
+	memcpy(oscillator_sine->outs->sample->value,
+	       oscillator_sine->module->dsp_param.out,
+	       sizeof(float) * dsp_global_period);
 } /* dsp_oscillator_sine */
 
 
@@ -126,11 +90,17 @@ void dsp_edit_oscillator_sine(struct dsp_module *oscillator_sine,
                                float frequency,
                                float amplitude,
                                float phase) {
-  for(int p=0; p<dsp_global_period; p++) {
-    oscillator_sine->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY][p] = frequency;
-    oscillator_sine->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][p] = amplitude;
-    oscillator_sine->dsp_param.parameters->float32_arr_type[PARAM_USER_PHASE][p] = phase;    
-  }
+
+	pthread_spin_lock(&dsp_global.optimization_spinlock);
+	pthread_mutex_lock(&dsp_global.graph_state_mutex);
+
+	params_modules_oscillator_sine_edit_pending(&oscillator_sine->dsp_param,
+						    frequency,
+						    amplitude,
+						    phase);
+	
+	pthread_spin_unlock(&dsp_global.optimization_spinlock);
+	pthread_mutex_unlock(&dsp_global.graph_state_mutex);	
 } /* dsp_edit_oscillator_sine */
 
 

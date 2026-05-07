@@ -87,11 +87,11 @@ typedef struct dsp_module_parameters {
 typedef struct dsp_module_parameter {
 	float *in;
 	float *out;
-	
 	int pos;
-	
 	char *name;
 	dsp_module_parameters_t *parameters;
+	dsp_module_parameters_t *parameters_pending;
+	atomic_flag state_pending;
 }dsp_parameter;
 
 struct dsp_port_in {
