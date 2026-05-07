@@ -32,43 +32,10 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
 
-  params.name = "envelope_follower";  
-
-  /* signal input/output */
-  params.in = malloc(sizeof(float) * dsp_global_period);
-  params.out = malloc(sizeof(float) * dsp_global_period);
-  
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));
-
-  params.parameters->float32_type = malloc(sizeof(float) * 4);
-  params.parameters->float32_arr_type = malloc(sizeof(float *) * 7);  
-  params.parameters->bool_type = malloc(sizeof(bool) * 2);
-  
-  /* user-facing parameter allocation */
-  params.parameters->float32_arr_type[PARAM_USER_ATTACK_MS] = calloc(dsp_global_period, sizeof(float)); /* attack_ms */
-  params.parameters->float32_arr_type[PARAM_USER_DECAY_MS] = calloc(dsp_global_period, sizeof(float)); /* decay_ms */
-  params.parameters->float32_arr_type[PARAM_USER_SCALE] = calloc(dsp_global_period, sizeof(float)); /* scale */
-
-  for(int p=0; p<dsp_global_period; p++) {
-    /* user-facing parameter assignment */
-    params.parameters->float32_arr_type[PARAM_USER_ATTACK_MS][p] = attack; 
-    params.parameters->float32_arr_type[PARAM_USER_DECAY_MS][p] = decay;
-    params.parameters->float32_arr_type[PARAM_USER_SCALE][p] = scale;
-  }
-  
-  /* internal parameter assignment */
-  params.parameters->float32_type[PARAM_INTERNAL_LAST_OUTPUT] = 0.0f; /* last output sample */
-  params.parameters->float32_arr_type[PARAM_INTERNAL_ATTACK_MS] = calloc(dsp_global_period, sizeof(float));
-  params.parameters->float32_arr_type[PARAM_INTERNAL_DECAY_MS] = calloc(dsp_global_period, sizeof(float));
-  params.parameters->float32_arr_type[PARAM_INTERNAL_COEFF_ATTACK] = calloc(dsp_global_period, sizeof(float));
-  params.parameters->float32_arr_type[PARAM_INTERNAL_COEFF_DECAY] = calloc(dsp_global_period, sizeof(float));
-  params.parameters->bool_type[PARAM_INTERNAL_ATTACK_MS_CONNECTED] = false;
-  params.parameters->bool_type[PARAM_INTERNAL_DECAY_MS_CONNECTED] = false;	  
-
-  /* osc listener parameters */
-  params.parameters->float32_type[PARAM_LISTENER_ATTACK_MS] = attack;
-  params.parameters->float32_type[PARAM_LISTENER_DECAY_MS] = decay;
-  params.parameters->float32_type[PARAM_LISTENER_SCALE] = scale;
+  params_modules_envelope_follower_init(&params,
+					attack,
+					decay,
+					scale);
   
   ins = dsp_port_in_init("in");
   ins->next = dsp_port_in_init("param_attack");
@@ -91,54 +58,44 @@ dsp_create_envelope_follower(struct dsp_bus *target_bus,
 
 int
 dsp_destroy_envelope_follower(struct dsp_module *target_module) {
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_INTERNAL_ATTACK_MS]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_INTERNAL_DECAY_MS]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_INTERNAL_COEFF_ATTACK]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_INTERNAL_COEFF_DECAY]);
-	free(target_module->dsp_param.parameters->float32_arr_type);	
-	free(target_module->dsp_param.parameters->float32_type);
-	free(target_module->dsp_param.parameters);
-	free(target_module->dsp_param.out);
-	free(target_module->dsp_param.in);
+	params_modules_envelope_follower_free(&target_module->dsp_param);
 	return 0;
 } /* dsp_destroy_envelope_follower */
 
 void
 dsp_envelope_follower(struct dsp_operation *envelope_follower, int jack_samplerate) {
+	params_modules_envelope_follower_edit_apply(&envelope_follower->module->dsp_param);
+	
+	dsp_sum_summands(envelope_follower->module->dsp_param.in, envelope_follower->ins->summands);
 
-  dsp_sum_summands(envelope_follower->module->dsp_param.in, envelope_follower->ins->summands);
-
-  /* handle params with connected inputs */
-  if( envelope_follower->ins->next->summands != NULL ) { /* attack */
-    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS],
-		     envelope_follower->ins->next->summands);
-    envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_ATTACK_MS_CONNECTED] = true;	  
-  } else {
-	  envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_ATTACK_MS_CONNECTED] = false;	  
-  }
+	/* handle params with connected inputs */
+	if( envelope_follower->ins->next->summands != NULL ) { /* attack */
+		dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS],
+				 envelope_follower->ins->next->summands);
+		envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_ATTACK_MS_CONNECTED] = true;	  
+	} else {
+		envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_ATTACK_MS_CONNECTED] = false;	  
+	}
   
-  if( envelope_follower->ins->next->next->summands != NULL ) { /* decay */
-    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS],
-		     envelope_follower->ins->next->next->summands);
-    envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_DECAY_MS_CONNECTED] = true;    
-  } else {
-	  envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_DECAY_MS_CONNECTED] = false;    
-  }
+	if( envelope_follower->ins->next->next->summands != NULL ) { /* decay */
+		dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS],
+				 envelope_follower->ins->next->next->summands);
+		envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_DECAY_MS_CONNECTED] = true;    
+	} else {
+		envelope_follower->module->dsp_param.parameters->bool_type[PARAM_INTERNAL_DECAY_MS_CONNECTED] = false;    
+	}
   
-  if( envelope_follower->ins->next->next->next->summands != NULL ) { /* scale */
-    dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE],
-		     envelope_follower->ins->next->next->next->summands);
-  }
+	if( envelope_follower->ins->next->next->next->summands != NULL ) { /* scale */
+		dsp_sum_summands(envelope_follower->module->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE],
+				 envelope_follower->ins->next->next->next->summands);
+	}
+	
+	math_modules_envelope_follower(&envelope_follower->module->dsp_param,
+				       jack_samplerate);
 
-  math_modules_envelope_follower(&envelope_follower->module->dsp_param,
-				 jack_samplerate);
-
-  memcpy(envelope_follower->outs->sample->value,
-         envelope_follower->module->dsp_param.out,
-         sizeof(float) * dsp_global_period);
+	memcpy(envelope_follower->outs->sample->value,
+	       envelope_follower->module->dsp_param.out,
+	       sizeof(float) * dsp_global_period);
   
 } /* dsp_envelope_follower */
 
@@ -148,11 +105,16 @@ dsp_edit_envelope_follower(struct dsp_module *envelope_follower,
                            float attack,
                            float decay,
                            float scale) {
-  for(int p=0; p<dsp_global_period; p++) {
-    envelope_follower->dsp_param.parameters->float32_arr_type[PARAM_USER_ATTACK_MS][p] = attack;  
-    envelope_follower->dsp_param.parameters->float32_arr_type[PARAM_USER_DECAY_MS][p] = decay; 
-    envelope_follower->dsp_param.parameters->float32_arr_type[PARAM_USER_SCALE][p] = scale;
-  }
+	pthread_spin_lock(&dsp_global.optimization_spinlock);
+	pthread_mutex_lock(&dsp_global.graph_state_mutex);
+
+	params_modules_envelope_follower_edit_pending(&envelope_follower->dsp_param,
+						      attack,
+						      decay,
+						      scale);
+	
+	pthread_spin_unlock(&dsp_global.optimization_spinlock);
+	pthread_mutex_unlock(&dsp_global.graph_state_mutex);	
 } /* dsp_edit_envelope_follower */
 
 void

@@ -1,6 +1,8 @@
 #ifndef PARAMS_MODULES_ENVELOPE_FOLLOWER_H
 #define PARAMS_MODULES_ENVELOPE_FOLLOWER_H
 
+#include "../../../dsp_types.h"
+
 /* user-exposed parameters */
 #define PARAM_USER_ATTACK_MS 0
 #define PARAM_USER_DECAY_MS 1
@@ -19,5 +21,19 @@
 #define PARAM_LISTENER_ATTACK_MS 1
 #define PARAM_LISTENER_DECAY_MS 2
 #define PARAM_LISTENER_SCALE 3
+
+extern void params_modules_envelope_follower_init(dsp_parameter *params,
+						  float attack,
+						  float decay,
+						  float scale);
+
+extern void params_modules_envelope_follower_edit_pending(dsp_parameter *follower,
+							  float attack_ms,
+							  float decay_ms,
+							  float scale);
+
+extern void params_modules_envelope_follower_edit_apply(dsp_parameter *follower);
+
+extern void params_modules_envelope_follower_free(dsp_parameter *follower);
 
 #endif

@@ -90,7 +90,6 @@ void dsp_edit_oscillator_sine(struct dsp_module *oscillator_sine,
                                float frequency,
                                float amplitude,
                                float phase) {
-
 	pthread_spin_lock(&dsp_global.optimization_spinlock);
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
 

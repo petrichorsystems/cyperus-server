@@ -98,5 +98,10 @@ extern void params_modules_oscillator_sine_free(dsp_parameter *sine) {
 	free(sine->parameters->float32_type);
 	free(sine->parameters->int32_type);
 	free(sine->parameters);
+	free(sine->parameters_pending->float32_arr_type[PARAM_USER_FREQUENCY]);
+	free(sine->parameters_pending->float32_arr_type[PARAM_USER_AMPLITUDE]);
+	free(sine->parameters_pending->float32_arr_type[PARAM_USER_PHASE]);
+	free(sine->parameters_pending->float32_arr_type);
+	free(sine->parameters_pending);	
 	free(sine->out);
 } /* params_modules_oscillator_sine_free */
