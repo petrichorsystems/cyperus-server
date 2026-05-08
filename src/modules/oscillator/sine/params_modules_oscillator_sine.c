@@ -104,4 +104,5 @@ extern void params_modules_oscillator_sine_free(dsp_parameter *sine) {
 	free(sine->parameters_pending->float32_arr_type);
 	free(sine->parameters_pending);	
 	free(sine->out);
+	free(sine);
 } /* params_modules_oscillator_sine_free */

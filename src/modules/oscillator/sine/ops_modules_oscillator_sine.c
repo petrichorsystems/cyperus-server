@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#include "../../common.h"
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
@@ -90,16 +91,12 @@ void dsp_edit_oscillator_sine(struct dsp_module *oscillator_sine,
                                float frequency,
                                float amplitude,
                                float phase) {
-	pthread_spin_lock(&dsp_global.optimization_spinlock);
-	pthread_mutex_lock(&dsp_global.graph_state_mutex);
-
+	modules_common_dsp_graph_lock();
 	params_modules_oscillator_sine_edit_pending(&oscillator_sine->dsp_param,
 						    frequency,
 						    amplitude,
 						    phase);
-	
-	pthread_spin_unlock(&dsp_global.optimization_spinlock);
-	pthread_mutex_unlock(&dsp_global.graph_state_mutex);	
+	modules_common_dsp_graph_unlock();	
 } /* dsp_edit_oscillator_sine */
 
 

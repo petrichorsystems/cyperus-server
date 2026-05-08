@@ -115,4 +115,5 @@ extern void params_modules_envelope_follower_free(dsp_parameter *follower) {
 	free(follower->parameters);
 	free(follower->out);
 	free(follower->in);
+	free(follower);
 } /* params_modules_envelope_follower_free */

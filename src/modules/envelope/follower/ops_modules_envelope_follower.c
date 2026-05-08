@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2021 murray foster */
 
+#include "../../common.h"
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
@@ -105,16 +106,12 @@ dsp_edit_envelope_follower(struct dsp_module *envelope_follower,
                            float attack,
                            float decay,
                            float scale) {
-	pthread_spin_lock(&dsp_global.optimization_spinlock);
-	pthread_mutex_lock(&dsp_global.graph_state_mutex);
-
+	modules_common_dsp_graph_lock();
 	params_modules_envelope_follower_edit_pending(&envelope_follower->dsp_param,
 						      attack,
 						      decay,
 						      scale);
-	
-	pthread_spin_unlock(&dsp_global.optimization_spinlock);
-	pthread_mutex_unlock(&dsp_global.graph_state_mutex);	
+	modules_common_dsp_graph_unlock();		
 } /* dsp_edit_envelope_follower */
 
 void

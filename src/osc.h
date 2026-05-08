@@ -75,7 +75,7 @@ int osc_callback_timer_setup();
 
 int osc_setup(char *osc_port_in, char *osc_port_out);
 
-/* #include "modules/delay/simple/osc_modules_delay_simple.h" */
+#include "modules/delay/simple/osc_modules_delay_simple.h"
 #include "modules/oscillator/sine/osc_modules_oscillator_sine.h"
 #include "modules/envelope/follower/osc_modules_envelope_follower.h"
 /* #include "modules/filter/bandpass/osc_modules_filter_bandpass.h" */
