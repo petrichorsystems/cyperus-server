@@ -1326,10 +1326,10 @@ int cyperus_osc_handler(const char *path, const char *types, lo_arg ** argv,
 	/* else if (strcmp(path, "/cyperus/edit/module/oscillator/clock") == 0) */
 	/* 	handler_ptr = osc_edit_modules_oscillator_clock_handler; */
 	
-	/* else if (strcmp(path, "/cyperus/add/module/utils/float") == 0) */
-	/* 	handler_ptr = osc_add_modules_utils_float_handler; */
-	/* else if (strcmp(path, "/cyperus/edit/module/utils/float") == 0) */
-	/* 	handler_ptr = osc_edit_modules_utils_float_handler; */
+	else if (strcmp(path, "/cyperus/add/module/utils/float") == 0)
+		handler_ptr = osc_add_modules_utils_float_handler;
+	else if (strcmp(path, "/cyperus/edit/module/utils/float") == 0)
+		handler_ptr = osc_edit_modules_utils_float_handler;
 	
 	/* else if (strcmp(path, "/cyperus/add/module/utils/counter") == 0) */
 	/* 	handler_ptr = osc_add_modules_utils_counter_handler; */

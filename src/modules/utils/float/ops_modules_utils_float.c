@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#include "../../common.h"
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
@@ -29,24 +30,8 @@ dsp_create_utils_float(struct dsp_bus *target_bus,
   struct dsp_port_in *ins;
   struct dsp_port_out *outs;
 
-  params.name = "utils_float";
-  params.pos = 0;
-
-  /* audio input/output */
-  params.in = malloc(sizeof(float) * dsp_global_period);
-  params.out = malloc(sizeof(float) * dsp_global_period);  
-
-  params.parameters = malloc(sizeof(dsp_module_parameters_t));
-  
-  params.parameters->float32_type = malloc(sizeof(float));
-
-  for(int p=0; p<dsp_global_period; p++) {
-    /* user-facing parameter assignment */
-    params.in[p] = value;
-  }
-  
-  /* osc listener parameters */
-  params.parameters->float32_type[PARAM_LISTENER_FLOAT_VAL] = value;
+  params_modules_utils_float_init(&params,
+				  value);
 
   ins = dsp_port_in_init("value");
   outs = dsp_port_out_init("out");
@@ -65,35 +50,34 @@ dsp_create_utils_float(struct dsp_bus *target_bus,
 
 int
 dsp_destroy_utils_float(struct dsp_module *target_module) {
-	free(target_module->dsp_param.parameters->float32_type);	
-	free(target_module->dsp_param.parameters);
-	free(target_module->dsp_param.out);
-	free(target_module->dsp_param.in);
+	params_modules_utils_float_free(&target_module->dsp_param);
 	return 0;
 } /* dsp_destroy_utils_float */
 
 void
 dsp_utils_float(struct dsp_operation *utils_float,
                 int jack_samplerate) {
-  
-  /* handle params with connected inputs */
-  if( utils_float->ins->summands != NULL ) {  
-    dsp_sum_summands(utils_float->module->dsp_param.in, utils_float->ins->summands);
-  }
 
-  /* drive outputs */
-  memcpy(utils_float->outs->sample->value,
-         utils_float->module->dsp_param.in,
-         sizeof(float) * dsp_global_period);
+	params_modules_utils_float_edit_apply(&utils_float->module->dsp_param);
+	
+	/* handle params with connected inputs */
+	if( utils_float->ins->summands != NULL ) {  
+		dsp_sum_summands(utils_float->module->dsp_param.in, utils_float->ins->summands);
+	}
 
+	/* drive outputs */
+	memcpy(utils_float->outs->sample->value,
+	       utils_float->module->dsp_param.in,
+	       sizeof(float) * dsp_global_period);
 } /* dsp_utils_float */
 
 
 void dsp_edit_utils_float(struct dsp_module *utils_float,
 				      float value) {
-  for(int p=0; p<dsp_global_period; p++)
-    utils_float->dsp_param.in[p] = value;
-  
+	modules_common_dsp_graph_lock();
+	params_modules_utils_float_edit_pending(&utils_float->dsp_param,
+						value);
+	modules_common_dsp_graph_unlock();
 } /* dsp_edit_utils_float */
 
 void
