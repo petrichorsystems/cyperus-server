@@ -2,9 +2,9 @@
 #include "../../../dsp.h"
 
 extern void params_modules_envelope_follower_init(dsp_parameter *params,
-						float attack,
-						float decay,
-						float scale) {
+						  float attack,
+						  float decay,
+						  float scale) {
 	params->name = "envelope_follower";  
 
 	/* signal input/output */
@@ -58,9 +58,9 @@ extern void params_modules_envelope_follower_init(dsp_parameter *params,
 } /* params_modules_envelope_follower_init */
 
 extern void params_modules_envelope_follower_edit_pending(dsp_parameter *follower,
-							float attack_ms,
-							float decay_ms,
-							float scale) {
+							  float attack_ms,
+							  float decay_ms,
+							  float scale) {
 	int p = 0;
 	bool found_param_changes = false;
 

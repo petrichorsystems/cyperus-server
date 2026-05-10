@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2023 murray foster */
 
+#include "../../common.h"
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
@@ -36,49 +37,15 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
 	struct dsp_port_in *ins;
 	struct dsp_port_out *outs;
 
-	params.name = "utils_counter";
-
-	/* audio input+output */
-	params.in = malloc(sizeof(float) * dsp_global_period);
-	params.out = malloc(sizeof(float) * dsp_global_period);	
+	params_modules_utils_counter_init(&params,
+					  reset,
+					  start,
+					  step_size,
+					  min,
+					  max,
+					  direction,
+					  auto_reset);
 	
-	params.parameters = malloc(sizeof(dsp_module_parameters_t));  
-
-	params.parameters->float32_arr_type = malloc(sizeof(float *) * 7);
-	params.parameters->float32_type = malloc(sizeof(float) * 8);
-
-	/* user-facing parameter allocation */
-	params.parameters->float32_arr_type[PARAM_USER_RESET] = calloc(dsp_global_period, sizeof(float));
-	params.parameters->float32_arr_type[PARAM_USER_START] = calloc(dsp_global_period, sizeof(float));
-	params.parameters->float32_arr_type[PARAM_USER_STEP_SIZE] = calloc(dsp_global_period, sizeof(float));
-	params.parameters->float32_arr_type[PARAM_USER_MIN] = calloc(dsp_global_period, sizeof(float));
-	params.parameters->float32_arr_type[PARAM_USER_MAX] = calloc(dsp_global_period, sizeof(float));
-	params.parameters->float32_arr_type[PARAM_USER_DIRECTION] = calloc(dsp_global_period, sizeof(float));
-	params.parameters->float32_arr_type[PARAM_USER_AUTO_RESET] = calloc(dsp_global_period, sizeof(float));
-
-	/* parameter assignment */
-	for (int p=0; p<dsp_global_period; p++) {
-		params.parameters->float32_arr_type[PARAM_USER_RESET][p] = reset;  
-		params.parameters->float32_arr_type[PARAM_USER_START][p] = start;
-		params.parameters->float32_arr_type[PARAM_USER_STEP_SIZE][p] = step_size;
-		params.parameters->float32_arr_type[PARAM_USER_MIN][p] = min;
-		params.parameters->float32_arr_type[PARAM_USER_MAX][p] = max;
-		params.parameters->float32_arr_type[PARAM_USER_DIRECTION][p] = direction;
-		params.parameters->float32_arr_type[PARAM_USER_AUTO_RESET][p] = auto_reset;
-	}
-
-	/* internal parameters */
-	params.parameters->float32_type[PARAM_INTERNAL_START] = start; /* current_value */
-                                            
-	/* osc listener param state parameters */
-	params.parameters->float32_type[PARAM_LISTENER_RESET] = reset; /* old reset */
-	params.parameters->float32_type[PARAM_LISTENER_START] = start;       /* old start */
-	params.parameters->float32_type[PARAM_LISTENER_STEP_SIZE] = step_size;   /* old step_size */
-	params.parameters->float32_type[PARAM_LISTENER_MIN] = min;         /* old min */
-	params.parameters->float32_type[PARAM_LISTENER_MAX] = max;        /* old max */
-	params.parameters->float32_type[PARAM_LISTENER_DIRECTION] = direction;  /* old direction */
-	params.parameters->float32_type[PARAM_LISTENER_AUTO_RESET] = auto_reset; /* old auto_reset */
-  
 	ins = dsp_port_in_init("trigger");
 	ins->next = dsp_port_in_init("param_reset");
 	ins->next->next = dsp_port_in_init("param_start");
@@ -104,23 +71,14 @@ dsp_create_utils_counter(struct dsp_bus *target_bus,
 
 int
 dsp_destroy_utils_counter(struct dsp_module *target_module) {
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_RESET]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_START]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_STEP_SIZE]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_MIN]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_MAX]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_DIRECTION]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_AUTO_RESET]);	     
-	free(target_module->dsp_param.parameters->float32_arr_type);
-	free(target_module->dsp_param.parameters->float32_type);
-	free(target_module->dsp_param.parameters);
-	free(target_module->dsp_param.out);
-	free(target_module->dsp_param.in);	
+	params_modules_utils_counter_free(&target_module->dsp_param);
   return 0;
 } /* dsp_destroy_utils_counter */
 
 void
-dsp_utils_counter(struct dsp_operation *utils_counter, int jack_samplerate) {  
+dsp_utils_counter(struct dsp_operation *utils_counter, int jack_samplerate) {
+	params_modules_utils_counter_edit_apply(&utils_counter->module->dsp_param);
+	
 	/* input trigger */
 	dsp_sum_summands(utils_counter->module->dsp_param.in, utils_counter->ins->summands);
   
@@ -177,15 +135,16 @@ void dsp_edit_utils_counter(struct dsp_module *utils_counter,
                             float max,
                             float direction,
                             float auto_reset) {
-	for (int p=0; p<dsp_global_period; p++) {
-		utils_counter->dsp_param.parameters->float32_arr_type[PARAM_USER_RESET][p] = reset;
-		utils_counter->dsp_param.parameters->float32_arr_type[PARAM_USER_START][p] = start;
-		utils_counter->dsp_param.parameters->float32_arr_type[PARAM_USER_STEP_SIZE][p] = step_size;
-		utils_counter->dsp_param.parameters->float32_arr_type[PARAM_USER_MIN][p] = min;
-		utils_counter->dsp_param.parameters->float32_arr_type[PARAM_USER_MAX][p] = max;
-		utils_counter->dsp_param.parameters->float32_arr_type[PARAM_USER_DIRECTION][p] = direction;
-		utils_counter->dsp_param.parameters->float32_arr_type[PARAM_USER_AUTO_RESET][p] = auto_reset;
-	}
+	modules_common_dsp_graph_lock();
+	params_modules_utils_counter_edit_pending(&utils_counter->dsp_param,
+						  reset,
+						  start,
+						  step_size,
+						  min,
+						  max,
+						  direction,
+						  auto_reset);
+	modules_common_dsp_graph_unlock();	
 } /* dsp_edit_utils_counter */
 
 void
