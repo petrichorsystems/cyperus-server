@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#include "../../common.h"
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
@@ -26,29 +27,14 @@ Copyright 2018 murray foster */
 int
 dsp_create_utils_equals(struct dsp_bus *target_bus,
                         float x,
-                        float y)
-{
+                        float y) {
 	dsp_parameter params;
 	struct dsp_port_in *ins;
 	struct dsp_port_out *outs;
 
-	params.name = "utils_equals";  
-	params.parameters = malloc(sizeof(dsp_module_parameters_t));
-
-	/* output */
-	params.out = malloc(sizeof(float) * dsp_global_period);	
-	
-	params.parameters->float32_arr_type = malloc(sizeof(float *) * 2);
-
-	/* user-facing parameter allocation */
-	params.parameters->float32_arr_type[PARAM_USER_X] = calloc(dsp_global_period, sizeof(float)); /* current x */
-	params.parameters->float32_arr_type[PARAM_USER_Y] = calloc(dsp_global_period, sizeof(float)); /* current y */  
-	
-	/* parameter assignment */
-	for (int p=0; p<dsp_global_period; p++) {
-		params.parameters->float32_arr_type[PARAM_USER_X][p] = x;
-		params.parameters->float32_arr_type[PARAM_USER_Y][p] = y;
-	}
+	params_modules_utils_equals_init(&params,
+					 x,
+					 y);
 
 	ins = dsp_port_in_init("x");
 	ins->next = dsp_port_in_init("y");
@@ -69,18 +55,15 @@ dsp_create_utils_equals(struct dsp_bus *target_bus,
 
 int
 dsp_destroy_utils_equals(struct dsp_module *target_module) {
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_X]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_Y]);	     	
-	free(target_module->dsp_param.parameters->float32_arr_type);
-	free(target_module->dsp_param.parameters);
-	free(target_module->dsp_param.out);
+	params_modules_utils_equals_free(&target_module->dsp_param);
   return 0;
 } /* dsp_destroy_utils_equals */
 
 void
 dsp_utils_equals(struct dsp_operation *utils_equals,
-		 int jack_samplerate)
-{	
+		 int jack_samplerate) {
+	params_modules_utils_equals_edit_apply(&utils_equals->module->dsp_param);
+
 	/* x input */
 	if( utils_equals->ins->summands != NULL )
 		dsp_sum_summands(utils_equals->module->dsp_param.parameters->float32_arr_type[PARAM_USER_X], utils_equals->ins->summands);
@@ -108,12 +91,12 @@ dsp_utils_equals(struct dsp_operation *utils_equals,
 
 void dsp_edit_utils_equals(struct dsp_module *utils_equals,
                            float x,
-                           float y)
-{
-	for(int p=0; p<dsp_global_period; p++) {
-		utils_equals->dsp_param.parameters->float32_arr_type[PARAM_USER_X][p] = x;
-		utils_equals->dsp_param.parameters->float32_arr_type[PARAM_USER_Y][p] = y;
-	}
+                           float y) {
+	modules_common_dsp_graph_lock();
+	params_modules_utils_equals_edit_pending(&utils_equals->dsp_param,
+						 x,
+						 y);
+	modules_common_dsp_graph_unlock();	
 } /* dsp_edit_utils_equals */
 
 void
