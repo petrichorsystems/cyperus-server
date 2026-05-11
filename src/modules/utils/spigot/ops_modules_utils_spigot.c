@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#include "../../common.h"
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
@@ -31,23 +32,9 @@ dsp_create_utils_spigot(struct dsp_bus *target_bus,
 	struct dsp_port_in *ins;
 	struct dsp_port_out *outs;
 	
-	params.name = "utils_spigot";
-
-	/* input+output */
-	params.in = malloc(sizeof(float) * dsp_global_period);
-	params.out = malloc(sizeof(float) * dsp_global_period);	
+	params_modules_utils_spigot_init(&params,
+					 open);
 	
-	params.parameters = malloc(sizeof(dsp_module_parameters_t));
-
-	params.parameters->float32_arr_type = malloc(sizeof(float*));
-
-	/* user-facing parameter allocation */
-	params.parameters->float32_arr_type[PARAM_USER_OPEN] = calloc(dsp_global_period, sizeof(float)); /* current open state */
-
-	/* parameter assignment */
-	for (int p=0; p<dsp_global_period; p++)
-		params.parameters->float32_arr_type[0][p] = open;
-  
 	ins = dsp_port_in_init("in");
 	ins->next = dsp_port_in_init("open");
 
@@ -67,17 +54,14 @@ dsp_create_utils_spigot(struct dsp_bus *target_bus,
 
 int
 dsp_destroy_utils_spigot(struct dsp_module *target_module) {
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_OPEN]);	     
-	free(target_module->dsp_param.parameters->float32_arr_type);
-	free(target_module->dsp_param.parameters);
-	free(target_module->dsp_param.out);
-	free(target_module->dsp_param.in);	
+	params_modules_utils_spigot_free(&target_module->dsp_param);
   return 0;
 } /* dsp_destroy_utils_spigot */
 
 void
 dsp_utils_spigot(struct dsp_operation *utils_spigot,
 		 int jack_samplerate) {
+	params_modules_utils_spigot_edit_apply(&utils_spigot->module->dsp_param);
 
 	dsp_sum_summands(utils_spigot->module->dsp_param.in, utils_spigot->ins->summands);
   
@@ -102,8 +86,10 @@ dsp_utils_spigot(struct dsp_operation *utils_spigot,
 
 void dsp_edit_utils_spigot(struct dsp_module *utils_spigot,
                            float open) {
-	for (int p=0; p<dsp_global_period; p++)
-		utils_spigot->dsp_param.parameters->float32_arr_type[PARAM_USER_OPEN][p] = open;
+	modules_common_dsp_graph_lock();
+	params_modules_utils_spigot_edit_pending(&utils_spigot->dsp_param,
+						 open);
+	modules_common_dsp_graph_unlock();	
 } /* dsp_edit_utils_spigot */
 
 void
