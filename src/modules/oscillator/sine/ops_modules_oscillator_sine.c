@@ -59,7 +59,7 @@ dsp_create_oscillator_sine(struct dsp_bus *target_bus,
 int
 dsp_destroy_oscillator_sine(struct dsp_module *target_module) {
 	params_modules_oscillator_sine_free(&target_module->dsp_param);
-  return 0;
+	return 0;
 } /* dsp_destroy_oscillator_sine */
 
 void
