@@ -23,14 +23,14 @@
 #define PARAM_LISTENER_AMOUNT 2
 
 extern void params_modules_filter_bandpass_init(dsp_parameter *params,
-					     float amount,
-					     float time,
-					     float feedback);
+						float frequency,
+						float q,
+						float amount);
 
 extern void params_modules_filter_bandpass_edit_pending(dsp_parameter *filter_bandpass,
-						     float amount,
-						     float time,
-						     float feedback);
+							float frequency,
+							float q,
+							float amount);
 
 extern void params_modules_filter_bandpass_edit_apply(dsp_parameter *filter_bandpass);
 
