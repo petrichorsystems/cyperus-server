@@ -1249,11 +1249,11 @@ dsp_cleanup_old_optimized_graph() {
 
 
 void *
-dsp_graph_optimization_task_thread() {
+dsp_graph_optimization_task_thread(void *arg) {
 	pthread_spin_lock(&dsp_global.optimization_spinlock);
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	
-	dsp_build_optimized_graph(NULL);
+	dsp_build_optimized_graph();
 	dsp_global.build_new_optimized_graph = false;
 	
 	/* graph changed, generate new graph id */
@@ -1273,7 +1273,7 @@ dsp_graph_optimization_task_thread_setup() {
 } /* dsp_graph_optimization_task_thread_setup */
 
 void *
-dsp_graph_optimization_thread() {
+dsp_graph_optimization_thread(void *arg) {
 	while(true) {
 		pthread_cond_wait(&dsp_global.optimization_condition_cond, &dsp_global.optimization_condition_mutex);
 		
@@ -1392,7 +1392,7 @@ dsp_cleanup_graph(struct dsp_bus *head_bus) {
 } /* dsp_cleanup_graph */
 
 void *
-dsp_graph_cleanup_task_thread() {
+dsp_graph_cleanup_task_thread(void *arg) {
 	pthread_mutex_lock(&dsp_global.graph_state_mutex);
 	dsp_global.bus_head = dsp_cleanup_graph(dsp_global.bus_head);
 	dsp_cleanup_old_optimized_graph();
@@ -1411,7 +1411,7 @@ dsp_graph_cleanup_task_thread_setup() {
 } /* dsp_graph_cleanup_task_thread_setup */
 
 void *
-dsp_graph_cleanup_thread() {
+dsp_graph_cleanup_thread(void *arg) {
 	long poll_ns = 0L;	
 	struct timespec ts = {0, 0};
 

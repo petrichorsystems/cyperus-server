@@ -136,7 +136,7 @@ osc_callback_timer_callback(union sigval sv) {
 } /* osc_callback_timer_callback */
 
 void *
-osc_callback_timer_thread() {
+osc_callback_timer_thread(void *arg) {
     struct sigevent sev;
     timer_t timer_id;
     struct itimerspec its;

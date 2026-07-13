@@ -68,10 +68,7 @@ dsp_destroy_delay_simple(struct dsp_module *target_module) {
 
 void
 dsp_delay_simple(struct dsp_operation *delay_simple, int jack_samplerate) {
-  /* printf("ops_modules_delay_simple.c::dsp_delay_simple()\n"); */
-
 	params_modules_delay_simple_edit_apply(&delay_simple->module->dsp_param);
-	
 	dsp_sum_summands(delay_simple->module->dsp_param.in, delay_simple->ins->summands);
   
 	/* handle params with connected inputs */

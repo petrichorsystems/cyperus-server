@@ -91,7 +91,9 @@ typedef struct dsp_module_parameter {
 	char *name;
 	dsp_module_parameters_t *parameters;
 	dsp_module_parameters_t *parameters_pending;
+	dsp_module_parameters_t *parameters_garbage;
 	atomic_flag state_pending;
+	atomic_flag state_garbage;
 }dsp_parameter;
 
 struct dsp_port_in {
@@ -267,7 +269,7 @@ struct dsp_translation_connection* dsp_translation_connection_init(struct dsp_co
 
 void dsp_translation_connection_insert_tail(struct dsp_translation_connection *head_translation_connection, struct dsp_translation_connection *new_translation_connection);
 
-struct dsp_operation* dsp_operation_init();
+struct dsp_operation* dsp_operation_init(char *dsp_id);
 void dsp_operation_insert_head(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
 void dsp_operation_insert_tail(struct dsp_operation *head_operation, struct dsp_operation *new_operation);
 void dsp_operation_insert_behind(struct dsp_operation *existing_operation, struct dsp_operation *new_operation);

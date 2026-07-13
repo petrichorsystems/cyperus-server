@@ -140,7 +140,7 @@ void jackcli_allocate_ports(int channels_in, int channels_out)
 } /* jackcli_allocate_ports */
 
 
-void jackcli_shutdown_callback()
+void jackcli_shutdown_callback(void *arg)
 {
   exit(1);
 } /* jackcli_shutdown_callback */

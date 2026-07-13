@@ -37,6 +37,6 @@ extern unsigned int jackcli_samplerate_pos;
 extern int jackcli_buffer_size;
 
 float* jackcli_setup(char *jackcli_client_name, int channels_in, int channels_out);
-int jackcli_teardown();
+int jackcli_teardown(float *sample_block);
 
 #endif
