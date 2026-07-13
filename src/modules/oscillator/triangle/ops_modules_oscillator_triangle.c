@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Copyright 2018 murray foster */
 
+#include "../../common.h"
 #include "../../../dsp.h"
 #include "../../../osc.h"
 
@@ -31,36 +32,6 @@ dsp_create_oscillator_triangle(struct dsp_bus *target_bus,
 	dsp_parameter params;
 	struct dsp_port_in *ins;
 	struct dsp_port_out *outs;
-	int p;
-  
-	params.name = "oscillator_triangle";
-
-	/* signal output */
-	params.out = malloc(sizeof(float) * dsp_global_period);
-	
-	params.parameters = malloc(sizeof(dsp_module_parameters_t));  
-
-	params.parameters->float32_arr_type = malloc(sizeof(float *) * 2);
-	params.parameters->float32_type = malloc(sizeof(float) * 2);
-	params.parameters->int32_type = malloc(sizeof(int) * 1);
-	
-	/* user-facing parameter allocation */
-	params.parameters->float32_arr_type[PARAM_USER_FREQUENCY] = calloc(dsp_global_period, sizeof(float)); /* frequency */
-	params.parameters->float32_arr_type[PARAM_USER_AMPLITUDE] = calloc(dsp_global_period, sizeof(float)); /* amplitude */
-
-	
-	/* user-facing parameter assigment */
-	for (p=0; p<dsp_global_period; p++) {
-		params.parameters->float32_arr_type[PARAM_USER_FREQUENCY][p] = frequency;
-		params.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][p] = amplitude;	  
-	}
-
-	/* internal parameter assignment */
-	params.parameters->int32_type[PARAM_INTERNAL_X] = 0;
-	
-	/* osc listener param state parameters */
-	params.parameters->float32_type[PARAM_LISTENER_FREQUENCY] = frequency;
-	params.parameters->float32_type[PARAM_LISTENER_AMPLITUDE] = amplitude;
 
 	ins = dsp_port_in_init("param_frequency");
 	ins->next = dsp_port_in_init("param_amplitude");
@@ -80,19 +51,15 @@ dsp_create_oscillator_triangle(struct dsp_bus *target_bus,
 
 int
 dsp_destroy_oscillator_triangle(struct dsp_module *target_module) {
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY]);
-	free(target_module->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE]);
-	free(target_module->dsp_param.parameters->float32_arr_type);
-	free(target_module->dsp_param.parameters->float32_type);
-	free(target_module->dsp_param.parameters->int32_type);
-	free(target_module->dsp_param.parameters);
-	free(target_module->dsp_param.out);
-  return 0;
+	params_modules_oscillator_triangle_free(&target_module->dsp_param);
+	return 0;
 } /* dsp_destroy_oscillator_triangle */
 
 void
 dsp_oscillator_triangle(struct dsp_operation *oscillator_triangle, int jack_samplerate)
 {
+	params_modules_oscillator_triangle_edit_apply(&oscillator_triangle->module->dsp_param);
+	
 	/* handle params with connected inputs */
 	if( oscillator_triangle->ins->summands != NULL ) /* frequency */
 		dsp_sum_summands(oscillator_triangle->module->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY], oscillator_triangle->ins->summands);
@@ -102,7 +69,6 @@ dsp_oscillator_triangle(struct dsp_operation *oscillator_triangle, int jack_samp
 	math_modules_oscillator_triangle(&oscillator_triangle->module->dsp_param,
 					 jack_samplerate);
 
-	/* drive audio outputs */
 	memcpy(oscillator_triangle->outs->sample->value,
 	       oscillator_triangle->module->dsp_param.out,
 	       sizeof(float) * dsp_global_period);
@@ -111,13 +77,13 @@ dsp_oscillator_triangle(struct dsp_operation *oscillator_triangle, int jack_samp
 
 
 void dsp_edit_oscillator_triangle(struct dsp_module *oscillator_triangle,
-                               float frequency,
-                               float amplitude) {
-  for(int p=0; p<dsp_global_period; p++) {
-    oscillator_triangle->dsp_param.parameters->float32_arr_type[PARAM_USER_FREQUENCY][p] = frequency;
-    oscillator_triangle->dsp_param.parameters->float32_arr_type[PARAM_USER_AMPLITUDE][p] = amplitude;
-  }
-  
+				  float frequency,
+				  float amplitude) {
+	modules_common_dsp_graph_lock();
+	params_modules_oscillator_triangle_edit_pending(&oscillator_triangle->dsp_param,
+							frequency,
+							amplitude);
+	modules_common_dsp_graph_unlock();
 } /* dsp_edit_oscillator_triangle */
 
 void
